@@ -208,7 +208,7 @@ const createCachedQueryDataGetter =
     address,
   }: {
     queryClient: QueryClient
-    chainId: SupportedChain['id']
+    chainId: any
     address: Address | undefined
   }) =>
   <TData, TQueryKey extends GenericQueryKey<'standard'>>({
@@ -624,7 +624,7 @@ export const SearchInput = ({ size = 'extraLarge' }: { size?: 'medium' | 'extraL
   const breakpoints = useBreakpoint()
 
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const [inputVal, setInputVal] = useState('')
 

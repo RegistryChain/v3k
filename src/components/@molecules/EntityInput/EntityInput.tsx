@@ -308,7 +308,7 @@ const getRouteForSearchItem = ({
 
 type CreateSearchHandlerProps = {
   address: Address | undefined
-  chainId: SupportedChain['id']
+  chainId: any
   dropdownItems: SearchItem[]
   router: ReturnType<typeof useRouterWithHistory>
   searchInputRef: RefObject<HTMLInputElement>
@@ -656,7 +656,7 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
   const handleFocusIn = useCallback(() => toggle(true), [toggle])
   const handleFocusOut = useCallback(() => toggle(false), [toggle])
 
-  const dropdownItems = [{isHistory: "", text: "", nameType: ""}]
+  const dropdownItems: any = [{isHistory: "", text: "", nameType: ""}]
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSearch = useCallback(
@@ -696,10 +696,10 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
       $state={state}
       data-testid="search-input-results"
     >
-      {dropdownItems.map((searchItem, index) => (
+      {dropdownItems.map((searchItem: any, index: any) => (
         <SearchResult
-          // clickCallback={handleSearch}
-          // hoverCallback={setSelected}
+          clickCallback={handleSearch}
+          hoverCallback={setSelected}
           index={index}
           selected={index === selected}
           searchItem={searchItem}

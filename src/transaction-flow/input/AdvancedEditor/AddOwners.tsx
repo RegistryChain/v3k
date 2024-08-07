@@ -40,17 +40,12 @@ const NameContainer = styled.div(({ theme }) => [
   `),
 ])
 
-
-
 type Data = {
   name: string
 }
 
-export type Props = {
-  data?: Data,
-}
 
-const AddOwners = ({ data, step, profile, setOwners, owners, publicClient }: Props) => {
+const AddOwners = ({ data, step, profile, setOwners, owners, publicClient }: any) => {
   const { t } = useTranslation('profile')
   const name = data?.name || ''
   const ownerCount = Number(profile?.["owner__count"])
@@ -130,7 +125,7 @@ const AddOwners = ({ data, step, profile, setOwners, owners, publicClient }: Pro
       }))
 
     } else {
-      ownersEle.push(<div key={i + "owner"} style={{margin: "10px", textAlign: "left"}}><Button textAlign="left" colorStyle='' onClick={() => editOwner(i)}>Owner {i} {owners["owner__" + i + "__name"]}</Button></div>)
+      ownersEle.push(<div key={i + "owner"} style={{margin: "10px", textAlign: "left"}}><Button colorStyle='blueSecondary' onClick={() => editOwner(i)}>Owner {i} {owners["owner__" + i + "__name"]}</Button></div>)
     }
   }
 

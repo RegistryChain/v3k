@@ -165,7 +165,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     refetchIfEnabled()
     setTab_(value)
   }
-  const visibileTabs = isWrapped ? tabs : tabs.filter((_tab) => _tab !== 'permissions')
 
   const abilities = useAbilities({ name: normalisedName })
 
@@ -258,7 +257,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           warning,
           header: (
             <TabButtonContainer>
-              {visibileTabs.map((tabItem) => (
+              {tabs.map((tabItem: any) => (
                 <TabButton
                   key={tabItem}
                   data-testid={`${tabItem}-tab`}

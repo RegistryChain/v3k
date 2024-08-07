@@ -66,13 +66,16 @@ export default function Page() {
     } else {
 
       //FIRST REGISTER SUBDOMAIN
+
+      const ownerAddress:`0x${string}`|undefined = address
       const subdomainId = name.toLowerCase().split(" ").join("-") + Date.now().toString().slice(Date.now().toString().length - 6)
       const entityId = subdomainId + '.' + default_registry_domain
-      const hashSubdomain = await createSubname(wallet, {
+      const subObj: any = {
         name: entityId,
-        owner: address,
+        owner: ownerAddress,
         contract: 'nameWrapper',
-      })
+      }
+      const hashSubdomain = await createSubname(wallet, subObj)
 
       console.log(await publicClient?.waitForTransactionReceipt( 
         { hash: hashSubdomain }
