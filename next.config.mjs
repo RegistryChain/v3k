@@ -7,7 +7,6 @@ import { execSync } from 'child_process'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-import { withSentryConfig } from '@sentry/nextjs'
 import StylelintPlugin from 'stylelint-webpack-plugin'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -216,12 +215,5 @@ if (process.env.ANALYZE) {
   plugins.push(withBundleAnalyzer({ enabled: true }))
 }
 
-if (process.env.CI && process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_IPFS) {
-  plugins.push((config) =>
-    withSentryConfig(config, {
-      silent: false,
-    }),
-  )
-}
 
 export default plugins.reduce((acc, next) => next(acc), nextConfig)
