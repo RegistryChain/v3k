@@ -32,7 +32,7 @@ const UnwrapButton = ({ name, ownerData, status }: Props) => {
 
   return (
     <BaseWrapButton data-testid="unwrap-name-btn" onClick={handleUnwrapClick}>
-      {t('tabs.more.token.unwrap')}
+      {t('tabs.metadata.token.unwrap')}
     </BaseWrapButton>
   )
 }

@@ -36,7 +36,7 @@ export const EarnifiDialog = ({ name, open, onDismiss }: Props) => {
       const message =
         error instanceof Error && error.message
           ? error.message
-          : t('tabs.more.misc.bankless.submitError', { ns: 'profile' })
+          : t('tabs.metadata.misc.bankless.submitError', { ns: 'profile' })
       setError('email', {
         type: 'submitError',
         message,
@@ -58,7 +58,7 @@ export const EarnifiDialog = ({ name, open, onDismiss }: Props) => {
 
   return (
     <Dialog open={open} variant="blank" onDismiss={() => status !== 'pending' && _onDismiss()}>
-      <Dialog.Heading title={t('tabs.more.misc.bankless.title', { ns: 'profile' })} />
+      <Dialog.Heading title={t('tabs.metadata.misc.bankless.title', { ns: 'profile' })} />
       {match(status)
         .with(P.not('success'), () => (
           <>
@@ -70,7 +70,7 @@ export const EarnifiDialog = ({ name, open, onDismiss }: Props) => {
               <Typography style={{ textAlign: 'center' }}>
                 <Trans
                   style={{ textAlign: 'center' }}
-                  i18nKey="tabs.more.misc.bankless.enterEmail"
+                  i18nKey="tabs.metadata.misc.bankless.enterEmail"
                   ns="profile"
                   components={{
                     a: <Outlink href={EARNIFI_OUTLINK} role="link" />,
@@ -113,7 +113,7 @@ export const EarnifiDialog = ({ name, open, onDismiss }: Props) => {
           <>
             <Dialog.Content>
               <div style={{ textAlign: 'center' }}>
-                {t('tabs.more.misc.bankless.emailConfirmation', { ns: 'profile' })}
+                {t('tabs.metadata.misc.bankless.emailConfirmation', { ns: 'profile' })}
               </div>
             </Dialog.Content>
             <Dialog.Footer trailing={<Button onClick={_onDismiss}>{t('action.close')}</Button>} />

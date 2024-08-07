@@ -1,6 +1,6 @@
 {
-  "title": "Your web3 username",
-  "description": "Your identity across web3, one name for all your crypto addresses, and your decentralised website.",
+  "title": "Your Entity's Universal Registration",
+  "description": "Open your entity to a platform of all kinds of institutions. Streamline how your organization interacts with other groups.",
   "loading": "Loading",
   "unsupportedNetwork": "Unsupported network",
   "notFound": "404 Not Found",
@@ -67,7 +67,7 @@
   },
   "navigation": {
     "home": "Home",
-    "names": "My Names",
+    "names": "My Entities",
     "favourites": "Favourites",
     "settings": "Settings",
     "governance": "Governance",
@@ -331,6 +331,30 @@
   "search": {
     "label": "Name search",
     "placeholder": "Search for a name",
+    "emptyText": "Type a name or address to search...",
+    "address": "Address",
+    "errors": {
+      "tooShort": "Name too short",
+      "invalid": "Invalid format for name"
+    },
+    "status": {
+      "registered": "Registered",
+      "gracePeriod": "Grace Period",
+      "premium": "Temporary Premium",
+      "available": "Available",
+      "notOwned": "Not Owned",
+      "notImported": "Not Imported",
+      "short": "Too Short",
+      "default": "Invalid",
+      "invalid": "Invalid",
+      "unsupportedTLD": "Not Supported",
+      "imported": "Imported",
+      "owned": "Owned"
+    }
+  },
+  "entityInput": {
+    "label": "Name search",
+    "placeholder": "Check for an entity name",
     "emptyText": "Type a name or address to search...",
     "address": "Address",
     "errors": {

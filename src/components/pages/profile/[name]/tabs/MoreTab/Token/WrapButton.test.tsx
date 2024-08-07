@@ -68,7 +68,7 @@ describe('WrapButton', () => {
       />,
     )
     expect(screen.getByTestId('wrap-name-btn')).toBeVisible()
-    expect(screen.getByTestId('wrap-name-btn')).toHaveTextContent('tabs.more.token.wrapName')
+    expect(screen.getByTestId('wrap-name-btn')).toHaveTextContent('tabs.metadata.token.wrapName')
   })
   it('should render null if canBeWrapped is false', () => {
     mockResumeTransactionFlow.mockReturnValue(0)

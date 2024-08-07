@@ -16,27 +16,27 @@ import { useExpiryDetails } from './hooks/useExpiryDetails'
 const calendarOptions = [
   {
     value: 'google',
-    label: 'tabs.more.misc.reminderOptions.google',
+    label: 'tabs.metadata.misc.reminderOptions.google',
     function: google,
   },
   {
     value: 'outlook',
-    label: 'tabs.more.misc.reminderOptions.outlook',
+    label: 'tabs.metadata.misc.reminderOptions.outlook',
     function: outlook,
   },
   {
     value: 'office365',
-    label: 'tabs.more.misc.reminderOptions.office365',
+    label: 'tabs.metadata.misc.reminderOptions.office365',
     function: office365,
   },
   {
     value: 'yahoo',
-    label: 'tabs.more.misc.reminderOptions.yahoo',
+    label: 'tabs.metadata.misc.reminderOptions.yahoo',
     function: yahoo,
   },
   {
     value: 'ics',
-    label: 'tabs.more.misc.reminderOptions.ical',
+    label: 'tabs.metadata.misc.reminderOptions.ical',
     function: ics,
   },
 ]
@@ -162,7 +162,7 @@ export const ExpirySection = ({ name, details }: Props) => {
                             // Put this back once the reminders are working again
                             // {
                             //   value: 'earnifi',
-                            //   label: t('tabs.more.misc.reminderOptions.bankless'),
+                            //   label: t('tabs.metadata.misc.reminderOptions.bankless'),
                             //   onClick: () => {
                             //     setShowEarnifiDialog(true)
                             //   },

@@ -33,12 +33,12 @@ describe('EarnifiDialog', () => {
   })
   it('should render', () => {
     render(<EarnifiDialog {...defaultProps} open={false} />)
-    expect(screen.queryByText('tabs.more.misc.bankless.title')).not.toBeInTheDocument()
+    expect(screen.queryByText('tabs.metadata.misc.bankless.title')).not.toBeInTheDocument()
   })
 
   it('should render dialog when open is true', () => {
     render(<EarnifiDialog {...defaultProps} />)
-    const dialog = screen.getByText('tabs.more.misc.bankless.title')
+    const dialog = screen.getByText('tabs.metadata.misc.bankless.title')
     expect(dialog).toBeInTheDocument()
   })
 
@@ -109,7 +109,7 @@ describe('EarnifiDialog', () => {
     await userEvent.type(pageObject.emailInput(), 'validemail@example.com')
     await userEvent.click(pageObject.continueButton())
 
-    expect(await screen.findByText('tabs.more.misc.bankless.submitError')).toBeInTheDocument()
+    expect(await screen.findByText('tabs.metadata.misc.bankless.submitError')).toBeInTheDocument()
   })
 
   it('should clear error after error timeout', async () => {
@@ -123,10 +123,10 @@ describe('EarnifiDialog', () => {
     await userEvent.type(pageObject.emailInput(), 'validemail@example.com')
     await userEvent.click(pageObject.continueButton())
 
-    expect(await screen.findByText('tabs.more.misc.bankless.submitError')).toBeInTheDocument()
+    expect(await screen.findByText('tabs.metadata.misc.bankless.submitError')).toBeInTheDocument()
     setTimeout(async () => {
       await waitFor(() => {
-        expect(screen.findByText('tabs.more.misc.bankless.submitError')).not.toBeInTheDocument()
+        expect(screen.findByText('tabs.metadata.misc.bankless.submitError')).not.toBeInTheDocument()
       })
     }, 3000)
   })
@@ -156,7 +156,7 @@ describe('EarnifiDialog', () => {
     render(<EarnifiDialog {...defaultProps} />)
 
     await waitFor(() =>
-      expect(screen.getByText('tabs.more.misc.bankless.emailConfirmation')).toBeInTheDocument(),
+      expect(screen.getByText('tabs.metadata.misc.bankless.emailConfirmation')).toBeInTheDocument(),
     )
   })
 
@@ -171,7 +171,7 @@ describe('EarnifiDialog', () => {
     render(<EarnifiDialog {...{ ...defaultProps, onDismiss: onDismissMock }} />)
 
     await waitFor(() =>
-      expect(screen.getByText('tabs.more.misc.bankless.emailConfirmation')).toBeInTheDocument(),
+      expect(screen.getByText('tabs.metadata.misc.bankless.emailConfirmation')).toBeInTheDocument(),
     )
 
     await userEvent.click(screen.getByRole('button', { name: 'action.close' }))

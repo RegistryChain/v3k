@@ -55,11 +55,11 @@ describe('ExpirySection', () => {
     expect(screen.getByText('action.extend')).toBeVisible()
     await userEvent.click(screen.getByText('action.setReminder'))
     await waitFor(async () => {
-      expect(screen.getByText('tabs.more.misc.reminderOptions.bankless')).toBeVisible()
-      await userEvent.click(screen.getByText('tabs.more.misc.reminderOptions.bankless'))
+      expect(screen.getByText('tabs.metadata.misc.reminderOptions.bankless')).toBeVisible()
+      await userEvent.click(screen.getByText('tabs.metadata.misc.reminderOptions.bankless'))
     })
     await waitFor(() => {
-      expect(screen.getByText('tabs.more.misc.bankless.title')).toBeVisible()
+      expect(screen.getByText('tabs.metadata.misc.bankless.title')).toBeVisible()
     })
   })
 

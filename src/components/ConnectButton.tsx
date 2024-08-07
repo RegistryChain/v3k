@@ -155,11 +155,13 @@ const HeaderProfile = ({ address }: { address: Address }) => {
             ? [
                 {
                   label: t('wallet.myProfile'),
-                  wrapper: (children: ReactNode, key: Key) => (
+                  wrapper: (children: ReactNode, key: Key) => {
+                    console.log(children)
+                    return(
                     <BaseLink href="/my/profile" key={key}>
                       {children}
                     </BaseLink>
-                  ),
+                  )},
                   as: 'a' as 'a',
                   color: 'text',
                   icon: <PersonSVG />,

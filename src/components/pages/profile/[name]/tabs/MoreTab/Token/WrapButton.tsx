@@ -115,7 +115,7 @@ const WrapButton = ({ name, ownerData, profile, canBeWrapped }: Props) => {
       loading={isLoading}
       onClick={handleWrapClick}
     >
-      {t('tabs.more.token.wrapName')}
+      {t('tabs.metadata.token.wrapName')}
     </BaseWrapButton>
   )
 }

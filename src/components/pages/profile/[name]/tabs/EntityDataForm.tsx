@@ -11,12 +11,11 @@ import { Outlink } from '@app/components/Outlink'
 import RecordItem from '@app/components/RecordItem'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 import { AddressRecord, Profile, TextRecord } from '@app/types'
-import { abiDisplayValue } from '@app/utils/abi'
 import { emptyAddress } from '@app/utils/constants'
 import { getContentHashLink } from '@app/utils/contenthash'
 import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
 
-import { TabWrapper as OriginalTabWrapper } from '../../TabWrapper'
+import { TabWrapper as OriginalTabWrapper } from '../../TabWrapper' 
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`
@@ -106,12 +105,11 @@ const Actions = styled.div(
   `,
 )
 
-export const RecordsTab = ({
+export const EntityDataForm = ({
   name,
   texts,
   addresses,
   contentHash,
-  abi,
   canEdit,
   canEditRecords,
   isCached,
@@ -121,7 +119,6 @@ export const RecordsTab = ({
   texts?: TextRecord[]
   addresses?: AddressRecord[]
   contentHash?: Profile['contentHash']
-  abi?: Profile['abi']
   canEdit?: boolean
   canEditRecords?: boolean
   isCached?: boolean
@@ -199,6 +196,29 @@ export const RecordsTab = ({
                 showLegacy={address.name.endsWith('_LEGACY')}
               />
             ))}
+        </RecordSection>
+        <RecordSection>
+          <SectionHeader>
+            <SectionTitleContainer>
+              {formattedContentHash ? (
+                <>
+                  <SectionTitle data-testid="content-hash-heading" fontVariant="bodyBold">
+                    {t('details.tabs.records.contentHash')}
+                  </SectionTitle>
+                  {formattedContentHashLink && (
+                    <Outlink href={formattedContentHashLink}>
+                      {t('action.view', { ns: 'common' })}
+                    </Outlink>
+                  )}
+                </>
+              ) : (
+                <SectionSubtitle data-testid="content-hash-heading">
+                  {t('details.tabs.records.noContentHash')}
+                </SectionSubtitle>
+              )}
+            </SectionTitleContainer>
+          </SectionHeader>
+          {formattedContentHash && <RecordItem type="contentHash" value={formattedContentHash} />}
         </RecordSection>
       </AllRecords>
       {canEdit && resolverAddress !== emptyAddress && (

@@ -155,7 +155,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                     <TransactionFlowProvider>
                       <SyncDroppedTransaction>
                         <Notifications />
-                        <TestnetWarning />
+                        {/* <TestnetWarning /> */}
                         <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
                       </SyncDroppedTransaction>
                     </TransactionFlowProvider>

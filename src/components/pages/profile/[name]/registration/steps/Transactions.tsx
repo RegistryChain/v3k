@@ -93,7 +93,6 @@ type Props = {
 
 const Transactions = ({ registrationData, name, callback, onStart }: Props) => {
   const { t } = useTranslation('register')
-
   const { address } = useAccount()
   const keySuffix = `${name}-${address}`
   const commitKey = `commit-${keySuffix}`

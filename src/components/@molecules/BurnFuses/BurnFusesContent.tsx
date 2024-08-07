@@ -92,7 +92,7 @@ const BurnButton = ({
   handleBurnClick: (permission: ChildFuseReferenceType['Key']) => void
   isSelected: boolean
 }) => {
-  const { t } = useTranslation('profile', { keyPrefix: 'tabs.more.fuses' })
+  const { t } = useTranslation('profile', { keyPrefix: 'tabs.metadata.fuses' })
 
   return (
     <StyledButton
@@ -171,7 +171,7 @@ const BurnFusesContent = ({
   canUnsetFuse = false,
   returnObject,
 }: PropsWithReturnArray | PropsWithReturnObject) => {
-  const { t } = useTranslation('profile', { keyPrefix: 'tabs.more' })
+  const { t } = useTranslation('profile', { keyPrefix: 'tabs.metadata' })
   const { t: tc } = useTranslation()
   const [_fuseData, setFuseData] = useState<CurrentChildFuses>(childFuseObj)
   const [fuseSelected, setFuseSelected] = useState<CurrentChildFuses>(childFuseObj)

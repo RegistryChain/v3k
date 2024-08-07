@@ -236,7 +236,7 @@ const DNSOwnerSection = ({
 
     createTransactionFlow(`sync-manager-${name}-${address}`, {
       intro: {
-        title: ['tabs.more.ownership.dnsOwnerWarning.syncManager', { ns: 'profile' }],
+        title: ['tabs.metadata.ownership.dnsOwnerWarning.syncManager', { ns: 'profile' }],
         content: makeIntroItem('SyncManager', { isWrapped, manager: currentManager!.address }),
       },
       transactions: [
@@ -263,11 +263,11 @@ const DNSOwnerSection = ({
   return (
     <DNSOwnerSectionContainer>
       <Helper type="warning" alignment="horizontal">
-        {t(`tabs.more.ownership.dnsOwnerWarning.${canSend ? 'isManager' : 'isDnsOwner'}`)}
+        {t(`tabs.metadata.ownership.dnsOwnerWarning.${canSend ? 'isManager' : 'isDnsOwner'}`)}
       </Helper>
       <ButtonsContainer>
         <Button width="auto" colorStyle="accentSecondary" onClick={handleRefresh}>
-          {t('tabs.more.ownership.refreshDNS')}
+          {t('tabs.metadata.ownership.refreshDNS')}
         </Button>
         {!canSend && (
           <Button
@@ -276,7 +276,7 @@ const DNSOwnerSection = ({
             loading={isLoading}
             disabled={!dnsImportData}
           >
-            {t('tabs.more.ownership.dnsOwnerWarning.syncManager')}
+            {t('tabs.metadata.ownership.dnsOwnerWarning.syncManager')}
           </Button>
         )}
       </ButtonsContainer>
@@ -312,7 +312,7 @@ const Ownership = ({
   return (
     <Container $isCached={isCachedData}>
       <HeadingContainer>
-        <Typography fontVariant="headingFour">{t('tabs.more.ownership.label')}</Typography>
+        <Typography fontVariant="headingFour">{t('tabs.metadata.ownership.label')}</Typography>
         <div>
           {canSend && (
             <Button

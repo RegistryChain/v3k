@@ -41,8 +41,8 @@ describe('Token', () => {
     render(
       <Token {...({ name, isWrapped: false, wrapperData: makeMockUseWrapperDataData() } as any)} />,
     )
-    expect(screen.getByTestId('name-details-text-tabs.more.token.wrapper')).toHaveTextContent(
-      'tabs.more.token.status.unwrapped',
+    expect(screen.getByTestId('name-details-text-tabs.metadata.token.wrapper')).toHaveTextContent(
+      'tabs.metadata.token.status.unwrapped',
     )
   })
   it('should show wrapped status for wrapped name', () => {
@@ -52,8 +52,8 @@ describe('Token', () => {
         {...({ name, isWrapped: true, wrapperData: makeMockUseWrapperDataData('wrapped') } as any)}
       />,
     )
-    expect(screen.getByTestId('name-details-text-tabs.more.token.wrapper')).toHaveTextContent(
-      'tabs.more.token.status.wrapped',
+    expect(screen.getByTestId('name-details-text-tabs.metadata.token.wrapper')).toHaveTextContent(
+      'tabs.metadata.token.status.wrapped',
     )
   })
   it('should show wrapped status for emancipated name', () => {
@@ -67,8 +67,8 @@ describe('Token', () => {
         } as any)}
       />,
     )
-    expect(screen.getByTestId('name-details-text-tabs.more.token.wrapper')).toHaveTextContent(
-      'tabs.more.token.status.emancipated',
+    expect(screen.getByTestId('name-details-text-tabs.metadata.token.wrapper')).toHaveTextContent(
+      'tabs.metadata.token.status.emancipated',
     )
   })
   it('should show wrapped status for locked name', () => {
@@ -78,8 +78,8 @@ describe('Token', () => {
         {...({ name, isWrapped: true, wrapperData: makeMockUseWrapperDataData('locked') } as any)}
       />,
     )
-    expect(screen.getByTestId('name-details-text-tabs.more.token.wrapper')).toHaveTextContent(
-      'tabs.more.token.status.locked',
+    expect(screen.getByTestId('name-details-text-tabs.metadata.token.wrapper')).toHaveTextContent(
+      'tabs.metadata.token.status.locked',
     )
   })
   it('should show wrap button if unwrapped', () => {

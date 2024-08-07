@@ -141,7 +141,7 @@ const Token = ({ name, isWrapped, canBeWrapped, ownerData, wrapperData, profile 
   return (
     <Container>
       <HeaderContainer>
-        <Typography fontVariant="headingFour">{t('tabs.more.token.label')}</Typography>
+        <Typography fontVariant="headingFour">{t('tabs.metadata.token.label')}</Typography>
         {hasToken ? (
           <Outlink
             data-testid="etherscan-nft-link"
@@ -150,22 +150,22 @@ const Token = ({ name, isWrapped, canBeWrapped, ownerData, wrapperData, profile 
             {t('etherscan', { ns: 'common' })}
           </Outlink>
         ) : (
-          <Tag colorStyle="greySecondary">{t('tabs.more.token.noToken')}</Tag>
+          <Tag colorStyle="greySecondary">{t('tabs.metadata.token.noToken')}</Tag>
         )}
       </HeaderContainer>
       {hasToken && (
         <ItemsContainer data-testid="token-ids">
           <IdsContainer>
-            <RecordItem itemKey={t('tabs.more.token.hex')} value={hex} type="text" />
-            <RecordItem itemKey={t('tabs.more.token.decimal')} value={tokenId} type="text" />
+            <RecordItem itemKey={t('tabs.metadata.token.hex')} value={hex} type="text" />
+            <RecordItem itemKey={t('tabs.metadata.token.decimal')} value={tokenId} type="text" />
           </IdsContainer>
           <NftBox id="nft" name={name} />
         </ItemsContainer>
       )}
       <ItemsContainer>
         <RecordItem
-          itemKey={t('tabs.more.token.wrapper')}
-          value={t(`tabs.more.token.status.${status}`)}
+          itemKey={t('tabs.metadata.token.wrapper')}
+          value={t(`tabs.metadata.token.status.${status}`)}
           type="text"
         />
         {isWrapped ? (

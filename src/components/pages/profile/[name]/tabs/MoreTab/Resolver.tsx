@@ -122,7 +122,7 @@ const Resolver = ({
       <HeadingContainer>
         <InnerHeading>
           <Typography color="text" fontVariant="headingFour" weight="bold">
-            {t('tabs.more.resolver.label')}
+            {t('tabs.metadata.resolver.label')}
           </Typography>
         </InnerHeading>
       </HeadingContainer>

@@ -215,7 +215,8 @@ export const NameListView = ({ address, selfAddress, setError, setLoading }: Nam
           .with([true, false, P.when((_nameCount) => _nameCount), P._], () => (
             <InfiniteScrollContainer onIntersectingChange={setIsIntersecting}>
               <div>
-                {names.map((name) => (
+                {names.filter(name => name.parentName === "openregistry.eth").map((name) => {
+                  return (
                   <TaggedNameItem
                     key={name.id}
                     {...name}
@@ -226,7 +227,8 @@ export const NameListView = ({ address, selfAddress, setError, setLoading }: Nam
                     disabled={isNameDisabled(name)}
                     onClick={handleClickName(name)}
                   />
-                ))}
+                )
+})}
               </div>
               {isFetching && (
                 <EmptyDetailContainer>

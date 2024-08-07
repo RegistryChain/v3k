@@ -194,31 +194,7 @@ export const Header = () => {
   return (
     <HeaderWrapper id="header">
       <NavContainer>
-        <ConditionalWrapper
-          condition={router.asPath !== '/'}
-          wrapper={(children) => (
-            <BaseLink passHref href="/">
-              <LogoAnchor data-testid="home-button">{children}</LogoAnchor>
-            </BaseLink>
-          )}
-        >
-          {router.asPath === '/' ? (
-            <ENSFull height={space['12']} />
-          ) : (
-            <ENSWithGradient height={space['12']} />
-          )}
-        </ConditionalWrapper>
-        {router.asPath !== '/' && breakpoints.sm && (
-          <>
-            <SearchWrapper
-              data-testid="search-wrapper"
-              ref={searchWrapperRef}
-              $state={breakpoints.lg ? 'entered' : state}
-            >
-              <SearchInput size="medium" />
-            </SearchWrapper>
-          </>
-        )}
+        <div style={{fontSize: "42px", cursor: "pointer"}} onClick={() => router.push("/")}>❍ RegistryChain</div>
         <div style={{ flexGrow: 1 }} />
         <RouteWrapper>
           <RouteContainer

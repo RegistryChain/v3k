@@ -64,7 +64,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const tabs = ['profile', 'records', 'ownership', 'subnames', 'permissions', 'more'] as const
+const tabs = ['profile', 'records', 'ownership', 'metadata'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -296,23 +296,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               />
             ))
             .with('ownership', () => <OwnershipTab name={normalisedName} details={nameDetails} />)
-            .with('subnames', () => (
-              <SubnamesTab
-                name={normalisedName}
-                isWrapped={isWrapped}
-                canEdit={!!abilities.data?.canEdit}
-                canCreateSubdomains={!!abilities.data?.canCreateSubdomains}
-                canCreateSubdomainsError={abilities.data?.canCreateSubdomainsError}
-              />
-            ))
-            .with('permissions', () => (
-              <PermissionsTab
-                name={normalisedName}
-                wrapperData={wrapperData}
-                isCached={isCachedData}
-              />
-            ))
-            .with('more', () => (
+            .with('metadata', () => (
               <MoreTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
             ))
             .exhaustive(),
