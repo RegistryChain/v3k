@@ -30,11 +30,7 @@ export const sepoliaWithEns = addEnsContracts(sepolia)
 export const holeskyWithEns = addEnsContracts(holesky)
 
 export const chainsWithEns = [
-  mainnetWithEns,
-  goerliWithEns,
   sepoliaWithEns,
-  holeskyWithEns,
-  localhostWithEns,
 ] as const
 
 export const getSupportedChainById = (chainId: number | undefined) =>

@@ -93,7 +93,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
     if (
       shouldSwitchChain({ isConnected, hasProgrammaticChainSwitching, isPending, isError, chainId })
     ) {
-      switchChain({ chainId: 1 })
+      switchChain({ chainId: 11155111 })
     }
   }, [isConnected, hasProgrammaticChainSwitching, isPending, isError, chainId, switchChain])
 

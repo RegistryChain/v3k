@@ -70,6 +70,8 @@ tsconfig.vitest-temp.json
 /artifacts
 /typings-custom/generated
 
+.env
+
 # Sentry
 .sentryclirc
 
