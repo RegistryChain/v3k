@@ -155,9 +155,6 @@ importers:
       react-use-error-boundary:
         specifier: ^3.0.0
         version: 3.0.0(react@18.3.1)
-      react-use-intercom:
-        specifier: ^5.1.4
-        version: 5.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       styled-components:
         specifier: ^5.3.5
         version: 5.3.11(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react-is@17.0.2)(react@18.3.1)
@@ -7946,12 +7943,6 @@ packages:
     resolution: {integrity: sha512-5urkfyU3ZzInEMSHe1gxtDzlQAHs0krTt0V6h8H2L5nXhDKq3OYXnCs9lGHDkEkYvLmsphw8ap5g8uYfvrkJng==}
     peerDependencies:
       react: ^18.2.0
-
-  react-use-intercom@5.4.0:
-    resolution: {integrity: sha512-fMOfylJoFQbXdVNbsXbNZrK+Qwc45AqjZFzkq8gclxiK72FcZl7IUKbm3g+EVKd6QoNX2AHpDD7sqAEwMvzFaQ==}
-    peerDependencies:
-      react: ^18.2.0
-      react-dom: ^18.2.0
 
   react-use@17.5.0:
     resolution: {integrity: sha512-PbfwSPMwp/hoL847rLnm/qkjg3sTRCvn6YhUZiHaUa3FA6/aNoFX79ul5Xt70O1rK+9GxSVqkY0eTwMdsR/bWg==}
@@ -19462,11 +19453,6 @@ snapshots:
   react-use-error-boundary@3.0.0(react@18.3.1):
     dependencies:
       react: 18.3.1
-
-  react-use-intercom@5.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   react-use@17.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
