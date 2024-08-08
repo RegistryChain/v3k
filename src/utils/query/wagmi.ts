@@ -22,7 +22,7 @@ const connectors = getDefaultWallets({
   projectId: WC_PROJECT_ID,
 })
 
-const infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY || 'cfa6ae2501cc4354a74e20432507317c'
+const infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 const tenderlyKey = process.env.NEXT_PUBLIC_TENDERLY_KEY || '4imxc4hQfRjxrVB2kWKvTo'
 
 export const infuraUrl = (chainName: string) => `https://${chainName}.infura.io/v3/${infuraKey}`

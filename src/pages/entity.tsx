@@ -14,6 +14,7 @@ import { addEnsContracts } from '@ensdomains/ensjs'
 import { sepolia } from 'viem/chains'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import Head from 'next/head'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 const FooterContainer = styled.div(
   ({ theme }) => css`
@@ -32,6 +33,7 @@ export default function Page() {
   const [registrationStep, setRegistrationStep] = useState<number>(1)
   const [profile, setProfile] = useState<any>({})
   const [owners, setOwners] = useState<any>({})
+  const { openConnectModal } = useConnectModal()
 
   const { address } = useAccount()
   const primary = usePrimaryName({ address: address as Hex })
@@ -57,7 +59,7 @@ export default function Page() {
     } else {
       console.error('Ethereum object not found on window');
     }
-  }, []);
+  }, [address]);
 
 
   const advance = async () => {
@@ -66,41 +68,44 @@ export default function Page() {
     } else {
 
       //FIRST REGISTER SUBDOMAIN
-
-      const ownerAddress:`0x${string}`|undefined = address
-      const subdomainId = name.toLowerCase().split(" ").join("-") + Date.now().toString().slice(Date.now().toString().length - 6)
-      const entityId = subdomainId + '.' + default_registry_domain
-      const subObj: any = {
-        name: entityId,
-        owner: ownerAddress,
-        contract: 'nameWrapper',
+      if (openConnectModal && !address) {
+        await openConnectModal()
+      } else {
+        const ownerAddress:`0x${string}`|undefined = address
+        const subdomainId = name.toLowerCase().split(" ").join("-") + Date.now().toString().slice(Date.now().toString().length - 6)
+        const entityId = subdomainId + '.' + default_registry_domain
+        const subObj: any = {
+          name: entityId,
+          owner: ownerAddress,
+          contract: 'nameWrapper',
+        }
+        const hashSubdomain = await createSubname(wallet, subObj)
+  
+        console.log(await publicClient?.waitForTransactionReceipt( 
+          { hash: hashSubdomain }
+        ))
+  
+        const texts: any[] = []
+        Object.keys(profile)?.forEach(key => {
+          texts.push({key, value: profile[key]})
+        })
+  
+        Object.keys(owners)?.forEach(key => {
+          texts.push({key, value: owners[key]})
+        })
+  
+        const recordTx: any = {
+          name: entityId,
+          coins: [],
+          texts,
+          resolverAddress: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
+        }
+        const hashRecords = await setRecords(wallet, recordTx)
+        console.log(await publicClient?.waitForTransactionReceipt( 
+          { hash: hashRecords }
+        ))
+        router.push("/" + entityId, {tab: "records"})    
       }
-      const hashSubdomain = await createSubname(wallet, subObj)
-
-      console.log(await publicClient?.waitForTransactionReceipt( 
-        { hash: hashSubdomain }
-      ))
-
-      const texts: any[] = []
-      Object.keys(profile)?.forEach(key => {
-        texts.push({key, value: profile[key]})
-      })
-
-      Object.keys(owners)?.forEach(key => {
-        texts.push({key, value: owners[key]})
-      })
-
-      const recordTx: any = {
-        name: entityId,
-        coins: [],
-        texts,
-        resolverAddress: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
-      }
-      const hashRecords = await setRecords(wallet, recordTx)
-      console.log(await publicClient?.waitForTransactionReceipt( 
-        { hash: hashRecords }
-      ))
-      router.push("/" + entityId, {tab: "records"})    
     }
   }
 

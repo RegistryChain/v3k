@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useErrorBoundary, withErrorBoundary } from 'react-use-error-boundary'
-import { useIntercom } from 'react-use-intercom'
 import styled, { css } from 'styled-components'
 import { useAccount, useSwitchChain } from 'wagmi'
 
@@ -84,11 +83,9 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
 
   const router = useRouterWithHistory()
   const [error] = useErrorBoundary()
-  const { boot } = useIntercom()
 
   useEffect(() => {
     // Do not initialise with uid and email without implementing identity verification first
-    if (!IS_DEV_ENVIRONMENT) boot()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
