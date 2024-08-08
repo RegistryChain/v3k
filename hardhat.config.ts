@@ -9,6 +9,7 @@ import { HardhatUserConfig } from 'hardhat/config'
 
 const ensContractsPath = './node_modules/@ensdomains/ens-contracts'
 
+
 console.log(resolve(ensContractsPath, 'artifacts'))
 
 const config: HardhatUserConfig = {
