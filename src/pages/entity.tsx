@@ -65,10 +65,7 @@ export default function Page() {
   const advance = async () => {
     if (registrationStep < 2) {
       setRegistrationStep(registrationStep +1)
-    } else {
-
-      //FIRST REGISTER SUBDOMAIN
-      if (openConnectModal && !address) {
+    } else if (openConnectModal && !address) {
         await openConnectModal()
       } else {
         const ownerAddress:`0x${string}`|undefined = address
@@ -106,7 +103,7 @@ export default function Page() {
         ))
         router.push("/" + entityId, {tab: "records"})    
       }
-    }
+    
   }
 
   const previous = () => {
