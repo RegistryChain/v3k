@@ -102,7 +102,7 @@ export default function Page() {
     })
 
   const [entityName, setEntityName] = useState<string>("")
-  const [registrar, setRegistrar] = useState<string>("Open Registry")
+  const [registrar, setRegistrar] = useState<string>("Public Registry")
 
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
