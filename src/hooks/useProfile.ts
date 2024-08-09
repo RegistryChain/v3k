@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { Address } from 'viem'
 
 import { getCoderByCoinName, getCoderByCoinType } from '@ensdomains/address-encoder'

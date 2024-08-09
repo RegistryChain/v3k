@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, custom, http, type Hex } from 'viem'
+import { createPublicClient, createWalletClient, custom, getContract, http, labelhash, namehash, parseAbi, stringToBytes, type Hex } from 'viem'
 import { useAccount, useClient } from 'wagmi'
 
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
@@ -41,7 +41,7 @@ export default function Page() {
   const name = isSelf && primary.data?.name ? primary.data.name : entityRegistration
   const [wallet, setWallet] = useState<any>(null);
 
-  const default_registry_domain = "openregistry.eth"
+  const default_registry_domain = "publicregistry.eth"
 
   const publicClient = useMemo(() => createPublicClient({
     chain: sepolia,
@@ -61,22 +61,36 @@ export default function Page() {
     }
   }, [address]);
 
-
   const advance = async () => {
     if (registrationStep < 2) {
       setRegistrationStep(registrationStep +1)
     } else if (openConnectModal && !address) {
         await openConnectModal()
       } else {
+
+
+        // Instantiate Registrant contract
+        const subdomainRegistrantAddress="0x343fc79485cc00cfc46ece70845267368ff2b6ce"
+        // create labelhash of the subname 
+        const publicSubdomainRegistrar: any = getContract({
+          address: subdomainRegistrantAddress,
+          abi: parseAbi(['function register(bytes32, address, address) external']),
+          client: wallet,
+        })
+        
         const ownerAddress:`0x${string}`|undefined = address
-        const subdomainId = name.toLowerCase().split(" ").join("-") + Date.now().toString().slice(Date.now().toString().length - 6)
+        const subdomainId = name.toLowerCase().split(" ").join("-") + "-" +Date.now().toString().slice(Date.now().toString().length - 6)
         const entityId = subdomainId + '.' + default_registry_domain
-        const subObj: any = {
-          name: entityId,
-          owner: ownerAddress,
-          contract: 'nameWrapper',
-        }
-        const hashSubdomain = await createSubname(wallet, subObj)
+        const label = labelhash(subdomainId)
+        
+        console.log(label, subdomainId, entityId)
+        const hashSubdomain = await publicSubdomainRegistrar.write.register([label, ownerAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
+        // const subObj: any = {
+        //   name: entityId,
+        //   owner: ownerAddress,
+        //   contract: 'nameWrapper',
+        // }
+        // const hashSubdomain = await createSubname(wallet, subObj)
   
         console.log(await publicClient?.waitForTransactionReceipt( 
           { hash: hashSubdomain }

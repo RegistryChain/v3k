@@ -25,6 +25,9 @@ import { PermissionsTab } from './tabs/PermissionsTab/PermissionsTab'
 import ProfileTab from './tabs/ProfileTab'
 import { RecordsTab } from './tabs/RecordsTab'
 import { SubnamesTab } from './tabs/SubnamesTab'
+import { infuraUrl } from '@app/utils/query/wagmi'
+import { sepolia } from 'viem/chains'
+import { createPublicClient, http, namehash } from 'viem'
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -106,6 +109,31 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const router = useRouterWithHistory()
   const { t } = useTranslation('profile')
   const { address } = useAccount()
+
+
+  const publicClient = useMemo(() => createPublicClient({
+    chain: sepolia,
+    transport: http(infuraUrl('sepolia'))
+    }), [])
+
+    // useEffect(() => {
+    //   console.log('res', namehash(name), namehash("openregistry.eth"))
+    //   if (publicClient) {
+    //     testReadRecord()
+    //   }
+    // }, [publicClient])
+
+  // const testReadRecord = async () => {
+    // const result = await getRecords(publicClient, {
+    //   name,
+    //   records: {
+    //     texts: ['Type', 'DID'],
+    //     coins: ['ETH'],
+    //     contentHash: true,
+    //   },
+    // })
+    // console.log('RES', result)
+  // }
 
   const nameDetails = useNameDetails({ name })
   const {
