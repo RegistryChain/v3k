@@ -117,7 +117,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     }), [])
 
     // useEffect(() => {
-    //   console.log('res', namehash(name), namehash("openregistry.eth"))
+    //   console.log('res', namehash(name), namehash("publicregistry.eth"))
     //   if (publicClient) {
     //     testReadRecord()
     //   }

@@ -651,7 +651,7 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
   const [usingPlaceholder, setUsingPlaceholder] = useState(false)
 
   const [history, setHistory] = useLocalStorage<HistoryItem[]>('search-history-v2', [])
-  const [registrarList, setRegistrarList] = useState<HistoryItem[]>([{ lastAccessed: Date.now(), nameType: "eth", text: "openregistry.eth"}])
+  // const [registrarList, setRegistrarList] = useState<HistoryItem[]>([{ lastAccessed: Date.now(), nameType: "eth", text: "publicregistry.eth"}])
 
   const handleFocusIn = useCallback(() => toggle(true), [toggle])
   const handleFocusOut = useCallback(() => toggle(false), [toggle])

@@ -55,7 +55,7 @@ export const routes: RouteItemObj[] = [
   },
   {
     name: 'names',
-    href: '/my/names',
+    href: '/my/entities',
     label: 'navigation.names',
     disabled: false,
     connected: true,
