@@ -28,6 +28,8 @@ import { SubnamesTab } from './tabs/SubnamesTab'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { sepolia } from 'viem/chains'
 import { createPublicClient, http, namehash } from 'viem'
+import AppComponent from './tabs/AppComponent'
+import AppsTab from './tabs/AppsTab'
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -67,7 +69,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const tabs = ['profile', 'records', 'ownership', 'metadata'] as const
+const tabs = ['profile', 'records', 'ownership', 'metadata', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -262,6 +264,25 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const chainName = useChainName()
 
+  if (registrationStatus === "notOwned") {
+    return (
+      <>
+        <Head>
+          <title>{titleContent}</title>
+          <meta name="description" content={descriptionContent} />
+          <meta property="og:image" content={ogImageUrl} />
+          <meta property="og:title" content={titleContent} />
+          <meta property="og:description" content={descriptionContent} />
+          <meta property="twitter:image" content={ogImageUrl} />
+          <meta property="twitter:title" content={titleContent} />
+          <meta property="twitter:description" content={descriptionContent} />
+        </Head>
+        <Typography fontVariant="extraLargeBold" color="inherit">
+          Name {name} is not registered on RegistryChain
+        </Typography>
+      </>)
+  }
+
   return (
     <>
       <Head>
@@ -325,6 +346,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             .with('ownership', () => <OwnershipTab name={normalisedName} details={nameDetails} />)
             .with('metadata', () => (
               <MoreTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+            ))
+            .with('apps', () => (
+              <AppsTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
             ))
             .exhaustive(),
         }}

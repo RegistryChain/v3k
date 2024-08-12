@@ -58,6 +58,19 @@ const AddOwners = ({ data, step, profile, setOwners, owners, publicClient }: any
   //Find the ownerCount in profile.texts, for each owner ask name, type, address, shares and render in the form one for each
   //Validate for shareCount
 
+  const ownerFields = {
+    standard: {
+      name: "string",
+      type: "string",
+      "DOB": "date",
+      address: "string",
+    },
+    PUB: {},
+    DL:{},
+    WY:{},
+    BVI:{}
+  }
+
 
 
     const ownersData = async () => {
@@ -73,10 +86,11 @@ const AddOwners = ({ data, step, profile, setOwners, owners, publicClient }: any
 
           const keys = []
           for(let i = 1; i <= ownerCount; i++) {
+
             keys.push("owner__" + i + "__name")
             keys.push("owner__" + i + "__type")
             keys.push("owner__" + i + "__address")
-            keys.push("owner__" + i + "__shares")
+            keys.push("owner__" + i + "__DOB")
           }
 
           const texts: any = {}

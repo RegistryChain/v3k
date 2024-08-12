@@ -128,7 +128,7 @@ const routesNoSearch = routes.filter(
   (route) => route.name !== 'search' && route.icon && !route.onlyDropdown && !route.disabled,
 )
 
-export const Header = () => {
+export const Header = ({testMode, setTestMode}: any) => {
   const { space } = useTheme()
   const router = useRouter()
   const isInitial = useInitial()
@@ -196,6 +196,12 @@ export const Header = () => {
       <NavContainer>
         <div style={{fontSize: "42px", cursor: "pointer"}} onClick={() => router.push("/")}>❍ RegistryChain</div>
         <div style={{ flexGrow: 1 }} />
+        <div style={{cursor: "pointer", backgroundColor: "hsl(0 0% 91%)", padding: "13px 20px", borderRadius: "9999px"}} onClick={() => setTestMode(!testMode)}>
+          <span 
+            style={{fontFamily: "satoshi", fontWeight: "700", color: "hsl(240 6% 63%)"}}>
+              Test mode: {testMode ? <span style={{color: "lime", paddingRight: "6px"}}>ON</span>: <span style={{color: "red"}}>OFF</span>}
+          </span>
+        </div>
         <RouteWrapper>
           <RouteContainer
             data-testid="route-container"

@@ -16,6 +16,8 @@ import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress 
 import { sepolia } from 'viem/chains'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { useEffect, useState } from 'react'
+import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
+import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -92,6 +94,29 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
+const entityRegistrars: {[x: string]: any} = {
+  "PUB": {
+    name: "Public Registry",
+    domain: "publicregistry.eth",
+    types: ["Partnership"]
+  },
+  "DL": {
+    name: "Delaware USA",
+    domain: "delaware.eth",
+    types: ["LLC", "C-Corp"]
+  },
+  "WY": {
+    name: "Wyoming USA",
+    domain: "wyoming.eth",
+    types: ["LLC", "C-Corp"]
+  },
+  "BVI": {
+    name: "British Virgin Islands",
+    domain: "bvi.eth",
+    types: ["Limited Partnership", "BVIBC"]
+  }
+}
+
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
@@ -102,7 +127,7 @@ export default function Page() {
     })
 
   const [entityName, setEntityName] = useState<string>("")
-  const [registrar, setRegistrar] = useState<string>("Public Registry")
+  const [registrar, setRegistrarInput] = useState<string>("PUB")
 
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
@@ -115,6 +140,7 @@ export default function Page() {
   useEffect(() => {
     console.log(entityName+"."+registrar, " is available? ", nameAvailable)
   }, [nameAvailable])
+
 
   const entityIsAvailable = async (registrar: string, entityName: string) => {
     const client = publicClient
@@ -131,7 +157,7 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    router.push("/entity", {name: entityName, registrar: registrar})
+    router.push("/entity", {name: entityName, registrar: entityRegistrars[registrar].name})
   }
 
   let nameAvailableElement = null
@@ -160,7 +186,24 @@ export default function Page() {
             </Typography>
           </SubtitleWrapper>
           <EntityInput field={"entityName"} value={entityName} setValue={(x: string) => setEntityName(x)}/>
-          <EntityInput field={"registrar"} value={registrar} setValue={() => null} />
+          <RegistrarInput registrars={entityRegistrars} field={"registrar"} value={registrar} setValue={(regKey: string) => {
+            setRegistrarInput(regKey)
+            }} />
+          <div style={{width: "100%", textAlign: "left", padding: "0 48px"}}>
+            {entityRegistrars[registrar] ? 
+              (<LegacyDropdown 
+                  style={{maxWidth: "100%", textAlign: "left"}} 
+                  inheritContentWidth={true} size={"medium"} 
+                  label="Entity Type" 
+                  items={entityRegistrars[registrar].types.map((x: any) => ({
+                    label: x,
+                    color: "blue",
+                    onClick: () => console.log(x),
+                    value: x
+                  }))} />) : null
+            }
+
+          </div>
           <div style={{width: "100%", textAlign: "left", paddingLeft: "48px", paddingRight: "48px", height: "40px"}}>
             {nameAvailableElement}
           </div>

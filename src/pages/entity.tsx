@@ -3,7 +3,7 @@ import { useAccount, useClient } from 'wagmi'
 
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import EditEntity from '@app/transaction-flow/input/AdvancedEditor/EditEntity'
+import CorpInfo from '@app/transaction-flow/input/AdvancedEditor/CorpInfo'
 import { Button } from '@ensdomains/thorin'
 import styled from 'styled-components'
 import { css } from 'styled-components'
@@ -83,7 +83,6 @@ export default function Page() {
         const entityId = subdomainId + '.' + default_registry_domain
         const label = labelhash(subdomainId)
         
-        console.log(label, subdomainId, entityId)
         const hashSubdomain = await publicSubdomainRegistrar.write.register([label, ownerAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
         // const subObj: any = {
         //   name: entityId,
@@ -131,25 +130,25 @@ export default function Page() {
   }, [])
 
   let content = null
-
+  let buttons = (
+  <FooterContainer>  
+  <Button disabled={registrationStep <= 1} colorStyle="accentSecondary" onClick={() => previous()}>
+    Back
+  </Button>
+  <Button
+    disabled={false}
+    onClick={() => {
+      advance()
+    }}
+  >
+    {registrationStep === 1 ? "Next":"Save"}
+  </Button>
+</FooterContainer>)
   if (registrationStep === 1) {
     content =(
       <div>
-        <EditEntity data={{name}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
-        <FooterContainer>
-          <Button colorStyle="accentSecondary" onClick={() => previous()}>
-            Back
-          </Button>
-          <Button
-            disabled={false}
-            onClick={() => {
-              console.log("IMPORTANT - perform validations")
-              advance()
-            }}
-          >
-            Save
-          </Button>
-        </FooterContainer>
+        <CorpInfo data={{name}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
+        {buttons}
       </div>)
   }
 
@@ -157,20 +156,7 @@ export default function Page() {
     content = (
       <div>
         <AddOwners step={registrationStep} data={{name}} profile={profile} owners={owners} setOwners={setOwners} publicClient={publicClient} />
-        <FooterContainer>
-          <Button colorStyle="accentSecondary" onClick={() => previous()}>
-            Back
-          </Button>
-          <Button
-            disabled={false}
-            onClick={() => {
-              console.log("IMPORTANT - Owner validation")
-              advance()
-            }}
-          >
-            Save
-          </Button>
-        </FooterContainer>
+        {buttons}
       </div>)
   } 
 

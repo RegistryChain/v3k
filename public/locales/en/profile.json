@@ -254,6 +254,9 @@
     "fuses": {
       "name": "Fuses"
     },
+    "apps": {
+      "name": "Apps"
+    },
     "metadata": {
       "name": "Metadata",
       "resolver": {

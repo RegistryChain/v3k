@@ -45,33 +45,13 @@ export default function Page() {
     !router.isReady ||
     dotBoxResult.isLoading
 
-  if (
-    dotBoxResult?.data?.data.status === 'AVAILABLE' ||
-    dotBoxResult?.data?.data.status === 'UNAVAILABLE'
-  ) {
-    router.push(`/dotbox/${name}`)
-    return null
-  }
 
   if (isViewingExpired && gracePeriodEndDate && gracePeriodEndDate > new Date()) {
     router.push(`/profile/${name}`)
     return null
   }
 
-  if (
-    (registrationStatus === 'available' || registrationStatus === 'premium') &&
-    !isViewingExpired &&
-    !isBasicLoading
-  ) {
-    router.push(`/register/${name}`)
-    return null
-  }
 
-  const isDns = checkDNS2LDFromName(name)
-  if (isDns && registrationStatus === 'notImported' && !isBasicLoading && !isDnsOwnerLoading) {
-    router.push(`/import/${name}`)
-    return null
-  }
 
   return (
     <ProfileContent

@@ -52,7 +52,22 @@ export type Props = {
   data?: Data
 }
 
-const EditEntity = ({ data, step, profile, setProfile, publicClient }: any) => {
+const corpFields = {
+  standard: {
+    description: "string",
+    address: "string",
+    founderAmount: "number",
+    
+  },
+  PUB: {},
+  DL:{},
+  WY:{},
+  BVI:{}
+}
+
+const SHARE_COUNT = 1000000
+
+const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
   const { t } = useTranslation('profile')
   const name = data?.name || ''
 
@@ -61,20 +76,20 @@ const EditEntity = ({ data, step, profile, setProfile, publicClient }: any) => {
     const client = publicClient
     // Here fetch the resolver data 
     const resolver = await getContract({client, abi: parseAbi(['function text(bytes32 node, string calldata key) view returns (string memory)']), address: "0x8FADE66B79cC9f707aB26799354482EB93a5B7dD"})
-        const properties: any = {}
-        // Texts needs to iterate over existing texts array and overwrite keys that already hold values
-        //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-        const keys = ["Type", "DID", "share__count", "owner__count"]
-        const texts: any = {}
-        const fetches: any = []
-        const textConstruction= keys.map((key: string) => {
-          const existing = profile?.[key]
-          if (!existing) {
-            fetches.push("PROMISE CALL TO CONTRACT FOR DATA ")
-            // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
-          }
-          texts[key] = existing || properties[key]})
-        setProfile({...texts})
+    const properties: any = {}
+    // Texts needs to iterate over existing texts array and overwrite keys that already hold values
+    //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
+    const keys = ["Type", "DID", "share__count", "owner__count"]
+    const texts: any = {}
+    const fetches: any = []
+    const textConstruction= keys.map((key: string) => {
+      const existing = profile?.[key]
+      if (!existing) {
+        fetches.push("PROMISE CALL TO CONTRACT FOR DATA ")
+        // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
+      }
+      texts[key] = existing || properties[key]})
+    setProfile({...texts})
   }
 
   useEffect(() => {
@@ -110,5 +125,5 @@ const EditEntity = ({ data, step, profile, setProfile, publicClient }: any) => {
   )
 }
 
-export default EditEntity
+export default CorpInfo
 // 
