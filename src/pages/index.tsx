@@ -128,7 +128,7 @@ export default function Page() {
 
   const [entityName, setEntityName] = useState<string>("")
   const [registrar, setRegistrarInput] = useState<string>("PUB")
-
+  const [entityType, setEntityType] = useState<string>("")
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    router.push("/entity", {name: entityName, registrar: entityRegistrars[registrar].name})
+    router.push("/entity", {name: entityName, registrar: entityRegistrars[registrar].name, type:entityType})
   }
 
   let nameAvailableElement = null
@@ -198,7 +198,7 @@ export default function Page() {
                   items={entityRegistrars[registrar].types.map((x: any) => ({
                     label: x,
                     color: "blue",
-                    onClick: () => console.log(x),
+                    onClick: () => setEntityType(x),
                     value: x
                   }))} />) : null
             }

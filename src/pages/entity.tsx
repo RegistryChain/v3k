@@ -3,18 +3,20 @@ import { useAccount, useClient } from 'wagmi'
 
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import CorpInfo from '@app/transaction-flow/input/AdvancedEditor/CorpInfo'
+import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
 import { Button } from '@ensdomains/thorin'
 import styled from 'styled-components'
 import { css } from 'styled-components'
 import { useEffect, useMemo, useState } from 'react'
-import AddOwners from '@app/transaction-flow/input/AdvancedEditor/AddOwners'
+import AddFounders from '@app/components/pages/entityCreation/AddFounders'
 import { createSubname, setRecords } from '@ensdomains/ensjs/wallet'
 import { addEnsContracts } from '@ensdomains/ensjs'
 import { sepolia } from 'viem/chains'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import Head from 'next/head'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import Roles from '@app/components/pages/entityCreation/Roles'
+import { Review } from '@app/components/pages/entityCreation/Review'
 
 const FooterContainer = styled.div(
   ({ theme }) => css`
@@ -27,18 +29,20 @@ const FooterContainer = styled.div(
 
 export default function Page() {
   const router = useRouterWithHistory()
-  const entityRegistration = router.query.name as string
+  const entityName = router.query.name as string
   const entityRegistrar = router.query.registrar as string
+  const entityType = router.query.type as string
+
   const isSelf = router.query.connected === 'true'
   const [registrationStep, setRegistrationStep] = useState<number>(1)
-  const [profile, setProfile] = useState<any>({})
-  const [owners, setOwners] = useState<any>({})
+  const [profile, setProfile] = useState<any>({entityRegistrar, entityType, entityName})
+  const [founders, setFounders] = useState<any[]>([])
   const { openConnectModal } = useConnectModal()
 
   const { address } = useAccount()
   const primary = usePrimaryName({ address: address as Hex })
   
-  const name = isSelf && primary.data?.name ? primary.data.name : entityRegistration
+  const name = isSelf && primary.data?.name ? primary.data.name : entityName
   const [wallet, setWallet] = useState<any>(null);
 
   const default_registry_domain = "publicregistry.eth"
@@ -62,12 +66,33 @@ export default function Page() {
   }, [address]);
 
   const advance = async () => {
-    if (registrationStep < 2) {
+
+    if (registrationStep < 4) {
       setRegistrationStep(registrationStep +1)
     } else if (openConnectModal && !address) {
         await openConnectModal()
       } else {
+        console.log('DATA BUILDING', founders, profile)
+        const texts: any[] = [{name: entityName, registrar: entityRegistrar, type: entityType}]
+        founders.forEach((founder, idx) => {
+          const founderKey = "founder[" + idx + "]__"
+          Object.keys(founder).forEach(field => {
+            if (field !== "roles") {
+              texts.push({key: founderKey + field, value: founder[field]})
+            } else {
+              founder[field].forEach((role: string) => {
+                texts.push({key: founderKey + "is__" + role, value: "true"})
+              })
+            }
 
+          })
+        })
+
+
+        Object.keys(profile).forEach(field => {
+          const key = "company__" + field.split(" ").join("__")
+          texts.push({key, value: profile[field]})
+        })
 
         // Instantiate Registrant contract
         const subdomainRegistrantAddress="0x343fc79485cc00cfc46ece70845267368ff2b6ce"
@@ -78,15 +103,15 @@ export default function Page() {
           client: wallet,
         })
         
-        const ownerAddress:`0x${string}`|undefined = address
+        const founderAddress:`0x${string}`|undefined = address
         const subdomainId = name.toLowerCase().split(" ").join("-") + "-" +Date.now().toString().slice(Date.now().toString().length - 6)
         const entityId = subdomainId + '.' + default_registry_domain
         const label = labelhash(subdomainId)
         
-        const hashSubdomain = await publicSubdomainRegistrar.write.register([label, ownerAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
+        const hashSubdomain = await publicSubdomainRegistrar.write.register([label, founderAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
         // const subObj: any = {
         //   name: entityId,
-        //   owner: ownerAddress,
+        //   founder: founderAddress,
         //   contract: 'nameWrapper',
         // }
         // const hashSubdomain = await createSubname(wallet, subObj)
@@ -95,14 +120,14 @@ export default function Page() {
           { hash: hashSubdomain }
         ))
   
-        const texts: any[] = []
-        Object.keys(profile)?.forEach(key => {
-          texts.push({key, value: profile[key]})
-        })
+        // Object.keys(profile)?.forEach(key => {
+        //   texts.push({key, value: profile[key]})
+        // })
   
-        Object.keys(owners)?.forEach(key => {
-          texts.push({key, value: owners[key]})
-        })
+        // Object.keys(founders)?.forEach(key => {
+        //   // IMPORTANT - Loop over foundership array to make all properties elements in texts array
+        //   // texts.push({key, value: founders[key]})
+        // })
   
         const recordTx: any = {
           name: entityId,
@@ -131,40 +156,45 @@ export default function Page() {
 
   let content = null
   let buttons = (
-  <FooterContainer>  
-  <Button disabled={registrationStep <= 1} colorStyle="accentSecondary" onClick={() => previous()}>
-    Back
-  </Button>
-  <Button
-    disabled={false}
-    onClick={() => {
-      advance()
-    }}
-  >
-    {registrationStep === 1 ? "Next":"Save"}
-  </Button>
-</FooterContainer>)
+  <FooterContainer style={{marginTop: "36px"}}>  
+    <Button disabled={registrationStep <= 1} colorStyle="accentSecondary" onClick={() => previous()}>
+      Back
+    </Button>
+    <Button
+      disabled={false}
+      onClick={() => {
+        advance()
+      }}
+    >
+      {registrationStep < 4 ? "Next":"Create Entity"}
+    </Button>
+  </FooterContainer>)
+
+
   if (registrationStep === 1) {
-    content =(
-      <div>
-        <CorpInfo data={{name}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
-        {buttons}
-      </div>)
+    content = <AddFounders step={registrationStep} data={{name}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
   }
 
   if (registrationStep === 2) {
-    content = (
-      <div>
-        <AddOwners step={registrationStep} data={{name}} profile={profile} owners={owners} setOwners={setOwners} publicClient={publicClient} />
-        {buttons}
-      </div>)
+    content = <CorpInfo data={{name}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
   } 
+
+  if (registrationStep === 3) {
+    content = <Roles data={{name}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+  }
+
+  if (registrationStep === 4) {
+    content = <Review name={name} profile={profile} founders={founders} />
+  }
 
 return (<>
   <Head>
     <title>Entity Formation</title>
     <meta name="description" content={"RegistryChain Entity Formation"} />
   </Head>
-  {content}
+  <div>
+    {content}
+    {buttons}
+  </div>
 </>)
 }

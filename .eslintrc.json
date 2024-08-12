@@ -36,7 +36,10 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
+    "react/self-closing-comp": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".tsx", ".jsx"] }],
+    "no-else-return": "off",
+    "react/no-array-index-key": "off",
     "import/extensions": [
       "error",
       "ignorePackages",

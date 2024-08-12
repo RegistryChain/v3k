@@ -21,7 +21,7 @@ const RecordItem = ({
 
   return (
     <ThorinRecordItem
-      size={breakpoint.sm ? 'large' : 'small'}
+      size={'large'}
       value={value}
       keyLabel={keyLabel}
       keySublabel={keySubLabel}

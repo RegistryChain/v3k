@@ -57,7 +57,7 @@ const corpFields = {
     description: "string",
     address: "string",
     founderAmount: "number",
-    
+    taxId: "string"
   },
   PUB: {},
   DL:{},
@@ -79,7 +79,7 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
     const properties: any = {}
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-    const keys = ["Type", "DID", "share__count", "owner__count"]
+    const keys = ["description", "tax id", "address", "additional terms"]
     const texts: any = {}
     const fetches: any = []
     const textConstruction= keys.map((key: string) => {
@@ -108,9 +108,9 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
                 <Input
                   size="large"
                   value={profile?.[key]}
-                  label={key.split("__").join(" ")}
+                  label={key}
                   error={false}
-                  placeholder={key.split("__")[2]}
+                  placeholder={key}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}
