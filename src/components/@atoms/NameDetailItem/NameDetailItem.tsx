@@ -148,13 +148,7 @@ export const NameDetailItem = ({
   }
 
   const _expiryDate = safeDateObj(expiryDate)
-
   return (
-    <OptionalLink
-      active={mode !== 'select' && name !== INVALID_NAME}
-      href={`/profile/${name}`}
-      passHref
-    >
       <NameItemWrapper
         $disabled={name === INVALID_NAME || disabled}
         $highlight={mode === 'select' && selected}
@@ -166,7 +160,7 @@ export const NameDetailItem = ({
           <AvatarWrapper>
             <Avatar
               placeholder={`url(${zorb})`}
-              label={truncatedName || name}
+              label={(truncatedName || name)}
               src={avatar || zorb}
               data-testid="name-detail-item-avatar"
               disabled={disabled}
@@ -178,7 +172,7 @@ export const NameDetailItem = ({
             )}
           </AvatarWrapper>
           <NameItemContent>
-            <TitleWrapper name={truncatedName || name} disabled={disabled} />
+            <TitleWrapper name={(truncatedName || name)} disabled={disabled} />
             {_expiryDate && (
               <SubtitleWrapper>
                 <ShortExpiry expiry={_expiryDate} hasGracePeriod={checkETH2LDFromName(name)} />
@@ -188,6 +182,5 @@ export const NameDetailItem = ({
         </NameItemContainer>
         <div>{children}</div>
       </NameItemWrapper>
-    </OptionalLink>
   )
 }

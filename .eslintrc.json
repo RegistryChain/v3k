@@ -40,6 +40,7 @@
     "react/jsx-filename-extension": [1, { "extensions": [".tsx", ".jsx"] }],
     "no-else-return": "off",
     "react/no-array-index-key": "off",
+    "no-empty-pattern": "off",
     "import/extensions": [
       "error",
       "ignorePackages",

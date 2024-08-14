@@ -27,6 +27,7 @@ const OtherItemsContainer = styled.div(
 export const TaggedNameItem = ({
   name,
   relation,
+  isOwner,
   fuses,
   expiryDate,
   truncatedName,
@@ -37,8 +38,13 @@ export const TaggedNameItem = ({
   notOwned,
   pccExpired,
   hasOtherItems = true,
-}: Pick<NameWithRelation, 'name' | 'expiryDate' | 'truncatedName'> &
-  Pick<Partial<NameWithRelation>, 'relation' | 'fuses'> & {
+}: {
+    name: any
+    relation?: any
+    fuses?: any
+    expiryDate?: any
+    truncatedName?: any
+    isOwner?: boolean
     notOwned?: boolean
     selected?: boolean
     mode?: 'select' | 'view'
@@ -47,24 +53,6 @@ export const TaggedNameItem = ({
     pccExpired?: boolean
     hasOtherItems?: boolean
   }) => {
-  const { t } = useTranslation('common')
-
-  const isNativeEthName = /\.eth$/.test(name!) && name!.split('.').length === 2
-
-  const tags = (() => {
-    if (notOwned) return [[false, 'name.notOwned']] as const
-    if (fuses || relation?.wrappedOwner)
-      return [
-        [
-          !!relation?.wrappedOwner,
-          fuses?.parent.PARENT_CANNOT_CONTROL ? 'name.owner' : 'name.manager',
-        ],
-      ] as const
-    return [
-      [!!relation?.owner, 'name.manager'],
-      ...(isNativeEthName ? ([[!!relation?.registrant, 'name.owner']] as const) : []),
-    ] as const
-  })()
 
   return (
     <NameDetailItem
@@ -78,16 +66,15 @@ export const TaggedNameItem = ({
       onClick={onClick}
     >
       <OtherItemsContainer>
-        {hasOtherItems &&
-          tags.map(([tagEnabled, translation]) => (
+        {isOwner ?
             <Tag
-              key={translation}
-              colorStyle={!disabled && tagEnabled ? 'accentSecondary' : 'greySecondary'}
-              data-testid={`tag-${translation}-${tagEnabled}`}
+              key={"OWNERTAG"}
+              colorStyle={'accentSecondary'}
+              data-testid={`tag-isOwner`}
             >
-              {t(translation)}
+              {"Owner"}
             </Tag>
-          ))}
+          : null}
       </OtherItemsContainer>
     </NameDetailItem>
   )
