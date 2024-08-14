@@ -1,31 +1,7 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { useChainId } from 'wagmi'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
-
-import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
-import { DisabledButtonWithTooltip } from '@app/components/@molecules/DisabledButtonWithTooltip'
-import { Outlink } from '@app/components/Outlink'
-import RecordItem from '@app/components/RecordItem'
-import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
-import { AddressRecord, Profile, TextRecord } from '@app/types'
-import { abiDisplayValue } from '@app/utils/abi'
-import { emptyAddress } from '@app/utils/constants'
-import { getContentHashLink } from '@app/utils/contenthash'
-import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
-
-
-// const TabWrapper = styled(
-//   () => css`
-//     display: flex;
-//     flex-direction: column;
-//     align-items: stretch;
-//     justify-content: flex-start;
-//   `,
-//   cacheableComponentStyles,
-// )
 
 const AllRecords = styled.div(
   ({ theme }) => css`
@@ -116,12 +92,9 @@ export const Review = ({
 }) => {
   const { t } = useTranslation('profile')
 
-  const chainId = useChainId()
-
-
   const texts: any[] = []
   founders.forEach((founder: any, idx: number) => {
-    const founderKey = "founder[" + idx + "]__"
+    const founderKey = "founder__[" + idx + "]__"
     Object.keys(founder).forEach(field => {
       if (field !== "roles") {
         texts.push({key: founderKey + field, value: founder[field]})
@@ -130,7 +103,6 @@ export const Review = ({
           texts.push({key: founderKey + "is__" + role, value: "true"})
         })
       }
-
     })
   })
 
@@ -139,7 +111,6 @@ export const Review = ({
     texts.push({key, value: profile[field]})
   })
 
-
   return (
     <div>
       <AllRecords>
@@ -147,7 +118,7 @@ export const Review = ({
           <SectionHeader>
             <SectionTitleContainer>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                {t('details.tabs.records.text')}
+                Review
               </SectionTitle>
               <SectionSubtitle data-testid="text-amount">
                 {texts ? texts.length : 0} {t('records.label', { ns: 'common' })}
@@ -156,8 +127,6 @@ export const Review = ({
           </SectionHeader>
           {texts &&
             texts.map((text) => {
-              // const cleanKey = text.key.split("__")
-              // const displayKey = cleanKey[0] + " " + cleanKey[2] + ` [${cleanKey[1]}]`
               return (<div style={{display: "flex", width: "100%", padding: "0.625rem 0.75rem", background: "hsl(0 0% 96%)", border: "1px solid hsl(0 0% 91%)", borderRadius: "8px"}}>
                 <Typography style={{display: "flex", flex: 1, color: "grey"}}>{text.key}</Typography>
                 <Typography >{text.value}</Typography>

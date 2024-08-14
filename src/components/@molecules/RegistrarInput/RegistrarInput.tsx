@@ -725,25 +725,17 @@ export const RegistrarInput = ({ size = 'extraLarge', field, registrars, value, 
   if (breakpoints.sm) {
     return (
       <Container data-testid="search-input-desktop" $size={size}>
-              <Input
+        <Input
           data-testid="name-table-header-search"
           size="small"
           label="search"
           value={inputVal}
           onChange={(e) => {
-
             setInputVal(e.target.value)
-            // map name property to high key
-
-
-            //Convert regNamesLower to array of names
             const names = Object.keys(regNamesLower)
-            //Convert input to lowercase
             const userInput = e.target.value.toLowerCase()
-            // Filter names for those that contain the input
-            const showNames: any[] = names.filter(x => x.includes(userInput) && userInput?.length > 0)
+            const showNames: any[] = names.filter(x => x.includes(userInput))
             setShowNamesState(showNames)
-            //Find name that equals
 
             const selectedName = names.find(x => x === userInput)
             if (selectedName) {
@@ -756,19 +748,20 @@ export const RegistrarInput = ({ size = 'extraLarge', field, registrars, value, 
           icon={<MagnifyingGlassSimpleSVG />}
           placeholder={field}
         />
-        <div style={{position: "absolute", zIndex: 1000, width: "100%", paddingRight: "0 48px", cursor: "pointer"}}>
-        {showNamesState?.length > 0 ? (
-          showNamesState.map(x => 
-          (<div style={{backgroundColor: "white", color: "#3888FF"}} onClick={() => {
-            setValue(regNamesLower[x])
-            setInputVal(x)
-            setShowNamesState([])
-          }}>
-            <span>{x}</span>
-          </div>)
-          )
-        ) : null}
-
+        <div style={{position: "absolute", zIndex: 1000, width: "100%", paddingLeft: "2px", paddingRight: "100px", cursor: "pointer", borderRadius: "8px"}}>
+          <div style={{backgroundColor: "white", paddingBottom: "8px", borderRadius: "8px"}}>
+          {showNamesState?.length > 0 ? (
+            showNamesState.map(x => 
+            (<div style={{backgroundColor: "white", color: "#3888FF", paddingLeft: "10px"}} onClick={() => {
+              setValue(regNamesLower[x])
+              setInputVal(x)
+              setShowNamesState([])
+            }}>
+              <span>{x}</span>
+            </div>)
+            )
+          ) : null}
+          </div>
         </div>
         </Container>
     )

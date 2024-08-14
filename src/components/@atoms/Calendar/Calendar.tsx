@@ -11,8 +11,8 @@ const Label = styled.label<{ $highlighted?: boolean }>(
     position: relative;
     flex: 1;
     border: 1px solid ${theme.colors.border};
-    border-radius: ${theme.radii.full};
-    background-color: transparent;
+    border-radius: 20px;
+    background-color: white;
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -21,11 +21,11 @@ const Label = styled.label<{ $highlighted?: boolean }>(
     text-overflow: ellipsis;
     overflow: hidden;
     font-style: normal;
-    font-weight: ${theme.fontWeights.bold};
-    font-size: ${$highlighted ? theme.fontSizes.headingTwo : theme.fontSizes.large};
+    font-weight: 500;
+    font-size: 16px;
     line-height: ${theme.space['11']};
     text-align: center;
-    color: ${$highlighted ? theme.colors.accent : theme.colors.text};
+    color: black;
     opacity: 1;
     transition: background-color 150ms ease-in-out;
     padding: ${theme.space['4']} ${theme.space['4']} ${theme.space['4']} ${theme.space['8']};
@@ -68,32 +68,36 @@ type Props = {
   value: number
   unit?: string
   name?: string
+  labelText?: string
   min?: number
+  labelHeight?: number
 } & Omit<InputProps, 'value' | 'defaultValue' | 'min' | 'max' | 'name'>
 
 export const Calendar = forwardRef(
   (
-    { value, name, onBlur, highlighted, min, onChange, ...props }: Props,
+    { value, name, onBlur, highlighted, min, onChange, labelText, labelHeight=82, ...props }: Props,
     ref: ForwardedRef<HTMLInputElement>,
   ) => {
     const inputRef = useDefaultRef<HTMLInputElement>(ref)
 
-    return (
-      <Label htmlFor="calendar" $highlighted={highlighted}>
+    return (<>
+        <span style={{padding: "0 8px", color: "hsl(240 6% 63%)", fontSize: "16px", font: "satoshi", fontWeight: "700"}}>{labelText}</span>
+      <Label style={{height:labelHeight, padding: "8px 14px", fontSize: "16px"}} htmlFor="calendar" $highlighted={highlighted}>
         <LabelInput
+          style={{borderRadius: "20px",backgroundColor: "white"}}
           id="calendar"
           data-testid="calendar"
           type="date"
           {...props}
           ref={inputRef}
-          value={secondsToDateInput(value)}
+          value={"secondsToDateInput(value)"}
           min={secondsToDateInput(min ?? value)}
           onFocus={(e) => {
             e.target.select()
           }}
           onChange={(e) => {
             if (!onChange) return
-
+            
             let { valueAsDate: newValueAsDate } = e.currentTarget
             if (newValueAsDate) {
               // Have to add in the timezone offset to make sure that the date shows up correctly after calendar picking for UTC
@@ -110,6 +114,7 @@ export const Calendar = forwardRef(
           <CalendarSVG height={16} width={16} />
         </CalendarIcon>
       </Label>
+          </>
     )
   },
 )

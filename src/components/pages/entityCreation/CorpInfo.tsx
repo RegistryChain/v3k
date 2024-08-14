@@ -52,12 +52,12 @@ export type Props = {
   data?: Data
 }
 
-const corpFields = {
+const corpFields: any = {
   standard: {
     description: "string",
     address: "string",
-    founderAmount: "number",
-    taxId: "string"
+    tax__id: "string",
+    additional__terms: "string"
   },
   PUB: {},
   DL:{},
@@ -68,8 +68,8 @@ const corpFields = {
 const SHARE_COUNT = 1000000
 
 const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
-  const { t } = useTranslation('profile')
   const name = data?.name || ''
+  const keys = [...Object.keys(corpFields.standard), ...Object.keys(corpFields[data?.registrarKey] || {})]
 
   const entityData = async () => {
   
@@ -79,7 +79,7 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
     const properties: any = {}
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-    const keys = ["description", "tax id", "address", "additional terms"]
+    // const keys = Object.keys(corpFields[data?.registrarKey || "standard"])
     const texts: any = {}
     const fetches: any = []
     const textConstruction= keys.map((key: string) => {
@@ -88,8 +88,9 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
         fetches.push("PROMISE CALL TO CONTRACT FOR DATA ")
         // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
       }
-      texts[key] = existing || properties[key]})
-    setProfile({...texts})
+      texts[key] = existing || properties[key]
+    })
+    setProfile((prevProfile: any) => ({...prevProfile, ...texts}))
   }
 
   useEffect(() => {
@@ -98,19 +99,19 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
 
 
   if (!profile) return null
-
+  
   return (
     <>
       <NameContainer>{name}</NameContainer>
-        {Object.keys(profile)?.map(key => {
+        {Object.keys(profile)?.filter(field => keys?.includes(field))?.map(key => {
           return (
               <InputWrapper key={key+'wrapper'}>
                 <Input
                   size="large"
                   value={profile?.[key]}
-                  label={key}
+                  label={key.split("__").join(" ")}
                   error={false}
-                  placeholder={key}
+                  placeholder={key.split("__").join(" ")}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}
@@ -126,4 +127,3 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
 }
 
 export default CorpInfo
-// 

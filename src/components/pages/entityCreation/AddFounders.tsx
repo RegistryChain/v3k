@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { Button, Dialog, Input, mq } from '@ensdomains/thorin'
 import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
+import { Calendar } from '@app/components/@atoms/Calendar/Calendar'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -46,12 +46,22 @@ const NameContainer = styled.div(({ theme }) => [
   `),
 ])
 
-type Data = {
-  name: string
+const founderFields: any = {
+  standard: {
+    name: "string",
+    type: "string",
+    address: "string",
+    "DOB": "date",
+    roles: "Array",
+    shares: "number"
+  },
+  PUB: {},
+  DL:{},
+  WY:{},
+  BVI:{}
 }
 
-
-const AddFounders = ({ data, step, profile, setFounders, founders, publicClient }: any) => {
+const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
   const name = data?.name || ''
   const [founderInputNumber, setFounderInputNumber] = useState(0)
 
@@ -61,19 +71,7 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
   //Find the founderCount in profile.texts, for each founder ask name, type, address, shares and render in the form one for each
   //Validate for shareCount
 
-  const founderFields: any = {
-    standard: {
-      name: "string",
-      type: "string",
-      "DOB": "date",
-      address: "string",
-      roles: "Array"
-    },
-    PUB: {},
-    DL:{},
-    WY:{},
-    BVI:{}
-  }
+  const relevantFields = {...founderFields.standard, ... founderFields[data?.registrarKey]}
 
     const foundersData = async () => {
     
@@ -107,9 +105,11 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
     foundersData()
     let tempFounderObj: any = {}
     if (founders.length === 0) {
-      Object.keys(founderFields[data?.entityRegistrar|| "standard"]).forEach(field => {
-        if (founderFields[data?.entityRegistrar || "standard"][field] === "number") {
+      Object.keys(relevantFields).forEach(field => {
+        if (relevantFields[field] === "number") {
           tempFounderObj[field] = 0
+        } else if (relevantFields[field] === "Array") {
+          tempFounderObj[field] = []
         } else {
           tempFounderObj[field] = ""
         }
@@ -124,9 +124,11 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
     if (founders.length === founderInputNumber && founders.length > 0) {
 
       let tempFounderObj: any = {}
-      Object.keys(founderFields[data?.entityRegistrar|| "standard"]).forEach(field => {
-        if (founderFields[data?.entityRegistrar || "standard"][field] === "number") {
+      Object.keys(relevantFields).forEach(field => {
+        if (relevantFields[field] === "number") {
           tempFounderObj[field] = 0
+        } else if (relevantFields[field] === "Array") {
+          tempFounderObj[field] = []
         } else {
           tempFounderObj[field] = ""
         }
@@ -159,8 +161,32 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
       if (i === founderInputNumber && Object.keys(founder)?.length > 0) {
            inputEle = (<>
             {Object.keys(founder).map(field => {
-              const fieldType = founderFields[data?.entityRegistrar || "standard"]?.[field]
-              if (fieldType === "Array") return null
+              const fieldType = relevantFields?.[field]
+              if (field === "roles" || field === "shares") return null
+              if (fieldType === "date") {
+                return (
+                  <InputWrapper  key={field}>
+                    <Calendar
+                      labelText={"Founder " + i + " " + field}
+                      labelHeight={62}
+                      value={(new Date(founder?.[field]).getTime())/1000 + (3600*24) || 946692000}
+                      onChange={(e) => {
+                        const { valueAsDate } = e.currentTarget
+                        if (valueAsDate) {
+                          setFounders((prevFounders: any) => {
+                            const updatedFounders = [...prevFounders];
+                            const updatedFounder = { ...updatedFounders[i], [field]: (e.currentTarget.value) };
+                            updatedFounders[i] = updatedFounder;
+                            return updatedFounders;
+                          });
+                        }
+                      }}
+                      highlighted
+                      name={name}
+                      min={1000000}
+                    />
+                </InputWrapper>)
+              }
               return (
                 <InputWrapper key={field}>
                     <Input
@@ -173,6 +199,9 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
                       validated={true}
                       disabled={false}
                       onChange={(e) => {
+                        if (fieldType === "number" && !Number(e.target.value) && e.target.value !== "") {
+                          return
+                        }
                         setFounders((prevFounders: any) => {
                           const updatedFounders = [...prevFounders];
                           const updatedFounder = { ...updatedFounders[i], [field]: e.target.value };
@@ -199,9 +228,8 @@ const AddFounders = ({ data, step, profile, setFounders, founders, publicClient 
       <Button style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} onClick={() => editFounder(founders.length)}>+ Founder</Button>
       <Button  style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} disabled={founders.length === 1} colorStyle="redPrimary" onClick={() => removeFounder(founderInputNumber)}>- Founder</Button>
       <div style={{marginTop: "20px"}}>
-      {inputEle}
-      {foundersEle}
-
+        {inputEle}
+        {foundersEle}
       </div>
     </div>
   )

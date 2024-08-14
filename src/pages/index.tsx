@@ -127,7 +127,7 @@ export default function Page() {
     })
 
   const [entityName, setEntityName] = useState<string>("")
-  const [registrar, setRegistrarInput] = useState<string>("PUB")
+  const [registrar, setRegistrarInput] = useState<string>("")
   const [entityType, setEntityType] = useState<string>("")
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
@@ -165,6 +165,24 @@ export default function Page() {
     // nameAvailableElement = nameAvailable ? (<Typography style={{color: "lime"}}>{entityName}.{registrar} is available!</Typography>) : (<Typography style={{color: "red"}}>{entityName}.{registrar} is NOT available!</Typography>)
   }
 
+  let entityTypeSelection = null
+  if (entityRegistrars[registrar] || registrar === "") {
+    
+      entityTypeSelection = (
+        <LegacyDropdown 
+          style={{maxWidth: "100%", textAlign: "left"}} 
+          inheritContentWidth={true} 
+          size={"medium"} 
+          label="Entity Type" 
+          items={entityRegistrars[registrar]?.types?.map((x: any) => ({
+            label: x,
+            color: "blue",
+            onClick: () => setEntityType(x),
+            value: x
+          }))} />)
+    
+  }
+
   return (
     <>
       <Head>
@@ -190,19 +208,7 @@ export default function Page() {
             setRegistrarInput(regKey)
             }} />
           <div style={{width: "100%", textAlign: "left", padding: "0 48px"}}>
-            {entityRegistrars[registrar] ? 
-              (<LegacyDropdown 
-                  style={{maxWidth: "100%", textAlign: "left"}} 
-                  inheritContentWidth={true} size={"medium"} 
-                  label="Entity Type" 
-                  items={entityRegistrars[registrar].types.map((x: any) => ({
-                    label: x,
-                    color: "blue",
-                    onClick: () => setEntityType(x),
-                    value: x
-                  }))} />) : null
-            }
-
+            {entityTypeSelection}
           </div>
           <div style={{width: "100%", textAlign: "left", paddingLeft: "48px", paddingRight: "48px", height: "40px"}}>
             {nameAvailableElement}

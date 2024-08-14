@@ -4,7 +4,7 @@ import { useAccount, useClient } from 'wagmi'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
-import { Button } from '@ensdomains/thorin'
+import { Button, Typography } from '@ensdomains/thorin'
 import styled from 'styled-components'
 import { css } from 'styled-components'
 import { useEffect, useMemo, useState } from 'react'
@@ -27,6 +27,13 @@ const FooterContainer = styled.div(
   `,
 )
 
+const registrarNameToKey: {[x: string]: string} = {
+  "Public Registry": "PUB",
+  "Delaware USA": "DL",
+  "Wyoming USA": "WY",
+  "British Virgin Islands": "BVI",
+}
+
 export default function Page() {
   const router = useRouterWithHistory()
   const entityName = router.query.name as string
@@ -35,8 +42,9 @@ export default function Page() {
 
   const isSelf = router.query.connected === 'true'
   const [registrationStep, setRegistrationStep] = useState<number>(1)
-  const [profile, setProfile] = useState<any>({entityRegistrar, entityType, entityName})
+  const [profile, setProfile] = useState<any>({})
   const [founders, setFounders] = useState<any[]>([])
+  const [errorMessage, setErrorMessage] = useState<string>("")
   const { openConnectModal } = useConnectModal()
 
   const { address } = useAccount()
@@ -50,7 +58,11 @@ export default function Page() {
   const publicClient = useMemo(() => createPublicClient({
     chain: sepolia,
     transport: http(infuraUrl('sepolia'))
-    }), [])
+  }), [])
+
+  useEffect(() => {
+    setProfile((prevProf: any) => ({...prevProf, name: entityName, registrar: entityRegistrar, type:entityType}))
+  }, [entityName, entityRegistrar, entityType])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
@@ -66,16 +78,16 @@ export default function Page() {
   }, [address]);
 
   const advance = async () => {
-
+    setErrorMessage("")
     if (registrationStep < 4) {
       setRegistrationStep(registrationStep +1)
     } else if (openConnectModal && !address) {
         await openConnectModal()
       } else {
         console.log('DATA BUILDING', founders, profile)
-        const texts: any[] = [{name: entityName, registrar: entityRegistrar, type: entityType}]
+        const texts: any[] = [{key: "name", value: entityName}, {key: "registrar", value: entityRegistrar}, {key: "type", value: entityType}]
         founders.forEach((founder, idx) => {
-          const founderKey = "founder[" + idx + "]__"
+          const founderKey = "founder__[" + idx + "]__"
           Object.keys(founder).forEach(field => {
             if (field !== "roles") {
               texts.push({key: founderKey + field, value: founder[field]})
@@ -84,7 +96,6 @@ export default function Page() {
                 texts.push({key: founderKey + "is__" + role, value: "true"})
               })
             }
-
           })
         })
 
@@ -108,43 +119,35 @@ export default function Page() {
         const entityId = subdomainId + '.' + default_registry_domain
         const label = labelhash(subdomainId)
         
-        const hashSubdomain = await publicSubdomainRegistrar.write.register([label, founderAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
-        // const subObj: any = {
-        //   name: entityId,
-        //   founder: founderAddress,
-        //   contract: 'nameWrapper',
-        // }
-        // const hashSubdomain = await createSubname(wallet, subObj)
+        try {
+          const hashSubdomain = await publicSubdomainRegistrar.write.register([label, founderAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
+          console.log(await publicClient?.waitForTransactionReceipt( 
+            { hash: hashSubdomain }
+          ))
   
-        console.log(await publicClient?.waitForTransactionReceipt( 
-          { hash: hashSubdomain }
-        ))
-  
-        // Object.keys(profile)?.forEach(key => {
-        //   texts.push({key, value: profile[key]})
-        // })
-  
-        // Object.keys(founders)?.forEach(key => {
-        //   // IMPORTANT - Loop over foundership array to make all properties elements in texts array
-        //   // texts.push({key, value: founders[key]})
-        // })
-  
-        const recordTx: any = {
-          name: entityId,
-          coins: [],
-          texts,
-          resolverAddress: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
+    
+          const recordTx: any = {
+            name: entityId,
+            coins: [],
+            texts,
+            resolverAddress: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
+          }
+          const hashRecords = await setRecords(wallet, recordTx)
+          console.log(await publicClient?.waitForTransactionReceipt( 
+            { hash: hashRecords }
+          ))
+
+        } catch (err: any) {
+          setErrorMessage(err.details)
+          return 
         }
-        const hashRecords = await setRecords(wallet, recordTx)
-        console.log(await publicClient?.waitForTransactionReceipt( 
-          { hash: hashRecords }
-        ))
         router.push("/" + entityId, {tab: "records"})    
       }
     
   }
 
   const previous = () => {
+    setErrorMessage("")
     if (registrationStep>1) {
       setRegistrationStep(registrationStep -1)
     }
@@ -172,15 +175,15 @@ export default function Page() {
 
 
   if (registrationStep === 1) {
-    content = <AddFounders step={registrationStep} data={{name}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+    content = <CorpInfo data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
   }
-
+  
   if (registrationStep === 2) {
-    content = <CorpInfo data={{name}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
+    content = <AddFounders data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} founders={founders} setFounders={setFounders} publicClient={publicClient} />
   } 
 
   if (registrationStep === 3) {
-    content = <Roles data={{name}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+    content = <Roles data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
   }
 
   if (registrationStep === 4) {
@@ -193,6 +196,9 @@ return (<>
     <meta name="description" content={"RegistryChain Entity Formation"} />
   </Head>
   <div>
+    <div style={{height: "28px", marginTop: "22px", padding: "24px"}}>
+      <Typography style={{fontSize: "22px", color: "red"}}>{errorMessage}</Typography>
+    </div>
     {content}
     {buttons}
   </div>

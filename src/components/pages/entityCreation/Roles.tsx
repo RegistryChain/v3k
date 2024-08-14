@@ -15,53 +15,21 @@ const InputWrapper = styled.div(
   `,
 )
 
-const FooterContainer = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    gap: ${theme.space['3']};
-    width: 100%;
-    margin: 0 auto;
-  `,
-)
+const roleTypes = ["owner","manager","spender","developer","signer"]
 
-const NameContainer = styled.div(({ theme }) => [
-  css`
-    display: block;
-    width: 100%;
-    padding-left: ${theme.space['2']};
-    padding-right: ${theme.space['4']};
-    letter-spacing: ${theme.letterSpacings['-0.01']};
-    line-height: 45px;
-    vertical-align: middle;
-    text-align: center;
-    font-feature-settings:
-      'ss01' on,
-      'ss03' on,
-      'ss04' on;
-    font-weight: ${theme.fontWeights.bold};
-    font-size: ${theme.space['8']};
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  `,
-  mq.sm.min(css`
-    text-align: left;
-  `),
-])
-
-type Data = {
-  name: string
-}
-
-
-const Roles = ({ data, step, setFounders, founders, publicClient }: any) => {
-  const name = data?.name || ''
-
-  const roles = ["owner","manager","spender","developer","signer"]
+const Roles = ({ data, setFounders, founders, publicClient }: any) => {
+  const founderPercentages: any = {}
+  let totalSharesReconstruct = 0
+  founders.forEach((f: any) => {
+    totalSharesReconstruct += f.shares
+  })
+  const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + "")
+  founders.forEach((f: any) => {
+    founderPercentages[f.name] = (100 * f.shares)/Number(totalShares)||0
+  })
+  const [sharePercentages, setSharePercentages] = useState<any>({...founderPercentages})
   
-
-    const ownersData = async () => {
-    
+    const ownersData = async () => {  
       const client = publicClient
       // Here fetch the resolver data 
       const resolver = await getContract({client, abi: parseAbi(['function text(bytes32 node, string calldata key) view returns (string memory)']), address: "0x8FADE66B79cC9f707aB26799354482EB93a5B7dD"})
@@ -72,12 +40,12 @@ const Roles = ({ data, step, setFounders, founders, publicClient }: any) => {
           //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
 
           // const keys = []
-          // for(let i = 1; i <= ownerCount; i++) {
+          // for(let idx = 1; idx <= ownerCount; idx++) {
 
-          //   keys.push("owner__" + i + "__name")
-          //   keys.push("owner__" + i + "__type")
-          //   keys.push("owner__" + i + "__address")
-          //   keys.push("owner__" + i + "__DOB")
+          //   keys.push("owner__" + idx + "__name")
+          //   keys.push("owner__" + idx + "__type")
+          //   keys.push("owner__" + idx + "__address")
+          //   keys.push("owner__" + idx + "__DOB")
           // }
 
           // const texts: any = {}
@@ -98,13 +66,13 @@ const Roles = ({ data, step, setFounders, founders, publicClient }: any) => {
 
   const align: any = "-webkit-right"
 
-  const foundersEle = founders.map((founder: any, i: number) => {
+  const foundersEle = founders.map((founder: any, idx: number) => {
            const inputEle = (
            
            <div style={{display: "flex"}}>
             <Typography style={{flex: 3}}>{founder.name}</Typography>
            
-            {roles.map(role => {
+            {roleTypes.map(role => {
               return (
                     <div key={"rolediv" + role} style={{flex: 2, textAlign: align}}>
                     <Toggle
@@ -116,43 +84,112 @@ const Roles = ({ data, step, setFounders, founders, publicClient }: any) => {
                         const roleChecked = founder.roles.includes(role)
                         setFounders((prevFounders: any) => {
                             const updatedFounders = [...prevFounders];
-                            let roles = [...founder.roles];
+                            let founderRoles = [...founder.roles];
                             if (!roleChecked) {
-                                roles.push(role)
+                                founderRoles.push(role)
                             } else {
-                                roles = roles.filter((x: string) => x !== role)
+                                founderRoles = founderRoles.filter((x: string) => x !== role)
                             }
-                            const updatedFounder = { ...updatedFounders[i], roles };
-                            updatedFounders[i] = updatedFounder;
+                            const updatedFounder = { ...updatedFounders[idx], roles: founderRoles };
+                            updatedFounders[idx] = updatedFounder;
                             return updatedFounders;
                           });
-  
                       }}
                       data-testid="primary-name-toggle"
                     />
-                                   
                   </div>
               )
             })}
-
           </div>)
           return inputEle
   })
 
-  return (
-    <div style={{marginBottom: "44px"}}>
-      <NameContainer>{name}</NameContainer>
-      <div style={{marginTop: "20px"}}>
-      <div style={{display: "flex"}}>
-        <Typography style={{flex: 3}}></Typography>
-        {roles.map(role => {
-          return (
-            <Typography style={{flex: 2, textAlign: align, fontSize: "20px"}}>{role}</Typography>
-          )})}
+
+  const ownershipSection = (
+  <div style={{marginTop: "24px"}}>
+    <div>
+      <span style={{fontSize: "42px"}}>Ownership</span>
+    </div>
+    <div style={{display: "block"}}>
+      <InputWrapper>
+        <Input
+          size="medium"
+          value={totalShares}
+          label={"Total Shares"}
+          error={false}
+          placeholder={"Total Shares"}
+          data-testid="record-input-input"
+          validated={true}
+          disabled={false}
+          onChange={(e) => {
+            if (Number(e.target.value) || e.target.value === "") {
+              setTotalShares(Number(e.target.value) + "")
+            }
+          }}
+        />
+      </InputWrapper>
+      {founders.map((founder:any, idx: number) => {
+        return <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+          <Typography style={{flex: 2}}>{founder.name}</Typography>
+          <InputWrapper style={{flex: 2}}>
+            <Input
+              size="medium"
+              value={sharePercentages[founder.name]}
+              label={"Ownership percentage "}
+              error={false}
+              placeholder={"Ownership percentage "}
+              data-testid="record-input-input"
+              validated={true}
+              disabled={false}
+              onChange={(e) => {
+                if ((Number(e.target.value) && Number(e.target.value) <= 100) || e.target.value === "") {
+                  setSharePercentages({...sharePercentages, [founder.name]: (e.target.value)})
+                  setFounders((prevFounders: any[]) => {
+                    const updatedFounders = [...prevFounders];
+                    const updatedFounder = { ...updatedFounders[idx], shares: Math.ceil(Number(totalShares) * (Number(e.target.value)/100))};
+                    console.log('SETTING SHARES OLD:', prevFounders[idx].shares, "NEW:", updatedFounder.shares)
+                    updatedFounders[idx] = updatedFounder;
+                    return updatedFounders;
+                  })
+                }
+              }}
+            />
+          </InputWrapper>
+          <InputWrapper style={{flex: 2, cursor: "not-allowed"}}>
+            <Input
+              size="medium"
+              style={{cursor: "not-allowed"}}
+              value={Math.ceil(Number(totalShares) * (sharePercentages[founder.name]/100))}
+              label={"Shares"}
+              error={false}
+              placeholder={"Shares"}
+              data-testid="record-input-input"
+              validated={true}
+              disabled={false}
+              onChange={(e) => null}
+            />
+            </InputWrapper>
       </div>
+      })}
+    </div>
+  </div>)
 
+return (
+    <div style={{marginBottom: "44px"}}>
+      <div>
+      <span style={{fontSize: "42px"}}>Roles</span>
+          
+        </div>
+      <div style={{marginTop: "20px"}}>
+        <div style={{display: "flex"}}>
+          <Typography style={{flex: 3}}></Typography>
+          {roleTypes.map(role => {
+            return (
+              <Typography style={{flex: 2, textAlign: align, fontSize: "20px"}}>{role}</Typography>
+            )})}
+        </div>
       {foundersEle}
-
+      {ownershipSection}
       </div>
     </div>
   )
