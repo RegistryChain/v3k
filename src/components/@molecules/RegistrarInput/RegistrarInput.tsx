@@ -265,7 +265,7 @@ const getRouteForSearchItem = ({
     if (boxStatus === 'available') return `/dotbox/${selectedItem.text}`
   }
 
-  if (selectedItem.nameType === 'eth' || selectedItem.nameType === 'dns') {
+  if (selectedItem.nameType === 'eth' || selectedItem.nameType === 'dns' || selectedItem.nameType === 'registry' ) {
     const ownerData = getCachedQueryData<UseOwnerReturnType, UseOwnerQueryKey>({
       functionName: 'getOwner',
       params: { name: selectedItem.text },

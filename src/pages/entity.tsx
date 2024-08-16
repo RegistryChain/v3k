@@ -34,6 +34,13 @@ const registrarNameToKey: {[x: string]: string} = {
   "British Virgin Islands": "BVI",
 }
 
+const registrarNameToDomainFull: {[x: string]: string} = {
+  "Public Registry": "PUB",
+  "Delaware USA": "DL.US",
+  "Wyoming USA": "WY.US",
+  "British Virgin Islands": "BVI.UK",
+}
+
 export default function Page() {
   const router = useRouterWithHistory()
   const entityName = router.query.name as string
@@ -141,7 +148,7 @@ export default function Page() {
           setErrorMessage(err.details)
           return 
         }
-        router.push("/" + entityId, {tab: "records"})    
+        router.push("/" + subdomainId + "." + registrarNameToDomainFull[entityRegistrar] + '.registry', {tab: "records"})    
       }
     
   }

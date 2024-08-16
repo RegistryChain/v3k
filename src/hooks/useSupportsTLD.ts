@@ -6,7 +6,7 @@ export const useSupportsTLD = (name = '') => {
 
   const { data: isDnsSecEnabled, ...query } = useDnsSecEnabled({ name: tld })
   return {
-    data: tld === 'eth' || tld === '[root]' || isDnsSecEnabled,
+    data: tld === 'eth' || tld === '[root]' || tld === 'registry' || isDnsSecEnabled,
     ...query,
   }
 }

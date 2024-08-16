@@ -90,7 +90,7 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
   return (
     <DetailsWrapper>
       <ProfileSnippet
-        name={normalisedName}
+        name={name}
         getTextRecord={getTextRecord}
         button={snippetButton}
         isPrimary={name === primaryData?.name}

@@ -118,6 +118,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     transport: http(infuraUrl('sepolia'))
     }), [])
 
+    // if (name?.includes(".registry")) {
+    //   name = name.split(".registry")[0] + ".publicregistry.eth"
+    // }
+
+
     // useEffect(() => {
     //   console.log('res', namehash(name), namehash("publicregistry.eth"))
     //   if (publicClient) {
@@ -137,7 +142,24 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     // console.log('RES', result)
   // }
 
-  const nameDetails = useNameDetails({ name })
+  let nameToQuery = name
+    if (name?.includes(".registry")) {
+      nameToQuery = name.split(".")[0] + ".publicregistry.eth"
+    }
+  const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
+
+  const nameDetails: any = {}
+  Object.keys(nameDetailsRes).forEach(key => {
+    let val: any = nameDetailsRes[key]
+    if (typeof val === "string") {
+      if (val?.includes(".publicregistry.eth")) {
+        val = val.split(".")[0] + ".registry"
+      }
+    }
+
+    nameDetails[key] = val
+  })
+
   const {
     error,
     errorTitle,
@@ -202,29 +224,29 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   // profile.decryptedName fetches labels from NW/subgraph
   // normalisedName fetches labels from localStorage
   useEffect(() => {
-    if (
-      name !== profile?.decodedName &&
-      profile?.decodedName &&
-      !isSelf &&
-      getEncodedLabelAmount(normalisedName) > getEncodedLabelAmount(profile.decodedName)
-    ) {
-      // if the fetched decrypted name is different to the current name
-      // and the decrypted name has less encrypted labels than the normalised name
-      // direct to the fetched decrypted name
-      router.replace(`/profile/${profile.decodedName}`, { shallow: true, maintainHistory: true })
-    } else if (
-      name !== normalisedName &&
-      normalisedName &&
-      !isSelf &&
-      (!profile?.decodedName ||
-        getEncodedLabelAmount(profile.decodedName) > getEncodedLabelAmount(normalisedName)) &&
-      decodeURIComponent(name) !== normalisedName
-    ) {
-      // if the normalised name is different to the current name
-      // and the normalised name has less encrypted labels than the decrypted name
-      // direct to normalised name
-      router.replace(`/profile/${normalisedName}`, { shallow: true, maintainHistory: true })
-    }
+    // if (
+    //   name !== profile?.decodedName &&
+    //   profile?.decodedName &&
+    //   !isSelf &&
+    //   getEncodedLabelAmount(normalisedName) > getEncodedLabelAmount(profile.decodedName)
+    // ) {
+    //   // if the fetched decrypted name is different to the current name
+    //   // and the decrypted name has less encrypted labels than the normalised name
+    //   // direct to the fetched decrypted name
+    //   router.replace(`/profile/${profile.decodedName}`, { shallow: true, maintainHistory: true })
+    // } else if (
+    //   name !== normalisedName &&
+    //   normalisedName &&
+    //   !isSelf &&
+    //   (!profile?.decodedName ||
+    //     getEncodedLabelAmount(profile.decodedName) > getEncodedLabelAmount(normalisedName)) &&
+    //   decodeURIComponent(name) !== normalisedName
+    // ) {
+    //   // if the normalised name is different to the current name
+    //   // and the normalised name has less encrypted labels than the decrypted name
+    //   // direct to normalised name
+    //   router.replace(`/profile/${normalisedName}`, { shallow: true, maintainHistory: true })
+    // }
   }, [profile?.decodedName, normalisedName, name, isSelf, router])
 
   useEffect(() => {
@@ -297,9 +319,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       </Head>
       <Content
         noTitle
-        title={beautifiedName}
+        title={name}
         loading={!isCachedData && parentIsLoading}
-        copyValue={beautifiedName}
+        copyValue={name}
       >
         {{
           info: infoBanner,
@@ -329,7 +351,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             </Outlink>
           ) : null,
           trailing: match(tab)
-            .with('profile', () => <ProfileTab name={normalisedName} nameDetails={nameDetails} />)
+            .with('profile', () => <ProfileTab name={name} nameDetails={nameDetails} />)
             .with('records', () => (
               <RecordsTab
                 name={normalisedName}
