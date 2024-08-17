@@ -52,24 +52,12 @@ export type Props = {
   data?: Data
 }
 
-const corpFields: any = {
-  standard: {
-    description: "string",
-    address: "string",
-    tax__id: "string",
-    additional__terms: "string"
-  },
-  PUB: {},
-  DL:{},
-  WY:{},
-  BVI:{}
-}
 
 const SHARE_COUNT = 1000000
 
-const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
+const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any) => {
   const name = data?.name || ''
-  const keys = [...Object.keys(corpFields.standard), ...Object.keys(corpFields[data?.registrarKey] || {})]
+  const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
 
   const entityData = async () => {
   
@@ -79,7 +67,7 @@ const CorpInfo = ({ data, step, profile, setProfile, publicClient }: any) => {
     const properties: any = {}
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-    // const keys = Object.keys(corpFields[data?.registrarKey || "standard"])
+    // const keys = Object.keys(fields[data?.registrarKey || "standard"])
     const texts: any = {}
     const fetches: any = []
     const textConstruction= keys.map((key: string) => {

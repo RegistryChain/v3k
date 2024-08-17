@@ -53,6 +53,7 @@ const founderFields: any = {
     address: "string",
     "DOB": "date",
     roles: "Array",
+    lockup: "Boolean",
     shares: "number"
   },
   PUB: {},
@@ -110,6 +111,8 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
           tempFounderObj[field] = 0
         } else if (relevantFields[field] === "Array") {
           tempFounderObj[field] = []
+        } else if (relevantFields[field] === "Boolean") {
+          tempFounderObj[field] = false;
         } else {
           tempFounderObj[field] = ""
         }
@@ -162,7 +165,7 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
            inputEle = (<>
             {Object.keys(founder).map(field => {
               const fieldType = relevantFields?.[field]
-              if (field === "roles" || field === "shares") return null
+              if (field === "roles" || field === "shares" || field === "lockup") return null
               if (fieldType === "date") {
                 return (
                   <InputWrapper  key={field}>

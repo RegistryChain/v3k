@@ -41,6 +41,26 @@ const registrarNameToDomainFull: {[x: string]: string} = {
   "British Virgin Islands": "BVI.UK",
 }
 
+const corpFields: any = {
+  standard: {
+    description: "string",
+    address: "string"  },
+  PUB: {},
+  DL:{},
+  WY:{},
+  BVI:{}
+}
+
+const additionalTermsFields: any = {
+  standard: {
+    additional__terms: "string"
+  },
+  PUB: {},
+  DL:{},
+  WY:{},
+  BVI:{}
+}
+
 export default function Page() {
   const router = useRouterWithHistory()
   const entityName = router.query.name as string
@@ -86,7 +106,7 @@ export default function Page() {
 
   const advance = async () => {
     setErrorMessage("")
-    if (registrationStep < 4) {
+    if (registrationStep < 5) {
       setRegistrationStep(registrationStep +1)
     } else if (openConnectModal && !address) {
         await openConnectModal()
@@ -96,7 +116,9 @@ export default function Page() {
         founders.forEach((founder, idx) => {
           const founderKey = "founder__[" + idx + "]__"
           Object.keys(founder).forEach(field => {
-            if (field !== "roles") {
+            if (typeof founder[field] === "boolean") {
+              texts.push({key: founderKey + field, value: founder[field] ? "true": "false"})
+            } else if (field !== "roles") {
               texts.push({key: founderKey + field, value: founder[field]})
             } else {
               founder[field].forEach((role: string) => {
@@ -176,13 +198,13 @@ export default function Page() {
         advance()
       }}
     >
-      {registrationStep < 4 ? "Next":"Create Entity"}
+      {registrationStep < 5 ? "Next":"Create Entity"}
     </Button>
   </FooterContainer>)
 
 
   if (registrationStep === 1) {
-    content = <CorpInfo data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
+    content = <CorpInfo data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} fields={corpFields} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
   }
   
   if (registrationStep === 2) {
@@ -190,10 +212,14 @@ export default function Page() {
   } 
 
   if (registrationStep === 3) {
-    content = <Roles data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} profile={profile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+    content = <Roles data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} profile={profile} setProfile={setProfile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
   }
 
   if (registrationStep === 4) {
+    content = <CorpInfo data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} fields={additionalTermsFields} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
+  }
+
+  if (registrationStep === 5) {
     content = <Review name={name} profile={profile} founders={founders} />
   }
 

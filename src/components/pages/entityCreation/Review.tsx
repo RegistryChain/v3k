@@ -96,7 +96,9 @@ export const Review = ({
   founders.forEach((founder: any, idx: number) => {
     const founderKey = "founder__[" + idx + "]__"
     Object.keys(founder).forEach(field => {
-      if (field !== "roles") {
+      if (typeof founder[field] === "boolean") {
+        texts.push({key: founderKey + field, value: founder[field] ? "true": "false"})
+      } else if (field !== "roles") {
         texts.push({key: founderKey + field, value: founder[field]})
       } else {
         founder[field].forEach((role: string) => {
