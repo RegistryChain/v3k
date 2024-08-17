@@ -15,7 +15,7 @@ const InputWrapper = styled.div(
   `,
 )
 
-const roleTypes = ["owner","manager","spender","investor", "developer", "signer"]
+const roleTypes = ["owner","manager","spender","investor", "signer"]
 
 const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient }: any) => {
   const founderPercentages: any = {}
