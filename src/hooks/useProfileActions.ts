@@ -159,10 +159,8 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
             method: 'setRecord',
           }),
         ]
-      } else if (abilities.isPCCBurned) {
-      } else if (!abilities.isParentOwner) {
-      } else {
       }
+
     } else if (abilities.canDeleteError) {
       actions.push({
         label: t('tabs.entity.actions.deleteSubname.label'),
