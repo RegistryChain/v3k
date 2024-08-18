@@ -1,6 +1,6 @@
 {
-  "name": "ENS App",
-  "short_name": "ENS",
+  "name": "RegistryChain App",
+  "short_name": "^Registry",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
