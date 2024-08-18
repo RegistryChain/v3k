@@ -19,17 +19,14 @@ import { Content, ContentWarning } from '@app/layouts/Content'
 import { OG_IMAGE_URL } from '@app/utils/constants'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
-import MoreTab from './tabs/MoreTab/MoreTab'
-import { OwnershipTab } from './tabs/OwnershipTab/OwnershipTab'
-import { PermissionsTab } from './tabs/PermissionsTab/PermissionsTab'
 import ProfileTab from './tabs/ProfileTab'
 import { RecordsTab } from './tabs/RecordsTab'
-import { SubnamesTab } from './tabs/SubnamesTab'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { sepolia } from 'viem/chains'
 import { createPublicClient, http, namehash } from 'viem'
 import AppComponent from './tabs/AppComponent'
 import AppsTab from './tabs/AppsTab'
+import LicenseTab from './tabs/LicenseTab'
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -69,7 +66,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const tabs = ['profile', 'records', 'ownership', 'metadata', 'apps'] as const
+const tabs = ['entity', 'records', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -212,7 +209,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     ]
   }, [isSelf, beautifiedName, isValid, name, t])
 
-  const [tab, setTab_] = useQueryParameterState<Tab>('tab', 'profile')
+  const [tab, setTab_] = useQueryParameterState<Tab>('tab', 'entity')
   const setTab: typeof setTab_ = (value) => {
     refetchIfEnabled()
     setTab_(value)
@@ -351,7 +348,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             </Outlink>
           ) : null,
           trailing: match(tab)
-            .with('profile', () => <ProfileTab name={name} nameDetails={nameDetails} />)
+            .with('entity', () => <ProfileTab name={name} nameDetails={nameDetails} />)
             .with('records', () => (
               <RecordsTab
                 name={normalisedName}
@@ -365,12 +362,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 isCached={isCachedData}
               />
             ))
-            .with('ownership', () => <OwnershipTab name={normalisedName} details={nameDetails} />)
-            .with('metadata', () => (
-              <MoreTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
-            ))
             .with('apps', () => (
               <AppsTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+            ))
+            .with('licenses', () => (
+              <LicenseTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
             ))
             .exhaustive(),
         }}

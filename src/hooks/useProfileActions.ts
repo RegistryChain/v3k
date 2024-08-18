@@ -119,30 +119,9 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
     const actions: Action[] = []
     if (!address || isLoading) return actions
 
-    const transactionFlowItem = getPrimaryNameTransactionFlowItem?.callBack?.(name)
-    if (isAvailablePrimaryName && !!transactionFlowItem) {
-      const key = `setPrimaryName-${name}-${address}`
-      actions.push({
-        label: t('tabs.profile.actions.setAsPrimaryName.label'),
-        tooltipContent: hasGraphError
-          ? t('errors.networkError.blurb', { ns: 'common' })
-          : undefined,
-        tooltipPlacement: 'left',
-        loading: hasGraphErrorLoading,
-        onClick: !checkIsDecrypted(name)
-          ? () =>
-              showUnknownLabelsInput(key, {
-                name,
-                key,
-                transactionFlowItem,
-              })
-          : () => createTransactionFlow(key, transactionFlowItem),
-      })
-    }
-
     if (abilities.canEdit && (abilities.canEditRecords || abilities.canEditResolver)) {
       actions.push({
-        label: t('tabs.profile.actions.editProfile.label'),
+        label: t('tabs.entity.actions.constitutionAmendment.label'),
         tooltipContent: hasGraphError
           ? t('errors.networkError.blurb', { ns: 'common' })
           : undefined,
@@ -150,7 +129,7 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
         loading: hasGraphErrorLoading,
         onClick: () =>
           showProfileEditorInput(
-            `edit-profile-${name}`,
+            `amend-consitution-${name}`,
             { name },
             { disableBackgroundClick: true },
           ),
@@ -159,7 +138,7 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
 
     if (abilities.canDelete && abilities.canDeleteContract) {
       const base = {
-        label: t('tabs.profile.actions.deleteSubname.label'),
+        label: t('tabs.entity.actions.deleteSubname.label'),
         tooltipContent: hasGraphError
           ? t('errors.networkError.blurb', { ns: 'common' })
           : undefined,
@@ -180,59 +159,13 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
             method: 'setRecord',
           }),
         ]
-        actions.push({
-          ...base,
-          onClick: () =>
-            createTransactionFlow(`deleteSubname-${name}`, {
-              transactions,
-              resumable: true,
-              intro: {
-                title: ['intro.multiStepSubnameDelete.title', { ns: 'transactionFlow' }],
-                content: makeIntroItem('GenericWithDescription', {
-                  description: t('intro.multiStepSubnameDelete.description', {
-                    ns: 'transactionFlow',
-                  }),
-                }),
-              },
-            }),
-        })
       } else if (abilities.isPCCBurned) {
-        actions.push({
-          ...base,
-          onClick: () => {
-            showDeleteEmancipatedSubnameWarningInput(`delete-emancipated-subname-warning-${name}`, {
-              name,
-            })
-          },
-        })
       } else if (!abilities.isParentOwner) {
-        actions.push({
-          ...base,
-          onClick: () => {
-            showDeleteSubnameNotParentWarningInput(`delete-subname-not-parent-warning-${name}`, {
-              name,
-              contract: abilities.canDeleteContract!,
-            })
-          },
-        })
       } else {
-        actions.push({
-          ...base,
-          onClick: () =>
-            createTransactionFlow(`deleteSubname-${name}`, {
-              transactions: [
-                createTransactionItem('deleteSubname', {
-                  name,
-                  contract: abilities.canDeleteContract!,
-                  method: abilities.canDeleteMethod,
-                }),
-              ],
-            }),
-        })
       }
     } else if (abilities.canDeleteError) {
       actions.push({
-        label: t('tabs.profile.actions.deleteSubname.label'),
+        label: t('tabs.entity.actions.deleteSubname.label'),
         onClick: () => {},
         disabled: true,
         red: true,
@@ -245,8 +178,8 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
     if (abilities.canReclaim) {
       const { label, parent } = nameParts(name)
       actions.push({
-        label: t('tabs.profile.actions.reclaim.label'),
-        warning: t('tabs.profile.actions.reclaim.warning'),
+        label: t('tabs.entity.actions.reclaim.label'),
+        warning: t('tabs.entity.actions.reclaim.warning'),
         fullMobileWidth: true,
         loading: hasGraphErrorLoading,
         onClick: () => {

@@ -198,7 +198,7 @@ describe('useProfileActions', () => {
     const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
     expect(result.current.profileActions).toContainEqual(
       expect.objectContaining({
-        label: 'tabs.profile.actions.deleteSubname.label',
+        label: 'tabs.entity.actions.deleteSubname.label',
         onClick: expect.any(Function),
       }),
     )
@@ -208,7 +208,7 @@ describe('useProfileActions', () => {
     const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
     expect(result.current.profileActions).toContainEqual(
       expect.objectContaining({
-        label: 'tabs.profile.actions.reclaim.label',
+        label: 'tabs.entity.actions.reclaim.label',
         onClick: expect.any(Function),
       }),
     )
@@ -226,7 +226,7 @@ describe('useProfileActions', () => {
     const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
     expect(result.current.profileActions).toContainEqual(
       expect.objectContaining({
-        label: 'tabs.profile.actions.deleteSubname.label',
+        label: 'tabs.entity.actions.deleteSubname.label',
         tooltipContent: 'test error',
       }),
     )
@@ -236,7 +236,7 @@ describe('useProfileActions', () => {
     it('should return a single transaction with normal subname when address is parent owner', () => {
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const deleteAction = result.current.profileActions?.find(
-        (a) => a.label === 'tabs.profile.actions.deleteSubname.label',
+        (a) => a.label === 'tabs.entity.actions.deleteSubname.label',
       )
       deleteAction!.onClick()
       expect(mockCreateTransactionFlow).toHaveBeenCalledWith('deleteSubname-test.eth', {
@@ -262,7 +262,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const deleteAction = result.current.profileActions?.find(
-        (a) => a.label === 'tabs.profile.actions.deleteSubname.label',
+        (a) => a.label === 'tabs.entity.actions.deleteSubname.label',
       )
       deleteAction!.onClick()
       expect(mockUsePreparedDataInput).toHaveBeenCalledWith(
@@ -280,7 +280,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const deleteAction = result.current.profileActions?.find(
-        (a) => a.label === 'tabs.profile.actions.deleteSubname.label',
+        (a) => a.label === 'tabs.entity.actions.deleteSubname.label',
       )
       deleteAction!.onClick()
       expect(mockCreateTransactionFlow).toHaveBeenCalledWith('deleteSubname-test.eth', {
@@ -320,7 +320,7 @@ describe('useProfileActions', () => {
     it('should return an action for a single transaction with base mock data', async () => {
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
       setPrimaryAction?.onClick()
@@ -341,7 +341,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeUndefined()
     })
@@ -363,7 +363,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeUndefined()
     })
@@ -385,7 +385,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
     })
@@ -400,7 +400,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
     })
@@ -415,7 +415,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
     })
@@ -429,7 +429,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeUndefined()
     })
@@ -441,7 +441,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeUndefined()
     })
@@ -471,7 +471,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeUndefined()
     })
@@ -497,7 +497,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
     })
@@ -516,7 +516,7 @@ describe('useProfileActions', () => {
       })
       const { result } = renderHook(() => useProfileActions({ name: 'test.eth' }))
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       expect(setPrimaryAction).toBeDefined()
     })
@@ -526,7 +526,7 @@ describe('useProfileActions', () => {
         useProfileActions({ name: `[${labelhash('test').slice(2)}].eth` }),
       )
       const setPrimaryAction = result.current.profileActions?.find(
-        (action: any) => action.label === 'tabs.profile.actions.setAsPrimaryName.label',
+        (action: any) => action.label === 'tabs.entity.actions.setAsPrimaryName.label',
       )
       setPrimaryAction?.onClick()
       expect(mockUsePreparedDataInput).toHaveBeenCalled()

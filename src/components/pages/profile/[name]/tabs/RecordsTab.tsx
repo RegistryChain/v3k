@@ -161,7 +161,7 @@ export const RecordsTab = ({
   return (
     <TabWrapper $isCached={isCached} data-testid="records-tab">
       <AllRecords>
-        <RecordSection>
+        <RecordSection key={"section1"} >
           <SectionHeader>
             <SectionTitleContainer>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
@@ -173,16 +173,17 @@ export const RecordsTab = ({
             </SectionTitleContainer>
           </SectionHeader>
           {filteredTexts &&
-            filteredTexts.map((text) => {
-              // const cleanKey = text.key.split("__")
-              // const displayKey = cleanKey[0] + " " + cleanKey[2] + ` [${cleanKey[1]}]`
-              return (<div style={{display: "flex", width: "100%", padding: "0.625rem 0.75rem", background: "hsl(0 0% 96%)", border: "1px solid hsl(0 0% 91%)", borderRadius: "8px"}}>
-                <Typography style={{display: "flex", flex: 1, color: "grey"}}>{text.key}</Typography>
-                <Typography >{text.value}</Typography>
-              </div>)
+            filteredTexts.map((text, idx) => {
+              return (
+                <div 
+                  key={"div"+idx}
+                  style={{display: "flex", width: "100%", padding: "0.625rem 0.75rem", background: "hsl(0 0% 96%)", border: "1px solid hsl(0 0% 91%)", borderRadius: "8px"}}>
+                  <Typography style={{display: "flex", flex: 1, color: "grey"}}>{text.key}</Typography>
+                  <Typography >{text.value}</Typography>
+                </div>)
           })}
         </RecordSection>
-        <RecordSection>
+        <RecordSection key={"section2"} >
           <SectionHeader>
             <SectionTitleContainer>
               <SectionTitle data-testid="address-heading" fontVariant="bodyBold">

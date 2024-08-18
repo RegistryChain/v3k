@@ -27,27 +27,17 @@ type Props = {
 const AppsTab = ({ name, nameDetails, abilities }: Props) => {
 
   const apps: {[x: string]: any} = {
-    financial: {"Financial-App-1": {fulillmentTime: "2 days", price: "2 ETH"}},
-    legal: {"Legal-App-1": {fulillmentTime: "3 Hours", price: "$300"}},
-    governance: {"Governance-App-1": {fulillmentTime: "Immediate", price: ".5 ETH"}},
-    treasury: {"Treasury-App-1": {fulillmentTime: "20 Minutes", price: "32 ETH"}}
+    payment__processing: [{country: "USA", org: "Stripe", idName: "Connect"}, {country: "USA", org: "Square", idName: "Square Online"}],
+    vault__management: [{country: "Ethereum", org: "Gnosis", idName: "Multisig Wallet - SAFE"},{country: "Ethereum", org: "Bitbond", idName: "Token Tools"}, {country: "Ethereum", org: "CoW", idName: "AMM Deployer"}]
   }
-
-  const { ownerData, wrapperData, isCachedData, profile } = nameDetails
   
   const appComps: any[] = []
-  
   Object.keys(apps).forEach((category: string) => {
-    Object.keys(apps[category]).forEach(app => {
-      appComps.push(<AppComponent
-        name={name}
-        entityAppData={wrapperData}
-        app={app}
-        appData={apps[category][app]}
-        category={category}
-      />)
-    })
-  })
+    appComps.push(<AppComponent
+      appData={apps[category]}
+      category={category}
+    />)
+})
 
   return (
     <AppsContainer>

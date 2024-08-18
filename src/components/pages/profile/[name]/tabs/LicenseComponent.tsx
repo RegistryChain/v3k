@@ -69,17 +69,19 @@ const ItemsContainer = styled(CacheableComponent)(
   `,
 )
 
-const AppComponent = ({ appData, category }: any) => {
+
+
+const LicenseComponent = ({ licenseData, category }: any) => {
   return (
     <Container>
       <HeaderContainer>
         <Typography fontVariant="headingFour">{category.split("__").map((x: any) => x[0].toUpperCase() + x.slice(1)).join(" ")}</Typography>
       </HeaderContainer>
-      {appData.map((x: any, idx: number) => {
-        return <ItemsContainer key={x.idName + idx}>
+      {licenseData.map((x: any, idx: number) => {
+        return <ItemsContainer key={x.licName + idx}>
           <RecordItem
             itemKey={x.country}
-            value={[x.org,x.idName].join(" - ")}
+            value={[x.org,x.licName].join(" - ")}
             type="text"
           />
           <div style={{height: "3rem", alignContent: "center"}}>
@@ -91,4 +93,4 @@ const AppComponent = ({ appData, category }: any) => {
   )
 }
 
-export default AppComponent
+export default LicenseComponent

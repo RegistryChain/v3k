@@ -98,7 +98,7 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
         {isOffchainImport && (
           <Helper alignment="horizontal">
             <Trans
-              i18nKey="tabs.profile.warnings.offchain"
+              i18nKey="tabs.entity.warnings.offchain"
               ns="profile"
               components={{
                 a: (
@@ -113,7 +113,7 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
         {nameDetails.isNonASCII && (
           <Helper type="warning" alignment="horizontal">
             <Trans
-              i18nKey="tabs.profile.warnings.homoglyph"
+              i18nKey="tabs.entity.warnings.homoglyph"
               ns="profile"
               components={{
                 a: <Outlink href={getSupportLink('homoglyphs')} />,
@@ -123,7 +123,7 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
         )}
         {isWrapped && !normalisedName.endsWith('.eth') && (
           <Helper type="warning" alignment="horizontal">
-            {t('tabs.profile.warnings.wrappedDNS')}
+            {t('tabs.entity.warnings.wrappedDNS')}
           </Helper>
         )}
       </ProfileSnippet>
