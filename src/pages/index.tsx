@@ -114,6 +114,11 @@ const entityRegistrars: {[x: string]: any} = {
     name: "British Virgin Islands",
     domain: "bvi.eth",
     types: ["Limited Partnership", "BVIBC"]
+  },
+  "CIV-US": {
+    name: "Civil Registry USA",
+    domain: "US.civilregistry.eth",
+    types: ["Birth", "Marriage"]
   }
 }
 

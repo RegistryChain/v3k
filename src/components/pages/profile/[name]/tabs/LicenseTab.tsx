@@ -1,9 +1,6 @@
 import styled, { css } from 'styled-components'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
-import type { useAbilities } from '@app/hooks/abilities/useAbilities'
-import { useNameDetails } from '@app/hooks/useNameDetails'
-
 import LicenseComponent from './LicenseComponent'
 
 const LicensesContainer = styled(CacheableComponent)(
@@ -18,30 +15,28 @@ const LicensesContainer = styled(CacheableComponent)(
   `,
 )
 
-type Props = {
-  name: string
-  nameDetails: ReturnType<typeof useNameDetails>
-  abilities: ReturnType<typeof useAbilities>['data']
-}
-
-const LicenseTab = ({ name, nameDetails, abilities }: Props) => {
-
+const LicenseTab = ({ registrarType }: any) => {
   const licenses: {[x: string]: any} = {
-    tax__ids: [{country: "USA", org: "Internal Revenue Service", licName: "EIN"}, {country: "Brazil", org: "Receita Federal do Brasil", licName: "CNPJ"}, {country: "UK", org: "HMRC", licName: "UTR"}, {country: "Germany", org: "BZSt", licName: "TIN"}, {country: "UAE", org: "FTA", licName: "TRN"}],
-    digital__asset__permits: [{country: "UAE", org: "Virtual Assets Regulatory Authority of Dubai", licName: "VASP"}, {country: "Australia", org: "AUSTRAC", licName: "DCE"}, {country: "France", org: "Autorité des Marchés Financiers", licName: "DASP"}, {country: "Bahrain", org: "Central Bank of Bahrain", licName: "CASP"}, {country: "Italy", org: "Organismo Agenti e Mediatori", licName: "DASP"}]    
+    corp: {
+      tax__ids: [{jurisdiction: "USA", org: "Internal Revenue Service", licName: "EIN"}, {jurisdiction: "Brazil", org: "Receita Federal do Brasil", licName: "CNPJ"}, {jurisdiction: "UK", org: "HMRC", licName: "UTR"}, {jurisdiction: "Germany", org: "BZSt", licName: "TIN"}, {jurisdiction: "UAE", org: "FTA", licName: "TRN"}],
+      digital__asset__permits: [{jurisdiction: "UAE", org: "Virtual Assets Regulatory Authority of Dubai", licName: "VASP"}, {jurisdiction: "Australia", org: "AUSTRAC", licName: "DCE"}, {jurisdiction: "France", org: "Autorité des Marchés Financiers", licName: "DASP"}, {jurisdiction: "Bahrain", org: "Central Bank of Bahrain", licName: "CASP"}, {jurisdiction: "Italy", org: "Organismo Agenti e Mediatori", licName: "DASP"}]    
+    },
+    civil: {
+      official__documentation: [{jurisdiction: "Florida", org: "Department of Health", licName: "Marriage Certificate"}, {jurisdiction: "Florida", org: "Secretary of State", licName: "Apostile"}]
+    }
   }
     
   const licenseComps: any[] = []
   
-  Object.keys(licenses).forEach((category: string) => {
+  Object.keys(licenses[registrarType]).forEach((category: string) => {
       licenseComps.push(<LicenseComponent
-        licenseData={licenses[category]}
+        licenseData={licenses[registrarType][category]}
         category={category}
       />)
   })
 
   return (
-    <LicensesContainer>
+    <LicensesContainer>Props
       {licenseComps}
     </LicensesContainer>
   )

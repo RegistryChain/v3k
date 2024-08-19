@@ -80,7 +80,7 @@ const LicenseComponent = ({ licenseData, category }: any) => {
       {licenseData.map((x: any, idx: number) => {
         return <ItemsContainer key={x.licName + idx}>
           <RecordItem
-            itemKey={x.country}
+            itemKey={x.jurisdiction}
             value={[x.org,x.licName].join(" - ")}
             type="text"
           />

@@ -1,9 +1,5 @@
 import styled, { css } from 'styled-components'
-
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
-import type { useAbilities } from '@app/hooks/abilities/useAbilities'
-import { useNameDetails } from '@app/hooks/useNameDetails'
-
 import AppComponent from './AppComponent'
 
 const AppsContainer = styled(CacheableComponent)(
@@ -18,23 +14,22 @@ const AppsContainer = styled(CacheableComponent)(
   `,
 )
 
-type Props = {
-  name: string
-  nameDetails: ReturnType<typeof useNameDetails>
-  abilities: ReturnType<typeof useAbilities>['data']
-}
-
-const AppsTab = ({ name, nameDetails, abilities }: Props) => {
+const AppsTab = ({ registrarType }: any) => {
 
   const apps: {[x: string]: any} = {
-    payment__processing: [{country: "USA", org: "Stripe", idName: "Connect"}, {country: "USA", org: "Square", idName: "Square Online"}],
-    vault__management: [{country: "Ethereum", org: "Gnosis", idName: "Multisig Wallet - SAFE"},{country: "Ethereum", org: "Bitbond", idName: "Token Tools"}, {country: "Ethereum", org: "CoW", idName: "AMM Deployer"}]
+    corp: {
+      payment__processing: [{jurisdiction: "USA", org: "Stripe", serviceName: "Connect"}, {jurisdiction: "USA", org: "Square", serviceName: "Square Online"}],
+      vault__management: [{jurisdiction: "Ethereum", org: "Gnosis", serviceName: "Multisig Wallet - SAFE"},{jurisdiction: "Ethereum", org: "Bitbond", serviceName: "Token Tools"}, {jurisdiction: "Ethereum", org: "CoW", serviceName: "AMM Deployer"}]
+    },
+    civil: {
+      wealth__management: [{jurisdiction: "Nevada", org: "Legalzoom", serviceName: "Trust Formation"},{jurisdiction: "Ethereum", org: "EthHeritance", serviceName: "Smart Contract Will"}]
+    }
   }
   
   const appComps: any[] = []
-  Object.keys(apps).forEach((category: string) => {
+  Object.keys(apps[registrarType]).forEach((category: string) => {
     appComps.push(<AppComponent
-      appData={apps[category]}
+      appData={apps[registrarType][category]}
       category={category}
     />)
 })

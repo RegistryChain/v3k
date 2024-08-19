@@ -76,10 +76,10 @@ const AppComponent = ({ appData, category }: any) => {
         <Typography fontVariant="headingFour">{category.split("__").map((x: any) => x[0].toUpperCase() + x.slice(1)).join(" ")}</Typography>
       </HeaderContainer>
       {appData.map((x: any, idx: number) => {
-        return <ItemsContainer key={x.idName + idx}>
+        return <ItemsContainer key={x.serviceName + idx}>
           <RecordItem
-            itemKey={x.country}
-            value={[x.org,x.idName].join(" - ")}
+            itemKey={x.jurisdiction}
+            value={[x.org,x.serviceName].join(" - ")}
             type="text"
           />
           <div style={{height: "3rem", alignContent: "center"}}>

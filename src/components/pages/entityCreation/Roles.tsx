@@ -3,9 +3,6 @@ import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { Button, Dialog, Field, Input, mq, Toggle, Typography } from '@ensdomains/thorin'
 import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
-import { sepolia } from 'viem/chains'
-import { infuraUrl } from '@app/utils/query/wagmi'
-
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -15,19 +12,20 @@ const InputWrapper = styled.div(
   `,
 )
 
-const roleTypes = ["owner","manager","spender","investor", "signer"]
 
-const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient }: any) => {
-  const founderPercentages: any = {}
+const Roles = ({ data, intakeType, roleTypes, profile, setProfile, setPartners, partners, publicClient }: any) => {
+  const relevantRoles = [...roleTypes.standard[intakeType], ... roleTypes[data?.registrarKey]]
+  const partnerPercentages: any = {}
+
   let totalSharesReconstruct = 0
-  founders.forEach((f: any) => {
+  partners.forEach((f: any) => {
     totalSharesReconstruct += f.shares
   })
   const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + "")
-  founders.forEach((f: any) => {
-    founderPercentages[f.name] = (100 * f.shares)/Number(totalShares)||0
+  partners.forEach((f: any) => {
+    partnerPercentages[f.name] = (100 * f.shares)/Number(totalShares)||0
   })
-  const [sharePercentages, setSharePercentages] = useState<any>({...founderPercentages})
+  const [sharePercentages, setSharePercentages] = useState<any>({...partnerPercentages})
 
     const ownersData = async () => {  
       const client = publicClient
@@ -52,7 +50,7 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
           // const textConstruction= keys.map((key: string) => {
           //   const existing = owners?.[key]
           //   texts[key] = existing?.value || properties[key]})
-          // setFounders({...texts})
+          // setPartners({...texts})
     }
   
 
@@ -66,32 +64,32 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
 
   const align: any = "-webkit-right"
 
-  const foundersEle = founders.map((founder: any, idx: number) => {
+  const partnersEle = partners.map((partner: any, idx: number) => {
            const inputEle = (
            
            <div style={{display: "flex"}}>
-            <Typography style={{flex: 3}}>{founder.name}</Typography>
+            <Typography style={{flex: 3}}>{partner.name}</Typography>
            
-            {roleTypes.map(role => {
+            {relevantRoles.map(role => {
               return (
                     <div key={"rolediv" + role} style={{flex: 2, textAlign: align}}>
                     <Toggle
                       size={'small'}
-                      checked={founder.roles.includes(role)}
+                      checked={partner.roles.includes(role)}
                       onChange={(e) => {
                         e.stopPropagation()
-                        const roleChecked = founder.roles.includes(role)
-                        setFounders((prevFounders: any) => {
-                            const updatedFounders = [...prevFounders];
-                            let founderRoles = [...founder.roles];
+                        const roleChecked = partner.roles.includes(role)
+                        setPartners((prevPartners: any) => {
+                            const updatedPartners = [...prevPartners];
+                            let partnerRoles = [...partner.roles];
                             if (!roleChecked) {
-                                founderRoles.push(role)
+                                partnerRoles.push(role)
                             } else {
-                                founderRoles = founderRoles.filter((x: string) => x !== role)
+                                partnerRoles = partnerRoles.filter((x: string) => x !== role)
                             }
-                            const updatedFounder = { ...updatedFounders[idx], roles: founderRoles };
-                            updatedFounders[idx] = updatedFounder;
-                            return updatedFounders;
+                            const updatedPartner = { ...updatedPartners[idx], roles: partnerRoles };
+                            updatedPartners[idx] = updatedPartner;
+                            return updatedPartners;
                           });
                       }}
                       data-testid="primary-name-toggle"
@@ -152,13 +150,13 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
           }}
         />
       </InputWrapper>
-      {founders.map((founder:any, idx: number) => {
+      {partners.map((partner:any, idx: number) => {
         return <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
-          <Typography style={{flex: 3}}>{founder.name}</Typography>
+          <Typography style={{flex: 3}}>{partner.name}</Typography>
           <InputWrapper style={{flex: 3}}>
             <Input
               size="medium"
-              value={sharePercentages[founder.name]}
+              value={sharePercentages[partner.name]}
               label={"Ownership percentage "}
               error={false}
               placeholder={"Ownership percentage "}
@@ -171,13 +169,13 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
                   if (input[0] === "0" && input[1] !== "." && input.length> 1) {
                     input = input.slice(1)
                   }
-                  setSharePercentages({...sharePercentages, [founder.name]: (input)})
-                  setFounders((prevFounders: any[]) => {
-                    const updatedFounders = [...prevFounders];
-                    const updatedFounder = { ...updatedFounders[idx], shares: Math.ceil(Number(totalShares) * (Number(input)/100))};
-                    console.log('SETTING SHARES OLD:', prevFounders[idx].shares, "NEW:", updatedFounder.shares)
-                    updatedFounders[idx] = updatedFounder;
-                    return updatedFounders;
+                  setSharePercentages({...sharePercentages, [partner.name]: (input)})
+                  setPartners((prevPartners: any[]) => {
+                    const updatedPartners = [...prevPartners];
+                    const updatedPartner = { ...updatedPartners[idx], shares: Math.ceil(Number(totalShares) * (Number(input)/100))};
+                    console.log('SETTING SHARES OLD:', prevPartners[idx].shares, "NEW:", updatedPartner.shares)
+                    updatedPartners[idx] = updatedPartner;
+                    return updatedPartners;
                   })
                 }
               }}
@@ -187,7 +185,7 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
             <Input
               size="medium"
               style={{cursor: "not-allowed"}}
-              value={Math.ceil(Number(totalShares) * (sharePercentages[founder.name]/100))}
+              value={Math.ceil(Number(totalShares) * (sharePercentages[partner.name]/100))}
               label={"Shares"}
               error={false}
               placeholder={"Shares"}
@@ -197,7 +195,7 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
               onChange={(e) => null}
             />
             </InputWrapper>
-            <div key={"lockup" + founder.name} style={{flex: 1, textAlign: align}}>
+            <div key={"lockup" + partner.name} style={{flex: 1, textAlign: align}}>
               <div style={{alignContent: "center", marginBottom: "8px"}}>
                 <label style={{color: "hsl(240 6% 63%)", fontSize: "1rem", font: "satoshi", fontWeight: "700"}}>
                   Lockup
@@ -206,14 +204,14 @@ const Roles = ({ data, profile, setProfile, setFounders, founders, publicClient 
               <div style={{height: "3rem", alignContent: "center"}}>
                 <Toggle
                   size={'small'}
-                  checked={founder.lockup || false}  
+                  checked={partner.lockup || false}  
                   onChange={(e) => {
                     e.stopPropagation()
-                    setFounders((prevFounders: any) => {
-                        const updatedFounders = [...prevFounders];
-                        const updatedFounder = { ...updatedFounders[idx], lockup: !founder.lockup };
-                        updatedFounders[idx] = updatedFounder;
-                        return updatedFounders;
+                    setPartners((prevPartners: any) => {
+                        const updatedPartners = [...prevPartners];
+                        const updatedPartner = { ...updatedPartners[idx], lockup: !partner.lockup };
+                        updatedPartners[idx] = updatedPartner;
+                        return updatedPartners;
                       });
                   }}
                   data-testid="primary-name-toggle"
@@ -234,13 +232,13 @@ return (
       <div style={{marginTop: "20px"}}>
         <div style={{display: "flex"}}>
           <Typography style={{flex: 3}}></Typography>
-          {roleTypes.map(role => {
+          {relevantRoles.map(role => {
             return (
               <Typography style={{flex: 2, textAlign: align, fontSize: "20px"}}>{role}</Typography>
             )})}
         </div>
-      {foundersEle}
-      {ownershipSection}
+      {partnersEle}
+      {intakeType !== "civil" ? ownershipSection: null}
       </div>
     </div>
   )

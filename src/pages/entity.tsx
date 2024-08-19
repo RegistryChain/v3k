@@ -8,7 +8,7 @@ import { Button, Typography } from '@ensdomains/thorin'
 import styled from 'styled-components'
 import { css } from 'styled-components'
 import { useEffect, useMemo, useState } from 'react'
-import AddFounders from '@app/components/pages/entityCreation/AddFounders'
+import AddPartners from '@app/components/pages/entityCreation/AddPartners'
 import { createSubname, setRecords } from '@ensdomains/ensjs/wallet'
 import { addEnsContracts } from '@ensdomains/ensjs'
 import { sepolia } from 'viem/chains'
@@ -32,13 +32,23 @@ const registrarNameToKey: {[x: string]: string} = {
   "Delaware USA": "DL",
   "Wyoming USA": "WY",
   "British Virgin Islands": "BVI",
+  "Civil Registry USA": "CIV-US"
 }
 
-const registrarNameToDomainFull: {[x: string]: string} = {
-  "Public Registry": "PUB",
-  "Delaware USA": "DL.US",
-  "Wyoming USA": "WY.US",
-  "British Virgin Islands": "BVI.UK",
+const registrarkeyToDomainFull: {[x: string]: string} = {
+  "PUB": "PUB",
+  "DL": "DL.US",
+  "WY": "WY.US",
+  "BVI": "BVI.UK",
+  "CIV-US": "CIV.US"
+}
+
+const registrarKeyToType: any = {
+  PUB: "corp",
+  DL:"corp",
+  WY:"corp",
+  BVI:"corp",
+  "CIV-US": "civil"
 }
 
 const corpFields: any = {
@@ -48,7 +58,8 @@ const corpFields: any = {
   PUB: {},
   DL:{},
   WY:{},
-  BVI:{}
+  BVI:{},
+  "CIV-US": {}
 }
 
 const additionalTermsFields: any = {
@@ -58,7 +69,35 @@ const additionalTermsFields: any = {
   PUB: {},
   DL:{},
   WY:{},
-  BVI:{}
+  BVI:{},
+  "CIV-US": {}
+}
+
+
+const partnerFields: any = {
+  standard: {
+    name: "string",
+    type: "string",
+    address: "string",
+    "DOB": "date",
+    roles: "Array",
+    lockup: "Boolean",
+    shares: "number",
+  },
+  PUB: {},
+  DL:{},
+  WY:{},
+  BVI:{},
+  "CIV-US": {}
+}
+
+const roleTypes: any = {
+  standard: {corp: ["owner","manager","spender","investor", "signer"], civil: ["signer", "spender", "manager"]},
+  PUB: [],
+  DL:[],
+  WY:[],
+  BVI:[],
+  "CIV-US": []
 }
 
 export default function Page() {
@@ -70,7 +109,7 @@ export default function Page() {
   const isSelf = router.query.connected === 'true'
   const [registrationStep, setRegistrationStep] = useState<number>(1)
   const [profile, setProfile] = useState<any>({})
-  const [founders, setFounders] = useState<any[]>([])
+  const [partners, setPartners] = useState<any[]>([])
   const [errorMessage, setErrorMessage] = useState<string>("")
   const { openConnectModal } = useConnectModal()
 
@@ -111,18 +150,17 @@ export default function Page() {
     } else if (openConnectModal && !address) {
         await openConnectModal()
       } else {
-        console.log('DATA BUILDING', founders, profile)
         const texts: any[] = [{key: "name", value: entityName}, {key: "registrar", value: entityRegistrar}, {key: "type", value: entityType}]
-        founders.forEach((founder, idx) => {
-          const founderKey = "founder__[" + idx + "]__"
-          Object.keys(founder).forEach(field => {
-            if (typeof founder[field] === "boolean") {
-              texts.push({key: founderKey + field, value: founder[field] ? "true": "false"})
+        partners.forEach((partner, idx) => {
+          const partnerKey = "partner__[" + idx + "]__"
+          Object.keys(partner).forEach(field => {
+            if (typeof partner[field] === "boolean") {
+              texts.push({key: partnerKey + field, value: partner[field] ? "true": "false"})
             } else if (field !== "roles") {
-              texts.push({key: founderKey + field, value: founder[field]})
+              texts.push({key: partnerKey + field, value: partner[field]})
             } else {
-              founder[field].forEach((role: string) => {
-                texts.push({key: founderKey + "is__" + role, value: "true"})
+              partner[field].forEach((role: string) => {
+                texts.push({key: partnerKey + "is__" + role, value: "true"})
               })
             }
           })
@@ -143,13 +181,13 @@ export default function Page() {
           client: wallet,
         })
         
-        const founderAddress:`0x${string}`|undefined = address
+        const partnerAddress:`0x${string}`|undefined = address
         const subdomainId = name.toLowerCase().split(" ").join("-") + "-" +Date.now().toString().slice(Date.now().toString().length - 6)
         const entityId = subdomainId + '.' + default_registry_domain
         const label = labelhash(subdomainId)
         
         try {
-          const hashSubdomain = await publicSubdomainRegistrar.write.register([label, founderAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
+          const hashSubdomain = await publicSubdomainRegistrar.write.register([label, partnerAddress, "0x8fade66b79cc9f707ab26799354482eb93a5b7dd"], { gas: 1000000n })
           console.log(await publicClient?.waitForTransactionReceipt( 
             { hash: hashSubdomain }
           ))
@@ -170,7 +208,7 @@ export default function Page() {
           setErrorMessage(err.details)
           return 
         }
-        router.push("/" + subdomainId + "." + registrarNameToDomainFull[entityRegistrar] + '.registry', {tab: "records"})    
+        router.push("/" + subdomainId + "." + registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]] + '.registry', {tab: "records"})    
       }
     
   }
@@ -202,17 +240,17 @@ export default function Page() {
     </Button>
   </FooterContainer>)
 
-
+  const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
   if (registrationStep === 1) {
     content = <CorpInfo data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} fields={corpFields} step={registrationStep} profile={profile} setProfile={setProfile} publicClient={publicClient}/>
   }
   
   if (registrationStep === 2) {
-    content = <AddFounders data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+    content = <AddPartners data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} partnerFields={partnerFields} partners={partners} setPartners={setPartners} publicClient={publicClient} />
   } 
 
   if (registrationStep === 3) {
-    content = <Roles data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} profile={profile} setProfile={setProfile} founders={founders} setFounders={setFounders} publicClient={publicClient} />
+    content = <Roles data={{name, registrarKey: registrarNameToKey[entityRegistrar]}} intakeType={intakeType} roleTypes={roleTypes} profile={profile} setProfile={setProfile} partners={partners} setPartners={setPartners} publicClient={publicClient} />
   }
 
   if (registrationStep === 4) {
@@ -220,7 +258,7 @@ export default function Page() {
   }
 
   if (registrationStep === 5) {
-    content = <Review name={name} profile={profile} founders={founders} />
+    content = <Review name={name} profile={profile} partners={partners} />
   }
 
 return (<>

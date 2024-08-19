@@ -66,6 +66,22 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
+const registrarNameToKey: {[x: string]: string} = {
+  "Public Registry": "PUB",
+  "Delaware USA": "DL",
+  "Wyoming USA": "WY",
+  "British Virgin Islands": "BVI",
+  "Civil Registry USA": "CIV-US"
+}
+
+const registrarKeyToType: any = {
+  PUB: "corp",
+  DL:"corp",
+  WY:"corp",
+  BVI:"corp",
+  "CIV-US": "civil"
+}
+
 const tabs = ['entity', 'records', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
@@ -181,6 +197,13 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       : // if is self, user must be connected
         (isSelf ? address : true) && typeof name === 'string' && name.length > 0,
   )
+
+  const registrarName = useMemo(() => {
+    return (profile?.texts?.find((x: any) => x.key === "registrar"))?.value
+  }, [profile])
+
+  const registrarKey = registrarNameToKey[registrarName]
+  const registrarType = registrarKeyToType[registrarKey]
 
   const [titleContent, descriptionContent] = useMemo(() => {
     if (isSelf) {
@@ -363,10 +386,10 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               />
             ))
             .with('apps', () => (
-              <AppsTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+              <AppsTab registrarType={registrarType} name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
             ))
             .with('licenses', () => (
-              <LicenseTab name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+              <LicenseTab registrarType={registrarType} name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
             ))
             .exhaustive(),
         }}

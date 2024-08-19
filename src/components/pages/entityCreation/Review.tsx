@@ -83,26 +83,26 @@ const Actions = styled.div(
 
 export const Review = ({
   name,
-  founders,
+  partners,
   profile
 }: {
   name: string
-  founders: any,
+  partners: any,
   profile: any
 }) => {
   const { t } = useTranslation('profile')
 
   const texts: any[] = []
-  founders.forEach((founder: any, idx: number) => {
-    const founderKey = "founder__[" + idx + "]__"
-    Object.keys(founder).forEach(field => {
-      if (typeof founder[field] === "boolean") {
-        texts.push({key: founderKey + field, value: founder[field] ? "true": "false"})
+  partners.forEach((partner: any, idx: number) => {
+    const partnerKey = "partner__[" + idx + "]__"
+    Object.keys(partner).forEach(field => {
+      if (typeof partner[field] === "boolean") {
+        texts.push({key: partnerKey + field, value: partner[field] ? "true": "false"})
       } else if (field !== "roles") {
-        texts.push({key: founderKey + field, value: founder[field]})
+        texts.push({key: partnerKey + field, value: partner[field]})
       } else {
-        founder[field].forEach((role: string) => {
-          texts.push({key: founderKey + "is__" + role, value: "true"})
+        partner[field].forEach((role: string) => {
+          texts.push({key: partnerKey + "is__" + role, value: "true"})
         })
       }
     })

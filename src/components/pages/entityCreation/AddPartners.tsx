@@ -46,35 +46,13 @@ const NameContainer = styled.div(({ theme }) => [
   `),
 ])
 
-const founderFields: any = {
-  standard: {
-    name: "string",
-    type: "string",
-    address: "string",
-    "DOB": "date",
-    roles: "Array",
-    lockup: "Boolean",
-    shares: "number"
-  },
-  PUB: {},
-  DL:{},
-  WY:{},
-  BVI:{}
-}
-
-const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
+const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient }: any) => {
   const name = data?.name || ''
-  const [founderInputNumber, setFounderInputNumber] = useState(0)
+  const [partnerInputNumber, setPartnerInputNumber] = useState(0)
 
-  ///IMPORTANT - SHOULD BE CUSTOM VIEM FETCH FOR TEXT RECORDS
+  const relevantFields = {...partnerFields.standard, ... partnerFields[data?.registrarKey]}
 
-  //Uses founders and setFounders prop for the parties to be added
-  //Find the founderCount in profile.texts, for each founder ask name, type, address, shares and render in the form one for each
-  //Validate for shareCount
-
-  const relevantFields = {...founderFields.standard, ... founderFields[data?.registrarKey]}
-
-    const foundersData = async () => {
+    const partnersData = async () => {
     
       const client = publicClient
       // Here fetch the resolver data 
@@ -86,101 +64,101 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
           //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
 
           // const keys = []
-          // for(let i = 1; i <= founderCount; i++) {
+          // for(let i = 1; i <= partnerCount; i++) {
 
-          //   keys.push("founder__" + i + "__name")
-          //   keys.push("founder__" + i + "__type")
-          //   keys.push("founder__" + i + "__address")
-          //   keys.push("founder__" + i + "__DOB")
+          //   keys.push("partner__" + i + "__name")
+          //   keys.push("partner__" + i + "__type")
+          //   keys.push("partner__" + i + "__address")
+          //   keys.push("partner__" + i + "__DOB")
           // }
 
           // const texts: any = {}
           // const textConstruction= keys.map((key: string) => {
-          //   const existing = founders?.[key]
+          //   const existing = partners?.[key]
           //   texts[key] = existing?.value || properties[key]})
-          // setFounders({...texts})
+          // setPartners({...texts})
     }
   
 
   useEffect(() => {
-    foundersData()
-    let tempFounderObj: any = {}
-    if (founders.length === 0) {
+    partnersData()
+    let tempPartnerObj: any = {}
+    if (partners.length === 0) {
       Object.keys(relevantFields).forEach(field => {
         if (relevantFields[field] === "number") {
-          tempFounderObj[field] = 0
+          tempPartnerObj[field] = 0
         } else if (relevantFields[field] === "Array") {
-          tempFounderObj[field] = []
+          tempPartnerObj[field] = []
         } else if (relevantFields[field] === "Boolean") {
-          tempFounderObj[field] = false;
+          tempPartnerObj[field] = false;
         } else {
-          tempFounderObj[field] = ""
+          tempPartnerObj[field] = ""
         }
       })
-      setFounders([tempFounderObj])
+      setPartners([tempPartnerObj])
     }
   }, [])
 
   useEffect(() => {
-    //Upon founderInputNumber change, check if the founders[founderInputNumber] object has keys/vals already
-    // If not, add a new object using the correct founderSchema to instantiate an object to updated in the input (with empty placeholder vals)
-    if (founders.length === founderInputNumber && founders.length > 0) {
+    //Upon partnerInputNumber change, check if the partners[partnerInputNumber] object has keys/vals already
+    // If not, add a new object using the correct partnerSchema to instantiate an object to updated in the input (with empty placeholder vals)
+    if (partners.length === partnerInputNumber && partners.length > 0) {
 
-      let tempFounderObj: any = {}
+      let tempPartnerObj: any = {}
       Object.keys(relevantFields).forEach(field => {
         if (relevantFields[field] === "number") {
-          tempFounderObj[field] = 0
+          tempPartnerObj[field] = 0
         } else if (relevantFields[field] === "Array") {
-          tempFounderObj[field] = []
+          tempPartnerObj[field] = []
         } else {
-          tempFounderObj[field] = ""
+          tempPartnerObj[field] = ""
         }
       })
-      setFounders((prevFounders: any) => [...prevFounders, tempFounderObj])
+      setPartners((prevPartners: any) => [...prevPartners, tempPartnerObj])
     }
-  }, [founderInputNumber])
+  }, [partnerInputNumber])
 
 
-  const removeFounder = (founderNumber: number) => {
-    setFounders((prevFounders: any) => {
+  const removePartner = (partnerNumber: number) => {
+    setPartners((prevPartners: any) => {
       // Filter out the element at the specified index
-      const updatedFounders = prevFounders.filter((_: any, index: number) => index !== founderNumber);
-      // Return the updated founders array
-      return updatedFounders;
+      const updatedPartners = prevPartners.filter((_: any, index: number) => index !== partnerNumber);
+      // Return the updated partners array
+      return updatedPartners;
     });
 
-    let newInputNumber = founderNumber - 1
+    let newInputNumber = partnerNumber - 1
     if (newInputNumber < 0) newInputNumber = 0
-    setFounderInputNumber(newInputNumber)
+    setPartnerInputNumber(newInputNumber)
   }
 
-  const editFounder = (founderNumber: number) => {
-      setFounderInputNumber(founderNumber)
+  const editPartner = (partnerNumber: number) => {
+      setPartnerInputNumber(partnerNumber)
   }
 
   let inputEle = null
 
-  const foundersEle = founders.map((founder: any, i: number) => {
-      if (i === founderInputNumber && Object.keys(founder)?.length > 0) {
+  const partnersEle = partners.map((partner: any, i: number) => {
+      if (i === partnerInputNumber && Object.keys(partner)?.length > 0) {
            inputEle = (<>
-            {Object.keys(founder).map(field => {
+            {Object.keys(partner).map(field => {
               const fieldType = relevantFields?.[field]
               if (field === "roles" || field === "shares" || field === "lockup") return null
               if (fieldType === "date") {
                 return (
                   <InputWrapper  key={field}>
                     <Calendar
-                      labelText={"Founder " + i + " " + field}
+                      labelText={"Partner " + i + " " + field}
                       labelHeight={62}
-                      value={(new Date(founder?.[field]).getTime())/1000 + (3600*24) || 946692000}
+                      value={(new Date(partner?.[field]).getTime())/1000 + (3600*24) || 946692000}
                       onChange={(e) => {
                         const { valueAsDate } = e.currentTarget
                         if (valueAsDate) {
-                          setFounders((prevFounders: any) => {
-                            const updatedFounders = [...prevFounders];
-                            const updatedFounder = { ...updatedFounders[i], [field]: (e.currentTarget.value) };
-                            updatedFounders[i] = updatedFounder;
-                            return updatedFounders;
+                          setPartners((prevPartners: any) => {
+                            const updatedPartners = [...prevPartners];
+                            const updatedPartner = { ...updatedPartners[i], [field]: (e.currentTarget.value) };
+                            updatedPartners[i] = updatedPartner;
+                            return updatedPartners;
                           });
                         }
                       }}
@@ -194,10 +172,10 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
                 <InputWrapper key={field}>
                     <Input
                       size="large"
-                      value={founder?.[field]}
-                      label={"Founder " + i + " " + field}
+                      value={partner?.[field]}
+                      label={"Partner " + i + " " + field}
                       error={false}
-                      placeholder={"Founder " + i + " " + field}
+                      placeholder={"Partner " + i + " " + field}
                       data-testid="record-input-input"
                       validated={true}
                       disabled={false}
@@ -205,11 +183,11 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
                         if (fieldType === "number" && !Number(e.target.value) && e.target.value !== "") {
                           return
                         }
-                        setFounders((prevFounders: any) => {
-                          const updatedFounders = [...prevFounders];
-                          const updatedFounder = { ...updatedFounders[i], [field]: e.target.value };
-                          updatedFounders[i] = updatedFounder;
-                          return updatedFounders;
+                        setPartners((prevPartners: any) => {
+                          const updatedPartners = [...prevPartners];
+                          const updatedPartner = { ...updatedPartners[i], [field]: e.target.value };
+                          updatedPartners[i] = updatedPartner;
+                          return updatedPartners;
                         });
                       }}
                     />
@@ -219,8 +197,8 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
           </>)
           return null
     } else {
-      return (<div key={i + "founder"} style={{margin: "10px", textAlign: "left"}}>
-          <Button colorStyle='blueSecondary' onClick={() => editFounder(i)}>Founder - {founder?.name || "..."}</Button>
+      return (<div key={i + "partner"} style={{margin: "10px", textAlign: "left"}}>
+          <Button colorStyle='blueSecondary' onClick={() => editPartner(i)}>Partner - {partner?.name || "..."}</Button>
         </div>)
     }
 })
@@ -228,14 +206,14 @@ const AddFounders = ({ data, setFounders, founders, publicClient }: any) => {
   return (
     <div style={{marginBottom: "44px"}}>
       <NameContainer>{name}</NameContainer>
-      <Button style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} onClick={() => editFounder(founders.length)}>+ Founder</Button>
-      <Button  style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} disabled={founders.length === 1} colorStyle="redPrimary" onClick={() => removeFounder(founderInputNumber)}>- Founder</Button>
+      <Button style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} onClick={() => editPartner(partners.length)}>+ Partner</Button>
+      <Button  style={{width: "260px", fontSize: "20px", marginTop: "12px", marginLeft: "6px"}} disabled={partners.length === 1} colorStyle="redPrimary" onClick={() => removePartner(partnerInputNumber)}>- Partner</Button>
       <div style={{marginTop: "20px"}}>
         {inputEle}
-        {foundersEle}
+        {partnersEle}
       </div>
     </div>
   )
 }
 
-export default AddFounders
+export default AddPartners
