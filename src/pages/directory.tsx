@@ -5,10 +5,10 @@ import styled, { css } from 'styled-components'
 import { useAccount } from 'wagmi'
 
 import { NameListView } from '@app/components/@molecules/NameListView/NameListView'
+import { SubnameListView } from '@app/components/pages/directory/SubnameListView'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { Content } from '@app/layouts/Content'
 import { ContentGrid } from '@app/layouts/ContentGrid'
-import { SubnameListView } from '@app/components/pages/directory/SubnameListView'
 
 const ContentContainer = styled.div(
   ({ theme }) => css`
@@ -27,7 +27,6 @@ export default function Page() {
   const isLoading = !router.isReady || isConnecting || isReconnecting
 
   useProtectedRoute('/', isLoading ? true : address && (address as any) !== '')
-  
   const acctAddr: any = address
 
   return (

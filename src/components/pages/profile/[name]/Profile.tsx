@@ -3,6 +3,8 @@ import { useEffect, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
+import { createPublicClient, http, namehash } from 'viem'
+import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
 import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
@@ -17,16 +19,14 @@ import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { OG_IMAGE_URL } from '@app/utils/constants'
+import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
-import ProfileTab from './tabs/ProfileTab'
-import { RecordsTab } from './tabs/RecordsTab'
-import { infuraUrl } from '@app/utils/query/wagmi'
-import { sepolia } from 'viem/chains'
-import { createPublicClient, http, namehash } from 'viem'
 import AppComponent from './tabs/AppComponent'
 import AppsTab from './tabs/AppsTab'
 import LicenseTab from './tabs/LicenseTab'
+import ProfileTab from './tabs/ProfileTab'
+import { RecordsTab } from './tabs/RecordsTab'
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -66,20 +66,20 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const registrarNameToKey: {[x: string]: string} = {
-  "Public Registry": "PUB",
-  "Delaware USA": "DL",
-  "Wyoming USA": "WY",
-  "British Virgin Islands": "BVI",
-  "Civil Registry USA": "CIV-US"
+const registrarNameToKey: { [x: string]: string } = {
+  'Public Registry': 'PUB',
+  'Delaware USA': 'DL',
+  'Wyoming USA': 'WY',
+  'British Virgin Islands': 'BVI',
+  'Civil Registry USA': 'CIV-US',
 }
 
 const registrarKeyToType: any = {
-  PUB: "corp",
-  DL:"corp",
-  WY:"corp",
-  BVI:"corp",
-  "CIV-US": "civil"
+  PUB: 'corp',
+  DL: 'corp',
+  WY: 'corp',
+  BVI: 'corp',
+  'CIV-US': 'civil',
 }
 
 const tabs = ['entity', 'records', 'licenses', 'apps'] as const
@@ -125,48 +125,50 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const { t } = useTranslation('profile')
   const { address } = useAccount()
 
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
 
-  const publicClient = useMemo(() => createPublicClient({
-    chain: sepolia,
-    transport: http(infuraUrl('sepolia'))
-    }), [])
+  // if (name?.includes(".registry")) {
+  //   name = name.split(".registry")[0] + ".publicregistry.eth"
+  // }
 
-    // if (name?.includes(".registry")) {
-    //   name = name.split(".registry")[0] + ".publicregistry.eth"
-    // }
-
-
-    // useEffect(() => {
-    //   console.log('res', namehash(name), namehash("publicregistry.eth"))
-    //   if (publicClient) {
-    //     testReadRecord()
-    //   }
-    // }, [publicClient])
+  // useEffect(() => {
+  //   console.log('res', namehash(name), namehash("publicregistry.eth"))
+  //   if (publicClient) {
+  //     testReadRecord()
+  //   }
+  // }, [publicClient])
 
   // const testReadRecord = async () => {
-    // const result = await getRecords(publicClient, {
-    //   name,
-    //   records: {
-    //     texts: ['Type', 'DID'],
-    //     coins: ['ETH'],
-    //     contentHash: true,
-    //   },
-    // })
-    // console.log('RES', result)
+  // const result = await getRecords(publicClient, {
+  //   name,
+  //   records: {
+  //     texts: ['Type', 'DID'],
+  //     coins: ['ETH'],
+  //     contentHash: true,
+  //   },
+  // })
+  // console.log('RES', result)
   // }
 
   let nameToQuery = name
-    if (name?.includes(".registry")) {
-      nameToQuery = name.split(".")[0] + ".publicregistry.eth"
-    }
+  if (name?.includes('.registry')) {
+    nameToQuery = name.split('.')[0] + '.publicregistry.eth'
+  }
   const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
 
   const nameDetails: any = {}
-  Object.keys(nameDetailsRes).forEach(key => {
+  Object.keys(nameDetailsRes).forEach((key) => {
     let val: any = nameDetailsRes[key]
-    if (typeof val === "string") {
-      if (val?.includes(".publicregistry.eth")) {
-        val = val.split(".")[0] + ".registry"
+    if (typeof val === 'string') {
+      if (val?.includes('.publicregistry.eth')) {
+        val = val.split('.')[0] + '.registry'
       }
     }
 
@@ -199,7 +201,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   )
 
   const registrarName = useMemo(() => {
-    return (profile?.texts?.find((x: any) => x.key === "registrar"))?.value
+    return profile?.texts?.find((x: any) => x.key === 'registrar')?.value
   }, [profile])
 
   const registrarKey = registrarNameToKey[registrarName]
@@ -306,7 +308,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const chainName = useChainName()
 
-  if (registrationStatus === "notOwned") {
+  if (registrationStatus === 'notOwned') {
     return (
       <>
         <Head>
@@ -322,7 +324,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         <Typography fontVariant="extraLargeBold" color="inherit">
           Name {name} is not registered on RegistryChain
         </Typography>
-      </>)
+      </>
+    )
   }
 
   return (
@@ -337,12 +340,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         <meta property="twitter:title" content={titleContent} />
         <meta property="twitter:description" content={descriptionContent} />
       </Head>
-      <Content
-        noTitle
-        title={name}
-        loading={!isCachedData && parentIsLoading}
-        copyValue={name}
-      >
+      <Content noTitle title={name} loading={!isCachedData && parentIsLoading} copyValue={name}>
         {{
           info: infoBanner,
           warning,
@@ -386,10 +384,20 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               />
             ))
             .with('apps', () => (
-              <AppsTab registrarType={registrarType} name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+              <AppsTab
+                registrarType={registrarType}
+                name={normalisedName}
+                nameDetails={nameDetails}
+                abilities={abilities.data}
+              />
             ))
             .with('licenses', () => (
-              <LicenseTab registrarType={registrarType} name={normalisedName} nameDetails={nameDetails} abilities={abilities.data} />
+              <LicenseTab
+                registrarType={registrarType}
+                name={normalisedName}
+                nameDetails={nameDetails}
+                abilities={abilities.data}
+              />
             ))
             .exhaustive(),
         }}

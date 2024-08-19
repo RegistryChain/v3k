@@ -176,7 +176,7 @@ export const SubnamesTab = ({
           {subnames.map((subname) => (
             <TaggedNameItem
               key={subname.name}
-              name={subname.name || ""}
+              name={subname.name || ''}
               truncatedName={subname.truncatedName}
               mode="view"
               relation={{

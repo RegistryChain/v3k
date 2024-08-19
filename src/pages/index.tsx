@@ -1,23 +1,23 @@
 import Head from 'next/head'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
+import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
+import { sepolia } from 'viem/chains'
 
 import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
 
+import { EntityInput } from '@app/components/@molecules/EntityInput/EntityInput'
 import FaucetBanner from '@app/components/@molecules/FaucetBanner'
 import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
+import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
+import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { SearchInput } from '@app/components/@molecules/SearchInput/SearchInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { infuraUrl } from '@app/utils/query/wagmi'
 
 import ENSFull from '../assets/ENSFull.svg'
-import { EntityInput } from '@app/components/@molecules/EntityInput/EntityInput'
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
-import { sepolia } from 'viem/chains'
-import { infuraUrl } from '@app/utils/query/wagmi'
-import { useEffect, useState } from 'react'
-import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
-import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -94,32 +94,32 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const entityRegistrars: {[x: string]: any} = {
-  "PUB": {
-    name: "Public Registry",
-    domain: "publicregistry.eth",
-    types: ["Partnership"]
+const entityRegistrars: { [x: string]: any } = {
+  PUB: {
+    name: 'Public Registry',
+    domain: 'publicregistry.eth',
+    types: ['Partnership'],
   },
-  "DL": {
-    name: "Delaware USA",
-    domain: "delaware.eth",
-    types: ["LLC", "C-Corp"]
+  DL: {
+    name: 'Delaware USA',
+    domain: 'delaware.eth',
+    types: ['LLC', 'C-Corp'],
   },
-  "WY": {
-    name: "Wyoming USA",
-    domain: "wyoming.eth",
-    types: ["LLC", "C-Corp"]
+  WY: {
+    name: 'Wyoming USA',
+    domain: 'wyoming.eth',
+    types: ['LLC', 'C-Corp'],
   },
-  "BVI": {
-    name: "British Virgin Islands",
-    domain: "bvi.eth",
-    types: ["Limited Partnership", "BVIBC"]
+  BVI: {
+    name: 'British Virgin Islands',
+    domain: 'bvi.eth',
+    types: ['Limited Partnership', 'BVIBC'],
   },
-  "CIV-US": {
-    name: "Civil Registry USA",
-    domain: "US.civilregistry.eth",
-    types: ["Birth", "Marriage"]
-  }
+  'CIV-US': {
+    name: 'Civil Registry USA',
+    domain: 'US.civilregistry.eth',
+    types: ['Birth', 'Marriage'],
+  },
 }
 
 export default function Page() {
@@ -128,12 +128,12 @@ export default function Page() {
 
   const publicClient = createPublicClient({
     chain: sepolia,
-    transport: http(infuraUrl('sepolia'))
-    })
+    transport: http(infuraUrl('sepolia')),
+  })
 
-  const [entityName, setEntityName] = useState<string>("")
-  const [registrar, setRegistrarInput] = useState<string>("")
-  const [entityType, setEntityType] = useState<string>("")
+  const [entityName, setEntityName] = useState<string>('')
+  const [registrar, setRegistrarInput] = useState<string>('')
+  const [entityType, setEntityType] = useState<string>('')
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
   useEffect(() => {
@@ -143,26 +143,33 @@ export default function Page() {
   }, [entityName, registrar])
 
   useEffect(() => {
-    console.log(entityName+"."+registrar, " is available? ", nameAvailable)
+    console.log(entityName + '.' + registrar, ' is available? ', nameAvailable)
   }, [nameAvailable])
-
 
   const entityIsAvailable = async (registrar: string, entityName: string) => {
     const client = publicClient
-    const registry = await getContract({client, abi: parseAbi(['function owner(bytes32 node) view returns (address)']), address: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"})
+    const registry = await getContract({
+      client,
+      abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
+      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+    })
     if (entityName) {
-        const owner = await registry.read.owner([namehash(entityName + '.' + registrar)])
-        if (owner === zeroAddress) {
-          setNameAvailable(true)
-        } else {
-          setNameAvailable(false)
-        }
+      const owner = await registry.read.owner([namehash(entityName + '.' + registrar)])
+      if (owner === zeroAddress) {
+        setNameAvailable(true)
+      } else {
+        setNameAvailable(false)
+      }
     }
   }
 
   const advance = () => {
     //Either register name or move to entity information form
-    router.push("/entity", {name: entityName, registrar: entityRegistrars[registrar].name, type:entityType})
+    router.push('/entity', {
+      name: entityName,
+      registrar: entityRegistrars[registrar].name,
+      type: entityType,
+    })
   }
 
   let nameAvailableElement = null
@@ -171,21 +178,21 @@ export default function Page() {
   }
 
   let entityTypeSelection = null
-  if (entityRegistrars[registrar] || registrar === "") {
-    
-      entityTypeSelection = (
-        <LegacyDropdown 
-          style={{maxWidth: "100%", textAlign: "left"}} 
-          inheritContentWidth={true} 
-          size={"medium"} 
-          label="Entity Type" 
-          items={entityRegistrars[registrar]?.types?.map((x: any) => ({
-            label: x,
-            color: "blue",
-            onClick: () => setEntityType(x),
-            value: x
-          }))} />)
-    
+  if (entityRegistrars[registrar] || registrar === '') {
+    entityTypeSelection = (
+      <LegacyDropdown
+        style={{ maxWidth: '100%', textAlign: 'left' }}
+        inheritContentWidth={true}
+        size={'medium'}
+        label="Entity Type"
+        items={entityRegistrars[registrar]?.types?.map((x: any) => ({
+          label: x,
+          color: 'blue',
+          onClick: () => setEntityType(x),
+          value: x,
+        }))}
+      />
+    )
   }
 
   return (
@@ -208,25 +215,44 @@ export default function Page() {
               {t('description')}
             </Typography>
           </SubtitleWrapper>
-          <EntityInput field={"entityName"} value={entityName} setValue={(x: string) => setEntityName(x)}/>
-          <RegistrarInput registrars={entityRegistrars} field={"registrar"} value={registrar} setValue={(regKey: string) => {
-            setRegistrarInput(regKey)
-            }} />
-          <div style={{width: "100%", textAlign: "left", padding: "0 48px"}}>
+          <EntityInput
+            field={'entityName'}
+            value={entityName}
+            setValue={(x: string) => setEntityName(x)}
+          />
+          <RegistrarInput
+            registrars={entityRegistrars}
+            field={'registrar'}
+            value={registrar}
+            setValue={(regKey: string) => {
+              setRegistrarInput(regKey)
+            }}
+          />
+          <div style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>
             {entityTypeSelection}
           </div>
-          <div style={{width: "100%", textAlign: "left", paddingLeft: "48px", paddingRight: "48px", height: "40px"}}>
+          <div
+            style={{
+              width: '100%',
+              textAlign: 'left',
+              paddingLeft: '48px',
+              paddingRight: '48px',
+              height: '40px',
+            }}
+          >
             {nameAvailableElement}
           </div>
-        <Button 
-          style={{width: "220px"}}         
-          shape="rounded"
-          size="small"
-          disabled={(!nameAvailable || entityName.length < 2 || registrar.length === 0) ? true: false}
-          onClick={() => advance()}
+          <Button
+            style={{ width: '220px' }}
+            shape="rounded"
+            size="small"
+            disabled={
+              !nameAvailable || entityName.length < 2 || registrar.length === 0 ? true : false
+            }
+            onClick={() => advance()}
           >
-          Form Entity
-        </Button>
+            Form Entity
+          </Button>
         </Stack>
       </Container>
     </>

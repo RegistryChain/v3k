@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
+import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
 
 import { Button, CrossSVG, Dialog, Input, mq } from '@ensdomains/thorin'
-
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -15,7 +14,6 @@ const InputWrapper = styled.div(
     width: 100%;
   `,
 )
-
 
 const NameContainer = styled.div(({ theme }) => [
   css`
@@ -42,8 +40,6 @@ const NameContainer = styled.div(({ theme }) => [
   `),
 ])
 
-
-
 type Data = {
   name: string
 }
@@ -52,7 +48,6 @@ export type Props = {
   data?: Data
 }
 
-
 const SHARE_COUNT = 1000000
 
 const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any) => {
@@ -60,54 +55,60 @@ const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any
   const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
 
   const entityData = async () => {
-  
     const client = publicClient
-    // Here fetch the resolver data 
-    const resolver = await getContract({client, abi: parseAbi(['function text(bytes32 node, string calldata key) view returns (string memory)']), address: "0x8FADE66B79cC9f707aB26799354482EB93a5B7dD"})
+    // Here fetch the resolver data
+    const resolver = await getContract({
+      client,
+      abi: parseAbi([
+        'function text(bytes32 node, string calldata key) view returns (string memory)',
+      ]),
+      address: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
+    })
     const properties: any = {}
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
     // const keys = Object.keys(fields[data?.registrarKey || "standard"])
     const texts: any = {}
     const fetches: any = []
-    const textConstruction= keys.map((key: string) => {
+    const textConstruction = keys.map((key: string) => {
       const existing = profile?.[key]
       if (!existing) {
-        fetches.push("PROMISE CALL TO CONTRACT FOR DATA ")
+        fetches.push('PROMISE CALL TO CONTRACT FOR DATA ')
         // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
       }
       texts[key] = existing || properties[key]
     })
-    setProfile((prevProfile: any) => ({...prevProfile, ...texts}))
+    setProfile((prevProfile: any) => ({ ...prevProfile, ...texts }))
   }
 
   useEffect(() => {
     entityData()
   }, [name])
 
-
   if (!profile) return null
-  
+
   return (
     <>
       <NameContainer>{name}</NameContainer>
-        {Object.keys(profile)?.filter(field => keys?.includes(field))?.map(key => {
+      {Object.keys(profile)
+        ?.filter((field) => keys?.includes(field))
+        ?.map((key) => {
           return (
-              <InputWrapper key={key+'wrapper'}>
-                <Input
-                  size="large"
-                  value={profile?.[key]}
-                  label={key.split("__").join(" ")}
-                  error={false}
-                  placeholder={key.split("__").join(" ")}
-                  data-testid="record-input-input"
-                  validated={true}
-                  disabled={false}
-                  onChange={(e) => {
-                    setProfile({...profile, [key]: e.target.value})
-                  }}
-                />
-              </InputWrapper>
+            <InputWrapper key={key + 'wrapper'}>
+              <Input
+                size="large"
+                value={profile?.[key]}
+                label={key.split('__').join(' ')}
+                error={false}
+                placeholder={key.split('__').join(' ')}
+                data-testid="record-input-input"
+                validated={true}
+                disabled={false}
+                onChange={(e) => {
+                  setProfile({ ...profile, [key]: e.target.value })
+                }}
+              />
+            </InputWrapper>
           )
         })}
     </>

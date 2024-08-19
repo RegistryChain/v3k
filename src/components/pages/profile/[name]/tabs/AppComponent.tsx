@@ -7,6 +7,7 @@ import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 import RecordItem from '@app/components/RecordItem'
+
 import { TabWrapper } from '../../TabWrapper'
 
 const Container = styled(TabWrapper)(
@@ -52,7 +53,6 @@ const HeaderContainer = styled.div(
   `,
 )
 
-
 const ItemsContainer = styled(CacheableComponent)(
   ({ theme }) => css`
     display: flex;
@@ -73,19 +73,26 @@ const AppComponent = ({ appData, category }: any) => {
   return (
     <Container>
       <HeaderContainer>
-        <Typography fontVariant="headingFour">{category.split("__").map((x: any) => x[0].toUpperCase() + x.slice(1)).join(" ")}</Typography>
+        <Typography fontVariant="headingFour">
+          {category
+            .split('__')
+            .map((x: any) => x[0].toUpperCase() + x.slice(1))
+            .join(' ')}
+        </Typography>
       </HeaderContainer>
       {appData.map((x: any, idx: number) => {
-        return <ItemsContainer key={x.serviceName + idx}>
-          <RecordItem
-            itemKey={x.jurisdiction}
-            value={[x.org,x.serviceName].join(" - ")}
-            type="text"
-          />
-          <div style={{height: "3rem", alignContent: "center"}}>
-            <Button onClick={() => null}>Order</Button>
-          </div>
-        </ItemsContainer>
+        return (
+          <ItemsContainer key={x.serviceName + idx}>
+            <RecordItem
+              itemKey={x.jurisdiction}
+              value={[x.org, x.serviceName].join(' - ')}
+              type="text"
+            />
+            <div style={{ height: '3rem', alignContent: 'center' }}>
+              <Button onClick={() => null}>Order</Button>
+            </div>
+          </ItemsContainer>
+        )
       })}
     </Container>
   )

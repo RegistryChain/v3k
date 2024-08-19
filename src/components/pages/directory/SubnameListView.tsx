@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { match, P } from 'ts-pattern'
 import { createPublicClient, http, type Address } from 'viem'
+import { sepolia } from 'viem/chains'
+import { useAccount } from 'wagmi'
 
+import { createEnsPublicClient } from '@ensdomains/ensjs'
 import { getSubnames, Name } from '@ensdomains/ensjs/subgraph'
 import { Button, Spinner } from '@ensdomains/thorin'
 
@@ -15,11 +18,8 @@ import {
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
-import { sepolia } from 'viem/chains'
-import { infuraUrl } from '@app/utils/query/wagmi'
-import { createEnsPublicClient } from '@ensdomains/ensjs'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import { useAccount } from 'wagmi'
+import { infuraUrl } from '@app/utils/query/wagmi'
 
 const EmptyDetailContainer = styled.div(
   ({ theme }) => css`
@@ -52,9 +52,7 @@ const Footer = styled.div(
   `,
 )
 
-type SubnameListViewProps = {
-
-}
+type SubnameListViewProps = {}
 
 export const SubnameListView = ({}: SubnameListViewProps) => {
   const router = useRouterWithHistory()
@@ -67,7 +65,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
 
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
   const handleClickName = (name: Name) => () => {
-        router.push("/profile/" + name.name)
+    router.push('/profile/' + name.name)
   }
 
   const [sortType, setSortType] = useQueryParameterState<SortType>('sort', 'expiryDate')
@@ -80,15 +78,18 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
   const [subnameResLoaded, setSubnameResLoaded] = useState<Boolean>(false)
-  
 
-  const client = useMemo(() => createEnsPublicClient({
-    chain: sepolia,
-    transport: http(infuraUrl('sepolia'))
-  }), [])
+  const client = useMemo(
+    () =>
+      createEnsPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
 
   const getSubs = async () => {
-    const results = await getSubnames(client, { name: 'publicregistry.eth', pageSize: 1000})
+    const results = await getSubnames(client, { name: 'publicregistry.eth', pageSize: 1000 })
     setSubnameResults(results)
     setSubnameResLoaded(true)
   }
@@ -97,18 +98,26 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
     getSubs()
   }, [client])
 
-
-  const filteredSet = subnameResults.map(name =>  {
-      const labelName = name.name.split(name.parentName).join("").split(".").join(".")
-      const domainId = labelName.split("-").pop().split(".").join("")
-      const commonName = labelName.split("-").slice(0,labelName.split("-").length -1).join(" ")
-      return {...name, labelName, commonName, domainId}
-  }).filter(name => name.parentName === "publicregistry.eth" && (name.labelName.includes(searchInput) || searchInput === ""))
+  const filteredSet = subnameResults
+    .map((name) => {
+      const labelName = name.name.split(name.parentName).join('').split('.').join('.')
+      const domainId = labelName.split('-').pop().split('.').join('')
+      const commonName = labelName
+        .split('-')
+        .slice(0, labelName.split('-').length - 1)
+        .join(' ')
+      return { ...name, labelName, commonName, domainId }
+    })
+    .filter(
+      (name) =>
+        name.parentName === 'publicregistry.eth' &&
+        (name.labelName.includes(searchInput) || searchInput === ''),
+    )
 
   return (
     <TabWrapperWithButtons>
       <NameTableHeader
-        mode={"view"}
+        mode={'view'}
         sortType={sortType}
         sortTypeOptionValues={['expiryDate', 'labelName', 'createdAt']}
         sortDirection={sortDirection}
@@ -122,8 +131,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
         onSearchChange={(s) => {
           setSearchInput(s)
         }}
-      >
-      </NameTableHeader>
+      ></NameTableHeader>
       <div data-testid="names-list">
         {match([isMounted, subnameResLoaded, filteredSet?.length, searchQuery])
           .with([false, P._, P._, P._], () => null)
@@ -133,30 +141,29 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
             </EmptyDetailContainer>
           ))
           .with([true, true, 0, P._], () => {
-            return (
-            <EmptyDetailContainer>No entities found.</EmptyDetailContainer>
-          )
-        })
+            return <EmptyDetailContainer>No entities found.</EmptyDetailContainer>
+          })
           .with([true, true, filteredSet?.length, P._], () => {
             return (
-                <InfiniteScrollContainer onIntersectingChange={() => null}>
-                    <div>
-                        {filteredSet.map((name) => {
-                            return (
-                                <TaggedNameItem
-                                    isOwner={address === name.owner}
-                                    name={name.commonName + ' [' + name.domainId + "]" || ""}
-                                    key={name.id}
-                                    mode={"view"}
-                                    selected={false}
-                                    disabled={false}
-                                    onClick={handleClickName(name)}
-                                />)
-                        })}
-                    </div>
-                </InfiniteScrollContainer>
+              <InfiniteScrollContainer onIntersectingChange={() => null}>
+                <div>
+                  {filteredSet.map((name) => {
+                    return (
+                      <TaggedNameItem
+                        isOwner={address === name.owner}
+                        name={name.commonName + ' [' + name.domainId + ']' || ''}
+                        key={name.id}
+                        mode={'view'}
+                        selected={false}
+                        disabled={false}
+                        onClick={handleClickName(name)}
+                      />
+                    )
+                  })}
+                </div>
+              </InfiniteScrollContainer>
             )
-            })
+          })
           .otherwise(() => `${subnameResults.length}`)}
       </div>
       <Footer />

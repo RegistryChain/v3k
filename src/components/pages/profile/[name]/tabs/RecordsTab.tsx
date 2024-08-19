@@ -161,7 +161,7 @@ export const RecordsTab = ({
   return (
     <TabWrapper $isCached={isCached} data-testid="records-tab">
       <AllRecords>
-        <RecordSection key={"section1"} >
+        <RecordSection key={'section1'}>
           <SectionHeader>
             <SectionTitleContainer>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
@@ -175,15 +175,26 @@ export const RecordsTab = ({
           {filteredTexts &&
             filteredTexts.map((text, idx) => {
               return (
-                <div 
-                  key={"div"+idx}
-                  style={{display: "flex", width: "100%", padding: "0.625rem 0.75rem", background: "hsl(0 0% 96%)", border: "1px solid hsl(0 0% 91%)", borderRadius: "8px"}}>
-                  <Typography style={{display: "flex", flex: 1, color: "grey"}}>{text.key}</Typography>
-                  <Typography >{text.value}</Typography>
-                </div>)
-          })}
+                <div
+                  key={'div' + idx}
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    padding: '0.625rem 0.75rem',
+                    background: 'hsl(0 0% 96%)',
+                    border: '1px solid hsl(0 0% 91%)',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                    {text.key}
+                  </Typography>
+                  <Typography>{text.value}</Typography>
+                </div>
+              )
+            })}
         </RecordSection>
-        <RecordSection key={"section2"} >
+        <RecordSection key={'section2'}>
           <SectionHeader>
             <SectionTitleContainer>
               <SectionTitle data-testid="address-heading" fontVariant="bodyBold">

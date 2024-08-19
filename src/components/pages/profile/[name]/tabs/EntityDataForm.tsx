@@ -15,7 +15,7 @@ import { emptyAddress } from '@app/utils/constants'
 import { getContentHashLink } from '@app/utils/contenthash'
 import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
 
-import { TabWrapper as OriginalTabWrapper } from '../../TabWrapper' 
+import { TabWrapper as OriginalTabWrapper } from '../../TabWrapper'
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`

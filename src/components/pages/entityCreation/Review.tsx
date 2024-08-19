@@ -84,33 +84,33 @@ const Actions = styled.div(
 export const Review = ({
   name,
   partners,
-  profile
+  profile,
 }: {
   name: string
-  partners: any,
+  partners: any
   profile: any
 }) => {
   const { t } = useTranslation('profile')
 
   const texts: any[] = []
   partners.forEach((partner: any, idx: number) => {
-    const partnerKey = "partner__[" + idx + "]__"
-    Object.keys(partner).forEach(field => {
-      if (typeof partner[field] === "boolean") {
-        texts.push({key: partnerKey + field, value: partner[field] ? "true": "false"})
-      } else if (field !== "roles") {
-        texts.push({key: partnerKey + field, value: partner[field]})
+    const partnerKey = 'partner__[' + idx + ']__'
+    Object.keys(partner).forEach((field) => {
+      if (typeof partner[field] === 'boolean') {
+        texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
+      } else if (field !== 'roles') {
+        texts.push({ key: partnerKey + field, value: partner[field] })
       } else {
         partner[field].forEach((role: string) => {
-          texts.push({key: partnerKey + "is__" + role, value: "true"})
+          texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
         })
       }
     })
   })
 
-  Object.keys(profile).forEach(field => {
-    const key = "company__" + field.split(" ").join("__")
-    texts.push({key, value: profile[field]})
+  Object.keys(profile).forEach((field) => {
+    const key = 'company__' + field.split(' ').join('__')
+    texts.push({ key, value: profile[field] })
   })
 
   return (
@@ -129,15 +129,26 @@ export const Review = ({
           </SectionHeader>
           {texts &&
             texts.map((text) => {
-              return (<div style={{display: "flex", width: "100%", padding: "0.625rem 0.75rem", background: "hsl(0 0% 96%)", border: "1px solid hsl(0 0% 91%)", borderRadius: "8px"}}>
-                <Typography style={{display: "flex", flex: 1, color: "grey"}}>{text.key}</Typography>
-                <Typography >{text.value}</Typography>
-              </div>)
-          })}
+              return (
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    padding: '0.625rem 0.75rem',
+                    background: 'hsl(0 0% 96%)',
+                    border: '1px solid hsl(0 0% 91%)',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                    {text.key}
+                  </Typography>
+                  <Typography>{text.value}</Typography>
+                </div>
+              )
+            })}
         </RecordSection>
-
       </AllRecords>
-
     </div>
   )
 }
