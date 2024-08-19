@@ -123,7 +123,7 @@ export const NameAvailableBanner = ({
 const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => {
   const router = useRouterWithHistory()
   const { t } = useTranslation('profile')
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
 
   const publicClient = useMemo(
     () =>

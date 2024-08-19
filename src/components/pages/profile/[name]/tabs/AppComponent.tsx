@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match, P } from 'ts-pattern'
@@ -83,11 +84,24 @@ const AppComponent = ({ appData, category }: any) => {
       {appData.map((x: any, idx: number) => {
         return (
           <ItemsContainer key={x.serviceName + idx}>
-            <RecordItem
-              itemKey={x.jurisdiction}
-              value={[x.org, x.serviceName].join(' - ')}
-              type="text"
-            />
+            <div style={{ display: 'flex', width: '100%' }}>
+              {x.logo ? (
+                <Image style={{ marginRight: '12px' }} alt="" width="48" height="48" src={x.logo} />
+              ) : (
+                <div
+                  style={{
+                    marginRight: '12px',
+                    width: '48px',
+                    height: '48px',
+                  }}
+                ></div>
+              )}
+              <RecordItem
+                itemKey={x.jurisdiction}
+                value={[x.org, x.serviceName].join(' - ')}
+                type="text"
+              />
+            </div>
             <div style={{ height: '3rem', alignContent: 'center' }}>
               <Button onClick={() => null}>Order</Button>
             </div>

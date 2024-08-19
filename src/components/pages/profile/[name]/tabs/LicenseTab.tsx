@@ -16,7 +16,7 @@ const LicensesContainer = styled(CacheableComponent)(
   `,
 )
 
-const LicenseTab = ({ registrarType }: any) => {
+const LicenseTab = ({ registrarType = 'corp' }: any) => {
   const licenses: { [x: string]: any } = {
     corp: {
       tax__ids: [

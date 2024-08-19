@@ -29,7 +29,12 @@ const nextConfig = {
   // change to true once infinite loop is fixed
   swcMinify: false,
   images: {
-    domains: ['metadata.ens.domains'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   async rewrites() {
     return [
@@ -214,6 +219,5 @@ if (process.env.ANALYZE) {
   const withBundleAnalyzer = await import('@next/bundle-analyzer').then((n) => n.default)
   plugins.push(withBundleAnalyzer({ enabled: true }))
 }
-
 
 export default plugins.reduce((acc, next) => next(acc), nextConfig)

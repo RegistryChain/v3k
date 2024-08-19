@@ -1,3 +1,5 @@
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useEffect } from 'react'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
 
@@ -14,14 +16,23 @@ export default function Page() {
   const _name = router.query.name as string
   const isSelf = router.query.connected === 'true'
   const isViewingExpired = router.query.expired === 'true'
+  const { openConnectModal } = useConnectModal()
 
   const initial = useInitial()
 
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
 
   const dotBoxResult = useDotBoxAvailabilityOffchain({
     name: _name,
   })
+
+  const openConnect = async () => {
+    if (openConnectModal && !address) await openConnectModal()
+  }
+
+  useEffect(() => {
+    openConnect()
+  }, [isConnected])
 
   const primary = usePrimaryName({ address: address as Hex })
 
@@ -45,13 +56,10 @@ export default function Page() {
     !router.isReady ||
     dotBoxResult.isLoading
 
-
   if (isViewingExpired && gracePeriodEndDate && gracePeriodEndDate > new Date()) {
     router.push(`/profile/${name}`)
     return null
   }
-
-
 
   return (
     <ProfileContent
