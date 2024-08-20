@@ -23,6 +23,8 @@ const Roles = ({
   partners,
   publicClient,
 }: any) => {
+  const { t } = useTranslation('intake')
+
   const relevantRoles = [...roleTypes.standard[intakeType], ...roleTypes[data?.registrarKey]]
   const partnerPercentages: any = {}
 
@@ -116,16 +118,16 @@ const Roles = ({
   const ownershipSection = (
     <div style={{ marginTop: '24px' }}>
       <div>
-        <span style={{ fontSize: '42px' }}>Ownership</span>
+        <span style={{ fontSize: '42px' }}>{t('steps.roles.title.section2')}</span>
       </div>
       <div style={{ display: 'block' }}>
         <InputWrapper>
           <Input
             size="medium"
             value={totalShares}
-            label={'Total Shares'}
+            label={t('steps.roles.totalShares.label')}
             error={false}
-            placeholder={'Total Shares'}
+            placeholder={t('steps.roles.totalShares.label')}
             data-testid="record-input-input"
             validated={true}
             disabled={false}
@@ -144,9 +146,9 @@ const Roles = ({
           <Input
             size="medium"
             value={profile.lockup__days || 0}
-            label={'Lockup Days'}
+            label={t('steps.roles.ownershipLockup.label')}
             error={false}
-            placeholder={'Lockup Days'}
+            placeholder={t('steps.roles.ownershipLockup.label')}
             data-testid="record-input-input"
             validated={true}
             disabled={false}
@@ -169,9 +171,9 @@ const Roles = ({
                 <Input
                   size="medium"
                   value={sharePercentages[partner.name]}
-                  label={'Ownership percentage '}
+                  label={t('steps.roles.ownershipPercentage.label')}
                   error={false}
-                  placeholder={'Ownership percentage '}
+                  placeholder={t('steps.roles.ownershipPercentage.label')}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}
@@ -188,12 +190,6 @@ const Roles = ({
                           ...updatedPartners[idx],
                           shares: Math.ceil(Number(totalShares) * (Number(input) / 100)),
                         }
-                        console.log(
-                          'SETTING SHARES OLD:',
-                          prevPartners[idx].shares,
-                          'NEW:',
-                          updatedPartner.shares,
-                        )
                         updatedPartners[idx] = updatedPartner
                         return updatedPartners
                       })
@@ -206,9 +202,9 @@ const Roles = ({
                   size="medium"
                   style={{ cursor: 'not-allowed' }}
                   value={Math.ceil(Number(totalShares) * (sharePercentages[partner.name] / 100))}
-                  label={'Shares'}
+                  label={t('steps.roles.ownershipShares.label')}
                   error={false}
-                  placeholder={'Shares'}
+                  placeholder={t('steps.roles.ownershipShares.label')}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}
@@ -225,7 +221,7 @@ const Roles = ({
                       fontWeight: '700',
                     }}
                   >
-                    Lockup
+                    {t('steps.roles.ownershipLockup.label')}
                   </label>
                 </div>
                 <div style={{ height: '3rem', alignContent: 'center' }}>
@@ -255,7 +251,7 @@ const Roles = ({
   return (
     <div style={{ marginBottom: '44px' }}>
       <div>
-        <span style={{ fontSize: '42px' }}>Roles</span>
+        <span style={{ fontSize: '42px' }}>{t('steps.roles.title.section1')}</span>
       </div>
       <div style={{ marginTop: '20px' }}>
         <div style={{ display: 'flex' }}>

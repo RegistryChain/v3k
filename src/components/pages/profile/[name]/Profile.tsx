@@ -19,7 +19,6 @@ import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { OG_IMAGE_URL } from '@app/utils/constants'
-import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
 import { RecordsSection } from '../../../RecordsSection'
@@ -123,38 +122,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const router = useRouterWithHistory()
   const { t } = useTranslation('profile')
   const { address, isConnected } = useAccount()
-
-  const publicClient = useMemo(
-    () =>
-      createPublicClient({
-        chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
-      }),
-    [],
-  )
-
-  // if (name?.includes(".registry")) {
-  //   name = name.split(".registry")[0] + ".publicregistry.eth"
-  // }
-
-  // useEffect(() => {
-  //   console.log('res', namehash(name), namehash("publicregistry.eth"))
-  //   if (publicClient) {
-  //     testReadRecord()
-  //   }
-  // }, [publicClient])
-
-  // const testReadRecord = async () => {
-  // const result = await getRecords(publicClient, {
-  //   name,
-  //   records: {
-  //     texts: ['Type', 'DID'],
-  //     coins: ['ETH'],
-  //     contentHash: true,
-  //   },
-  // })
-  // console.log('RES', result)
-  // }
 
   let nameToQuery = name
   if (name?.includes('.registry')) {

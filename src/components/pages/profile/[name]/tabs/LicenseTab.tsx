@@ -54,12 +54,7 @@ const LicenseTab = ({ registrarType = 'corp' }: any) => {
     )
   })
 
-  return (
-    <LicensesContainer>
-      Props
-      {licenseComps}
-    </LicensesContainer>
-  )
+  return <LicensesContainer>{licenseComps}</LicensesContainer>
 }
 
 export default LicenseTab

@@ -142,10 +142,6 @@ export default function Page() {
     }
   }, [entityName, registrar])
 
-  useEffect(() => {
-    console.log(entityName + '.' + registrar, ' is available? ', nameAvailable)
-  }, [nameAvailable])
-
   const entityIsAvailable = async (registrar: string, entityName: string) => {
     const client = publicClient
     const registry = await getContract({
@@ -255,7 +251,7 @@ export default function Page() {
             }
             onClick={() => advance()}
           >
-            Form Entity
+            {t('action.formEntity')}
           </Button>
         </Stack>
       </Container>

@@ -42,16 +42,6 @@
     "react/no-array-index-key": "off",
     "jsx-a11y/label-has-associated-control": "off",
     "no-empty-pattern": "off",
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "js": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never"
-      }
-    ],
     "no-console": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "no-restricted-syntax": [
@@ -65,6 +55,7 @@
         "message": "No private keys allowed"
       }
     ],
+    "import/extensions": "off",
     "prettier/prettier": "off",
     "spaced-comment": "off",
     "prefer-template": "off",

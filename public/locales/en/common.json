@@ -7,6 +7,7 @@
   "etherscan": "Etherscan",
   "action": {
     "cancel": "Cancel",
+    "formEntity": "Form Entity",
     "change": "Change",
     "upload": "Upload",
     "close": "Close",
@@ -354,27 +355,7 @@
   },
   "entityInput": {
     "label": "Name search",
-    "placeholder": "Check for an entity name",
-    "emptyText": "Type a name or address to search...",
-    "address": "Address",
-    "errors": {
-      "tooShort": "Name too short",
-      "invalid": "Invalid format for name"
-    },
-    "status": {
-      "registered": "Registered",
-      "gracePeriod": "Grace Period",
-      "premium": "Temporary Premium",
-      "available": "Available",
-      "notOwned": "Not Owned",
-      "notImported": "Not Imported",
-      "short": "Too Short",
-      "default": "Invalid",
-      "invalid": "Invalid",
-      "unsupportedTLD": "Not Supported",
-      "imported": "Imported",
-      "owned": "Owned"
-    }
+    "placeholder": "Check for an entity name"
   },
   "selectableInput": {
     "add": "Add",

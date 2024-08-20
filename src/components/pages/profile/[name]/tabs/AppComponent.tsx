@@ -71,6 +71,8 @@ const ItemsContainer = styled(CacheableComponent)(
 )
 
 const AppComponent = ({ appData, category }: any) => {
+  const { t } = useTranslation('profile')
+
   return (
     <Container>
       <HeaderContainer>
@@ -103,7 +105,7 @@ const AppComponent = ({ appData, category }: any) => {
               />
             </div>
             <div style={{ height: '3rem', alignContent: 'center' }}>
-              <Button onClick={() => null}>Order</Button>
+              <Button onClick={() => null}>{t('actions.order')}</Button>
             </div>
           </ItemsContainer>
         )

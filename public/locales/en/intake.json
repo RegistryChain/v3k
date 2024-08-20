@@ -1,0 +1,15 @@
+{
+  "steps": {
+    "corpInfo": { "actions": {} },
+    "addPartners": {},
+    "roles": {
+      "title": { "section1": "Roles", "section2": "Ownership" },
+      "totalShares": { "label": "Total Shares" },
+      "ownershipShares": { "label": "Shares" },
+      "ownershipPercentage": { "label": "Ownership Percentage" },
+      "ownershipLockup": { "label": "Lockup" }
+    },
+    "additionalInfo": {},
+    "review": {}
+  }
+}

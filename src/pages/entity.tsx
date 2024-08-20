@@ -1,6 +1,7 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import {
   createPublicClient,
@@ -140,6 +141,7 @@ const typeToRecordKey: any = {
 }
 
 export default function Page() {
+  const { t } = useTranslation('common')
   const router = useRouterWithHistory()
   const entityName = router.query.name as string
   const entityRegistrar = router.query.registrar as string
@@ -177,6 +179,8 @@ export default function Page() {
       type: entityType,
     }))
   }, [entityName, entityRegistrar, entityType])
+
+  // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
@@ -276,12 +280,6 @@ export default function Page() {
     }
   }
 
-  useEffect(() => {
-    console.log(
-      'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
-    )
-  }, [])
-
   let content = null
   let buttons = (
     <FooterContainer style={{ marginTop: '36px' }}>
@@ -298,7 +296,7 @@ export default function Page() {
           advance()
         }}
       >
-        {registrationStep < 5 ? 'Next' : 'Create Entity'}
+        {registrationStep < 5 ? t('action.next') : t('action.formEntity')}
       </Button>
     </FooterContainer>
   )
