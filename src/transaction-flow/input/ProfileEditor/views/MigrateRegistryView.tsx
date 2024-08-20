@@ -34,7 +34,7 @@ export const MigrateRegistryView = ({ name, onCancel }: Props) => {
         trailing={
           <Button
             as="a"
-            href={`https://legacy.ens.domains/name/${name}`}
+            href={`https://legacy.registrychain.com/name/${name}`}
             target="_blank"
             data-testid="warning-overlay-next-button"
           >

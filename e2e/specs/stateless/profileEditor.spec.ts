@@ -122,7 +122,7 @@ test.describe('migrations', () => {
     await expect(page.getByText('Registry out of date')).toBeVisible()
     await expect(page.getByTestId('warning-overlay-next-button')).toHaveAttribute(
       'href',
-      `https://legacy.ens.domains/name/legacy.test`,
+      `https://legacy.registrychain.com/name/legacy.test`,
     )
   })
 

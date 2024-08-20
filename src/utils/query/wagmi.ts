@@ -26,7 +26,7 @@ const infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 const tenderlyKey = process.env.NEXT_PUBLIC_TENDERLY_KEY || '4imxc4hQfRjxrVB2kWKvTo'
 
 export const infuraUrl = (chainName: string) => `https://${chainName}.infura.io/v3/${infuraKey}`
-const cloudflareUrl = (chainName: string) => `https://web3.ens.domains/v1/${chainName}`
+const cloudflareUrl = (chainName: string) => `https://web3.registrychain.com/v1/${chainName}`
 const tenderlyUrl = (chainName: string) => `https://${chainName}.gateway.tenderly.co/${tenderlyKey}`
 
 type SupportedUrlFunc = typeof infuraUrl | typeof cloudflareUrl | typeof tenderlyUrl

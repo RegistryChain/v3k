@@ -1,8 +1,8 @@
 Last modified: 11/11/2022
 
 1. **Overview**
-   1. Thank you for visiting our website at [https://ens.domains/](https://ens.domains/) (“**Website**”).
-   2. **By accessing and using any part of this Website or the website-hosted user interface accessible at https://app.ens.domains/ (“Interface”), you have indicated acceptance to be legally bound by these Terms of Use. If you do not agree to these Terms of Use, your sole and exclusive remedy is to exit this Website and/or Interface (as the case may be).**
+   1. Thank you for visiting our website at [https://registrychain.com/](https://registrychain.com/) (“**Website**”).
+   2. **By accessing and using any part of this Website or the website-hosted user interface accessible at https://zygote.registrychain.com/ (“Interface”), you have indicated acceptance to be legally bound by these Terms of Use. If you do not agree to these Terms of Use, your sole and exclusive remedy is to exit this Website and/or Interface (as the case may be).**
    3. For the purposes of these Terms of Use, references to “**ENSF**”, “**we**”, “**us**” or “**our**” shall refer to the ENS Foundation (a foundation company limited by guarantee, incorporated in the Cayman Islands). We may, from time to time, engage independent subcontractors to operate and/or maintain the Website and the Interface (“**Subcontractors**”).
    4. These Terms of Use govern access to and use of our Website and any services provided via our Interface (as defined below). You must not access or use our Website or Interface except in accordance with the Terms of Use, any applicable laws and any other notices, policies or conditions that ENSF may issue to the public or to you, or update on this Website, from time-to-time.
    5. These Terms of Use may be updated from time to time. All changes will be published on this page, and your use of this Website after such changes have been published will indicate your agreement to the modified Terms of Use and all of the changes. As such, you are reminded to check the Website on a regular basis to obtain the most updated version of the Terms of Use.

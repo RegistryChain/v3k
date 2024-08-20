@@ -26,7 +26,11 @@ describe('ExpiryPanel', () => {
 
   it('should not display link only if link is provided', async () => {
     const { rerender } = render(
-      <ExpiryPanel type="expiry" date={new Date(3255803954000)} link="https://app.ens.domains" />,
+      <ExpiryPanel
+        type="expiry"
+        date={new Date(3255803954000)}
+        link="https://zygote.registrychain.com"
+      />,
     )
     expect(screen.getByText('action.view')).toBeVisible()
     rerender(<ExpiryPanel type="expiry" date={new Date(3255803954000)} />)

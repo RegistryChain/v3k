@@ -22,7 +22,7 @@ ENS is a decentralized naming system that runs on the ethereum blockchain.
 The main purpose of ENS is to convert unfriendly blockchain addresses
 into human readable names (e.g. 0xb8c2c29ee19d8307cb7255e1cd9cbde883a267d5 -> nick.eth),
 but ENS has grown into so much more than that. For more info please visit our
-[docs site](https://docs.ens.domains/learn/protocol).
+[docs site](https://docs.registrychain.com/learn/protocol).
 
 # Coming from web2
 
@@ -97,7 +97,7 @@ You're a legend on your local machine.
 
 Github action scripts can be found in `.github/workflows`
 
-## [The Manager App](https://app.ens.domains/)
+## [The Manager App](https://zygote.registrychain.com/)
 
 ### Hosting
 
@@ -181,11 +181,11 @@ TBC
 ENS names are NFTs. NFTs can have metadata associated with them, that is
 data associated with them that is not stored directly on-chain. One of the
 main use cases of this is to display a nice image that represents the ENS
-name. You can see an example of this [here](https://app.ens.domains/nick.eth?tab=more).
+name. You can see an example of this [here](https://zygote.registrychain.com/nick.eth?tab=more).
 
-https://metadata.ens.domains/
+https://metadata.registrychain.com/
 
-- https://metadata.ens.domains/docs
+- https://metadata.registrychain.com/docs
 - https://github.com/ensdomains/ens-metadata-service
 
 #### Cloudflare workers
@@ -254,7 +254,7 @@ Once exited, you can commit the data to your branch. You do not need to run a se
 
 #### Stateless vs Stateful
 
-Our e2e tests are split into two categories, stateless and stateful. Stateless test use the development environment, are faster, and is the general recommended way to write integration tests. Occasionally, you may need to test a feature that requires an external api or service. In this case, you can use the stateful tests. These tests are slower, 
+Our e2e tests are split into two categories, stateless and stateful. Stateless test use the development environment, are faster, and is the general recommended way to write integration tests. Occasionally, you may need to test a feature that requires an external api or service. In this case, you can use the stateful tests. These tests are slower,
 
 #### Running the tests
 
@@ -333,62 +333,62 @@ The most important function in the e2e stateless tests is `makeName`. This funct
 
 A single or an array of names to create. Each name can have the following properties:
 
-**label**: *string*
+**label**: _string_
 
 The label of the name.
 
-**type**: legacy | legacy-register | wrapped*
+**type**: legacy | legacy-register | wrapped\*
 
-The type of the name. *legacy* names adopt the original data structure of ENS and are not ERC1155 complaint. *wrapped* names are names that have been wrapped with the *NameWrapper* contract and are ERC1155 compliant. *legacy-register* names simulate how mass registration services register names, usually without a resolver of other options that may increase gas.
+The type of the name. _legacy_ names adopt the original data structure of ENS and are not ERC1155 complaint. _wrapped_ names are names that have been wrapped with the _NameWrapper_ contract and are ERC1155 compliant. _legacy-register_ names simulate how mass registration services register names, usually without a resolver of other options that may increase gas.
 
-**owner**: *user | user2 | user3*
+**owner**: _user | user2 | user3_
 
-*defaults to owner*
+_defaults to owner_
 
 The address of the owner of the name.
 
-**manager**: *user | user2 | user3*
+**manager**: _user | user2 | user3_
 
-*defaults to value of owner*
+_defaults to value of owner_
 
-The address of the manager of the name. Only applicable to *legacy* and *legacy-registr* names. 
+The address of the manager of the name. Only applicable to _legacy_ and _legacy-registr_ names.
 
-**duration**: *number*
+**duration**: _number_
 
-*defaults to 365 days in seconds*
+_defaults to 365 days in seconds_
 
 The number of seconds the name will be registered for. Negative values are allowed to simulate names that have expired or are in the grace period.
 
-**secret**: *hex*
+**secret**: _hex_
 
-*defaults to a zero hex*
+_defaults to a zero hex_
 
 The secret used during the register process. You will most likely not need to set this value.
 
-**resolver**: *address*
+**resolver**: _address_
 
-*defaults to the legacy resolver for legacy names and the latest resolver for wrapped names*
+_defaults to the legacy resolver for legacy names and the latest resolver for wrapped names_
 
 The address of the resolver for the name. Used to test cases where the resolver is misconfgured or not set.
 
-**addr**: *address*
+**addr**: _address_
 
-*defaults to the address of the owner*
+_defaults to the address of the owner_
 
 The address record for the name. Is used to test cases where the eth address is not set.
 
-**records**: *RecordOptions*
+**records**: _RecordOptions_
 
 The records for the name. Below is a type definition for the records object.
 
 ```typescript
 type RecordOptions = {
   texts: {
-    key: string,
+    key: string
     value: string
   }[]
   coins: {
-    coin: string | number,
+    coin: string | number
     value: string
   }[]
   contentHash: string
@@ -396,19 +396,27 @@ type RecordOptions = {
 }
 ```
 
-**fuses**: *FusesType*
+**fuses**: _FusesType_
 
-*applicable to wrapped names only*
+_applicable to wrapped names only_
 
-The fuses to burn for a wrapped name. Below is a type definition for the fuses object. Note that *PARENT_CANNOT_CONTROL* is not fuse option as it is burned by default when a 2LD name is wrapped.
+The fuses to burn for a wrapped name. Below is a type definition for the fuses object. Note that _PARENT_CANNOT_CONTROL_ is not fuse option as it is burned by default when a 2LD name is wrapped.
 
 ```typescript
 type FusesType = {
-  named: Array<"CANNOT_UNWRAP" | "CANNOT_BURN_FUSES" | "CANNOT_TRANSFER" | "CANNOT_SET_RESOLVER" | "CANNOT_SET_TTL" | "CANNOT_CREATE_SUBDOMAIN" | "CANNOT_APPROVE">
+  named: Array<
+    | 'CANNOT_UNWRAP'
+    | 'CANNOT_BURN_FUSES'
+    | 'CANNOT_TRANSFER'
+    | 'CANNOT_SET_RESOLVER'
+    | 'CANNOT_SET_TTL'
+    | 'CANNOT_CREATE_SUBDOMAIN'
+    | 'CANNOT_APPROVE'
+  >
 }
 ```
 
-**subnames**: *SubnameType[]*
+**subnames**: _SubnameType[]_
 
 The subnames for the name. Below is a type definition for the subname object.
 
@@ -426,15 +434,15 @@ type SubnameType = {
 
 ###### options
 
-**timeOffset**: *number*
+**timeOffset**: _number_
 
-*defaults to 0*
+_defaults to 0_
 
 The duration in seconds to move the blockchain forward after the name has been registered. In rare use cases, usually when you are testing a name with a negative duration, the blockchain may need to be moved forward after all the transactions before it will resolve correctly.
 
-**syncSubgraph**: *boolean*
+**syncSubgraph**: _boolean_
 
-*defaults to true*
+_defaults to true_
 
 Whether to wait for the subgraph to sync before returning the name. It is useful to set this value to false when you are testing a feature that does not rely on the subgraph to speed up the tests.
 

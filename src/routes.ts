@@ -123,21 +123,21 @@ export const routes: RouteItemObj[] = [
   },
   {
     name: 'community',
-    href: 'https://chat.ens.domains/',
+    href: 'https://chat.registrychain.com/',
     label: 'navigation.community',
     disabled: false,
     connected: false,
   },
   {
     name: 'developers',
-    href: 'https://docs.ens.domains/',
+    href: 'https://docs.registrychain.com/',
     label: 'navigation.developers',
     disabled: false,
     connected: false,
   },
   {
     name: 'bounty',
-    href: 'https://docs.ens.domains/bug-bounty-program',
+    href: 'https://docs.registrychain.com/bug-bounty-program',
     label: 'navigation.bounty',
     disabled: false,
     connected: false,
@@ -158,7 +158,7 @@ export const routes: RouteItemObj[] = [
   },
   {
     name: 'oldApp',
-    href: 'https://legacy.ens.domains',
+    href: 'https://legacy.registrychain.com',
     label: 'navigation.oldApp',
     disabled: false,
     connected: false,

@@ -36,7 +36,7 @@
           },
           "url": {
             "label": "网站",
-            "placeholder": "https://ens.domains"
+            "placeholder": "https://registrychain.com"
           },
           "location": {
             "label": "位置",
@@ -344,7 +344,7 @@
       "invalidResolver": {
         "title": "未经授权的解析器",
         "description": "要使用此名称作为您的主名称，您需要先设置一个有效的解析器并更新该名称的 ETH 地址记录。"
-      }     
+      }
     },
     "multiStepSubnameDelete": {
       "title": "删除子名称",

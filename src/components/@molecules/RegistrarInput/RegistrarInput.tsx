@@ -21,7 +21,14 @@ import {
   GetPriceReturnType,
   GetWrapperDataReturnType,
 } from '@ensdomains/ensjs/public'
-import { BackdropSurface, Input, MagnifyingGlassSimpleSVG, mq, Portal, Typography } from '@ensdomains/thorin'
+import {
+  BackdropSurface,
+  Input,
+  MagnifyingGlassSimpleSVG,
+  mq,
+  Portal,
+  Typography,
+} from '@ensdomains/thorin'
 
 import { SupportedChain } from '@app/constants/chains'
 import {
@@ -36,8 +43,10 @@ import { UseExpiryQueryKey } from '@app/hooks/ensjs/public/useExpiry'
 import { UseOwnerQueryKey, UseOwnerReturnType } from '@app/hooks/ensjs/public/useOwner'
 import { UsePriceQueryKey } from '@app/hooks/ensjs/public/usePrice'
 import { UseWrapperDataQueryKey } from '@app/hooks/ensjs/public/useWrapperData'
+import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { createQueryKey } from '@app/hooks/useQueryOptions'
+import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useValidate, validate } from '@app/hooks/useValidate'
 import { useElementSize } from '@app/hooks/useWindowSize'
@@ -46,13 +55,10 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { getRegistrationStatus } from '@app/utils/registrationStatus'
 import { thread, yearsToSeconds } from '@app/utils/utils'
 
+import { SortDirection } from '../NameTableHeader/NameTableHeader'
 import { FakeRegistrarInputBox, RegistrarInputBox } from './RegistrarInputBox'
 import { getBoxNameStatus, SearchResult } from './SearchResult'
 import { HistoryItem, SearchHandler, SearchItem } from './types'
-import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
-import { GetSubnamesParameters } from '@ensdomains/ensjs/subgraph'
-import { SortDirection } from '../NameTableHeader/NameTableHeader'
-import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 
 const Container = styled.div<{ $size: 'medium' | 'extraLarge' }>(
   ({ $size }) => css`
@@ -105,105 +111,6 @@ const SearchResultsContainer = styled.div<{
         `}
   `,
 )
-
-const FloatingSearchContainer = styled.div<{ $state: TransitionState }>(
-  ({ theme, $state }) => css`
-    width: 95%;
-
-    position: fixed;
-    left: 2.5%;
-    z-index: 9999;
-    top: ${theme.space['4']};
-
-    display: flex;
-    flex-direction: column;
-
-    opacity: 0;
-
-    & > div:nth-child(2) {
-      width: 95vw !important;
-    }
-
-    ${$state === 'entered' &&
-    css`
-      opacity: 1;
-    `}
-  `,
-)
-
-const InputAndCancel = styled.div(
-  () => css`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-  `,
-)
-
-const CancelButton = styled(Typography)(
-  ({ theme }) => css`
-    padding: ${theme.space['3']};
-  `,
-)
-
-type MobileRegistrarInputProps = {
-  state: TransitionState
-  toggle: (value: boolean) => void
-  searchInputRef: RefObject<HTMLInputElement>
-  SearchResultsElement: JSX.Element
-  RegistrarInputElement: JSX.Element
-}
-
-const MobileRegistrarInput = ({
-  state,
-  toggle,
-  searchInputRef,
-  SearchResultsElement,
-  RegistrarInputElement,
-}: MobileRegistrarInputProps) => {
-  const { t } = useTranslation('common')
-
-  useEffect(() => {
-    if (state === 'entered') {
-      searchInputRef.current?.focus()
-    }
-  }, [searchInputRef, state])
-
-  return (
-    <>
-      <FakeRegistrarInputBox
-        onClick={(e) => {
-          toggle(true)
-          // MOBILE SAFARI FIX:
-          // focus on the fake input first, then wait for the transition to finish and focus on the real input
-          // this allows the keyboard to pop up
-          e.currentTarget.focus()
-          e.preventDefault()
-          setTimeout(() => searchInputRef.current?.focus(), 350)
-        }}
-      />
-      {state !== 'unmounted' && (
-        <Portal>
-          <BackdropSurface
-            $empty={false}
-            onClick={() => toggle(false)}
-            $state={state}
-            data-testid="search-input-backdrop"
-          />
-          <FloatingSearchContainer $state={state}>
-            <InputAndCancel>
-              {RegistrarInputElement}
-              <CancelButton as="button" onClick={() => toggle(false)}>
-                {t('action.cancel')}
-              </CancelButton>
-            </InputAndCancel>
-            {SearchResultsElement}
-          </FloatingSearchContainer>
-        </Portal>
-      )}
-    </>
-  )
-}
 
 const createCachedQueryDataGetter =
   ({
@@ -265,7 +172,11 @@ const getRouteForSearchItem = ({
     if (boxStatus === 'available') return `/dotbox/${selectedItem.text}`
   }
 
-  if (selectedItem.nameType === 'eth' || selectedItem.nameType === 'dns' || selectedItem.nameType === 'registry' ) {
+  if (
+    selectedItem.nameType === 'eth' ||
+    selectedItem.nameType === 'dns' ||
+    selectedItem.nameType === 'registry'
+  ) {
     const ownerData = getCachedQueryData<UseOwnerReturnType, UseOwnerQueryKey>({
       functionName: 'getOwner',
       params: { name: selectedItem.text },
@@ -591,36 +502,13 @@ const addInfoDropdownItem =
     ]
   }
 
-const useBuildDropdownItems = (inputVal: string, history: HistoryItem[]) => {
-  const { t } = useTranslation('common')
-  
-  const inputIsAddress = useMemo(() => isAddress(inputVal), [inputVal])
-  
-  const { isValid, isETH, name } = useValidate({
-    input: inputVal,
-  })
-
-  return useMemo(
-    () =>
-      thread(
-        [],
-        addEthDropdownItem({ name, isETH }),
-        addBoxDropdownItem({ name, isValid }),
-        addDnsDropdownItem({ name, isETH }),
-        addAddressItem({ name, inputIsAddress }),
-        addTldDropdownItem({ name }),
-        addHistoryDropdownItems({ name, history }),
-        addErrorDropdownItem({ name, isValid }),
-        addInfoDropdownItem({ t }),
-      ),
-    [inputIsAddress, name, isETH, isValid, history, t],
-  )
-  
-}
-
-const debouncer = debounce((setFunc: () => void) => setFunc(), 250)
-
-export const RegistrarInput = ({ size = 'extraLarge', field, registrars, value, setValue }: any) => {
+export const RegistrarInput = ({
+  size = 'extraLarge',
+  field,
+  registrars,
+  value,
+  setValue,
+}: any) => {
   const router = useRouterWithHistory()
   const queryClient = useQueryClient()
   const breakpoints = useBreakpoint()
@@ -656,10 +544,10 @@ export const RegistrarInput = ({ size = 'extraLarge', field, registrars, value, 
   const handleFocusIn = useCallback(() => toggle(true), [toggle])
   const handleFocusOut = useCallback(() => toggle(false), [toggle])
 
-  const dropdownItems: any = [{isHistory: "", text: "", nameType: ""}]
+  const dropdownItems: any = [{ isHistory: '', text: '', nameType: '' }]
 
   const regNamesLower: any = {}
-  Object.keys(registrars).forEach(key => {
+  Object.keys(registrars).forEach((key) => {
     const name = registrars[key].name.toLowerCase()
     regNamesLower[name] = key
   })
@@ -734,53 +622,64 @@ export const RegistrarInput = ({ size = 'extraLarge', field, registrars, value, 
             setInputVal(e.target.value)
             const names = Object.keys(regNamesLower)
             const userInput = e.target.value.toLowerCase()
-            const showNames: any[] = names.filter(x => x.includes(userInput))
+            const showNames: any[] = names.filter((x) => x.includes(userInput))
             setShowNamesState(showNames)
 
-            const selectedName = names.find(x => x === userInput)
+            const selectedName = names.find((x) => x === userInput)
             if (selectedName) {
               setValue(regNamesLower[selectedName])
             }
             return
-          }
-        }
+          }}
           hideLabel
           icon={<MagnifyingGlassSimpleSVG />}
           placeholder={field}
         />
-        <div style={{position: "absolute", zIndex: 1000, width: "100%", paddingLeft: "2px", paddingRight: "100px", cursor: "pointer", borderRadius: "8px"}}>
-          <div style={{backgroundColor: "white", paddingBottom: "8px", borderRadius: "8px"}}>
+        <div
+          style={{
+            position: 'absolute',
+            zIndex: 1000,
+            width: '100%',
+            paddingLeft: '2px',
+            paddingRight: '100px',
+            cursor: 'pointer',
+            borderRadius: '8px',
+          }}
+        >
           {showNamesState?.length > 0 ? (
-            showNamesState.map(x => 
-            (<div style={{backgroundColor: "white", color: "#3888FF", paddingLeft: "10px"}} onClick={() => {
-              setValue(regNamesLower[x])
-              setInputVal(x)
-              setShowNamesState([])
-            }}>
-              <span>{x}</span>
-            </div>)
-            )
+            <div style={{ backgroundColor: 'white', paddingBottom: '8px', borderRadius: '8px' }}>
+              {showNamesState.map((x) => (
+                <div
+                  style={{ backgroundColor: 'white', color: '#3888FF', paddingLeft: '10px' }}
+                  onClick={() => {
+                    setValue(regNamesLower[x])
+                    setInputVal(x)
+                    setShowNamesState([])
+                  }}
+                >
+                  <span>{x}</span>
+                </div>
+              ))}
+            </div>
           ) : null}
-          </div>
         </div>
-        </Container>
+      </Container>
     )
   }
-  
 
   return (
     <Container data-testid="search-input-mobile" $size="extraLarge">
-          <Input
-          data-testid="name-table-header-search"
-          size="small"
-          label="search"
-          value={value}
-          onChange={(e) => setValue?.(e.target.value)}
-          hideLabel
-          icon={<MagnifyingGlassSimpleSVG />}
-          placeholder={field}
-        />
-        {SearchResultsElement}
+      <Input
+        data-testid="name-table-header-search"
+        size="small"
+        label="search"
+        value={value}
+        onChange={(e) => setValue?.(e.target.value)}
+        hideLabel
+        icon={<MagnifyingGlassSimpleSVG />}
+        placeholder={field}
+      />
+      {SearchResultsElement}
     </Container>
   )
 }

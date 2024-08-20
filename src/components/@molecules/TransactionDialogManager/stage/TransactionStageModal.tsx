@@ -214,7 +214,7 @@ export const LoadBar = ({ status, sendTime }: { status: Status; sendTime: number
         <Outlink
           iconPosition="before"
           icon={QuestionCircleSVG}
-          href="https://support.ens.domains/en/articles/7982906-long-running-transactions"
+          href="https://support.registrychain.com/en/articles/7982906-long-running-transactions"
         >
           {t('transaction.dialog.sent.learn')}
         </Outlink>

@@ -20,7 +20,7 @@ const profiles = [
       {
         type: 'snippet',
         key: 'url',
-        value: 'ens.domains',
+        value: 'registrychain.com',
       },
       {
         type: 'snippet',
@@ -58,7 +58,7 @@ const profiles = [
       {
         type: 'account',
         key: 'email',
-        value: 'email@ens.domains',
+        value: 'email@registrychain.com',
       },
     ],
     owners: [

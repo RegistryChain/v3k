@@ -48,11 +48,25 @@ const NameContainer = styled.div(({ theme }) => [
   `),
 ])
 
-const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient }: any) => {
+const AddPartners = ({
+  data,
+  partnerTypes,
+  partnerFields,
+  intakeType,
+  setPartners,
+  partners,
+  publicClient,
+}: any) => {
   const name = data?.name || ''
   const [partnerInputNumber, setPartnerInputNumber] = useState(0)
+  const [isFocusedPartnerType, setIsFocusedPartnerType] = useState(false)
 
-  const relevantFields = { ...partnerFields.standard, ...partnerFields[data?.registrarKey] }
+  const inputRef = useRef(null)
+
+  const relevantFields = {
+    ...partnerFields.standard[intakeType],
+    ...partnerFields[data?.registrarKey],
+  }
 
   const partnersData = async () => {
     const client = publicClient
@@ -106,6 +120,26 @@ const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient 
   }, [])
 
   useEffect(() => {
+    let changeFlag = false // Upon mount, map through partners object
+
+    const newPartners = partners.map((partner: any) => {
+      const nPartner = partner
+      if (!partner.DOB) {
+        changeFlag = true
+        nPartner.DOB = '01-01-2000'
+      }
+      return nPartner
+    })
+
+    if (changeFlag) setPartners(newPartners)
+    //Check if partner has DOB already
+    //If not, set to default
+    if (document.activeElement?.getAttribute('data-testid') !== 'record-type-input') {
+      setIsFocusedPartnerType(false)
+    }
+  }, [partners])
+
+  useEffect(() => {
     //Upon partnerInputNumber change, check if the partners[partnerInputNumber] object has keys/vals already
     // If not, add a new object using the correct partnerSchema to instantiate an object to updated in the input (with empty placeholder vals)
     if (partners.length === partnerInputNumber && partners.length > 0) {
@@ -155,9 +189,9 @@ const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient 
               return (
                 <InputWrapper key={field}>
                   <Calendar
-                    labelText={'Partner ' + i + ' ' + field}
+                    labelText={'Partner ' + field}
                     labelHeight={62}
-                    value={new Date(partner?.[field]).getTime() / 1000 + 3600 * 24 || 946692000}
+                    value={new Date(partner?.[field]).getTime() / 1000 + 15000}
                     onChange={(e) => {
                       const { valueAsDate } = e.currentTarget
                       if (valueAsDate) {
@@ -174,8 +208,79 @@ const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient 
                     }}
                     highlighted
                     name={name}
-                    min={1000000}
+                    min={0}
                   />
+                </InputWrapper>
+              )
+            }
+            if (field === 'type') {
+              return (
+                <InputWrapper key={field}>
+                  <Input
+                    size="large"
+                    value={partner?.[field]}
+                    ref={inputRef}
+                    label={'Partner ' + field}
+                    error={false}
+                    placeholder={'Partner ' + field}
+                    data-testid="record-type-input"
+                    validated={true}
+                    disabled={false}
+                    onFocus={() => setIsFocusedPartnerType(true)}
+                    onChange={(e) => {
+                      if (
+                        fieldType === 'number' &&
+                        !Number(e.target.value) &&
+                        e.target.value !== ''
+                      ) {
+                        return
+                      }
+                      setPartners((prevPartners: any) => {
+                        const updatedPartners = [...prevPartners]
+                        const updatedPartner = { ...updatedPartners[i], [field]: e.target.value }
+                        updatedPartners[i] = updatedPartner
+                        return updatedPartners
+                      })
+                    }}
+                  />
+                  {isFocusedPartnerType ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        zIndex: '1000',
+                        width: '100%',
+                        backgroundColor: 'white',
+                        marginTop: '-16px',
+                        borderBottom: '1px solid hsl(216 100% 61%)',
+                        borderLeft: '1px solid hsl(216 100% 61%)',
+                        borderRight: '1px solid hsl(216 100% 61%)',
+                        padding: '6px',
+                        color: 'hsl(216 100% 61%)',
+                        // marginLeft: '20px',
+                        borderBottomRightRadius: '20px',
+                        borderBottomLeftRadius: '20px',
+                      }}
+                    >
+                      {partnerTypes.standard[intakeType].map((type: any, idx: number) => {
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              setPartners((prevPartners: any) => {
+                                const updatedPartners = [...prevPartners]
+                                const updatedPartner = { ...updatedPartners[i], type }
+                                updatedPartners[i] = updatedPartner
+                                return updatedPartners
+                              })
+                            }}
+                            style={{ width: '100%', padding: '4px 10px', cursor: 'pointer' }}
+                          >
+                            <span>{type}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : null}
                 </InputWrapper>
               )
             }
@@ -184,9 +289,9 @@ const AddPartners = ({ data, partnerFields, setPartners, partners, publicClient 
                 <Input
                   size="large"
                   value={partner?.[field]}
-                  label={'Partner ' + i + ' ' + field}
+                  label={'Partner ' + field}
                   error={false}
-                  placeholder={'Partner ' + i + ' ' + field}
+                  placeholder={'Partner ' + field}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}

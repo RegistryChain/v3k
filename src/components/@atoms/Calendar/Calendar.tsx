@@ -75,46 +75,71 @@ type Props = {
 
 export const Calendar = forwardRef(
   (
-    { value, name, onBlur, highlighted, min, onChange, labelText, labelHeight=82, ...props }: Props,
+    {
+      value,
+      name,
+      onBlur,
+      highlighted,
+      min,
+      onChange,
+      labelText,
+      labelHeight = 82,
+      ...props
+    }: Props,
     ref: ForwardedRef<HTMLInputElement>,
   ) => {
     const inputRef = useDefaultRef<HTMLInputElement>(ref)
 
-    return (<>
-        <span style={{padding: "0 8px", color: "hsl(240 6% 63%)", fontSize: "16px", font: "satoshi", fontWeight: "700"}}>{labelText}</span>
-      <Label style={{height:labelHeight, padding: "8px 14px", fontSize: "16px"}} htmlFor="calendar" $highlighted={highlighted}>
-        <LabelInput
-          style={{borderRadius: "20px",backgroundColor: "white"}}
-          id="calendar"
-          data-testid="calendar"
-          type="date"
-          {...props}
-          ref={inputRef}
-          value={"secondsToDateInput(value)"}
-          min={secondsToDateInput(min ?? value)}
-          onFocus={(e) => {
-            e.target.select()
+    return (
+      <>
+        <span
+          style={{
+            padding: '0 8px',
+            color: 'hsl(240 6% 63%)',
+            fontSize: '16px',
+            font: 'satoshi',
+            fontWeight: '700',
           }}
-          onChange={(e) => {
-            if (!onChange) return
-            
-            let { valueAsDate: newValueAsDate } = e.currentTarget
-            if (newValueAsDate) {
-              // Have to add in the timezone offset to make sure that the date shows up correctly after calendar picking for UTC
-              newValueAsDate = new Date(
-                newValueAsDate.getTime() + newValueAsDate.getTimezoneOffset() * 60 * 1000,
-              )
-            }
-            onChange({ ...e, currentTarget: { ...e.currentTarget, valueAsDate: newValueAsDate } })
-          }}
-          onClick={() => inputRef.current!.showPicker()}
-        />
-        <span data-testid="calendar-date">{formatExpiry(secondsToDate(value))}</span>
-        <CalendarIcon>
-          <CalendarSVG height={16} width={16} />
-        </CalendarIcon>
-      </Label>
-          </>
+        >
+          {labelText}
+        </span>
+        <Label
+          style={{ height: labelHeight, padding: '8px 14px', fontSize: '16px' }}
+          htmlFor="calendar"
+          $highlighted={highlighted}
+        >
+          <LabelInput
+            style={{ borderRadius: '20px', backgroundColor: 'white' }}
+            id="calendar"
+            data-testid="calendar"
+            type="date"
+            {...props}
+            ref={inputRef}
+            value={'secondsToDateInput(value)'}
+            min={secondsToDateInput(min ?? value)}
+            onFocus={(e) => {
+              e.target.select()
+            }}
+            onChange={(e) => {
+              if (!onChange) return
+
+              let { valueAsDate: newValueAsDate } = e.currentTarget
+              if (newValueAsDate) {
+                // Have to add in the timezone offset to make sure that the date shows up correctly after calendar picking for UTC
+                newValueAsDate = new Date(
+                  newValueAsDate.getTime() + newValueAsDate.getTimezoneOffset() * 60 * 1000,
+                )
+              }
+              onChange({ ...e, currentTarget: { ...e.currentTarget, valueAsDate: newValueAsDate } })
+            }}
+            onClick={() => inputRef.current!.showPicker()}
+          />
+          <span data-testid="calendar-date">{formatExpiry(secondsToDate(value))}</span>
+          <CalendarIcon>
+            <CalendarSVG height={16} width={16} />
+          </CalendarIcon>
+        </Label>
+      </>
     )
   },
 )

@@ -87,13 +87,21 @@ const additionalTermsFields: any = {
 
 const partnerFields: any = {
   standard: {
-    name: 'string',
-    type: 'string',
-    address: 'string',
-    DOB: 'date',
-    roles: 'Array',
-    lockup: 'Boolean',
-    shares: 'number',
+    corp: {
+      name: 'string',
+      type: 'string',
+      address: 'string',
+      DOB: 'date',
+      roles: 'Array',
+      lockup: 'Boolean',
+      shares: 'number',
+    },
+    civil: {
+      name: 'string',
+      address: 'string',
+      DOB: 'date',
+      roles: 'Array',
+    },
   },
   PUB: {},
   DL: {},
@@ -112,6 +120,23 @@ const roleTypes: any = {
   WY: [],
   BVI: [],
   'CIV-US': [],
+}
+
+const partnerTypes: any = {
+  standard: {
+    corp: ['individual', 'entity'],
+    civil: ['individual'],
+  },
+  PUB: [],
+  DL: [],
+  WY: [],
+  BVI: [],
+  'CIV-US': [],
+}
+
+const typeToRecordKey: any = {
+  corp: 'company',
+  civil: 'civil',
 }
 
 export default function Page() {
@@ -166,6 +191,8 @@ export default function Page() {
     }
   }, [address])
 
+  const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
+
   const advance = async () => {
     setErrorMessage('')
     if (registrationStep < 5) {
@@ -173,11 +200,7 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      const texts: any[] = [
-        { key: 'name', value: entityName },
-        { key: 'registrar', value: entityRegistrar },
-        { key: 'type', value: entityType },
-      ]
+      const texts: any[] = [{ key: 'name', value: entityName }]
       partners.forEach((partner, idx) => {
         const partnerKey = 'partner__[' + idx + ']__'
         Object.keys(partner).forEach((field) => {
@@ -194,7 +217,7 @@ export default function Page() {
       })
 
       Object.keys(profile).forEach((field) => {
-        const key = 'company__' + field.split(' ').join('__')
+        const key = typeToRecordKey[intakeType] + '__' + field.split(' ').join('__')
         texts.push({ key, value: profile[field] })
       })
 
@@ -242,7 +265,6 @@ export default function Page() {
           '.' +
           registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]] +
           '.registry',
-        { tab: 'records' },
       )
     }
   }
@@ -281,7 +303,6 @@ export default function Page() {
     </FooterContainer>
   )
 
-  const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
   if (registrationStep === 1) {
     content = (
       <CorpInfo
@@ -299,7 +320,9 @@ export default function Page() {
     content = (
       <AddPartners
         data={{ name, registrarKey: registrarNameToKey[entityRegistrar] }}
+        partnerTypes={partnerTypes}
         partnerFields={partnerFields}
+        intakeType={intakeType}
         partners={partners}
         setPartners={setPartners}
         publicClient={publicClient}

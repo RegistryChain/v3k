@@ -1,12 +1,12 @@
 Last modified: 11/11/2022
 
 1. **Introduction**
-   1. This Privacy Policy (the “**Policy**”) sets out how the ENS Foundation (a foundation company limited by guarantee, incorporated in the Cayman Islands) and any of our subcontractors operating the ENSF websites (“**ENSF**”, “**we**”, “**our**” or “**us**”) and applications which refer to this Policy, may collect, use, disclose or otherwise process your Personal Data (as defined below). In this Policy, ENSF websites’ domain names include but are not limited to https://ens.domains/.
+   1. This Privacy Policy (the “**Policy**”) sets out how the ENS Foundation (a foundation company limited by guarantee, incorporated in the Cayman Islands) and any of our subcontractors operating the ENSF websites (“**ENSF**”, “**we**”, “**our**” or “**us**”) and applications which refer to this Policy, may collect, use, disclose or otherwise process your Personal Data (as defined below). In this Policy, ENSF websites’ domain names include but are not limited to https://registrychain.com/.
    2. This Policy applies to Personal Data in our possession or under our control, including Personal Data in the possession of organisations or persons that we have engaged to collect, use, disclose or process personal data for our purposes. By continuing to browse our website and use our services, you consent to our collection, use and disclosure of your Personal Data in accordance with the terms listed in this Policy.
    3. Please read this Policy carefully to understand how we will treat your Personal Data.
    4. In this Policy, “**Personal Data**” means data, whether true or not, about you who can be identified: (a) from that data; or (b) from that data and other information to which we have or are likely to have access.
    5. This Policy applies in conjunction with any other notices, contractual clauses and consent clauses that apply in relation to the collection, use and disclosure of your Personal Data by us.
-   6. If you have any comments on, or questions about this Policy, please email them to our data protection officer at privacy@ens.domains.
+   6. If you have any comments on, or questions about this Policy, please email them to our data protection officer at privacy@registrychain.com.
 2. **What Personal Data We May Collect About You**
    1. Depending on the nature of your interaction with us, different kinds of Personal Data (that we have grouped together below) which we may collect from you include:
       1. **Contact Data** e.g. email addresses, telephone numbers, first and last name, user name and other information you voluntarily provide to us in order to be contacted on our forum, communication channels or when update your user account data;

@@ -22,11 +22,10 @@ import { OG_IMAGE_URL } from '@app/utils/constants'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
-import AppComponent from './tabs/AppComponent'
+import { RecordsSection } from '../../../RecordsSection'
 import AppsTab from './tabs/AppsTab'
 import LicenseTab from './tabs/LicenseTab'
 import ProfileTab from './tabs/ProfileTab'
-import { RecordsTab } from './tabs/RecordsTab'
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -82,7 +81,7 @@ const registrarKeyToType: any = {
   'CIV-US': 'civil',
 }
 
-const tabs = ['entity', 'records', 'licenses', 'apps'] as const
+const tabs = ['entity', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -242,46 +241,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const abilities = useAbilities({ name: normalisedName })
 
-  // hook for redirecting to the correct profile url
-  // profile.decryptedName fetches labels from NW/subgraph
-  // normalisedName fetches labels from localStorage
-  useEffect(() => {
-    // if (
-    //   name !== profile?.decodedName &&
-    //   profile?.decodedName &&
-    //   !isSelf &&
-    //   getEncodedLabelAmount(normalisedName) > getEncodedLabelAmount(profile.decodedName)
-    // ) {
-    //   // if the fetched decrypted name is different to the current name
-    //   // and the decrypted name has less encrypted labels than the normalised name
-    //   // direct to the fetched decrypted name
-    //   router.replace(`/profile/${profile.decodedName}`, { shallow: true, maintainHistory: true })
-    // } else if (
-    //   name !== normalisedName &&
-    //   normalisedName &&
-    //   !isSelf &&
-    //   (!profile?.decodedName ||
-    //     getEncodedLabelAmount(profile.decodedName) > getEncodedLabelAmount(normalisedName)) &&
-    //   decodeURIComponent(name) !== normalisedName
-    // ) {
-    //   // if the normalised name is different to the current name
-    //   // and the normalised name has less encrypted labels than the decrypted name
-    //   // direct to normalised name
-    //   router.replace(`/profile/${normalisedName}`, { shallow: true, maintainHistory: true })
-    // }
-  }, [profile?.decodedName, normalisedName, name, isSelf, router])
-
   useEffect(() => {
     if (isSelf && name) {
       router.replace(`/profile/${name}`)
     }
   }, [isSelf, name, router])
-
-  // useEffect(() => {
-  //   if (shouldShowSuccessPage(transactions)) {
-  //     router.push(`/import/${name}`)
-  //   }
-  // }, [name, router, transactions])
 
   const infoBanner = useMemo(() => {
     if (
@@ -369,19 +333,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             </Outlink>
           ) : null,
           trailing: match(tab)
-            .with('entity', () => <ProfileTab name={name} nameDetails={nameDetails} />)
-            .with('records', () => (
-              <RecordsTab
-                name={normalisedName}
-                texts={profile?.texts || []}
-                addresses={profile?.coins || []}
-                contentHash={profile?.contentHash}
-                abi={profile?.abi}
-                resolverAddress={profile?.resolverAddress}
-                canEdit={abilities.data?.canEdit}
-                canEditRecords={abilities.data?.canEditRecords}
-                isCached={isCachedData}
-              />
+            .with('entity', () => (
+              <>
+                <ProfileTab name={name} nameDetails={nameDetails} />
+                <RecordsSection texts={profile?.texts || []} />
+              </>
             ))
             .with('apps', () => (
               <AppsTab

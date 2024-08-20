@@ -6,16 +6,12 @@ import { useAccount } from 'wagmi'
 import { Helper } from '@ensdomains/thorin'
 
 import { Outlink } from '@app/components/Outlink'
-import { ProfileDetails } from '@app/components/pages/profile/ProfileDetails'
 import { ProfileSnippet } from '@app/components/ProfileSnippet'
 import { useAbilities } from '@app/hooks/abilities/useAbilities'
 import { useIsOffchainName } from '@app/hooks/ensjs/dns/useIsOffchainName'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useNameDetails } from '@app/hooks/useNameDetails'
-import { useOwners } from '@app/hooks/useOwners'
-import { useProfileActions } from '@app/hooks/useProfileActions'
 import { getSupportLink } from '@app/utils/supportLinks'
-import { validateExpiry } from '@app/utils/utils'
 
 const DetailsWrapper = styled.div(
   ({ theme }) => css`
@@ -43,33 +39,11 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
 
   const { address } = useAccount()
 
-  const {
-    profile,
-    normalisedName,
-    isCachedData,
-    ownerData,
-    wrapperData,
-    expiryDate,
-    dnsOwner,
-    isWrapped,
-    pccExpired,
-    gracePeriodEndDate,
-  } = nameDetails
+  const { profile, normalisedName, isWrapped, gracePeriodEndDate } = nameDetails
 
   const abilities = useAbilities({ name })
 
   const { data: primaryData } = usePrimaryName({ address })
-
-  const owners = useOwners({
-    ownerData: ownerData!,
-    wrapperData: wrapperData!,
-    dnsOwner,
-    abilities: abilities.data,
-  })
-
-  const profileActions = useProfileActions({
-    name,
-  })
 
   const isOffchainImport = useIsOffchainName({
     name,
@@ -127,28 +101,6 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
           </Helper>
         )}
       </ProfileSnippet>
-      <ProfileDetails
-        expiryDate={validateExpiry({
-          name: normalisedName,
-          expiry: expiryDate || wrapperData?.expiry?.date,
-          pccExpired,
-          fuses: wrapperData?.fuses,
-        })}
-        pccExpired={!!pccExpired}
-        isCached={isCachedData || abilities.isCachedData}
-        addresses={(profile?.coins || []).map((item) => ({
-          key: item.name,
-          value: item.value,
-        }))}
-        textRecords={(profile?.texts || [])
-          .map((item: any) => ({ key: item.key, value: item.value }))
-          .filter((item: any) => item.value !== null)}
-        contentHash={profile?.contentHash}
-        owners={owners}
-        name={normalisedName}
-        actions={profileActions.profileActions}
-        gracePeriodEndDate={gracePeriodEndDate}
-      />
     </DetailsWrapper>
   )
 }

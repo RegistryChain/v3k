@@ -25,11 +25,11 @@ const mockProfileData = {
     texts: [
       {
         key: 'email',
-        value: 'test@ens.domains',
+        value: 'test@registrychain.com',
       },
       {
         key: 'url',
-        value: 'https://ens.domains',
+        value: 'https://registrychain.com',
       },
       {
         key: 'avatar',
@@ -327,7 +327,7 @@ describe('AdvancedEditor', () => {
                   },
                   {
                     key: 'email',
-                    value: 'test@ens.domains',
+                    value: 'test@registrychain.com',
                   },
                 ],
                 coins: [
@@ -369,7 +369,7 @@ describe('AdvancedEditor', () => {
           },
           {
             label: 'email',
-            value: 'test@ens.domains',
+            value: 'test@registrychain.com',
           },
         ],
       },

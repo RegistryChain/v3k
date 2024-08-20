@@ -165,11 +165,13 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    router.push('/entity', {
-      name: entityName,
-      registrar: entityRegistrars[registrar].name,
-      type: entityType,
-    })
+    if (entityName && entityRegistrars[registrar].name && entityType) {
+      router.push('/entity', {
+        name: entityName,
+        registrar: entityRegistrars[registrar].name,
+        type: entityType,
+      })
+    }
   }
 
   let nameAvailableElement = null
@@ -184,7 +186,7 @@ export default function Page() {
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
-        label="Entity Type"
+        label={entityType || 'Entity Type'}
         items={entityRegistrars[registrar]?.types?.map((x: any) => ({
           label: x,
           color: 'blue',
@@ -247,7 +249,9 @@ export default function Page() {
             shape="rounded"
             size="small"
             disabled={
-              !nameAvailable || entityName.length < 2 || registrar.length === 0 ? true : false
+              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType
+                ? true
+                : false
             }
             onClick={() => advance()}
           >
