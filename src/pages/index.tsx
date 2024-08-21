@@ -17,7 +17,7 @@ import { LeadingHeading } from '@app/components/LeadingHeading'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import ENSFull from '../assets/ENSFull.svg'
+import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -200,7 +200,7 @@ export default function Page() {
       </Head>
       <StyledLeadingHeading>
         <LogoAndLanguage>
-          <StyledENS as={ENSFull} />
+          <StyledENS as={RegistryChainLogoFull} />
         </LogoAndLanguage>
         <Hamburger />
       </StyledLeadingHeading>

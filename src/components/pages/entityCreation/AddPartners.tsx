@@ -111,6 +111,8 @@ const AddPartners = ({
           tempPartnerObj[field] = []
         } else if (relevantFields[field] === 'Boolean') {
           tempPartnerObj[field] = false
+        } else if (relevantFields[field] === 'Address') {
+          tempPartnerObj[field] = zeroAddress
         } else {
           tempPartnerObj[field] = ''
         }
@@ -127,6 +129,10 @@ const AddPartners = ({
       if (!partner.DOB) {
         changeFlag = true
         nPartner.DOB = '01-01-2000'
+      }
+      if (!partner.address) {
+        changeFlag = true
+        nPartner.address = zeroAddress
       }
       return nPartner
     })

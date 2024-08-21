@@ -9,10 +9,12 @@ import {
   custom,
   getContract,
   http,
+  isAddress,
   labelhash,
   namehash,
   parseAbi,
   stringToBytes,
+  zeroAddress,
   type Hex,
 } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -91,7 +93,8 @@ const partnerFields: any = {
     corp: {
       name: 'string',
       type: 'string',
-      address: 'string',
+      address: 'Address',
+      physicalAddress: 'string',
       DOB: 'date',
       roles: 'Array',
       lockup: 'Boolean',
@@ -99,7 +102,8 @@ const partnerFields: any = {
     },
     civil: {
       name: 'string',
-      address: 'string',
+      address: 'Address',
+      physicalAddress: 'string',
       DOB: 'date',
       roles: 'Array',
     },
@@ -114,7 +118,7 @@ const partnerFields: any = {
 const roleTypes: any = {
   standard: {
     corp: ['owner', 'manager', 'spender', 'investor', 'signer'],
-    civil: ['signer', 'spender', 'manager'],
+    civil: ['manager', 'spender', 'signer'],
   },
   PUB: [],
   DL: [],
@@ -208,7 +212,13 @@ export default function Page() {
       partners.forEach((partner, idx) => {
         const partnerKey = 'partner__[' + idx + ']__'
         Object.keys(partner).forEach((field) => {
-          if (typeof partner[field] === 'boolean') {
+          if (field === 'address') {
+            if (!isAddress(partner[field])) {
+              texts.push({ key: partnerKey + field, value: zeroAddress })
+            } else {
+              texts.push({ key: partnerKey + field, value: partner[field] })
+            }
+          } else if (typeof partner[field] === 'boolean') {
             texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
           } else if (field !== 'roles') {
             texts.push({ key: partnerKey + field, value: partner[field] })

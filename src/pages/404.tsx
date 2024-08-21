@@ -8,7 +8,7 @@ import ErrorScreen from '@app/components/@atoms/ErrorScreen'
 import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LeadingHeading } from '@app/components/LeadingHeading'
 
-import ENSFull from '../assets/ENSFull.svg'
+import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 
 const StyledENS = styled.div(
   ({ theme }) => css`
@@ -45,7 +45,7 @@ export default function Page() {
       </Head>
       <StyledLeadingHeading>
         <LogoAndLanguage>
-          <StyledENS as={ENSFull} />
+          <StyledENS as={RegistryChainLogoFull} />
         </LogoAndLanguage>
         <Hamburger />
       </StyledLeadingHeading>
