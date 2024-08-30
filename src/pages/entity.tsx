@@ -1,4 +1,5 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { default as axios } from 'axios'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +22,7 @@ import { sepolia } from 'viem/chains'
 import { useAccount, useClient } from 'wagmi'
 
 import { addEnsContracts } from '@ensdomains/ensjs'
-import { createSubname, setRecords } from '@ensdomains/ensjs/wallet'
+import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
 import { Button, Typography } from '@ensdomains/thorin'
 
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
@@ -46,15 +47,23 @@ const registrarNameToKey: { [x: string]: string } = {
   'Delaware USA': 'DL',
   'Wyoming USA': 'WY',
   'British Virgin Islands': 'BVI',
-  'Civil Registry USA': 'CIV-US',
+  'Civil Registry USA': 'CIV',
 }
 
 const registrarkeyToDomainFull: { [x: string]: string } = {
-  PUB: 'PUB',
+  PUB: 'CORP.PUB',
   DL: 'DL.US',
   WY: 'WY.US',
   BVI: 'BVI.UK',
-  'CIV-US': 'CIV.US',
+  CIV: 'CIV.PUB',
+}
+
+const registrarKeyToEntityRegistrationAddress = {
+  DL: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
+  WY: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
+  BVI: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
+  PUB: '0x123ac088458a15dc162f160c396f764288742b26',
+  CIV: '0x7b5ca5d3c9b1dc921bd5f37d593407cf3d789d6a',
 }
 
 const registrarKeyToType: any = {
@@ -62,7 +71,7 @@ const registrarKeyToType: any = {
   DL: 'corp',
   WY: 'corp',
   BVI: 'corp',
-  'CIV-US': 'civil',
+  CIV: 'civil',
 }
 
 const corpFields: any = {
@@ -74,7 +83,7 @@ const corpFields: any = {
   DL: {},
   WY: {},
   BVI: {},
-  'CIV-US': {},
+  CIV: {},
 }
 
 const additionalTermsFields: any = {
@@ -85,7 +94,7 @@ const additionalTermsFields: any = {
   DL: {},
   WY: {},
   BVI: {},
-  'CIV-US': {},
+  CIV: {},
 }
 
 const partnerFields: any = {
@@ -112,7 +121,7 @@ const partnerFields: any = {
   DL: {},
   WY: {},
   BVI: {},
-  'CIV-US': {},
+  CIV: {},
 }
 
 const roleTypes: any = {
@@ -124,7 +133,7 @@ const roleTypes: any = {
   DL: [],
   WY: [],
   BVI: [],
-  'CIV-US': [],
+  CIV: [],
 }
 
 const partnerTypes: any = {
@@ -136,13 +145,15 @@ const partnerTypes: any = {
   DL: [],
   WY: [],
   BVI: [],
-  'CIV-US': [],
+  CIV: [],
 }
 
 const typeToRecordKey: any = {
   corp: 'company',
   civil: 'civil',
 }
+
+const deployerAddress = '0xb11ab9dcc1c3736a9e1c979c873a23d9911128b7'
 
 export default function Page() {
   const { t } = useTranslation('common')
@@ -164,7 +175,7 @@ export default function Page() {
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
   const [wallet, setWallet] = useState<any>(null)
 
-  const default_registry_domain = 'publicregistry.eth'
+  const default_registry_domain = 'registry'
 
   const publicClient = useMemo(
     () =>
@@ -235,47 +246,58 @@ export default function Page() {
         texts.push({ key, value: profile[field] })
       })
 
-      // Instantiate Registrant contract
-      const subdomainRegistrantAddress = '0x343fc79485cc00cfc46ece70845267368ff2b6ce'
-      // create labelhash of the subname
-      const publicSubdomainRegistrar: any = getContract({
-        address: subdomainRegistrantAddress,
-        abi: parseAbi(['function register(bytes32, address, address) external']),
-        client: wallet,
-      })
+      const jurisSubdomainString = registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]]
 
-      const partnerAddress: `0x${string}` | undefined = address
-      const subdomainId =
+      const entityNameToPass =
         name.toLowerCase().split(' ').join('-') +
         '-' +
         Date.now()
           .toString()
           .slice(Date.now().toString().length - 6)
-      const entityId = subdomainId + '.' + default_registry_domain
-      const label = labelhash(subdomainId)
+      const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + default_registry_domain
+      const label = labelhash(entityNameToPass)
+      const namehashToPass = namehash(entityId)
+
+      const entityRegistrarAddress =
+        registrarKeyToEntityRegistrationAddress[registrarNameToKey[entityRegistrar]]
+
+      let contentHash = ''
+      try {
+        // Upload text as json to ipfs
+        const jsonString = JSON.stringify(texts, null, 2) // `null, 2` is for pretty-printing the JSON
+        // Step 2: Create a Blob from the JSON string
+        const blob = new Blob([jsonString], { type: 'application/json' })
+        const ipfsData = await pinFileToIPFS(blob)
+        contentHash = ipfsData.IpfsHash
+        console.log('IPFS:', contentHash)
+      } catch (err: any) {
+        console.log('ERROR IPFS!', err)
+      }
 
       try {
-        const hashSubdomain = await publicSubdomainRegistrar.write.register(
-          [label, partnerAddress, '0x8fade66b79cc9f707ab26799354482eb93a5b7dd'],
-          { gas: 1000000n },
-        )
-        console.log(await publicClient?.waitForTransactionReceipt({ hash: hashSubdomain }))
-
-        const recordTx: any = {
-          name: entityId,
-          coins: [],
+        const deployer: any = getContract({
+          address: deployerAddress,
+          abi: parseAbi(['function formEntity(string,address,bytes[]) external']),
+          client: wallet,
+        })
+        const constitutionData = generateRecordCallArray({
           texts,
-          resolverAddress: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
-        }
-        const hashRecords = await setRecords(wallet, recordTx)
-        console.log(await publicClient?.waitForTransactionReceipt({ hash: hashRecords }))
+          namehash: namehashToPass,
+          contentHash: 'ipfs://' + contentHash,
+        })
+        const registerChaserTx = await deployer.write.formEntity([
+          entityNameToPass,
+          entityRegistrarAddress,
+          constitutionData,
+        ])
+        console.log(await publicClient?.waitForTransactionReceipt({ hash: registerChaserTx }))
       } catch (err: any) {
         setErrorMessage(err.details)
         return
       }
       router.push(
         '/' +
-          subdomainId +
+          entityNameToPass +
           '.' +
           registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]] +
           '.registry',
@@ -385,4 +407,38 @@ export default function Page() {
       </div>
     </>
   )
+}
+
+const pinFileToIPFS = async (recordsFileJson: any) => {
+  const JWT =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZGRiOGFlZi1iNGVhLTRhZGQtOTc4ZC1jOWJkMzBiODcyMzciLCJlbWFpbCI6ImNtMTcyNTk2QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIxNGM0YjdkOWQyZTc0YmFkYjZhZSIsInNjb3BlZEtleVNlY3JldCI6IjBiM2MyMmI4NTdkMjE0YzY2N2QzNWNhYzYwZjc3YjkzNGJlYWQyOTNjMTYwZGJhNDI2YmU0NjljMTVhZDU5YjIiLCJleHAiOjE3NTY0MjYxMzN9.hYxd1tGQ2NySeHJiKlNv1VoRcWEUj5uxPx4RQy-qnFo'
+  const formData = new FormData()
+  const src = 'path/to/file.png'
+
+  const file = null
+  formData.append('file', recordsFileJson)
+
+  const pinataMetadata = JSON.stringify({
+    name: 'Entity Record',
+  })
+  formData.append('pinataMetadata', pinataMetadata)
+
+  const pinataOptions = JSON.stringify({
+    cidVersion: 0,
+  })
+  formData.append('pinataOptions', pinataOptions)
+  let returnData = null
+  try {
+    const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+      maxBodyLength: Infinity,
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+        Authorization: `Bearer ${JWT}`,
+      },
+    })
+    returnData = res.data
+  } catch (error) {
+    console.log(error)
+  }
+  return returnData
 }

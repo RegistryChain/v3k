@@ -1,12 +1,14 @@
+import axios from 'axios'
 import Head from 'next/head'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
-import { createPublicClient, http, namehash } from 'viem'
+import { createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
+import { decodeContentHash } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
@@ -19,6 +21,7 @@ import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { OG_IMAGE_URL } from '@app/utils/constants'
+import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
 import { RecordsSection } from '../../../RecordsSection'
@@ -64,12 +67,35 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
+const regKeyToRegistrarAddress: any = {
+  'DL.US': {
+    entityRegistrar: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
+    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  },
+  'WY.US': {
+    entityRegistrar: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
+    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  },
+  'BVI.UK': {
+    entityRegistrar: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
+    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  },
+  'CORP.PUB': {
+    entityRegistrar: '0x123ac088458a15dc162f160c396f764288742b26',
+    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  },
+  'CIV.PUB': {
+    entityRegistrar: '0x7b5ca5d3c9b1dc921bd5f37d593407cf3d789d6a',
+    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  },
+}
+
 const registrarNameToKey: { [x: string]: string } = {
   'Public Registry': 'PUB',
   'Delaware USA': 'DL',
   'Wyoming USA': 'WY',
   'British Virgin Islands': 'BVI',
-  'Civil Registry USA': 'CIV-US',
+  'Civil Registry USA': 'CIV',
 }
 
 const registrarKeyToType: any = {
@@ -77,7 +103,7 @@ const registrarKeyToType: any = {
   DL: 'corp',
   WY: 'corp',
   BVI: 'corp',
-  'CIV-US': 'civil',
+  CIV: 'civil',
 }
 
 const tabs = ['entity', 'licenses', 'apps'] as const
@@ -122,21 +148,63 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const router = useRouterWithHistory()
   const { t } = useTranslation('profile')
   const { address, isConnected } = useAccount()
+  const [records, setRecords] = useState<any>([])
+  const [contentHash, setContentHash] = useState<any>('')
 
   let nameToQuery = name
-  if (name?.includes('.registry')) {
-    nameToQuery = name.split('.')[0] + '.publicregistry.eth'
-  }
   const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
+  useEffect(() => {
+    //Attempt to use the subregistrars to get the resolver
+    //Using node, query the record from the registry contract
+
+    //Get the resolver address from this record
+    //Query the contentHash from the resolver
+    if (name) {
+      getContent()
+    }
+  }, [name])
+
+  const getContent = async () => {
+    const registrarKey = name.split('.').slice(1, 3).join('.')
+    const resolver: any = getContract({
+      address: regKeyToRegistrarAddress[registrarKey].resolver,
+      abi: parseAbi(['function contenthash(bytes32) external view returns (bytes memory)']),
+      client: publicClient,
+    })
+
+    try {
+      const hash = await resolver.read.contenthash([namehash(nameToQuery)])
+      const decodedHash = decodeContentHash(hash)?.decoded || hash
+      setContentHash(decodedHash)
+    } catch (err) {
+      setContentHash(null)
+    }
+  }
+
+  useEffect(() => {
+    getRecords()
+  }, [contentHash])
+
+  const getRecords = async () => {
+    try {
+      const jsonRes = await axios.get('https://gateway.pinata.cloud/ipfs/' + contentHash)
+      setRecords(jsonRes.data)
+    } catch (err) {
+      console.log('AXIOS CATCH ERROR', err)
+    }
+  }
 
   const nameDetails: any = {}
   Object.keys(nameDetailsRes).forEach((key) => {
     let val: any = nameDetailsRes[key]
-    if (typeof val === 'string') {
-      if (val?.includes('.publicregistry.eth')) {
-        val = val.split('.')[0] + '.registry'
-      }
-    }
 
     nameDetails[key] = val
   })
@@ -145,15 +213,10 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     error,
     errorTitle,
     profile,
-    gracePeriodEndDate,
-    expiryDate,
     normalisedName,
     beautifiedName,
     isValid,
     isCachedData,
-    isWrapped,
-    wrapperData,
-    registrationStatus,
     refetchIfEnabled,
   } = nameDetails
 
@@ -214,17 +277,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     }
   }, [isSelf, name, router])
 
-  const infoBanner = useMemo(() => {
-    if (
-      registrationStatus !== 'gracePeriod' &&
-      gracePeriodEndDate &&
-      gracePeriodEndDate < new Date()
-    ) {
-      return <NameAvailableBanner {...{ normalisedName, expiryDate }} />
-    }
-    return undefined
-  }, [registrationStatus, gracePeriodEndDate, normalisedName, expiryDate])
-
   const warning: ContentWarning = useMemo(() => {
     if (error)
       return {
@@ -239,7 +291,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const chainName = useChainName()
 
-  if (registrationStatus === 'notOwned') {
+  if (contentHash === null) {
     return (
       <>
         <Head>
@@ -253,7 +305,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           <meta property="twitter:description" content={descriptionContent} />
         </Head>
         <Typography fontVariant="extraLargeBold" color="inherit">
-          Name {name} is not registered on RegistryChain
+          Entity {name} is not registered on RegistryChain
         </Typography>
       </>
     )
@@ -273,7 +325,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       </Head>
       <Content noTitle title={name} loading={!isCachedData && parentIsLoading} copyValue={name}>
         {{
-          info: infoBanner,
           warning,
           header: (
             <TabButtonContainer>
@@ -303,7 +354,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             .with('entity', () => (
               <>
                 <ProfileTab name={name} nameDetails={nameDetails} />
-                <RecordsSection texts={profile?.texts || []} />
+                <RecordsSection texts={records || []} />
               </>
             ))
             .with('apps', () => (

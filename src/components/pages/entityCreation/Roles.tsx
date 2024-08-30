@@ -224,7 +224,10 @@ const Roles = ({
                     {t('steps.roles.ownershipLockup.label')}
                   </label>
                 </div>
-                <div style={{ height: '3rem', alignContent: 'center' }}>
+                <div
+                  key={'lockupinput' + partner.name}
+                  style={{ height: '3rem', alignContent: 'center' }}
+                >
                   <Toggle
                     size={'small'}
                     checked={partner.lockup || false}

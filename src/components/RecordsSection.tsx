@@ -109,45 +109,44 @@ export const RecordsSection = ({ texts }: { texts?: TextRecord[] }) => {
               </SectionTitle>
             </SectionTitleContainer>
           </SectionHeader>
-          {
-            <div style={{ width: '100%', paddingLeft: '40px' }}>
-              {Object.values(partnersOrganized).map((partner: any, idx) => {
-                return (
-                  <RecordSection key={'section1SubSubPartner' + idx}>
-                    <SectionHeader>
-                      <SectionTitleContainer>
-                        <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                          Partner {idx + 1}
-                        </SectionTitle>
-                      </SectionTitleContainer>
-                    </SectionHeader>
-                    {Object.keys(partner).map((key, idx) => {
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            width: '100%',
-                            padding: '0.625rem 0.75rem',
-                            background: 'hsl(0 0% 96%)',
-                            border: '1px solid hsl(0 0% 91%)',
-                            borderRadius: '8px',
-                          }}
-                        >
-                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {key
-                              .split('__')
-                              .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                              .join(' ')}
-                          </Typography>
-                          <Typography>{partner[key]}</Typography>
-                        </div>
-                      )
-                    })}
-                  </RecordSection>
-                )
-              })}
-            </div>
-          }
+          <div style={{ width: '100%', paddingLeft: '40px' }}>
+            {Object.values(partnersOrganized).map((partner: any, idx) => {
+              return (
+                <RecordSection key={'section1SubSubPartner' + idx}>
+                  <SectionHeader>
+                    <SectionTitleContainer>
+                      <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                        Partner {idx + 1}
+                      </SectionTitle>
+                    </SectionTitleContainer>
+                  </SectionHeader>
+                  {Object.keys(partner).map((key, idx) => {
+                    return (
+                      <div
+                        key={'embeddedDiv' + idx}
+                        style={{
+                          display: 'flex',
+                          width: '100%',
+                          padding: '0.625rem 0.75rem',
+                          background: 'hsl(0 0% 96%)',
+                          border: '1px solid hsl(0 0% 91%)',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                          {key
+                            .split('__')
+                            .map((x: any) => x[0].toUpperCase() + x.slice(1))
+                            .join(' ')}
+                        </Typography>
+                        <Typography>{partner[key]}</Typography>
+                      </div>
+                    )
+                  })}
+                </RecordSection>
+              )
+            })}
+          </div>
         </RecordSection>
       </div>
     </RecordSection>
@@ -179,6 +178,7 @@ export const RecordsSection = ({ texts }: { texts?: TextRecord[] }) => {
                     categoryTexts.map((text, idx) => {
                       return (
                         <div
+                          key={'catTextEmbedded' + idx}
                           style={{
                             display: 'flex',
                             width: '100%',
