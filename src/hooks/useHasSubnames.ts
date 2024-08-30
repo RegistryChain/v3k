@@ -22,7 +22,7 @@ const hasSubnamesQueryFn =
   async ({ queryKey: [{ name }, chainId] }: QueryFunctionContext<QueryKey>) => {
     if (!name) throw new Error('name is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     let cursor: Name[] = []
     let done = false

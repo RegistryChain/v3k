@@ -24,7 +24,7 @@ export const getPriceQueryFn =
   }: QueryFunctionContext<UsePriceQueryKey<TParams>>) => {
     if (!nameOrNames) throw new Error('nameOrNames is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getPrice(client, { nameOrNames, ...params })
   }

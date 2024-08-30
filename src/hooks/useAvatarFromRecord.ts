@@ -14,7 +14,7 @@ const chainIdToNetwork = (chainId?: string) => {
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY || 'no-key'
 const makeApiURL = (address: string) => {
   const match = address.match(/^eip155:(\d+)\/(erc1155|erc721):(.*)\/(.*)$/)
-  const chainId = match?.[1]
+  const chainId: any = match?.[1]
   const tokenType = match?.[2]
   const contractAddress = match?.[3]
   const tokenId = match?.[4]

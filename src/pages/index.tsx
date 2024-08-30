@@ -143,8 +143,8 @@ export default function Page() {
   }, [entityName, registrar])
 
   const entityIsAvailable = async (registrar: string, entityName: string) => {
-    const client = publicClient
-    const registry = await getContract({
+    const client: any = publicClient
+    const registry: any = await getContract({
       client,
       abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
       address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',

@@ -30,7 +30,7 @@ export const getSubgraphRegistrantQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>>) => {
     if (!name) throw new Error('name is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getSubgraphRegistrant(client, { name, ...params })
   }

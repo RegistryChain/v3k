@@ -39,7 +39,7 @@ describe('unwrapName', () => {
   describe('transaction', () => {
     const address = '0x123'
     const connectorClient = { account: { address } } as unknown as ConnectorClientWithEns
-    const client = {} as unknown as ClientWithEns
+    const client: any = {} as unknown as ClientWithEns
 
     afterEach(() => {
       vi.clearAllMocks()

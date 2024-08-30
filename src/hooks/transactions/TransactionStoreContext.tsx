@@ -14,9 +14,9 @@ let storeSingleton: ReturnType<typeof createTransactionStore> | undefined
 const TransactionStoreContext = createContext<TransactionStore | null>(null)
 
 export function TransactionStoreProvider({ children }: { children: React.ReactNode }) {
-  const config = useConfig<ConfigWithEns>()
+  const config: any = useConfig<ConfigWithEns>()
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   // Use existing store if it exists, or lazily create one
   const [store] = useState(

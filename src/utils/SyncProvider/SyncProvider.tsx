@@ -95,7 +95,7 @@ const invalidateAllCurrentChainQueries = async ({
 
 export const SyncProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const subgraphClient = useSubgraphClient()
 
   const callbacks = useRef<Record<string, UpdateCallback>>({})

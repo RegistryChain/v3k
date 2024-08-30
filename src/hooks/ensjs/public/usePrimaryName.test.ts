@@ -13,7 +13,7 @@ vi.mock('@ensdomains/ensjs/public')
 const mockGetName = mockFunction(getName)
 
 const address = '0xaddress'
-const chainId = 1
+const chainId: any = 1
 
 const mockClient = {
   chain: {

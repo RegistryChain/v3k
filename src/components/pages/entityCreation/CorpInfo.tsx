@@ -55,7 +55,7 @@ const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any
   const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
 
   const entityData = async () => {
-    const client = publicClient
+    const client: any = publicClient
     // Here fetch the resolver data
     const resolver = await getContract({
       client,

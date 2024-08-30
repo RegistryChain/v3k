@@ -899,7 +899,7 @@ const makeMockGetSendAbilities = (type: MockGetSendAbilitiesType) => {
 
 describe('mocks', () => {
   it.each([mockGetSendAbilitiesTypes])('should return for %s', (type) => {
-    const config = mockGetSendAbilitiesConfig[type]
+    const config: any = mockGetSendAbilitiesConfig[type]
     const { basicNameType, parentBasicNameType, name: name_ } = config
     const result = getSendAbilities({
       basicNameData: makeMockUseBasicName(basicNameType),

@@ -21,7 +21,15 @@ import {
   GetPriceReturnType,
   GetWrapperDataReturnType,
 } from '@ensdomains/ensjs/public'
-import { BackdropSurface, Input, MagnifyingGlassSimpleSVG, mq, Portal, Typography } from '@ensdomains/thorin'
+import { GetSubnamesParameters } from '@ensdomains/ensjs/subgraph'
+import {
+  BackdropSurface,
+  Input,
+  MagnifyingGlassSimpleSVG,
+  mq,
+  Portal,
+  Typography,
+} from '@ensdomains/thorin'
 
 import { SupportedChain } from '@app/constants/chains'
 import {
@@ -36,8 +44,10 @@ import { UseExpiryQueryKey } from '@app/hooks/ensjs/public/useExpiry'
 import { UseOwnerQueryKey, UseOwnerReturnType } from '@app/hooks/ensjs/public/useOwner'
 import { UsePriceQueryKey } from '@app/hooks/ensjs/public/usePrice'
 import { UseWrapperDataQueryKey } from '@app/hooks/ensjs/public/useWrapperData'
+import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { createQueryKey } from '@app/hooks/useQueryOptions'
+import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useValidate, validate } from '@app/hooks/useValidate'
 import { useElementSize } from '@app/hooks/useWindowSize'
@@ -46,13 +56,10 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { getRegistrationStatus } from '@app/utils/registrationStatus'
 import { thread, yearsToSeconds } from '@app/utils/utils'
 
-import { FakeEntityInputBox, EntityInputBox } from './EntityInputBox'
+import { SortDirection } from '../NameTableHeader/NameTableHeader'
+import { EntityInputBox, FakeEntityInputBox } from './EntityInputBox'
 import { getBoxNameStatus, SearchResult } from './SearchResult'
 import { HistoryItem, SearchHandler, SearchItem } from './types'
-import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
-import { GetSubnamesParameters } from '@ensdomains/ensjs/subgraph'
-import { SortDirection } from '../NameTableHeader/NameTableHeader'
-import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 
 const Container = styled.div<{ $size: 'medium' | 'extraLarge' }>(
   ({ $size }) => css`
@@ -265,7 +272,11 @@ const getRouteForSearchItem = ({
     if (boxStatus === 'available') return `/dotbox/${selectedItem.text}`
   }
 
-  if (selectedItem.nameType === 'eth' || selectedItem.nameType === 'dns' || selectedItem.nameType === "registry" ) {
+  if (
+    selectedItem.nameType === 'eth' ||
+    selectedItem.nameType === 'dns' ||
+    selectedItem.nameType === 'registry'
+  ) {
     const ownerData = getCachedQueryData<UseOwnerReturnType, UseOwnerQueryKey>({
       functionName: 'getOwner',
       params: { name: selectedItem.text },
@@ -593,9 +604,9 @@ const addInfoDropdownItem =
 
 const useBuildDropdownItems = (inputVal: string, history: HistoryItem[]) => {
   const { t } = useTranslation('common')
-  
+
   const inputIsAddress = useMemo(() => isAddress(inputVal), [inputVal])
-  
+
   const { isValid, isETH, name } = useValidate({
     input: inputVal,
   })
@@ -615,7 +626,6 @@ const useBuildDropdownItems = (inputVal: string, history: HistoryItem[]) => {
       ),
     [inputIsAddress, name, isETH, isValid, history, t],
   )
-  
 }
 
 const debouncer = debounce((setFunc: () => void) => setFunc(), 250)
@@ -626,7 +636,7 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
   const breakpoints = useBreakpoint()
 
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const [inputVal, setInputVal] = useState('')
 
@@ -656,7 +666,7 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
   const handleFocusIn = useCallback(() => toggle(true), [toggle])
   const handleFocusOut = useCallback(() => toggle(false), [toggle])
 
-  const dropdownItems: any = [{isHistory: "", text: "", nameType: ""}]
+  const dropdownItems: any = [{ isHistory: '', text: '', nameType: '' }]
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSearch = useCallback(
@@ -717,37 +727,36 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
   if (breakpoints.sm) {
     return (
       <Container data-testid="search-input-desktop" $size={size}>
-              <Input
+        <Input
           data-testid="name-table-header-search"
           size="small"
           label="search"
           value={value}
           onChange={(e) => {
             setValue(e.target.value)
-              return
+            return
           }}
           hideLabel
           icon={<MagnifyingGlassSimpleSVG />}
           placeholder={field}
         />
-        </Container>
+      </Container>
     )
   }
-  
 
   return (
     <Container data-testid="search-input-mobile" $size="extraLarge">
-          <Input
-          data-testid="name-table-header-search"
-          size="small"
-          label="search"
-          value={value}
-          onChange={(e) => setValue?.(e.target.value)}
-          hideLabel
-          icon={<MagnifyingGlassSimpleSVG />}
-          placeholder={field}
-        />
-        {SearchResultsElement}
+      <Input
+        data-testid="name-table-header-search"
+        size="small"
+        label="search"
+        value={value}
+        onChange={(e) => setValue?.(e.target.value)}
+        hideLabel
+        icon={<MagnifyingGlassSimpleSVG />}
+        placeholder={field}
+      />
+      {SearchResultsElement}
     </Container>
   )
 }

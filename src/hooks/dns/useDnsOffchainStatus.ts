@@ -30,7 +30,7 @@ const getOffchainDnsResolverStatus = ({
 }
 
 export const useDnsOffchainStatus = ({ name, enabled = true }: UseDnsOffchainStatusParameters) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { address } = useAccount()
 
   const {

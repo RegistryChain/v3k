@@ -37,7 +37,7 @@ const setup = () => {
   return store
 }
 
-const client = wagmiConfig.getClient()
+const client: any = wagmiConfig.getClient()
 
 type MockUpdateFn = (_account: any, _chainId: any, updateFn: (...args: any[]) => any) => void
 
@@ -139,7 +139,7 @@ describe('foundTransaction', () => {
   it('should update found transaction correctly', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
     const nonce = 1
 
     const mockTransactions = [
@@ -215,7 +215,7 @@ describe('setReplacedTransaction', () => {
   it('should set replaced transaction correctly', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
     const transactionInput = 'transactionInput'
     const mockMinedData: EtherscanMinedData = {
       blockHash: '0x1234567890abcdef',
@@ -273,7 +273,7 @@ describe('setReaplcedTransactionByNonce', () => {
   it('should set replaced transaction by nonce correctly', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
     const transactionInput = 'transactionInput'
     const mockMinedData: EtherscanMinedData = {
       blockHash: '0x1234567890abcdef',
@@ -332,7 +332,7 @@ describe('foundMinedTranasction', () => {
   it('should update found mined transaction correctly and update the transaction status to confirmed', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
     const transactionInput = 'transactionInput'
     const mockMinedData: EtherscanMinedData = {
       blockHash: '0x1234567890abcdef',
@@ -386,7 +386,7 @@ describe('updateRetries', () => {
   it('should update retries correctly', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
 
     const mockTransactions = [
       {
@@ -415,7 +415,7 @@ describe('setFailedTransaction', () => {
   it('should set failed transaction correctly', () => {
     const transactionHash = 'hash'
     const account = 'account'
-    const chainId = 1
+    const chainId: any = 1
 
     const mockTransactions = [
       {

@@ -46,7 +46,7 @@ export const getResolverExistsQueryFn =
     if (!name) throw new Error('name is required')
     if (!address) throw new Error('address is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
     const subgraphClient = createSubgraphClient({ client })
 
     try {

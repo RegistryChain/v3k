@@ -58,7 +58,7 @@ const registrarkeyToDomainFull: { [x: string]: string } = {
   CIV: 'CIV.PUB',
 }
 
-const registrarKeyToEntityRegistrationAddress = {
+const registrarKeyToEntityRegistrationAddress: any = {
   DL: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
   WY: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
   BVI: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
@@ -412,7 +412,7 @@ export default function Page() {
 const pinFileToIPFS = async (recordsFileJson: any) => {
   const JWT =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZGRiOGFlZi1iNGVhLTRhZGQtOTc4ZC1jOWJkMzBiODcyMzciLCJlbWFpbCI6ImNtMTcyNTk2QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIxNGM0YjdkOWQyZTc0YmFkYjZhZSIsInNjb3BlZEtleVNlY3JldCI6IjBiM2MyMmI4NTdkMjE0YzY2N2QzNWNhYzYwZjc3YjkzNGJlYWQyOTNjMTYwZGJhNDI2YmU0NjljMTVhZDU5YjIiLCJleHAiOjE3NTY0MjYxMzN9.hYxd1tGQ2NySeHJiKlNv1VoRcWEUj5uxPx4RQy-qnFo'
-  const formData = new FormData()
+  const formData: any = new FormData()
   const src = 'path/to/file.png'
 
   const file = null

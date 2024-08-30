@@ -79,7 +79,7 @@ type Props = {
 
 const useAdvancedEditor = ({ name, profile, isLoading, overwrites, callback }: Props) => {
   const { t } = useTranslation('profile')
-  const client = useClient()
+  const client: any = useClient()
 
   const {
     register,

@@ -69,7 +69,7 @@ const AddPartners = ({
   }
 
   const partnersData = async () => {
-    const client = publicClient
+    const client: any = publicClient
     // Here fetch the resolver data
     const resolver = await getContract({
       client,

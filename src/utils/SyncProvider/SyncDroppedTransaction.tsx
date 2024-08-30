@@ -63,7 +63,7 @@ export const findDroppedTransactions = async (
     store: TransactionStore | undefined
   },
 ) => {
-  const chainId = client.chain.id
+  const chainId: any = client.chain.id
   const pendingTransactions = transactions.filter(
     (transaction) => transaction.status === 'pending' && transaction.searchStatus === 'found',
   )
@@ -210,7 +210,7 @@ export const findDroppedTransactions = async (
 }
 
 export const SyncDroppedTransaction = ({ children }: { children: React.ReactNode }) => {
-  const client = useClient()
+  const client: any = useClient()
   const { address } = useAccountSafely()
   const transactions = useRecentTransactions()
   const store = useTransactionStore()

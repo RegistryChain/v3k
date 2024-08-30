@@ -21,8 +21,6 @@ import { useAccountSafely } from '@app/hooks/account/useAccountSafely'
 import { useChainName } from '@app/hooks/chain/useChainName'
 import useFaucet from '@app/hooks/useFaucet'
 
-import { DisplayItems } from './TransactionDialogManager/DisplayItems'
-
 const BannerWrapper = styled.div(
   () => css`
     position: relative;
@@ -102,16 +100,6 @@ const FaucetBanner = () => {
             subtitle={`Claim once every ${msToDays(data.interval)} days`}
           />
           <Dialog.Content>
-            <DisplayItems
-              displayItems={[
-                {
-                  label: 'Value',
-                  value: `${amount} ${chainEthTicker(chainName)}`,
-                  useRawLabel: true,
-                },
-                { label: 'Address', value: address || '', type: 'address', useRawLabel: true },
-              ]}
-            />
             {isError && <Helper type="error">{(error as Error).message}</Helper>}
           </Dialog.Content>
           <Dialog.Footer

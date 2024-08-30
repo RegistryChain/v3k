@@ -21,7 +21,7 @@ export const useBlockTimestamp = ({ enabled = true }: UseBlockTimestampParameter
 }
 
 export const usePrefetchBlockTimestamp = () => {
-  const config = useConfig()
-  const chainId = useChainId()
+  const config: any = useConfig()
+  const chainId: any = useChainId()
   return usePrefetchQuery(getBlockQueryOptions(config, { chainId, blockTag: 'latest' }))
 }

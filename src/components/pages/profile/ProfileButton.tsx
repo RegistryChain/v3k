@@ -121,7 +121,7 @@ export const OtherProfileButton = ({
   type?: 'text' | 'address' | 'contenthash'
   name: string
 }) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const breakpoints = useBreakpoint()
   const isLink =
     value?.startsWith('http://') || value?.startsWith('https://') || type === 'contenthash'

@@ -135,7 +135,7 @@ const getExistingCommitmentQueryFn =
     if (!commitKey) throw new Error('commitKey is required')
     if (!address) throw new Error('address is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
     const ethRegistrarControllerAddress = getChainContractAddress({
       client,
       contract: 'ensEthRegistrarController',

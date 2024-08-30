@@ -218,7 +218,7 @@ export const mockUseBasicNameTypes = Object.keys(
 ) as unknown as MockUseBasicNameType[]
 
 export const makeMockUseBasicName = (type: MockUseBasicNameType) => {
-  const config = mockUseBasicNameConfig[type]
+  const config: any = mockUseBasicNameConfig[type]
   const { useValidateType, useOwnerType, useWrapperDataType, useExpiryType, usePriceType } = config
   const expiryData = makeMockUseExpiryData(useExpiryType)
   const expiryDate = expiryData?.expiry?.date

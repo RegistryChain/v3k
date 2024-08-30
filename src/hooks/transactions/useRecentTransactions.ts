@@ -7,7 +7,7 @@ import { useTransactionStore } from './TransactionStoreContext'
 export function useRecentTransactions(): Transaction[] {
   const store = useTransactionStore()
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
 

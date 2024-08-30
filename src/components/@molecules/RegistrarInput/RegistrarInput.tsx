@@ -514,7 +514,7 @@ export const RegistrarInput = ({
   const breakpoints = useBreakpoint()
 
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const [inputVal, setInputVal] = useState('')
 

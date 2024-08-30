@@ -106,7 +106,7 @@ const Registration = ({ nameDetails, isLoading }: Props) => {
   const { t } = useTranslation('register')
 
   const router = useRouterWithHistory()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { address } = useAccount()
   const primary = usePrimaryName({ address })
   const selected = useMemo(

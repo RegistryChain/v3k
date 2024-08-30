@@ -13,8 +13,6 @@ import { useAddressRecord } from '@app/hooks/ensjs/public/useAddressRecord'
 import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { createQueryKey } from '@app/hooks/useQueryOptions'
 
-import { DisplayItems } from './TransactionDialogManager/DisplayItems'
-
 const InnerContainer = styled.div(() => [
   css`
     width: 100%;
@@ -49,7 +47,7 @@ export const DogFood = ({
     throttledSetEthNameInput((inputWatch || '').toLocaleLowerCase())
   }, [inputWatch, throttledSetEthNameInput])
 
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { address } = useAccount()
 
   const { data: addressRecordData } = useAddressRecord({
@@ -119,7 +117,6 @@ export const DogFood = ({
       {!errorMessage && finalValue && !disabled && (
         <>
           <Spacer $height="2" />
-          <DisplayItems displayItems={[{ label: 'address', value: finalValue, type: 'address' }]} />
         </>
       )}
     </InnerContainer>

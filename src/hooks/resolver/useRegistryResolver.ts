@@ -10,7 +10,7 @@ type UseRegistryResolverParameters = {
 }
 
 export const useRegistryResolver = ({ name, enabled = true }: UseRegistryResolverParameters) => {
-  const client = useClient()
+  const client: any = useClient()
   return useReadContract({
     abi: registryResolverSnippet,
     address: getChainContractAddress({ client, contract: 'ensRegistry' }),

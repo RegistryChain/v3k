@@ -124,7 +124,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
   })
   const { handleSubmit, control, setValue } = form
 
-  const client = useClient()
+  const client: any = useClient()
 
   const [view, setView] = useState<'main' | 'decrypt'>('main')
 

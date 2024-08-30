@@ -147,7 +147,7 @@ const useRegistrationReducer = ({
   address: string | undefined
   name: string
 }) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const selected = { address: address!, name, chainId } as const
   const [state, dispatch] = useLocalStorageReducer<
     RegistrationReducerData,

@@ -39,7 +39,7 @@ const Roles = ({
   const [sharePercentages, setSharePercentages] = useState<any>({ ...partnerPercentages })
 
   const ownersData = async () => {
-    const client = publicClient
+    const client: any = publicClient
     // Here fetch the resolver data
     const resolver = await getContract({
       client,

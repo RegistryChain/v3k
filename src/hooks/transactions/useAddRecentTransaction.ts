@@ -7,7 +7,7 @@ import { useTransactionStore } from './TransactionStoreContext'
 export function useAddRecentTransaction(): (transaction: NewTransaction) => void {
   const store = useTransactionStore()
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   return useCallback(
     (transaction: NewTransaction) => {

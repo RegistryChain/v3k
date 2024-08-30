@@ -155,7 +155,7 @@ export const generateMatchedFuseBlockData = ({
 export const useFusesSetDates = ({ name, enabled = true }: UseFusesSetDatesParameters) => {
   const queryClient = useQueryClient()
 
-  const client = useClient()
+  const client: any = useClient()
   const { address } = useAccount()
 
   const {

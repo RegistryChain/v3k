@@ -28,7 +28,7 @@ export const useResolverStatus = ({
   compare = true,
   migratedRecordsMatch,
 }: UseResolverStatusParameters) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const enabled = enabled_ && !!name
 

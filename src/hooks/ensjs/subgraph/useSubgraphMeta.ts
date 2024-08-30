@@ -29,7 +29,7 @@ export const getSubgraphMetaQueryFn =
   async <TParams extends UseSubgraphMetaParameters>({
     queryKey: [, chainId],
   }: QueryFunctionContext<QueryKey<TParams>>) => {
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
     const subgraphClient = createSubgraphClient({ client })
     const query = gql`
       query getMeta {

@@ -6,7 +6,7 @@ import { useTransactionStore } from './TransactionStoreContext'
 export function useClearRecentTransactions(): () => void {
   const store = useTransactionStore()
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   return useCallback(() => {
     if (!address || !chainId) {

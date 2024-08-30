@@ -34,7 +34,7 @@ export const getNamesForAddressQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>, GetNamesForAddressReturnType>) => {
     if (!address) throw new Error('address is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getNamesForAddress(client, { address, ...params, previousPage: pageParam })
   }

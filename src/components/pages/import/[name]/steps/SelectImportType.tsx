@@ -157,7 +157,7 @@ export const SelectImportType = ({
   const { t: tc } = useTranslation('common')
 
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { data: tldResolver } = useResolver({ name: selected.name.split('.')[1] })
 
   const tldResolverIsOffchainResolver = useMemo(

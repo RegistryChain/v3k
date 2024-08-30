@@ -52,7 +52,7 @@ export const useResolverHasInterfaces = <
   interfaceNames,
   resolverAddress,
 }: UseResolverHasInterfacesParameters<TInterfaceNames>) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const interfaceIds = useMemo(
     () => interfaceNames.map((name) => RESOLVER_INTERFACE_IDS[name]) as TInterfaceIds,

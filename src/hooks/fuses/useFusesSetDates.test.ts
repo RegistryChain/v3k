@@ -31,7 +31,7 @@ const mockUseNameHistory = mockFunction(useNameHistory)
 
 describe('getBlockQueryFn', () => {
   it('calls getBlock with the correct parameters', async () => {
-    const client = {} as ClientWithEns
+    const client: any = {} as ClientWithEns
     await getBlockQueryFn(client)({
       queryKey: [{ blockNumber: 1123n }] as any,
       meta: {},
@@ -175,7 +175,7 @@ describe('generateFuseSetBlocks', () => {
 })
 
 describe('generateGetBlockQueryArray', () => {
-  const client = {
+  const client: any = {
     chain: {
       id: 1,
     },
@@ -211,11 +211,7 @@ describe('generateGetBlockQueryArray', () => {
 
 describe('generateMatchedFuseBlockData', () => {
   it('returns undefined data and no loading or fetching blocks if no fuse set blocks are provided', () => {
-    const {
-      data,
-      hasPendingBlocks,
-      hasFetchingBlocks,
-    } = generateMatchedFuseBlockData({
+    const { data, hasPendingBlocks, hasFetchingBlocks } = generateMatchedFuseBlockData({
       fuseSetBlocks: [],
       blockDatas: [],
       queries: [],
@@ -226,11 +222,7 @@ describe('generateMatchedFuseBlockData', () => {
   })
 
   it('returns undefined data and no loading or fetching blocks if no block datas are provided', () => {
-    const {
-      data,
-      hasPendingBlocks,
-      hasFetchingBlocks,
-    } = generateMatchedFuseBlockData({
+    const { data, hasPendingBlocks, hasFetchingBlocks } = generateMatchedFuseBlockData({
       fuseSetBlocks: [['PARENT_CANNOT_CONTROL', 1234]],
       blockDatas: [],
       queries: [{ queryKey: [{ blockNumber: 1234n }] } as any],
@@ -241,11 +233,7 @@ describe('generateMatchedFuseBlockData', () => {
   })
 
   it('returns undefined data and no loading or fetching blocks if no block data is found for a fuse set block', () => {
-    const {
-      data,
-      hasPendingBlocks,
-      hasFetchingBlocks,
-    } = generateMatchedFuseBlockData({
+    const { data, hasPendingBlocks, hasFetchingBlocks } = generateMatchedFuseBlockData({
       fuseSetBlocks: [['PARENT_CANNOT_CONTROL', 1234]],
       blockDatas: [
         {
@@ -432,7 +420,7 @@ describe('useFusesSetDates', () => {
     '1233': 1627497600n,
     '1232': 1627411200n,
   }
-  const client = {
+  const client: any = {
     chain: {
       id: 1,
     },

@@ -254,27 +254,6 @@ const Complete = ({ name, beautifiedName, callback, isMoonpayFlow }: Props) => {
 
   return (
     <StyledCard>
-      <Confetti
-        width={width}
-        height={height}
-        recycle={false}
-        colors={[
-          '#49B393',
-          '#5298FF',
-          '#5854D6',
-          '#5AC8FA',
-          '#AF52DE',
-          '#D55555',
-          '#FF2D55',
-          '#FF9500',
-          '#FFCC00',
-        ]}
-        pieceWidth={{ min: 10, max: 20 }}
-        pieceHeight={{ min: 20, max: 50 }}
-        pieceShape="Square"
-        gravity={0.25}
-        initialVelocityY={20}
-      />
       <NFTContainer>
         <NFTTemplate backgroundImage={avatarSrc} isNormalised name={name} />
       </NFTContainer>

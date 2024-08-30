@@ -20,7 +20,7 @@ type Props = {
 
 export const EarnifiDialog = ({ name, open, onDismiss }: Props) => {
   const { t } = useTranslation('common')
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const formRef = useRef<HTMLFormElement>(null)
 
   const {

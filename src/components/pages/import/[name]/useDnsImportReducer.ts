@@ -165,7 +165,7 @@ export const useDnsImportReducer = ({
   address: Address | undefined
   name: string
 }) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const selected = { address: address || null, name, chainId } as SelectedItemProperties
   const [state, dispatch] = useLocalStorageReducer<DnsImportReducerData, DnsImportReducerAction>(
     'dns-import',

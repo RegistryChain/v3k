@@ -81,7 +81,7 @@ describe('SyncDroppedTransaction', () => {
 describe('getAccountHistoryEndpoint', () => {
   it('returns the correct endpoint for mainnet', () => {
     const address = '0x1234567890123456789012345678901234567890'
-    const chainId = 1
+    const chainId: any = 1
     const expectedEndpoint =
       'https://etherscan-api.ens-cf.workers.dev/accountHistory?address=0x1234567890123456789012345678901234567890'
 
@@ -90,7 +90,7 @@ describe('getAccountHistoryEndpoint', () => {
 
   it('returns the correct endpoint for goerli', () => {
     const address = '0x1234567890123456789012345678901234567890'
-    const chainId = 5
+    const chainId: any = 5
     const expectedEndpoint =
       'https://etherscan-api-goerli.ens-cf.workers.dev/accountHistory?address=0x1234567890123456789012345678901234567890'
 
@@ -99,7 +99,7 @@ describe('getAccountHistoryEndpoint', () => {
 
   it('returns an empty string for unknown chainIds', () => {
     const address = '0x1234567890123456789012345678901234567890'
-    const chainId = 123
+    const chainId: any = 123
 
     expect(getAccountHistoryEndpoint(address, chainId)).toEqual('')
   })

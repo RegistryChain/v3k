@@ -18,7 +18,7 @@ export const useMoonpayRegistration = (
   selected: SelectedItemProperties,
   item: ReturnType<typeof useRegistrationReducer>['item'],
 ) => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { address } = useAccountSafely()
   const [hasMoonpayModal, setHasMoonpayModal] = useState(false)
   const [moonpayUrl, setMoonpayUrl] = useState('')

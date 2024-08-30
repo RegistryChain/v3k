@@ -272,7 +272,7 @@ export const AvatarNFT = ({
   const { address: _address } = useAccount()
   const address = _address!
 
-  const client = useClient()
+  const client: any = useClient()
 
   const {
     data: NFTPages,

@@ -256,19 +256,19 @@ describe('validateExpiry', () => {
 
 describe('getResolverWrapperAwareness', () => {
   it('should return false for unknown resolver', () => {
-    const chainId = 1
+    const chainId: any = 1
     const resolverAddress = '0xunknown'
     const result = getResolverWrapperAwareness({ chainId, resolverAddress })
     expect(result).toEqual(false)
   })
   it('should return false for known resolver that is not wrapper aware', () => {
-    const chainId = 1
+    const chainId: any = 1
     const resolverAddress = '0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41'
     const result = getResolverWrapperAwareness({ chainId, resolverAddress })
     expect(result).toEqual(false)
   })
   it('should return true for known resolver that is wrapper aware', () => {
-    const chainId = 1
+    const chainId: any = 1
     const resolverAddress = '0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63'
     const result = getResolverWrapperAwareness({ chainId, resolverAddress })
     expect(result).toEqual(true)

@@ -422,7 +422,7 @@ export function createTransactionStore(config_: ConfigWithEns) {
             const { status, blockHash } = receipt
             let blockRequest = blockRequestCache.get(blockHash)
             if (!blockRequest) {
-              const client = config.getClient({
+              const client: any = config.getClient({
                 chainId,
               })
               blockRequest = getBlock(client, { blockHash })

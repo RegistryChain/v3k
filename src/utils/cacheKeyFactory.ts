@@ -2,30 +2,20 @@
 // @ts-nocheck
 import { useAccount, useChainId } from 'wagmi'
 
-import type { uniqueTransactionIdentifierGenerator } from '@app/components/@molecules/TransactionDialogManager/stage/TransactionStageModal'
 import { ResolverInterfaceName } from '@app/constants/resolverInterfaceIds'
 import type { RegistrationProps } from '@app/hooks/useEstimateRegistration'
 import type { TransactionItem } from '@app/transaction-flow/transaction'
 
 export const useQueryKeys = () => {
   const { address } = useAccount()
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const globalKeys = [chainId, address]
 
   return {
     graphBase: [...globalKeys, 'graph'],
-    dogfood: (inputString?: string) => [...globalKeys, 'getAddr', inputString, 'dogfood'],
-    transactionStageModal: {
-      prepareTransaction: (
-        uniqueTransactionIdentifiers: ReturnType<typeof uniqueTransactionIdentifierGenerator>,
-      ) => [...globalKeys, uniqueTransactionIdentifiers, 'prepareTransaction'],
-      transactionError: (transactionHash?: string) => [
-        ...globalKeys,
-        transactionHash,
-        'transactionError',
-      ],
-    },
+    dogfood: (any) => null,
+    transactionStageModal: {},
     nameSnippet: (localAddress: string) => [...globalKeys, 'getName', localAddress, 'nameSnippet'],
     moonpayRegistration: (currentExternalTransactionId: string) => [
       ...globalKeys,

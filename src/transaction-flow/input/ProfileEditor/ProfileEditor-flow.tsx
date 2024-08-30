@@ -180,7 +180,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
     name,
   })
 
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const handleCreateTransaction = useCallback(
     async (form: ProfileEditorForm) => {

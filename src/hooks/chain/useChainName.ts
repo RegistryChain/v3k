@@ -4,8 +4,8 @@ import { useChainId, useConfig } from 'wagmi'
 import { getChainName } from '@app/utils/getChainName'
 
 export const useChainName = () => {
-  const config = useConfig()
-  const chainId = useChainId()
+  const config: any = useConfig()
+  const chainId: any = useChainId()
 
   return useMemo(() => {
     return getChainName(config, { chainId })

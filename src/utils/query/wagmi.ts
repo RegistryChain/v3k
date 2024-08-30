@@ -88,7 +88,7 @@ const chains = [
   holeskyWithEns,
 ] as const
 
-const transports = {
+const transports: any = {
   ...(isLocalProvider
     ? ({
         [localhost.id]: http(process.env.NEXT_PUBLIC_PROVIDER!) as unknown as FallbackTransport,
@@ -110,7 +110,7 @@ const wagmiConfig_ = createConfig({
   storage: createStorage({ storage: localStorageWithInvertMiddleware(), key: prefix }),
   chains,
   client: ({ chain }) => {
-    const chainId = chain.id
+    const chainId: any = chain.id
 
     return createClient<Transport, typeof chain>({
       chain,
@@ -135,7 +135,7 @@ const isSupportedChain = (chainId: number): chainId is (typeof chains)[number]['
 wagmiConfig_.subscribe(
   ({ connections, current }) => (current ? connections.get(current)?.chainId : undefined),
   (chainId_) => {
-    const chainId = chainId_ || chains[0].id
+    const chainId: any = chainId_ || chains[0].id
     // If chain is not configured, then don't switch over to it.
     const isChainConfigured = isSupportedChain(chainId)
     if (!isChainConfigured) return
@@ -149,10 +149,4 @@ wagmiConfig_.subscribe(
 
 export const wagmiConfig = wagmiConfig_ as typeof wagmiConfig_ & {
   _isEns: true
-}
-
-declare module 'wagmi' {
-  interface Register {
-    config: typeof wagmiConfig
-  }
 }

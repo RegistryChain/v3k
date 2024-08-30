@@ -37,7 +37,7 @@ export const getSupportedInterfacesQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>>) => {
     if (!address) throw new Error('address is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getSupportedInterfaces(client, { address, ...params })
   }

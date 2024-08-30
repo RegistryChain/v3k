@@ -6,7 +6,6 @@ import { mock } from '@wagmi/core'
 import React, { FC, ReactElement } from 'react'
 import { ThemeProvider } from 'styled-components'
 import { beforeEach, expect, MockedFunction, vi } from 'vitest'
-import type { Register } from 'wagmi'
 import { hashFn } from 'wagmi/query'
 
 import { lightTheme, ThorinGlobalStyles } from '@ensdomains/thorin'
@@ -61,35 +60,14 @@ const client = createClient({
   chain: mainnetWithEns,
 })
 
-const wagmiConfig = {
-  ...createConfig({
-    connectors: [
-      mock({
-        accounts: [privateKeyAccount.address],
-        features: {},
-      }),
-    ],
-    chains: [mainnetWithEns],
-    client: () => client,
-  }),
-  _isEns: true,
-} as unknown as Register['config']
-
-vi.mock('@app/utils/query/wagmi', () => ({
-  wagmiConfig,
-  infuraUrl: () => 'http://infura.io',
-}))
-
 const AllTheProviders: FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={lightTheme}>
-          <ThorinGlobalStyles />
-          {children}
-        </ThemeProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={lightTheme}>
+        <ThorinGlobalStyles />
+        {children}
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 

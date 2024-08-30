@@ -224,7 +224,7 @@ export const estimateGasWithStateOverrideQueryFn =
   >({
     queryKey: [{ transactions }, chainId],
   }: QueryFunctionContext<QueryKey<TransactionItems, TParams>>) => {
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     const connectorClientWithAccount = {
       ...(connectorClient ?? client),

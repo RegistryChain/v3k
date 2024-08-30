@@ -143,9 +143,9 @@ export function useQueryOptions<
   queryDependencyType,
   queryFn,
 }: QueryKeyConfig<TParams, TFunctionName, QueryDependencyType> & { queryFn?: TQueryFn }) {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
   const { address } = useAccount()
-  const config = useConfig()
+  const config: any = useConfig()
 
   if (queryDependencyType === 'independent')
     return {

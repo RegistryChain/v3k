@@ -14,7 +14,6 @@ import { useLocalStorageReducer } from '@app/hooks/useLocalStorage'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { UpdateCallback, useCallbackOnTransaction } from '@app/utils/SyncProvider/SyncProvider'
 
-import { TransactionDialogManager } from '../components/@molecules/TransactionDialogManager/TransactionDialogManager'
 import { DataInputComponent, DataInputComponents } from './input'
 import { helpers, initialState, reducer } from './reducer'
 import { GenericTransaction, InternalTransactionFlow, TransactionFlowItem } from './types'
@@ -226,12 +225,7 @@ export const TransactionFlowProvider = ({ children }: { children: ReactNode }) =
     }
   }, [state.selectedKey, dispatch])
 
-  return (
-    <TransactionContext.Provider value={providerValue}>
-      {children}
-      <TransactionDialogManager {...{ state, dispatch, selectedKey }} />
-    </TransactionContext.Provider>
-  )
+  return <TransactionContext.Provider value={providerValue}>{children}</TransactionContext.Provider>
 }
 
 export const useTransactionFlow = () => {

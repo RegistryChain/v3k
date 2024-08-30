@@ -12,7 +12,7 @@ export const useContractAddress = <
   contract: TContractName
   blockNumber?: bigint
 }) => {
-  const client = useClient()
+  const client: any = useClient()
 
   return getSupportedChainContractAddress({
     client,

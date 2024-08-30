@@ -39,7 +39,7 @@ const rpcSendBatch = (items: { method: string; params: any[] }[]) =>
 type TestConfig = Config<[typeof localhostWithEns]>
 
 export const DevSection = () => {
-  const client = useClient<TestConfig>()
+  const client: any = useClient<TestConfig>()
   const testClient = useMemo(() => ({ ...client, mode: 'anvil' }) as const, [client])
 
   const addTransaction = useAddRecentTransaction()

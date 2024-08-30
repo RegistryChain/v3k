@@ -112,7 +112,7 @@ describe('useAbilities', () => {
       // writeFileSync('./testcode.ts', code)
     })
     it.each(mockUseAbilitiesTypes)('should return expected data for %s', (type) => {
-      const config = mockUseAbilitiesConfig[type]
+      const config: any = mockUseAbilitiesConfig[type]
       const { basicNameType, parentNameType, name } = config
       mockUseAccountSafely.mockReturnValue({
         address: createAccounts().getAddress('user') as Address,

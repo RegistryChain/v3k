@@ -8,7 +8,7 @@ const ORACLE_ENS = 'eth-usd.data.eth'
 const ORACLE_GOERLI = '0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e' as const
 
 export const useEthPrice = () => {
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const { data: address_ } = useAddressRecord({
     name: ORACLE_ENS,

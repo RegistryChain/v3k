@@ -1,8 +1,6 @@
 import dynamic from 'next/dynamic'
 import { useContext, useEffect } from 'react'
 
-import DynamicLoadingContext from '@app/components/@molecules/TransactionDialogManager/DynamicLoadingContext'
-
 import TransactionLoader from '../TransactionLoader'
 import type { Props as AdvancedEditorProps } from './AdvancedEditor/AdvancedEditor-flow'
 import type { Props as CreateSubnameProps } from './CreateSubname-flow'
@@ -31,11 +29,8 @@ const dynamicHelper = <P,>(name: string) =>
     {
       loading: () => {
         /* eslint-disable react-hooks/rules-of-hooks */
-        const setLoading = useContext(DynamicLoadingContext)
-        useEffect(() => {
-          setLoading(true)
-          return () => setLoading(false)
-        }, [setLoading])
+
+        useEffect(() => {}, [])
         return <TransactionLoader isComponentLoader />
         /* eslint-enable react-hooks/rules-of-hooks */
       },

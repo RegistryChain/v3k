@@ -46,7 +46,7 @@ export const getRegistrationDataQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>>) => {
     if (!name) throw new Error('name is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
     const subgraphClient = createSubgraphClient({ client })
 
     const result = await subgraphClient.request<{

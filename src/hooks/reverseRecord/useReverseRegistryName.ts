@@ -57,7 +57,7 @@ export const useReverseRegistryName = <TParams extends UseReverseRegistryNamePar
   address,
   enabled = true,
 }: TParams & UseReverseRegistryNameConfig) => {
-  const client = useClient()
+  const client: any = useClient()
 
   const args = useMemo(() => getContractArgs(address), [address])
 

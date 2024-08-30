@@ -31,7 +31,7 @@ export const getDnsImportDataQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>>) => {
     if (!name) throw new Error('name is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getDnsImportData(client, { name, ...params })
   }

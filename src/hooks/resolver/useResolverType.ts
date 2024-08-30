@@ -31,7 +31,7 @@ export const isWildcardCalc = ({
 export const useResolverType = ({ name, enabled: enabled_ = true }: UseResolverTypeParameters) => {
   const enabled = enabled_ && !!name
 
-  const chainId = useChainId()
+  const chainId: any = useChainId()
 
   const isWrappedQuery = useIsWrapped({
     name,

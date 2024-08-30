@@ -79,7 +79,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   const [subnameResults, setSubnameResults] = useState<any[]>([])
   const [subnameResLoaded, setSubnameResLoaded] = useState<Boolean>(false)
 
-  const client = useMemo(
+  const client: any = useMemo(
     () =>
       createEnsPublicClient({
         chain: sepolia,

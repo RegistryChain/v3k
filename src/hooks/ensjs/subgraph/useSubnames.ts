@@ -31,7 +31,7 @@ export const getSubnamesQueryFn =
   }: QueryFunctionContext<QueryKey<TParams>, GetSubnamesReturnType>) => {
     if (!name) throw new Error('name is required')
 
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
 
     return getSubnames(client, { name, ...params, previousPage: pageParam })
   }
