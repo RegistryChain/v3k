@@ -53,6 +53,7 @@ const SHARE_COUNT = 1000000
 const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any) => {
   const name = data?.name || ''
   const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
+  console.log('keys', keys)
 
   const entityData = async () => {
     const client: any = publicClient
