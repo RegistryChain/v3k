@@ -222,7 +222,7 @@ export default function Page() {
     const m = new Date().getMonth() + 1
     const d = new Date().getDate()
     const y = new Date().getFullYear()
-    setProfile({ ...profile, formationDate: d + '/' + m + '/' + y })
+    setProfile((prevState: any) => ({ ...prevState, formationDate: d + '/' + m + '/' + y }))
   }, [registrationStep])
 
   const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
