@@ -158,7 +158,7 @@ const typeToRecordKey: any = {
 }
 
 const typesByTemplate: any = {
-  '1': 'Partnership',
+  '1': 'partnership',
 }
 
 const deployerAddress = '0x259c9c45e1f1002df6191abac7b0fc94b7f9e173'

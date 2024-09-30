@@ -29,27 +29,37 @@ const styles = StyleSheet.create({
 
 // Function to build the constitution sections
 const buildConstitution = (profileData: any, userData: any, templateId: any) => {
-  const constitutionContent = constitutionTemplate[templateId].map((section: any) => {
+  const constitutionHeader = (
+    <View key={'constheader'} style={{ marginTop: 30, marginBottom: 35, textAlign: 'center' }}>
+      <Text style={{ fontSize: 25, fontWeight: 'extrabold' }}>
+        {profileData.name}, {profileData.type}
+      </Text>
+      <Text style={{ fontSize: 18, fontWeight: 'extrabold' }}>Certificate of Formation</Text>
+    </View>
+  )
+  const constitutionContent = constitutionTemplate[templateId].map((section: any, idx: any) => {
     const contentArray = section.content(profileData, userData)
 
     return (
-      <View key={section.header} style={{ marginBottom: 15 }}>
+      <View key={section.header} style={{ marginBottom: 15, marginLeft: 15 }}>
         {/* Render the section header */}
-        <Text style={styles.header}>{section.header}</Text>
+        <Text style={styles.header}>
+          {idx + 1}. {section.header}
+        </Text>
 
         {/* Map over the contentArray to generate Text elements */}
         {contentArray.map((item: any, index: any) => {
           if (typeof item === 'string') {
             // If it's a string, render it as a list item
             return (
-              <Text key={index} style={styles.text}>
-                {item}
+              <Text key={index} style={{ ...styles.text, marginLeft: 20 }}>
+                {idx + 1}.{index + 1} {item}
               </Text>
             )
           } else if (Array.isArray(item)) {
             // If it's an array, render each sub-list item
             return item.map((subItem, subIndex) => (
-              <Text key={`${index}-${subIndex}`} style={styles.subListItem}>
+              <Text key={`${index}-${subIndex}`} style={{ ...styles.subListItem, marginLeft: 50 }}>
                 {subItem}
               </Text>
             ))
@@ -60,7 +70,7 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
     )
   })
 
-  return constitutionContent
+  return [constitutionHeader, ...constitutionContent]
 }
 
 const constitutionTemplate: any = {
@@ -105,9 +115,78 @@ const constitutionTemplate: any = {
             if (user.shares > 0) {
               roles.push('shareholder')
             }
-            return `${user.name} - ID: ${user.address}. Roles: ${roles.join(', ')}`
+            return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
           }),
         ],
+      ],
+    },
+    {
+      header: 'Management',
+      content: (profileData: any, userData: any) => [
+        `The ${profileData?.type || 'N/A'} shall be managed by  its members.`,
+      ],
+    },
+    {
+      header: 'Shares',
+      content: (profileData: any, userData: any) => {
+        let totalShares = 0
+        userData.forEach((x: any) => {
+          totalShares += x.shares
+        })
+        return [
+          `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
+          `The initial shares allocation are as follows: `,
+          [
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user.shares} shares, ${ownership}% ownership`
+            }),
+          ],
+          // Alice Smith , 700000 shares, 70% ownership
+          // Bob Johnson , 300000 shares, 30% ownership
+        ]
+      },
+    },
+    {
+      header: 'Capital Contributions',
+      content: (profileData: any, userData: any) => {
+        let totalShares = 0
+        userData.forEach((x: any) => {
+          totalShares += x.shares
+        })
+        return [
+          `Initial Contributions: The initial capital contributions of the members are as follows:`,
+          [
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user?.capital || '0'} ${
+                profileData?.capitalCurrency || 'USD'
+              }`
+            }),
+          ],
+        ]
+      },
+    },
+    {
+      header: 'Amendment',
+      content: (profileData: any, userData: any) => [
+        `This constitution may be amended or repealed by consent of all members`,
+      ],
+    },
+    {
+      header: 'Indemnification',
+      content: (profileData: any, userData: any) => [
+        `The members of the ${
+          profileData?.type || 'N/A'
+        } are not personally liable for the acts or debts of the  ${
+          profileData?.type || 'N/A'
+        }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
+      ],
+    },
+    {
+      header: 'Distributions',
+      content: (profileData: any, userData: any) => [
+        `Distributions of cash, profit or other assets shall be made to members in proportion to their ownership interests, at such times as determined by the members.`,
       ],
     },
   ],
