@@ -98,27 +98,39 @@ const entityRegistrars: { [x: string]: any } = {
   PUB: {
     name: 'Public Registry',
     domain: 'publicregistry.eth',
-    types: ['Partnership'],
+    types: [{ name: 'Partnership - Default Template', templateId: 1 }],
   },
   DL: {
     name: 'Delaware USA',
     domain: 'delaware.eth',
-    types: ['LLC', 'C-Corp'],
+    types: [
+      { templateId: '2', name: 'LLC' },
+      { templateId: '3', name: 'C-Corp' },
+    ],
   },
   WY: {
     name: 'Wyoming USA',
     domain: 'wyoming.eth',
-    types: ['LLC', 'C-Corp'],
+    types: [
+      { templateId: '4', name: 'LLC' },
+      { templateId: '5', name: 'C-Corp' },
+    ],
   },
   BVI: {
     name: 'British Virgin Islands',
     domain: 'bvi.eth',
-    types: ['Limited Partnership', 'BVIBC'],
+    types: [
+      { templateId: '6', name: 'Limited Partnership' },
+      { templateId: '7', name: 'BVIBC' },
+    ],
   },
   'CIV-US': {
     name: 'Civil Registry USA',
     domain: 'US.civilregistry.eth',
-    types: ['Birth', 'Marriage'],
+    types: [
+      { templateId: '8', name: 'Birth' },
+      { templateId: '9', name: 'Marriage' },
+    ],
   },
 }
 
@@ -133,7 +145,7 @@ export default function Page() {
 
   const [entityName, setEntityName] = useState<string>('')
   const [registrar, setRegistrarInput] = useState<string>('')
-  const [entityType, setEntityType] = useState<string>('')
+  const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
   useEffect(() => {
@@ -161,11 +173,11 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    if (entityName && entityRegistrars[registrar].name && entityType) {
+    if (entityName && entityRegistrars[registrar].name && entityType?.templateId) {
       router.push('/entity', {
         name: entityName,
         registrar: entityRegistrars[registrar].name,
-        type: entityType,
+        template: entityType?.templateId,
       })
     }
   }
@@ -182,9 +194,9 @@ export default function Page() {
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
-        label={entityType || 'Entity Type'}
+        label={entityType?.name || 'Constitution Selection'}
         items={entityRegistrars[registrar]?.types?.map((x: any) => ({
-          label: x,
+          label: x?.name,
           color: 'blue',
           onClick: () => setEntityType(x),
           value: x,
@@ -245,7 +257,7 @@ export default function Page() {
             shape="rounded"
             size="small"
             disabled={
-              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType
+              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType?.name
                 ? true
                 : false
             }

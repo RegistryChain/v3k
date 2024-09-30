@@ -38,9 +38,6 @@ export const Review = ({
 
   return (
     <div>
-      <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
-        {name}
-      </Typography>
       <RecordsSection texts={texts} />
     </div>
   )

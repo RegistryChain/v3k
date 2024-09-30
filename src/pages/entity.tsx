@@ -8,9 +8,11 @@ import {
   createPublicClient,
   createWalletClient,
   custom,
+  encodeAbiParameters,
   getContract,
   http,
   isAddress,
+  keccak256,
   labelhash,
   namehash,
   parseAbi,
@@ -26,6 +28,7 @@ import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
 import { Button, Typography } from '@ensdomains/thorin'
 
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
+import Constitution from '@app/components/pages/entityCreation/Constitution'
 import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
 import { Review } from '@app/components/pages/entityCreation/Review'
 import Roles from '@app/components/pages/entityCreation/Roles'
@@ -51,7 +54,7 @@ const registrarNameToKey: { [x: string]: string } = {
 }
 
 const registrarkeyToDomainFull: { [x: string]: string } = {
-  PUB: 'CORP.PUB',
+  PUB: 'public',
   DL: 'DL.US',
   WY: 'WY.US',
   BVI: 'BVI.UK',
@@ -62,7 +65,7 @@ const registrarKeyToEntityRegistrationAddress: any = {
   DL: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
   WY: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
   BVI: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
-  PUB: '0x123ac088458a15dc162f160c396f764288742b26',
+  PUB: '0xb1863015b31d72adbc566d9ab76c0d6b088d06a0',
   CIV: '0x7b5ca5d3c9b1dc921bd5f37d593407cf3d789d6a',
 }
 
@@ -78,6 +81,7 @@ const corpFields: any = {
   standard: {
     description: 'string',
     address: 'string',
+    purpose: 'string',
   },
   PUB: {},
   DL: {},
@@ -153,14 +157,18 @@ const typeToRecordKey: any = {
   civil: 'civil',
 }
 
-const deployerAddress = '0xb11ab9dcc1c3736a9e1c979c873a23d9911128b7'
+const typesByTemplate = {
+  '1': 'Partnership',
+}
+
+const deployerAddress = '0x259c9c45e1f1002df6191abac7b0fc94b7f9e173'
 
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
   const entityName = router.query.name as string
   const entityRegistrar = router.query.registrar as string
-  const entityType = router.query.type as string
+  const templateId = router.query.template as string
 
   const isSelf = router.query.connected === 'true'
   const [registrationStep, setRegistrationStep] = useState<number>(1)
@@ -191,9 +199,9 @@ export default function Page() {
       ...prevProf,
       name: entityName,
       registrar: entityRegistrar,
-      type: entityType,
+      type: typesByTemplate[templateId],
     }))
-  }, [entityName, entityRegistrar, entityType])
+  }, [entityName, entityRegistrar, templateId])
 
   // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
 
@@ -212,39 +220,38 @@ export default function Page() {
 
   const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
 
+  async function generateUserDataBytes(userData) {
+    return userData.map((user, idx) => {
+      let roleDataBytes = '0x'
+      user.roles.forEach((role) => {
+        const encRole = encodeAbiParameters([{ type: 'string' }], [role])
+        const roleHash = keccak256(encRole).slice(2, 66)
+        roleDataBytes += roleHash
+      })
+
+      const encodedUserData = encodeAbiParameters(
+        [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+        [user.address, user.shares, roleDataBytes],
+      )
+      return encodedUserData
+    })
+  }
+
   const advance = async () => {
     setErrorMessage('')
+
+    if (registrationStep === 3) {
+      partners.forEach((partner, idx) => {
+        //If wanting to implenent validation on share amounts and percentages...
+      })
+    }
+
     if (registrationStep < 5) {
       setRegistrationStep(registrationStep + 1)
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      const texts: any[] = [{ key: 'name', value: entityName }]
-      partners.forEach((partner, idx) => {
-        const partnerKey = 'partner__[' + idx + ']__'
-        Object.keys(partner).forEach((field) => {
-          if (field === 'address') {
-            if (!isAddress(partner[field])) {
-              texts.push({ key: partnerKey + field, value: zeroAddress })
-            } else {
-              texts.push({ key: partnerKey + field, value: partner[field] })
-            }
-          } else if (typeof partner[field] === 'boolean') {
-            texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
-          } else if (field !== 'roles') {
-            texts.push({ key: partnerKey + field, value: partner[field] })
-          } else {
-            partner[field].forEach((role: string) => {
-              texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
-            })
-          }
-        })
-      })
-
-      Object.keys(profile).forEach((field) => {
-        const key = typeToRecordKey[intakeType] + '__' + field.split(' ').join('__')
-        texts.push({ key, value: profile[field] })
-      })
+      const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
 
       const jurisSubdomainString = registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]]
 
@@ -277,18 +284,31 @@ export default function Page() {
       try {
         const deployer: any = getContract({
           address: deployerAddress,
-          abi: parseAbi(['function formEntity(string,address,bytes[]) external']),
+          abi: parseAbi([
+            'function formEntity(string,bool,address,bytes[],bytes4[],bytes[]) external',
+          ]),
           client: wallet,
         })
-        const constitutionData = generateRecordCallArray({
+        const generatedData = generateRecordCallArray({
           texts,
-          namehash: namehashToPass,
+          namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
           contentHash: 'ipfs://' + contentHash,
         })
+        const constitutionData = generatedData.map(
+          (x) =>
+            '0x' + x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[1],
+        )
+        const methods = generatedData.map(
+          (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
+        )
+        const userDataBytes = await generateUserDataBytes(partners)
         const registerChaserTx = await deployer.write.formEntity([
           entityNameToPass,
+          true,
           entityRegistrarAddress,
           constitutionData,
+          methods,
+          userDataBytes,
         ])
         console.log(await publicClient?.waitForTransactionReceipt({ hash: registerChaserTx }))
       } catch (err: any) {
@@ -389,7 +409,19 @@ export default function Page() {
   }
 
   if (registrationStep === 5) {
-    content = <Review name={name} profile={profile} partners={partners} />
+    // const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
+
+    // console.log(texts, partners)
+
+    content = (
+      <div>
+        <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
+          {name}
+        </Typography>
+        <Constitution profileData={profile} userData={partners} />
+        <Review name={name} profile={profile} partners={partners} />
+      </div>
+    )
   }
 
   return (
@@ -407,6 +439,36 @@ export default function Page() {
       </div>
     </>
   )
+}
+
+const generateTexts = (partners, profile, entityName, intakeType) => {
+  const texts = [{ key: 'name', value: entityName }]
+  partners.forEach((partner, idx) => {
+    const partnerKey = 'partner__[' + idx + ']__'
+    Object.keys(partner).forEach((field) => {
+      if (field === 'address') {
+        if (!isAddress(partner[field])) {
+          texts.push({ key: partnerKey + field, value: zeroAddress })
+        } else {
+          texts.push({ key: partnerKey + field, value: partner[field] })
+        }
+      } else if (typeof partner[field] === 'boolean') {
+        texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
+      } else if (field !== 'roles') {
+        texts.push({ key: partnerKey + field, value: partner[field] })
+      } else {
+        partner[field].forEach((role: string) => {
+          texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
+        })
+      }
+    })
+  })
+
+  Object.keys(profile).forEach((field) => {
+    const key = typeToRecordKey[intakeType] + '__' + field.split(' ').join('__')
+    texts.push({ key, value: profile[field] })
+  })
+  return texts
 }
 
 const pinFileToIPFS = async (recordsFileJson: any) => {

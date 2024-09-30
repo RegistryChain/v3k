@@ -68,25 +68,9 @@ const TabButton = styled.button<{ $selected: boolean }>(
 )
 
 const regKeyToRegistrarAddress: any = {
-  'DL.US': {
-    entityRegistrar: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
-    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
-  },
-  'WY.US': {
-    entityRegistrar: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
-    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
-  },
-  'BVI.UK': {
-    entityRegistrar: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
-    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
-  },
-  'CORP.PUB': {
-    entityRegistrar: '0x123ac088458a15dc162f160c396f764288742b26',
-    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
-  },
-  'CIV.PUB': {
-    entityRegistrar: '0x7b5ca5d3c9b1dc921bd5f37d593407cf3d789d6a',
-    resolver: '0x649d82b9c969ed5f1b899c3440f41a6b24f16f16',
+  public: {
+    entityRegistrar: '0xb1863015b31d72adbc566d9ab76c0d6b088d06a0',
+    resolver: '0x0a1bceceae846d0f87544d36f3f3549bef7e25a5',
   },
 }
 
@@ -173,7 +157,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   }, [name])
 
   const getContent = async () => {
-    const registrarKey = name.split('.').slice(1, 3).join('.')
+    const suffixIndex = name.split('.').length - 1
+    const registrarKey = name.split('.').slice(1, suffixIndex).join('.')
     const resolver: any = getContract({
       address: regKeyToRegistrarAddress[registrarKey].resolver,
       abi: parseAbi(['function contenthash(bytes32) external view returns (bytes memory)']),

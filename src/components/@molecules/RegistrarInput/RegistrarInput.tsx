@@ -622,7 +622,7 @@ export const RegistrarInput = ({
             setInputVal(e.target.value)
             const names = Object.keys(regNamesLower)
             const userInput = e.target.value.toLowerCase()
-            const showNames: any[] = names.filter((x) => x.includes(userInput))
+            const showNames: any[] = names.filter((x) => x.includes(userInput) || x.includes('pub'))
             setShowNamesState(showNames)
 
             const selectedName = names.find((x) => x === userInput)
@@ -648,18 +648,29 @@ export const RegistrarInput = ({
         >
           {showNamesState?.length > 0 ? (
             <div style={{ backgroundColor: 'white', paddingBottom: '8px', borderRadius: '8px' }}>
-              {showNamesState.map((x) => (
-                <div
-                  style={{ backgroundColor: 'white', color: '#3888FF', paddingLeft: '10px' }}
-                  onClick={() => {
-                    setValue(regNamesLower[x])
-                    setInputVal(x)
-                    setShowNamesState([])
-                  }}
-                >
-                  <span>{x}</span>
-                </div>
-              ))}
+              {showNamesState.map((x) => {
+                const style = { color: '#3888FF', paddingLeft: '10px' }
+
+                return (
+                  <div
+                    style={{
+                      ...style,
+                      cursor: regNamesLower[x] !== 'PUB' ? 'not-allowed' : 'pointer',
+                      backgroundColor: regNamesLower[x] !== 'PUB' ? '#ebe5e5' : 'white',
+                      color: regNamesLower[x] !== 'PUB' ? 'rgb(41 116 229)' : '#3888FF',
+                    }}
+                    onClick={() => {
+                      //IMPORTANT
+                      if (regNamesLower[x] !== 'PUB') return null
+                      setValue(regNamesLower[x])
+                      setInputVal(x)
+                      setShowNamesState([])
+                    }}
+                  >
+                    <span>{x}</span>
+                  </div>
+                )
+              })}
             </div>
           ) : null}
         </div>

@@ -46,7 +46,7 @@ const Roles = ({
       abi: parseAbi([
         'function text(bytes32 node, string calldata key) view returns (string memory)',
       ]),
-      address: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
+      address: '0x0a1bceceae846d0f87544d36f3f3549bef7e25a5',
     })
     const properties: any = {}
     console.log('IMPORTANT - Fetch data from contracts here')
@@ -80,7 +80,7 @@ const Roles = ({
 
   const partnersEle = partners.map((partner: any, idx: number) => {
     const inputEle = (
-      <div style={{ display: 'flex' }}>
+      <div key={'partnersEleDiv' + idx} style={{ display: 'flex' }}>
         <Typography style={{ flex: 3 }}>{partner.name}</Typography>
 
         {relevantRoles.map((role) => {
@@ -116,12 +116,12 @@ const Roles = ({
   })
 
   const ownershipSection = (
-    <div style={{ marginTop: '24px' }}>
-      <div>
+    <div key={'ownershipSec'} style={{ marginTop: '24px' }}>
+      <div key={'ownsec1'}>
         <span style={{ fontSize: '42px' }}>{t('steps.roles.title.section2')}</span>
       </div>
-      <div style={{ display: 'block' }}>
-        <InputWrapper>
+      <div key={'ownsec2'} style={{ display: 'block' }}>
+        <InputWrapper key={'inpwra1'}>
           <Input
             size="medium"
             value={totalShares}
@@ -142,7 +142,7 @@ const Roles = ({
             }}
           />
         </InputWrapper>
-        <InputWrapper style={{ flex: 2 }}>
+        <InputWrapper key={'inpwra2'} style={{ flex: 2 }}>
           <Input
             size="medium"
             value={profile.lockup__days || 0}
@@ -165,9 +165,12 @@ const Roles = ({
         </InputWrapper>
         {partners.map((partner: any, idx: number) => {
           return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              key={'partners' + idx}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
               <Typography style={{ flex: 3 }}>{partner.name}</Typography>
-              <InputWrapper style={{ flex: 3 }}>
+              <InputWrapper key={'inpwraPart1' + idx} style={{ flex: 3 }}>
                 <Input
                   size="medium"
                   value={sharePercentages[partner.name]}
@@ -197,7 +200,7 @@ const Roles = ({
                   }}
                 />
               </InputWrapper>
-              <InputWrapper style={{ flex: 3, cursor: 'not-allowed' }}>
+              <InputWrapper key={'inpwraPart2' + idx} style={{ flex: 3, cursor: 'not-allowed' }}>
                 <Input
                   size="medium"
                   style={{ cursor: 'not-allowed' }}
@@ -253,15 +256,18 @@ const Roles = ({
 
   return (
     <div style={{ marginBottom: '44px' }}>
-      <div>
+      <div key={'titleRoles'}>
         <span style={{ fontSize: '42px' }}>{t('steps.roles.title.section1')}</span>
       </div>
-      <div style={{ marginTop: '20px' }}>
-        <div style={{ display: 'flex' }}>
+      <div key={'relevantRolesSection'} style={{ marginTop: '20px' }}>
+        <div key={'relevantRolesHeading'} style={{ display: 'flex' }}>
           <Typography style={{ flex: 3 }}></Typography>
           {relevantRoles.map((role) => {
             return (
-              <Typography style={{ flex: 2, textAlign: align, fontSize: '20px' }}>
+              <Typography
+                key={'roleText-' + role}
+                style={{ flex: 2, textAlign: align, fontSize: '20px' }}
+              >
                 {role}
               </Typography>
             )

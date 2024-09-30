@@ -57,13 +57,6 @@ const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any
   const entityData = async () => {
     const client: any = publicClient
     // Here fetch the resolver data
-    const resolver = await getContract({
-      client,
-      abi: parseAbi([
-        'function text(bytes32 node, string calldata key) view returns (string memory)',
-      ]),
-      address: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
-    })
     const properties: any = {}
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
