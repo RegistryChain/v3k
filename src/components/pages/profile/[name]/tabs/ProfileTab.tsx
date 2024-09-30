@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
+import { createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
+import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
 import { Helper } from '@ensdomains/thorin'
@@ -11,6 +13,7 @@ import { useAbilities } from '@app/hooks/abilities/useAbilities'
 import { useIsOffchainName } from '@app/hooks/ensjs/dns/useIsOffchainName'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useNameDetails } from '@app/hooks/useNameDetails'
+import { infuraUrl } from '@app/utils/query/wagmi'
 import { getSupportLink } from '@app/utils/supportLinks'
 
 const DetailsWrapper = styled.div(
@@ -32,18 +35,16 @@ const OutlinkWithMargin = styled(Outlink)`
 type Props = {
   nameDetails: ReturnType<typeof useNameDetails>
   name: string
+  texts: any
 }
 
-const ProfileTab = ({ nameDetails, name }: Props) => {
+const ProfileTab = ({ nameDetails, name, texts }: Props) => {
+  const [multisigAddress, setMultisigAddress] = useState('')
   const { t } = useTranslation('profile')
-
-  const { address } = useAccount()
 
   const { profile, normalisedName, isWrapped, gracePeriodEndDate } = nameDetails
 
   const abilities = useAbilities({ name })
-
-  const { data: primaryData } = usePrimaryName({ address })
 
   const isOffchainImport = useIsOffchainName({
     name,
@@ -59,16 +60,32 @@ const ProfileTab = ({ nameDetails, name }: Props) => {
     if (abilities.data?.canExtend) return 'extend'
   }, [isExpired, abilities.data?.canExtend])
 
-  const getTextRecord = (key: string) => profile?.texts?.find((x) => x.key === key)
+  const readOwner = async (registry: any) => {
+    const multisigAddress = await registry.read.owner([namehash(name)])
+    setMultisigAddress(multisigAddress)
+  }
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
 
+  useEffect(() => {
+    const registry: any = getContract({
+      address: '0x0aa16a063c3ca158573aecf79b970f85d6bc3ed9',
+      abi: parseAbi(['function owner(bytes32) view returns (address)']),
+      client: publicClient,
+    })
+    readOwner(registry)
+  }, [publicClient])
+
+  const getTextRecord = (key: string) => texts?.find((x: any) => x.key === key)
   return (
     <DetailsWrapper>
-      <ProfileSnippet
-        name={name}
-        getTextRecord={getTextRecord}
-        button={snippetButton}
-        isPrimary={name === primaryData?.name}
-      >
+      <ProfileSnippet name={name + 'sid'} multisigAddress={multisigAddress}>
         {isOffchainImport && (
           <Helper alignment="horizontal">
             <Trans

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
@@ -57,29 +58,25 @@ export const getUserDefinedUrl = (url?: string) => {
 
 export const ProfileSnippet = ({
   name,
-  getTextRecord,
-  button,
-  // network,
-  isPrimary,
+  multisigAddress,
   children,
 }: {
   name: string
-  getTextRecord?: (key: string) => { value: string } | undefined
-  button?: 'viewProfile' | 'extend' | 'register'
-  isPrimary?: boolean
+  multisigAddress: string
   children?: React.ReactNode
 }) => {
   const { t } = useTranslation('common')
 
   const beautifiedName = useBeautifiedName(name)
-  const recordName = getTextRecord?.('name')?.value
 
   return (
     <Container>
-      <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
-        {recordName}
+      <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
+        <Link target={'_blank'} href={'https://sepolia.etherscan.io/address/' + multisigAddress}>
+          {multisigAddress}
+        </Link>
       </NameRecord>
-      <Name data-testid="profile-snippet-name">{beautifiedName}</Name>
+      <Name data-testid="profile-snippet-name">Entity Multisig Address</Name>
     </Container>
   )
 }

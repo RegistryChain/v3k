@@ -76,11 +76,7 @@ const Page = () => {
           leading: (
             <DetailsContainer>
               {primaryProfile?.name ? (
-                <ProfileSnippet
-                  name={primaryProfile.name}
-                  button="viewProfile"
-                  getTextRecord={getTextRecord}
-                />
+                <ProfileSnippet name={primaryProfile.name} multisigAddress={address} />
               ) : (
                 <NoProfileSnippet />
               )}

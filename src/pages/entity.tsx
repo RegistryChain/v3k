@@ -157,7 +157,7 @@ const typeToRecordKey: any = {
   civil: 'civil',
 }
 
-const typesByTemplate = {
+const typesByTemplate: any = {
   '1': 'Partnership',
 }
 
@@ -218,12 +218,19 @@ export default function Page() {
     }
   }, [address])
 
+  useEffect(() => {
+    const m = new Date().getMonth() + 1
+    const d = new Date().getDate()
+    const y = new Date().getFullYear()
+    setProfile({ ...profile, formationDate: d + '/' + m + '/' + y })
+  }, [registrationStep])
+
   const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
 
-  async function generateUserDataBytes(userData) {
-    return userData.map((user, idx) => {
-      let roleDataBytes = '0x'
-      user.roles.forEach((role) => {
+  async function generateUserDataBytes(userData: any) {
+    return userData.map((user: any, idx: any) => {
+      let roleDataBytes: any = '0x'
+      user.roles.forEach((role: any) => {
         const encRole = encodeAbiParameters([{ type: 'string' }], [role])
         const roleHash = keccak256(encRole).slice(2, 66)
         roleDataBytes += roleHash
@@ -409,8 +416,7 @@ export default function Page() {
   }
 
   if (registrationStep === 5) {
-    // const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-
+    const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
     // console.log(texts, partners)
 
     content = (
@@ -418,7 +424,7 @@ export default function Page() {
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
           {name}
         </Typography>
-        <Constitution profileData={profile} userData={partners} />
+        <Constitution formationData={texts} />
         <Review name={name} profile={profile} partners={partners} />
       </div>
     )
@@ -441,9 +447,9 @@ export default function Page() {
   )
 }
 
-const generateTexts = (partners, profile, entityName, intakeType) => {
+const generateTexts = (partners: any, profile: any, entityName: any, intakeType: any) => {
   const texts = [{ key: 'name', value: entityName }]
-  partners.forEach((partner, idx) => {
+  partners.forEach((partner: any, idx: any) => {
     const partnerKey = 'partner__[' + idx + ']__'
     Object.keys(partner).forEach((field) => {
       if (field === 'address') {

@@ -25,6 +25,7 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
 
 import { RecordsSection } from '../../../RecordsSection'
+import Constitution from '../../entityCreation/Constitution'
 import AppsTab from './tabs/AppsTab'
 import LicenseTab from './tabs/LicenseTab'
 import ProfileTab from './tabs/ProfileTab'
@@ -90,7 +91,7 @@ const registrarKeyToType: any = {
   CIV: 'civil',
 }
 
-const tabs = ['entity', 'licenses', 'apps'] as const
+const tabs = ['entity', 'constitution', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -338,10 +339,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           trailing: match(tab)
             .with('entity', () => (
               <>
-                <ProfileTab name={name} nameDetails={nameDetails} />
+                <ProfileTab name={name} nameDetails={nameDetails} texts={records} />
                 <RecordsSection texts={records || []} />
               </>
             ))
+            .with('constitution', () => <Constitution formationData={records} />)
             .with('apps', () => (
               <AppsTab
                 registrarType={registrarType}
