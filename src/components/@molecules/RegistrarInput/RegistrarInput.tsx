@@ -43,10 +43,8 @@ import { UseExpiryQueryKey } from '@app/hooks/ensjs/public/useExpiry'
 import { UseOwnerQueryKey, UseOwnerReturnType } from '@app/hooks/ensjs/public/useOwner'
 import { UsePriceQueryKey } from '@app/hooks/ensjs/public/usePrice'
 import { UseWrapperDataQueryKey } from '@app/hooks/ensjs/public/useWrapperData'
-import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { createQueryKey } from '@app/hooks/useQueryOptions'
-import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useValidate, validate } from '@app/hooks/useValidate'
 import { useElementSize } from '@app/hooks/useWindowSize'
@@ -55,8 +53,6 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { getRegistrationStatus } from '@app/utils/registrationStatus'
 import { thread, yearsToSeconds } from '@app/utils/utils'
 
-import { SortDirection } from '../NameTableHeader/NameTableHeader'
-import { FakeRegistrarInputBox, RegistrarInputBox } from './RegistrarInputBox'
 import { getBoxNameStatus, SearchResult } from './SearchResult'
 import { HistoryItem, SearchHandler, SearchItem } from './types'
 
@@ -335,173 +331,6 @@ const useSelectionManager = ({
   }, [state, setSelected])
 }
 
-const formatEthText = ({ name, isETH }: { name: string; isETH: boolean | undefined }) => {
-  if (!name) return ''
-  if (isETH) return name
-  if (name.includes('.')) return ''
-  if (name === '[root]') return ''
-  return `${name}.eth`
-}
-const addEthDropdownItem =
-  ({ name, isETH }: { name: string; isETH: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedEthName = formatEthText({ name, isETH })
-    if (formattedEthName === '') return dropdownItems
-    return [
-      {
-        text: formattedEthName,
-        nameType: 'eth',
-      } as const,
-      ...dropdownItems,
-    ]
-  }
-
-const isBoxValid = (name: string) => {
-  /*
-    This regular expression will match any string that starts and ends with a letter or a digit, 
-    does not have a hyphen in the third or fourth position, does not include a space, and 
-    consists only of the characters a-z, A-Z, 0-9, and - in between, but does not start or end 
-    with a hyphen.
-
-    This is to comply with .box name rules. 
-  */
-  const regex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/
-
-  if (!name.endsWith('.box')) return false
-  if (name.length > 63) return false
-  if (!regex.test(name.slice(0, -4))) return false
-  return true
-}
-const formatBoxText = (name: string) => {
-  if (!name) return ''
-  if (name?.endsWith('.box')) return name
-  if (name.includes('.')) return ''
-  if (name === '[root]') return ''
-  return `${name}.box`
-}
-const addBoxDropdownItem =
-  ({ name, isValid }: { name: string; isValid: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedBoxName = formatBoxText(name)
-    if (!formattedBoxName) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedBoxName,
-        nameType: 'box',
-        isValid: isValid && isBoxValid(formattedBoxName),
-      } as const,
-    ]
-  }
-
-const formatTldText = (name: string) => {
-  if (!name) return ''
-  if (name.includes('.')) return ''
-  return name
-}
-const addTldDropdownItem =
-  ({ name }: { name: string }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedTld = formatTldText(name)
-    if (!formattedTld) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedTld,
-        nameType: 'tld',
-      } as const,
-    ]
-  }
-
-const addAddressItem =
-  ({ name, inputIsAddress }: { name: string; inputIsAddress: boolean }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (!inputIsAddress) return dropdownItems
-    return [
-      {
-        text: name,
-        nameType: 'address',
-      } as const,
-      ...dropdownItems,
-    ]
-  }
-
-const MAX_DROPDOWN_ITEMS = 6
-const addHistoryDropdownItems =
-  ({ name, history }: { name: string; history: HistoryItem[] }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const historyItemDrawCount = MAX_DROPDOWN_ITEMS - dropdownItems.length
-    if (historyItemDrawCount > 0) {
-      const filteredHistoryItems = history
-        .filter(
-          (historyItem: HistoryItem) =>
-            historyItem.text.includes(name) &&
-            dropdownItems.findIndex(
-              (dropdownItem) =>
-                dropdownItem.nameType === historyItem.nameType &&
-                dropdownItem.text === historyItem.text,
-            ) === -1,
-        )
-        .sort((a, b) => b.lastAccessed - a.lastAccessed)
-
-      const historyItems = filteredHistoryItems?.slice(0, historyItemDrawCount).map((item) => ({
-        nameType: item.nameType,
-        text: item.text,
-        isHistory: true,
-      }))
-
-      return [...dropdownItems, ...historyItems]
-    }
-
-    return dropdownItems
-  }
-
-const formatDnsText = ({ name, isETH }: { name: string; isETH: boolean | undefined }) => {
-  if (!name) return ''
-  if (!name.includes('.')) return ''
-  if (name.endsWith('.box')) return ''
-  if (isETH) return ''
-  if (name === '[root]') return ''
-  return name
-}
-const addDnsDropdownItem =
-  ({ name, isETH }: { name: string; isETH: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedDnsName = formatDnsText({ name, isETH })
-    if (!formattedDnsName) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedDnsName,
-        nameType: 'dns',
-      } as const,
-    ]
-  }
-
-const addErrorDropdownItem =
-  ({ name, isValid }: { name: string; isValid: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (isValid || name === '') return dropdownItems
-    return [
-      {
-        text: 'Invalid name',
-        nameType: 'error',
-      } as const,
-    ]
-  }
-
-const addInfoDropdownItem =
-  ({ t }: { t: TFunction }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (dropdownItems.length) return dropdownItems
-    return [
-      {
-        text: t('search.emptyText'),
-        nameType: 'text',
-      } as const,
-    ]
-  }
-
 export const RegistrarInput = ({
   size = 'extraLarge',
   field,
@@ -548,8 +377,10 @@ export const RegistrarInput = ({
 
   const regNamesLower: any = {}
   Object.keys(registrars).forEach((key) => {
-    const name = registrars[key].name.toLowerCase()
-    regNamesLower[name] = key
+    const name = registrars[key]?.name?.toLowerCase()
+    if (name) {
+      regNamesLower[name] = key
+    }
   })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -16,9 +16,9 @@ const AppsContainer = styled(CacheableComponent)(
   `,
 )
 
-const AppsTab = ({ registrarType = 'corp' }: any) => {
+const AppsTab = ({ registrarType = 'company' }: any) => {
   const apps: { [x: string]: any } = {
-    corp: {
+    company: {
       payment__processing: [
         {
           jurisdiction: 'USA',

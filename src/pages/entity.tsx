@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import {
+  Address,
   createPublicClient,
   createWalletClient,
   custom,
@@ -36,6 +37,10 @@ import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
+import contractAddressesObj from '../constants/contractAddresses.json'
+import registrarsObj from '../constants/registrars.json'
+import schemaObj from '../constants/schema.json'
+
 const FooterContainer = styled.div(
   ({ theme }) => css`
     display: flex;
@@ -45,145 +50,31 @@ const FooterContainer = styled.div(
   `,
 )
 
-const registrarNameToKey: { [x: string]: string } = {
-  'Public Registry': 'PUB',
-  'Delaware USA': 'DL',
-  'Wyoming USA': 'WY',
-  'British Virgin Islands': 'BVI',
-  'Civil Registry USA': 'CIV',
-}
-
-const registrarkeyToDomainFull: { [x: string]: string } = {
-  PUB: 'public',
-  DL: 'DL.US',
-  WY: 'WY.US',
-  BVI: 'BVI.UK',
-  CIV: 'CIV.PUB',
-}
-
-const registrarKeyToEntityRegistrationAddress: any = {
-  DL: '0x32e9266eb5b61ba355dc22bb50828e3bbfef115d',
-  WY: '0x71ed14654c85609c444a0c56b1580acd24e20c04',
-  BVI: '0xf940054296c0de06ac0d5163eb0240f98c7b1074',
-  PUB: '0xb1863015b31d72adbc566d9ab76c0d6b088d06a0',
-  CIV: '0x7b5ca5d3c9b1dc921bd5f37d593407cf3d789d6a',
-}
-
-const registrarKeyToType: any = {
-  PUB: 'corp',
-  DL: 'corp',
-  WY: 'corp',
-  BVI: 'corp',
-  CIV: 'civil',
-}
-
-const corpFields: any = {
-  standard: {
-    description: 'string',
-    address: 'string',
-    purpose: 'string',
-  },
-  PUB: {},
-  DL: {},
-  WY: {},
-  BVI: {},
-  CIV: {},
-}
-
-const additionalTermsFields: any = {
-  standard: {
-    additional__terms: 'string',
-  },
-  PUB: {},
-  DL: {},
-  WY: {},
-  BVI: {},
-  CIV: {},
-}
-
-const partnerFields: any = {
-  standard: {
-    corp: {
-      name: 'string',
-      type: 'string',
-      address: 'Address',
-      physicalAddress: 'string',
-      DOB: 'date',
-      roles: 'Array',
-      lockup: 'Boolean',
-      shares: 'number',
-    },
-    civil: {
-      name: 'string',
-      address: 'Address',
-      physicalAddress: 'string',
-      DOB: 'date',
-      roles: 'Array',
-    },
-  },
-  PUB: {},
-  DL: {},
-  WY: {},
-  BVI: {},
-  CIV: {},
-}
-
-const roleTypes: any = {
-  standard: {
-    corp: ['owner', 'manager', 'spender', 'investor', 'signer'],
-    civil: ['manager', 'spender', 'signer'],
-  },
-  PUB: [],
-  DL: [],
-  WY: [],
-  BVI: [],
-  CIV: [],
-}
-
-const partnerTypes: any = {
-  standard: {
-    corp: ['individual', 'entity'],
-    civil: ['individual'],
-  },
-  PUB: [],
-  DL: [],
-  WY: [],
-  BVI: [],
-  CIV: [],
-}
-
-const typeToRecordKey: any = {
-  corp: 'company',
-  civil: 'civil',
-}
-
-const typesByTemplate: any = {
-  '1': 'partnership',
-}
-
-const deployerAddress = '0x259c9c45e1f1002df6191abac7b0fc94b7f9e173'
-
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
+  const { address } = useAccount()
+  const { openConnectModal } = useConnectModal()
   const entityName = router.query.name as string
-  const entityRegistrar = router.query.registrar as string
-  const templateId = router.query.template as string
-
+  const registrarKey = router.query.registrar as string
+  const entityType = router.query.type as string
   const isSelf = router.query.connected === 'true'
+
   const [registrationStep, setRegistrationStep] = useState<number>(1)
   const [profile, setProfile] = useState<any>({})
   const [partners, setPartners] = useState<any[]>([])
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const { openConnectModal } = useConnectModal()
-
-  const { address } = useAccount()
-  const primary = usePrimaryName({ address: address as Hex })
-
-  const name = isSelf && primary.data?.name ? primary.data.name : entityName
   const [wallet, setWallet] = useState<any>(null)
+  const [template, setTemplate] = useState<any>('default')
+
+  const primary = usePrimaryName({ address: address as Hex })
+  const name = isSelf && primary.data?.name ? primary.data.name : entityName
 
   const default_registry_domain = 'registry'
+
+  const contractAddresses: any = contractAddressesObj
+  const registrars: any = registrarsObj
+  const schema: any = schemaObj
 
   const publicClient = useMemo(
     () =>
@@ -198,10 +89,10 @@ export default function Page() {
     setProfile((prevProf: any) => ({
       ...prevProf,
       name: entityName,
-      registrar: entityRegistrar,
-      type: typesByTemplate[templateId],
+      registrar: registrars[registrarKey]?.name,
+      type: entityType,
     }))
-  }, [entityName, entityRegistrar, templateId])
+  }, [entityName, registrarKey, entityType])
 
   // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
 
@@ -222,10 +113,9 @@ export default function Page() {
     const m = new Date().getMonth() + 1
     const d = new Date().getDate()
     const y = new Date().getFullYear()
-    setProfile((prevState: any) => ({ ...prevState, formationDate: d + '/' + m + '/' + y }))
+    setProfile((prevState: any) => ({ ...prevState, formation__date: d + '/' + m + '/' + y }))
   }, [registrationStep])
-
-  const intakeType: string = registrarKeyToType[registrarNameToKey[entityRegistrar]]
+  const intakeType: string = registrars[registrarKey]?.type
 
   async function generateUserDataBytes(userData: any) {
     return userData.map((user: any, idx: any) => {
@@ -258,22 +148,16 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
+      profile.selected__template = template
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
 
-      const jurisSubdomainString = registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]]
+      const jurisSubdomainString = registrars[registrarKey]?.subdomain
 
-      const entityNameToPass =
-        name.toLowerCase().split(' ').join('-') +
-        '-' +
-        Date.now()
-          .toString()
-          .slice(Date.now().toString().length - 6)
+      const entityNameToPass = name.toLowerCase().split(' ').join('-')
       const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + default_registry_domain
-      const label = labelhash(entityNameToPass)
-      const namehashToPass = namehash(entityId)
 
       const entityRegistrarAddress =
-        registrarKeyToEntityRegistrationAddress[registrarNameToKey[entityRegistrar]]
+        contractAddresses[registrars[registrarKey]?.registrationAddressKey]
 
       let contentHash = ''
       try {
@@ -290,7 +174,7 @@ export default function Page() {
 
       try {
         const deployer: any = getContract({
-          address: deployerAddress,
+          address: contractAddresses.EntityFactory as Address,
           abi: parseAbi([
             'function formEntity(string,bool,address,bytes[],bytes4[],bytes[]) external',
           ]),
@@ -322,13 +206,7 @@ export default function Page() {
         setErrorMessage(err.details)
         return
       }
-      router.push(
-        '/' +
-          entityNameToPass +
-          '.' +
-          registrarkeyToDomainFull[registrarNameToKey[entityRegistrar]] +
-          '.registry',
-      )
+      router.push('/' + entityNameToPass + '.' + registrars[registrarKey]?.subdomain + '.registry')
     }
   }
 
@@ -363,8 +241,8 @@ export default function Page() {
   if (registrationStep === 1) {
     content = (
       <CorpInfo
-        data={{ name, registrarKey: registrarNameToKey[entityRegistrar] }}
-        fields={corpFields}
+        data={{ name, registrarKey: registrarKey }}
+        fields={schema.corpFields}
         step={registrationStep}
         profile={profile}
         setProfile={setProfile}
@@ -376,9 +254,9 @@ export default function Page() {
   if (registrationStep === 2) {
     content = (
       <AddPartners
-        data={{ name, registrarKey: registrarNameToKey[entityRegistrar] }}
-        partnerTypes={partnerTypes}
-        partnerFields={partnerFields}
+        data={{ name, registrarKey: registrarKey }}
+        partnerTypes={schema.partnerTypes}
+        partnerFields={schema.partnerFields}
         intakeType={intakeType}
         partners={partners}
         setPartners={setPartners}
@@ -390,9 +268,9 @@ export default function Page() {
   if (registrationStep === 3) {
     content = (
       <Roles
-        data={{ name, registrarKey: registrarNameToKey[entityRegistrar] }}
+        data={{ name, registrarKey: registrarKey }}
         intakeType={intakeType}
-        roleTypes={roleTypes}
+        roleTypes={schema.roles}
         profile={profile}
         setProfile={setProfile}
         partners={partners}
@@ -405,8 +283,8 @@ export default function Page() {
   if (registrationStep === 4) {
     content = (
       <CorpInfo
-        data={{ name, registrarKey: registrarNameToKey[entityRegistrar] }}
-        fields={additionalTermsFields}
+        data={{ name, registrarKey: registrarKey }}
+        fields={schema.additionalTermsFields}
         step={registrationStep}
         profile={profile}
         setProfile={setProfile}
@@ -424,7 +302,7 @@ export default function Page() {
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
           {name}
         </Typography>
-        <Constitution formationData={texts} />
+        <Constitution formationData={texts} template={template} setTemplate={setTemplate} />
         <Review name={name} profile={profile} partners={partners} />
       </div>
     )
@@ -471,7 +349,7 @@ const generateTexts = (partners: any, profile: any, entityName: any, intakeType:
   })
 
   Object.keys(profile).forEach((field) => {
-    const key = typeToRecordKey[intakeType] + '__' + field.split(' ').join('__')
+    const key = intakeType + '__' + field.split(' ').join('__')
     texts.push({ key, value: profile[field] })
   })
   return texts

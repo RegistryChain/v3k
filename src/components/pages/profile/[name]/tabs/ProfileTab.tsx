@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
+import { Address, createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
@@ -15,6 +15,8 @@ import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useNameDetails } from '@app/hooks/useNameDetails'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { getSupportLink } from '@app/utils/supportLinks'
+
+import contractAddresses from '../../../../../constants/contractAddresses.json'
 
 const DetailsWrapper = styled.div(
   ({ theme }) => css`
@@ -75,14 +77,13 @@ const ProfileTab = ({ nameDetails, name, texts }: Props) => {
 
   useEffect(() => {
     const registry: any = getContract({
-      address: '0x0aa16a063c3ca158573aecf79b970f85d6bc3ed9',
+      address: contractAddresses.RegistryChain as Address,
       abi: parseAbi(['function owner(bytes32) view returns (address)']),
       client: publicClient,
     })
     readOwner(registry)
   }, [publicClient])
 
-  const getTextRecord = (key: string) => texts?.find((x: any) => x.key === key)
   return (
     <DetailsWrapper>
       <ProfileSnippet name={name + 'sid'} multisigAddress={multisigAddress}>

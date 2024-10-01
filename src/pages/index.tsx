@@ -2,7 +2,15 @@ import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
+import {
+  Address,
+  createPublicClient,
+  getContract,
+  http,
+  namehash,
+  parseAbi,
+  zeroAddress,
+} from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
@@ -18,6 +26,8 @@ import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
+import contractAddresses from '../constants/contractAddresses.json'
+import registrarsObj from '../constants/registrars.json'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -94,46 +104,6 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const entityRegistrars: { [x: string]: any } = {
-  PUB: {
-    name: 'Public Registry',
-    domain: 'publicregistry.eth',
-    types: [{ name: 'Partnership - Default Template', templateId: 1 }],
-  },
-  DL: {
-    name: 'Delaware USA',
-    domain: 'delaware.eth',
-    types: [
-      { templateId: '2', name: 'LLC' },
-      { templateId: '3', name: 'C-Corp' },
-    ],
-  },
-  WY: {
-    name: 'Wyoming USA',
-    domain: 'wyoming.eth',
-    types: [
-      { templateId: '4', name: 'LLC' },
-      { templateId: '5', name: 'C-Corp' },
-    ],
-  },
-  BVI: {
-    name: 'British Virgin Islands',
-    domain: 'bvi.eth',
-    types: [
-      { templateId: '6', name: 'Limited Partnership' },
-      { templateId: '7', name: 'BVIBC' },
-    ],
-  },
-  'CIV-US': {
-    name: 'Civil Registry USA',
-    domain: 'US.civilregistry.eth',
-    types: [
-      { templateId: '8', name: 'Birth' },
-      { templateId: '9', name: 'Marriage' },
-    ],
-  },
-}
-
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
@@ -145,12 +115,13 @@ export default function Page() {
 
   const [entityName, setEntityName] = useState<string>('')
   const [registrar, setRegistrarInput] = useState<string>('')
-  const [entityType, setEntityType] = useState<any>({})
+  const [entityType, setEntityType] = useState<any>('')
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
+  const registrars: any = registrarsObj
 
   useEffect(() => {
     if (entityName.length >= 2 && registrar.length > 0) {
-      entityIsAvailable(registrar, entityName)
+      entityIsAvailable(registrars[registrar].registrationAddressKey, entityName)
     }
   }, [entityName, registrar])
 
@@ -159,7 +130,7 @@ export default function Page() {
     const registry: any = await getContract({
       client,
       abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+      address: contractAddresses.RegistryChain as Address,
     })
     if (entityName) {
       const owner = await registry.read.owner([namehash(entityName + '.' + registrar)])
@@ -173,30 +144,38 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    if (entityName && entityRegistrars[registrar].name && entityType?.templateId) {
+    if (entityName && registrars[registrar].name && entityType) {
       router.push('/entity', {
         name: entityName,
-        registrar: entityRegistrars[registrar].name,
-        template: entityType?.templateId,
+        registrar: registrar,
+        type: entityType,
       })
     }
   }
 
   let nameAvailableElement = null
   if (entityName.length >= 2 && registrar.length > 0) {
-    // nameAvailableElement = nameAvailable ? (<Typography style={{color: "lime"}}>{entityName}.{registrar} is available!</Typography>) : (<Typography style={{color: "red"}}>{entityName}.{registrar} is NOT available!</Typography>)
+    nameAvailableElement = nameAvailable ? (
+      <Typography style={{ color: 'lime' }}>
+        {entityName}.{registrars[registrar].registrationAddressKey} is available!
+      </Typography>
+    ) : (
+      <Typography style={{ color: 'red' }}>
+        {entityName}.{registrars[registrar].registrationAddressKey} is NOT available!
+      </Typography>
+    )
   }
 
   let entityTypeSelection = null
-  if (entityRegistrars[registrar] || registrar === '') {
+  if (registrars[registrar] || registrar === '') {
     entityTypeSelection = (
       <LegacyDropdown
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
-        label={entityType?.name || 'Constitution Selection'}
-        items={entityRegistrars[registrar]?.types?.map((x: any) => ({
-          label: x?.name,
+        label={entityType || 'Entity Type Selection'}
+        items={registrars[registrar]?.entityTypes?.map((x: any) => ({
+          label: x,
           color: 'blue',
           onClick: () => setEntityType(x),
           value: x,
@@ -231,17 +210,18 @@ export default function Page() {
             setValue={(x: string) => setEntityName(x)}
           />
           <RegistrarInput
-            registrars={entityRegistrars}
+            registrars={registrars}
             field={'registrar'}
             value={registrar}
             setValue={(regKey: string) => {
               setRegistrarInput(regKey)
             }}
           />
-          <div style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>
+          <div key={'div1en'} style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>
             {entityTypeSelection}
           </div>
           <div
+            key={'div2en'}
             style={{
               width: '100%',
               textAlign: 'left',
@@ -257,7 +237,7 @@ export default function Page() {
             shape="rounded"
             size="small"
             disabled={
-              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType?.name
+              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType
                 ? true
                 : false
             }

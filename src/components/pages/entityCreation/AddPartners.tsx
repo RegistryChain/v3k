@@ -71,14 +71,7 @@ const AddPartners = ({
   const partnersData = async () => {
     const client: any = publicClient
     // Here fetch the resolver data
-    const resolver = await getContract({
-      client,
-      abi: parseAbi([
-        'function text(bytes32 node, string calldata key) view returns (string memory)',
-      ]),
-      address: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
-    })
-    const properties: any = {}
+
     console.log('IMPORTANT - Fetch data from contracts here')
     // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
@@ -295,9 +288,9 @@ const AddPartners = ({
                 <Input
                   size="large"
                   value={partner?.[field]}
-                  label={'Partner ' + field}
+                  label={'Partner ' + field.split('__').join(' ')}
                   error={false}
-                  placeholder={'Partner ' + field}
+                  placeholder={'Partner ' + field.split('__').join(' ')}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={false}

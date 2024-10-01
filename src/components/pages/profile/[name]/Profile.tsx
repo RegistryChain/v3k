@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
-import { createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
+import { Address, createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
@@ -22,8 +22,10 @@ import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { OG_IMAGE_URL } from '@app/utils/constants'
 import { infuraUrl } from '@app/utils/query/wagmi'
-import { formatFullExpiry, getEncodedLabelAmount, makeEtherscanLink } from '@app/utils/utils'
+import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 
+import contractAddresses from '../../../../constants/contractAddresses.json'
+import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
 import Constitution from '../../entityCreation/Constitution'
 import AppsTab from './tabs/AppsTab'
@@ -67,29 +69,6 @@ const TabButton = styled.button<{ $selected: boolean }>(
     }
   `,
 )
-
-const regKeyToRegistrarAddress: any = {
-  public: {
-    entityRegistrar: '0xb1863015b31d72adbc566d9ab76c0d6b088d06a0',
-    resolver: '0x0a1bceceae846d0f87544d36f3f3549bef7e25a5',
-  },
-}
-
-const registrarNameToKey: { [x: string]: string } = {
-  'Public Registry': 'PUB',
-  'Delaware USA': 'DL',
-  'Wyoming USA': 'WY',
-  'British Virgin Islands': 'BVI',
-  'Civil Registry USA': 'CIV',
-}
-
-const registrarKeyToType: any = {
-  PUB: 'corp',
-  DL: 'corp',
-  WY: 'corp',
-  BVI: 'corp',
-  CIV: 'civil',
-}
 
 const tabs = ['entity', 'constitution', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
@@ -135,8 +114,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const { address, isConnected } = useAccount()
   const [records, setRecords] = useState<any>([])
   const [contentHash, setContentHash] = useState<any>('')
+  const [template, setTemplate] = useState<any>('default')
 
+  const registrars: any = registrarsObj
   let nameToQuery = name
+
   const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
   const publicClient = useMemo(
     () =>
@@ -147,33 +129,17 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     [],
   )
   useEffect(() => {
-    //Attempt to use the subregistrars to get the resolver
-    //Using node, query the record from the registry contract
-
-    //Get the resolver address from this record
-    //Query the contentHash from the resolver
     if (name) {
       getContent()
     }
   }, [name])
 
-  const getContent = async () => {
-    const suffixIndex = name.split('.').length - 1
-    const registrarKey = name.split('.').slice(1, suffixIndex).join('.')
-    const resolver: any = getContract({
-      address: regKeyToRegistrarAddress[registrarKey].resolver,
-      abi: parseAbi(['function contenthash(bytes32) external view returns (bytes memory)']),
-      client: publicClient,
-    })
-
-    try {
-      const hash = await resolver.read.contenthash([namehash(nameToQuery)])
-      const decodedHash = decodeContentHash(hash)?.decoded || hash
-      setContentHash(decodedHash)
-    } catch (err) {
-      setContentHash(null)
+  useEffect(() => {
+    const templateObj = records.find((x: any) => x.key === 'company__selected__template')
+    if (templateObj?.value) {
+      setTemplate(templateObj?.value)
     }
-  }
+  }, [records])
 
   useEffect(() => {
     getRecords()
@@ -185,6 +151,22 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       setRecords(jsonRes.data)
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
+    }
+  }
+
+  const getContent = async () => {
+    const resolver: any = getContract({
+      address: contractAddresses.PublicResolver as Address,
+      abi: parseAbi(['function contenthash(bytes32) external view returns (bytes memory)']),
+      client: publicClient,
+    })
+
+    try {
+      const hash = await resolver.read.contenthash([namehash(nameToQuery)])
+      const decodedHash = decodeContentHash(hash)?.decoded || hash
+      setContentHash(decodedHash)
+    } catch (err) {
+      setContentHash(null)
     }
   }
 
@@ -215,12 +197,10 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         (isSelf ? address : true) && typeof name === 'string' && name.length > 0,
   )
 
-  const registrarName = useMemo(() => {
-    return profile?.texts?.find((x: any) => x.key === 'registrar')?.value
-  }, [profile])
+  const suffixIndex = name?.split('.')?.length - 1
+  const registrarKey = name?.split('.')?.slice(1, suffixIndex)?.join('.')
 
-  const registrarKey = registrarNameToKey[registrarName]
-  const registrarType = registrarKeyToType[registrarKey]
+  const registrarType = registrars[registrarKey || '']?.type
 
   const [titleContent, descriptionContent] = useMemo(() => {
     if (isSelf) {
@@ -343,7 +323,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 <RecordsSection texts={records || []} />
               </>
             ))
-            .with('constitution', () => <Constitution formationData={records} />)
+            .with('constitution', () => (
+              <Constitution
+                formationData={records}
+                template={template}
+                setTemplate={null}
+                canDownload={true}
+              />
+            ))
             .with('apps', () => (
               <AppsTab
                 registrarType={registrarType}

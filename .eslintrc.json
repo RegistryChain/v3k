@@ -60,6 +60,8 @@
     "prettier/prettier": "off",
     "spaced-comment": "off",
     "prefer-template": "off",
+    "no-useless-concat": "off",
+    "no-unsafe-optional-chaining": "off",
     "no-useless-return": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "jsx-a11y/no-static-element-interactions": "off",

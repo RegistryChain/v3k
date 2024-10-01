@@ -1,0 +1,11 @@
+{
+  "RegistryChain": "0x0aa16a063c3ca158573aecf79b970f85d6bc3ed9",
+  "Definitions": "0x6424d5fe9451748d3e6eac3229132ea0ab792d3d",
+  "EntityFactory": "0x259c9c45e1f1002df6191abac7b0fc94b7f9e173",
+  "PublicResolver": "0x0a1bceceae846d0f87544d36f3f3549bef7e25a5",
+  "MultisigState": "0xec7453142ffed583137b19e1ec696d5ec3383d27",
+  "Chaser-mgmtTokens": "0xc60b049ae7edde42ecdcf76d2fc2e8d0fcb017c0",
+  "Chaser-multisig": "0x946d92b8c653bf472d96ae7b47414f8fb9721d5d",
+  "EntityRegistrar": "0x23a7832ed602b16d4f1e7d3371874bd95cc544b7",
+  "public.registry": "0xb1863015b31d72adbc566d9ab76c0d6b088d06a0"
+}

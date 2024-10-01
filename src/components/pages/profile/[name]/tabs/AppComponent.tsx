@@ -1,8 +1,6 @@
 import Image from 'next/image'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { match, P } from 'ts-pattern'
-import { labelhash, namehash } from 'viem'
 
 import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 

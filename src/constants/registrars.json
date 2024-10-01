@@ -1,0 +1,31 @@
+{
+  "PUB": {
+    "type": "company",
+    "registrationAddressKey": "public.registry",
+    "subdomain": "public",
+    "name": "Public Registry",
+    "entityTypes": ["Partnership"]
+  },
+  "DL": {
+    "type": "company",
+    "entityTypes": ["LLC", "C-Corp"],
+    "name": "Delaware",
+    "registrationAddressKey": "DL.US.registry",
+    "subdomain": "DL"
+  },
+  "WY": {
+    "type": "company",
+    "entityTypes": ["LLC", "C-Corp"],
+    "name": "Wyoming",
+    "registrationAddressKey": "WY.US.registry",
+    "subdomain": "WY"
+  },
+  "BVI": {
+    "type": "company",
+    "entityTypes": ["Limited Partnership", "BVIBC"],
+    "name": "British Virgin Islands",
+    "registrationAddressKey": "BVI.UK.registry",
+    "subdomain": "BVI"
+  },
+  "CIV": { "type": "civil" }
+}

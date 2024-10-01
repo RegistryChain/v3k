@@ -1,0 +1,72 @@
+{
+  "partnerTypes": {
+    "standard": {
+      "company": ["individual", "entity"],
+      "civil": ["individual"]
+    },
+    "PUB": [],
+    "DL": [],
+    "WY": [],
+    "BVI": [],
+    "CIV": []
+  },
+  "roles": {
+    "standard": {
+      "company": ["manager", "signer"],
+      "civil": ["manager", "spender", "signer"]
+    },
+    "PUB": [],
+    "DL": [],
+    "WY": [],
+    "BVI": [],
+    "CIV": []
+  },
+  "partnerFields": {
+    "standard": {
+      "company": {
+        "name": "string",
+        "type": "string",
+        "address": "Address",
+        "physical__address": "string",
+        "DOB": "date",
+        "roles": "Array",
+        "lockup": "Boolean",
+        "shares": "number"
+      },
+      "civil": {
+        "name": "string",
+        "address": "Address",
+        "physical__address": "string",
+        "DOB": "date",
+        "roles": "Array"
+      }
+    },
+    "PUB": {},
+    "DL": {},
+    "WY": {},
+    "BVI": {},
+    "CIV": {}
+  },
+  "corpFields": {
+    "standard": {
+      "description": "string",
+      "address": "string",
+      "purpose": "string"
+    },
+    "PUB": {},
+    "DL": {},
+    "WY": {},
+    "BVI": {},
+    "CIV": {}
+  },
+  "additionalTermsFields": {
+    "standard": {
+      "additional__terms": "string"
+    },
+    "PUB": {},
+    "DL": {},
+    "WY": {},
+    "BVI": {},
+    "CIV": {}
+  }
+}

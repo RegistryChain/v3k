@@ -16,9 +16,9 @@ const LicensesContainer = styled(CacheableComponent)(
   `,
 )
 
-const LicenseTab = ({ registrarType = 'corp' }: any) => {
+const LicenseTab = ({ registrarType = 'company' }: any) => {
   const licenses: { [x: string]: any } = {
-    corp: {
+    company: {
       tax__ids: [
         { jurisdiction: 'USA', org: 'Internal Revenue Service', licName: 'EIN' },
         { jurisdiction: 'Brazil', org: 'Receita Federal do Brasil', licName: 'CNPJ' },

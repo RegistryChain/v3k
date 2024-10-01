@@ -1,7 +1,17 @@
-import { Document, Page, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer'
+import {
+  Document,
+  Page,
+  PDFDownloadLink,
+  PDFViewer,
+  StyleSheet,
+  Text,
+  View,
+} from '@react-pdf/renderer'
 import React, { useMemo, useState } from 'react'
 
 import { Button } from '@ensdomains/thorin'
+
+import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 
 // Create styles
 const styles = StyleSheet.create({
@@ -74,7 +84,7 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
 }
 
 const constitutionTemplate: any = {
-  '1': [
+  default: [
     {
       header: 'Name',
       content: (profileData: any, userData: any) => [
@@ -85,7 +95,7 @@ const constitutionTemplate: any = {
       header: 'Duration',
       content: (profileData: any, userData: any) => [
         `The ${profileData?.type || 'N/A'}’s activities begin on ${
-          profileData?.formationDate || 'N/A'
+          profileData?.formation__date || 'N/A'
         }, and its duration shall be perpetual.`,
       ],
     },
@@ -190,10 +200,127 @@ const constitutionTemplate: any = {
       ],
     },
   ],
+
+  alternative: [
+    {
+      header: 'Name',
+      content: (profileData: any, userData: any) => [
+        `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
+      ],
+    },
+    {
+      header: 'Duration',
+      content: (profileData: any, userData: any) => [
+        `The ${profileData?.type || 'N/A'}’s activities begin on ${
+          profileData?.formation__date || 'N/A'
+        }, and its duration shall be perpetual.`,
+      ],
+    },
+    {
+      header: 'Purpose',
+      content: (profileData: any, userData: any) => [
+        `The purpose of this ${
+          profileData?.type || 'N/A'
+        } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
+      ],
+    },
+    {
+      header: 'Address',
+      content: (profileData: any, userData: any) => [
+        `Main Office: The main office of the ${profileData?.type || 'N/A'} is located at ${
+          profileData?.address || 'N/A'
+        }`,
+      ],
+    },
+    {
+      header: 'Members',
+      content: (profileData: any, userData: any) => [
+        `The initial members of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
+        [
+          userData?.map((user: any) => {
+            const roles = [...user.roles]
+            if (user.shares > 0) {
+              roles.push('shareholder')
+            }
+            return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
+          }),
+        ],
+      ],
+    },
+    {
+      header: 'Management',
+      content: (profileData: any, userData: any) => [
+        `The ${profileData?.type || 'N/A'} shall be managed by its members.`,
+      ],
+    },
+    {
+      header: 'Shares',
+      content: (profileData: any, userData: any) => {
+        let totalShares = 0
+        userData.forEach((x: any) => {
+          totalShares += x.shares
+        })
+        return [
+          `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
+          `The initial shares allocation are as follows: `,
+          [
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user.shares} shares, ${ownership}% ownership`
+            }),
+          ],
+          // Alice Smith , 700000 shares, 70% ownership
+          // Bob Johnson , 300000 shares, 30% ownership
+        ]
+      },
+    },
+    {
+      header: 'Capital Contributions',
+      content: (profileData: any, userData: any) => {
+        let totalShares = 0
+        userData.forEach((x: any) => {
+          totalShares += x.shares
+        })
+        return [
+          `Initial Contributions: The initial capital contributions of the members are as follows:`,
+          [
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user?.capital || '0'} ${
+                profileData?.capitalCurrency || 'USD'
+              }`
+            }),
+          ],
+        ]
+      },
+    },
+    {
+      header: 'Amendment',
+      content: (profileData: any, userData: any) => [
+        `This constitution may be amended or repealed by consent of all members`,
+      ],
+    },
+    {
+      header: 'Indemnification',
+      content: (profileData: any, userData: any) => [
+        `The members of the ${
+          profileData?.type || 'N/A'
+        } are not personally liable for the acts or debts of the  ${
+          profileData?.type || 'N/A'
+        }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
+      ],
+    },
+    {
+      header: 'Distributions',
+      content: (profileData: any, userData: any) => [
+        `Distributions of cash, profit or other assets shall be made to members in proportion to their ownership interests, at such times as determined by the members.`,
+      ],
+    },
+  ],
 }
 
 // Render the document
-const Constitution = ({ formationData }: any) => {
+const Constitution = ({ formationData, template, setTemplate, canDownload = false }: any) => {
   const companyObj: any = {}
   const users: any = {}
   formationData.forEach((field: any) => {
@@ -219,17 +346,71 @@ const Constitution = ({ formationData }: any) => {
   })
 
   const [viewConst, setViewConst] = useState<any>(true)
+
+  // Add template selection dropdown
+  // Add option buttons below PDF build to display JSON, download pdf, etc
+  const constitutionDocument = (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {buildConstitution(companyObj, Object.values(users), template)}
+      </Page>
+    </Document>
+  )
   return (
     <>
       {/* <Button onClick={() => setViewConst(!viewConst)}>Show Constitution</Button> */}
+      {setTemplate !== null ? (
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '12px',
+          }}
+        >
+          <LegacyDropdown
+            style={{ width: '350px', textAlign: 'right' }}
+            inheritContentWidth={true}
+            size={'medium'}
+            label={'Constitution Template: ' + template}
+            items={Object.keys(constitutionTemplate)?.map((x: any) => ({
+              label: x,
+              color: 'blue',
+              onClick: () => setTemplate(x),
+              value: x,
+            }))}
+          />
+        </div>
+      ) : null}
+
       {viewConst ? (
-        <PDFViewer width="100%" height="600" showToolbar={true}>
-          <Document>
-            <Page size="A4" style={styles.page}>
-              {buildConstitution(companyObj, Object.values(users), '1')}
-            </Page>
-          </Document>
-        </PDFViewer>
+        <>
+          <PDFViewer width="100%" height="600" showToolbar={false}>
+            {constitutionDocument}
+          </PDFViewer>
+          {canDownload ? (
+            <PDFDownloadLink
+              fileName={
+                formationData.find((x: any) => x.key === 'name')?.value ||
+                'company' + '-ArticlesOfIncorporation'
+              }
+              document={constitutionDocument}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginBottom: '12px',
+                }}
+              >
+                <Button style={{ width: '350px', textAlign: 'right' }}>
+                  Download Constitution PDF
+                </Button>
+              </div>
+            </PDFDownloadLink>
+          ) : null}
+        </>
       ) : null}
     </>
   )

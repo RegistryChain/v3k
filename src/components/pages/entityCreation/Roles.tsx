@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
+import {
+  Address,
+  createPublicClient,
+  getContract,
+  http,
+  namehash,
+  parseAbi,
+  zeroAddress,
+} from 'viem'
 
-import { Button, Dialog, Field, Input, mq, Toggle, Typography } from '@ensdomains/thorin'
+import { Input, mq, Toggle, Typography } from '@ensdomains/thorin'
+
+import contractAddresses from '../../../constants/contractAddresses.json'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -46,28 +56,8 @@ const Roles = ({
       abi: parseAbi([
         'function text(bytes32 node, string calldata key) view returns (string memory)',
       ]),
-      address: '0x0a1bceceae846d0f87544d36f3f3549bef7e25a5',
+      address: contractAddresses.PublicResolver as Address,
     })
-    const properties: any = {}
-    console.log('IMPORTANT - Fetch data from contracts here')
-    // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
-    // Texts needs to iterate over existing texts array and overwrite keys that already hold values
-    //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-
-    // const keys = []
-    // for(let idx = 1; idx <= ownerCount; idx++) {
-
-    //   keys.push("owner__" + idx + "__name")
-    //   keys.push("owner__" + idx + "__type")
-    //   keys.push("owner__" + idx + "__address")
-    //   keys.push("owner__" + idx + "__DOB")
-    // }
-
-    // const texts: any = {}
-    // const textConstruction= keys.map((key: string) => {
-    //   const existing = owners?.[key]
-    //   texts[key] = existing?.value || properties[key]})
-    // setPartners({...texts})
   }
 
   useEffect(() => {
