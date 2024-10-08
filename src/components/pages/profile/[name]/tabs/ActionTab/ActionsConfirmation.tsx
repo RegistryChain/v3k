@@ -70,6 +70,8 @@ const ItemsContainer = styled(CacheableComponent)(
 )
 
 const ActionsConfirmation = ({
+  refresh,
+  client,
   setErrorMessage,
   txData,
   userRoles,
@@ -77,6 +79,7 @@ const ActionsConfirmation = ({
   methodsCallable,
   wallet,
 }: any) => {
+  console.log(userRoles)
   const signAction = async (txIndex: any, method: any) => {
     try {
       // IMPORTANT FETCH TO SEE IF USER HAS SIGNED THIS ALREADY
@@ -87,7 +90,12 @@ const ActionsConfirmation = ({
         client: wallet,
       })
 
-      await multisig.write.confirmTransaction([txIndex, methodsCallable[method]])
+      const confirmTxHash = await multisig.write.confirmTransaction([
+        txIndex,
+        methodsCallable[method],
+      ])
+      console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
+      refresh()
     } catch (err: any) {
       setErrorMessage(err.message)
     }
@@ -100,7 +108,7 @@ const ActionsConfirmation = ({
       </HeaderContainer>
       {txData.map((x: any, idx: number) => {
         return (
-          <div style={{ display: 'flex' }}>
+          <div key={x.dataBytes + 'confi'} style={{ display: 'flex' }}>
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem

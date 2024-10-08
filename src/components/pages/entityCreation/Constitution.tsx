@@ -49,6 +49,7 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
   )
   const constitutionContent = constitutionTemplate[templateId].map((section: any, idx: any) => {
     const contentArray = section.content(profileData, userData)
+    let subSectionCount = 0
 
     return (
       <View key={section.header} style={{ marginBottom: 15, marginLeft: 15 }}>
@@ -61,9 +62,10 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
         {contentArray.map((item: any, index: any) => {
           if (typeof item === 'string') {
             // If it's a string, render it as a list item
+            subSectionCount += 1
             return (
               <Text key={index} style={{ ...styles.text, marginLeft: 20 }}>
-                {idx + 1}.{index + 1} {item}
+                {idx + 1}.{subSectionCount} {item}
               </Text>
             )
           } else if (Array.isArray(item)) {
@@ -119,15 +121,15 @@ const constitutionTemplate: any = {
       header: 'Members',
       content: (profileData: any, userData: any) => [
         `The initial member(s) of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
-        [
-          userData?.map((user: any) => {
-            const roles = [...user.roles]
-            if (user.shares > 0) {
-              roles.push('shareholder')
-            }
-            return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
-          }),
-        ],
+        userData?.map((user: any, idx: any) => {
+          const roles = [...user.roles]
+          if (user.shares > 0) {
+            roles.push('shareholder')
+          }
+          return `${user.name} (ID: ${user.address})${roles.length > 0 ? ' - ' : ''}${roles.join(
+            ', ',
+          )}`
+        }),
       ],
     },
     {
@@ -146,14 +148,11 @@ const constitutionTemplate: any = {
         return [
           `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
           `The initial shares allocation are as follows: `,
-          [
-            userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user.shares} shares, ${ownership}% ownership`
-            }),
-          ],
-          // Alice Smith , 700000 shares, 70% ownership
-          // Bob Johnson , 300000 shares, 30% ownership
+
+          userData?.map((user: any) => {
+            const ownership = (user.shares / totalShares) * 100
+            return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
+          }),
         ]
       },
     },
@@ -166,14 +165,10 @@ const constitutionTemplate: any = {
         })
         return [
           `Initial Contributions: The initial capital contributions of the members are as follows:`,
-          [
-            userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
-            }),
-          ],
+          userData?.map((user: any) => {
+            const ownership = (user.shares / totalShares) * 100
+            return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'}`
+          }),
         ]
       },
     },
@@ -236,15 +231,14 @@ const constitutionTemplate: any = {
       header: 'Members',
       content: (profileData: any, userData: any) => [
         `The initial members of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
-        [
-          userData?.map((user: any) => {
-            const roles = [...user.roles]
-            if (user.shares > 0) {
-              roles.push('shareholder')
-            }
-            return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
-          }),
-        ],
+
+        userData?.map((user: any) => {
+          const roles = [...user.roles]
+          if (user.shares > 0) {
+            roles.push('shareholder')
+          }
+          return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
+        }),
       ],
     },
     {
@@ -263,12 +257,10 @@ const constitutionTemplate: any = {
         return [
           `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
           `The initial shares allocation are as follows: `,
-          [
-            userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user.shares} shares, ${ownership}% ownership`
-            }),
-          ],
+          userData?.map((user: any) => {
+            const ownership = (user.shares / totalShares) * 100
+            return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
+          }),
           // Alice Smith , 700000 shares, 70% ownership
           // Bob Johnson , 300000 shares, 30% ownership
         ]
@@ -283,14 +275,11 @@ const constitutionTemplate: any = {
         })
         return [
           `Initial Contributions: The initial capital contributions of the members are as follows:`,
-          [
-            userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
-            }),
-          ],
+
+          userData?.map((user: any) => {
+            const ownership = (user.shares / totalShares) * 100
+            return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'}`
+          }),
         ]
       },
     },
@@ -336,7 +325,7 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
       let key = splitData[1]
       if (key.includes('is__')) {
         key = key.split('is__').join('')
-        if (!!key && key !== '') {
+        if (!!key && key !== '' && field.value === 'true') {
           users[splitData[0]].roles.push(key)
         }
       } else {
@@ -352,7 +341,11 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
   const constitutionDocument = (
     <Document>
       <Page size="A4" style={styles.page}>
-        {buildConstitution(companyObj, Object.values(users), template)}
+        {buildConstitution(
+          companyObj,
+          Object.values(users).filter((x: any) => !!x.name),
+          template,
+        )}
       </Page>
     </Document>
   )

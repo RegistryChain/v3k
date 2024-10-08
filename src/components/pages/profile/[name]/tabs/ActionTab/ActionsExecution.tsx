@@ -70,6 +70,8 @@ const ItemsContainer = styled(CacheableComponent)(
 )
 
 const ActionsExecution = ({
+  refresh,
+  client,
   setErrorMessage,
   txData,
   userRoles,
@@ -84,7 +86,12 @@ const ActionsExecution = ({
         abi: parseAbi(['function executeTransaction(uint256,bytes32) external']),
         client: wallet,
       })
-      await multisig.write.executeTransaction([txIndex, methodsCallable[method]])
+      const executionTxHash = await multisig.write.executeTransaction([
+        txIndex,
+        methodsCallable[method],
+      ])
+      console.log(await client?.waitForTransactionReceipt({ hash: executionTxHash }))
+      refresh()
     } catch (err: any) {
       setErrorMessage(err.message)
     }
@@ -97,7 +104,7 @@ const ActionsExecution = ({
       </HeaderContainer>
       {txData.map((x: any, idx: number) => {
         return (
-          <div style={{ display: 'flex' }}>
+          <div key={x.dataBytes + idx + 'exec'} style={{ display: 'flex' }}>
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem

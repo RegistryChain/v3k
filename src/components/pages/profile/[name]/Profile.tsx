@@ -292,7 +292,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           value: decodeAbiParameters([{ type: 'string' }], x)[0],
         })
       })
-      console.log(recordsBuilt)
       setRecords(recordsBuilt)
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
@@ -492,6 +491,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             ))
             .with('actions', () => (
               <ActionsTab
+                refreshRecords={() => getRecords()}
                 account={{ address, isConnected }}
                 multisigAddress={multisigAddress}
                 entityTokensAddress={entityManagementTokens}

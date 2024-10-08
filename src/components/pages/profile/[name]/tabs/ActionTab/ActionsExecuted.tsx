@@ -76,7 +76,7 @@ const ActionsExecuted = ({ txData }: any) => {
       </HeaderContainer>
       {txData.map((x: any, idx: number) => {
         return (
-          <div style={{ display: 'flex' }}>
+          <div key={x.databytes + 'history' + idx} style={{ display: 'flex' }}>
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem
