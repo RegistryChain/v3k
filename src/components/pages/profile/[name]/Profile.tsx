@@ -4,7 +4,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
-import { Address, createPublicClient, getContract, http, namehash, parseAbi } from 'viem'
+import {
+  Address,
+  createPublicClient,
+  decodeAbiParameters,
+  encodeFunctionData,
+  getContract,
+  http,
+  namehash,
+  parseAbi,
+} from 'viem'
 import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
@@ -28,6 +37,7 @@ import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
 import Constitution from '../../entityCreation/Constitution'
+import ActionsTab from './tabs/ActionTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
 import LicenseTab from './tabs/LicenseTab'
 import ProfileTab from './tabs/ProfileTab'
@@ -70,7 +80,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const tabs = ['entity', 'constitution', 'licenses', 'apps'] as const
+const tabs = ['entity', 'constitution', 'actions', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
 type Props = {
@@ -112,14 +122,16 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const router = useRouterWithHistory()
   const { t } = useTranslation('profile')
   const { address, isConnected } = useAccount()
+  const [multisigAddress, setMultisigAddress] = useState('')
+  const [entityManagementTokens, setEntityManagementTokens] = useState('')
   const [records, setRecords] = useState<any>([])
   const [contentHash, setContentHash] = useState<any>('')
   const [template, setTemplate] = useState<any>('default')
 
   const registrars: any = registrarsObj
   let nameToQuery = name
-
   const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
+
   const publicClient = useMemo(
     () =>
       createPublicClient({
@@ -128,6 +140,22 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       }),
     [],
   )
+
+  useEffect(() => {
+    if (isSelf && name) {
+      router.replace(`/profile/${name}`)
+    }
+  }, [isSelf, name, router])
+
+  useEffect(() => {
+    const registry: any = getContract({
+      address: contractAddresses.RegistryChain as Address,
+      abi: parseAbi(['function owner(bytes32) view returns (address)']),
+      client: publicClient,
+    })
+    getMultisigAddr(registry)
+  }, [publicClient, name])
+
   useEffect(() => {
     if (name) {
       getContent()
@@ -147,10 +175,142 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const getRecords = async () => {
     try {
-      const jsonRes = await axios.get('https://gateway.pinata.cloud/ipfs/' + contentHash)
-      setRecords(jsonRes.data)
+      const resolver: any = await getContract({
+        client: publicClient,
+        abi: parseAbi([
+          'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+          'function text(bytes32,string memory) view returns (string memory)',
+        ]),
+        address: contractAddresses.PublicResolver as Address,
+      })
+
+      const keys = [
+        'name',
+        'partner__[0]__name',
+        'partner__[0]__type',
+        'partner__[0]__address',
+        'partner__[0]__physical__address',
+        'partner__[0]__DOB',
+        'partner__[0]__is__manager',
+        'partner__[0]__lockup',
+        'partner__[0]__shares',
+        'partner__[1]__name',
+        'partner__[1]__type',
+        'partner__[1]__address',
+        'partner__[1]__physical__address',
+        'partner__[1]__DOB',
+        'partner__[1]__is__signer',
+        'partner__[1]__lockup',
+        'partner__[1]__shares',
+        'partner__[2]__name',
+        'partner__[2]__type',
+        'partner__[2]__address',
+        'partner__[2]__physical__address',
+        'partner__[2]__DOB',
+        'partner__[2]__is__signer',
+        'partner__[2]__lockup',
+        'partner__[2]__shares',
+        'partner__[3]__name',
+        'partner__[3]__type',
+        'partner__[3]__address',
+        'partner__[3]__physical__address',
+        'partner__[3]__DOB',
+        'partner__[3]__is__signer',
+        'partner__[3]__lockup',
+        'partner__[3]__shares',
+        'partner__[4]__name',
+        'partner__[4]__type',
+        'partner__[4]__address',
+        'partner__[4]__physical__address',
+        'partner__[4]__DOB',
+        'partner__[4]__is__signer',
+        'partner__[4]__lockup',
+        'partner__[4]__shares',
+        'partner__[5]__name',
+        'partner__[5]__type',
+        'partner__[5]__address',
+        'partner__[5]__physical__address',
+        'partner__[5]__DOB',
+        'partner__[5]__is__signer',
+        'partner__[5]__lockup',
+        'partner__[5]__shares',
+
+        'company__description',
+        'company__address',
+        'company__purpose',
+        'company__name',
+        'company__registrar',
+        'company__type',
+        'company__formation__date',
+        'company__lockup__days',
+        'company__additional__terms',
+        'company__selected__template',
+      ]
+
+      const encodes = keys.map((text) => {
+        return encodeFunctionData({
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'bytes32',
+                  name: 'node',
+                  type: 'bytes32',
+                },
+                {
+                  internalType: 'string',
+                  name: 'key',
+                  type: 'string',
+                },
+              ],
+              name: 'text',
+              outputs: [
+                {
+                  internalType: 'string',
+                  name: '',
+                  type: 'string',
+                },
+              ],
+              stateMutability: 'view',
+              type: 'function',
+            },
+          ],
+          functionName: 'text',
+          args: [namehash(name), text],
+        })
+      })
+
+      const encResArr = await resolver.read.multicallView([
+        contractAddresses.PublicResolver,
+        encodes,
+      ])
+
+      const recordsBuilt: any[] = []
+      encResArr.forEach((x: any, idx: any) => {
+        recordsBuilt.push({
+          key: keys[idx],
+          value: decodeAbiParameters([{ type: 'string' }], x)[0],
+        })
+      })
+      console.log(recordsBuilt)
+      setRecords(recordsBuilt)
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
+    }
+  }
+
+  const getMultisigAddr = async (registry: any) => {
+    if (name) {
+      const multisigAddress = await registry.read.owner([namehash(name)])
+      const multisig: any = getContract({
+        address: multisigAddress as Address,
+        abi: parseAbi(['function entityManagementTokens() view returns (address)']),
+        client: publicClient,
+      })
+      const tokenAddr = await multisig.read.entityManagementTokens()
+
+      setEntityManagementTokens(tokenAddr)
+      setMultisigAddress(multisigAddress)
     }
   }
 
@@ -237,12 +397,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const abilities = useAbilities({ name: normalisedName })
 
-  useEffect(() => {
-    if (isSelf && name) {
-      router.replace(`/profile/${name}`)
-    }
-  }, [isSelf, name, router])
-
   const warning: ContentWarning = useMemo(() => {
     if (error)
       return {
@@ -319,7 +473,12 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           trailing: match(tab)
             .with('entity', () => (
               <>
-                <ProfileTab name={name} nameDetails={nameDetails} texts={records} />
+                <ProfileTab
+                  name={name}
+                  nameDetails={nameDetails}
+                  texts={records}
+                  multisigAddress={multisigAddress}
+                />
                 <RecordsSection texts={records || []} />
               </>
             ))
@@ -329,6 +488,15 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 template={template}
                 setTemplate={null}
                 canDownload={true}
+              />
+            ))
+            .with('actions', () => (
+              <ActionsTab
+                account={{ address, isConnected }}
+                multisigAddress={multisigAddress}
+                entityTokensAddress={entityManagementTokens}
+                client={publicClient}
+                name={name}
               />
             ))
             .with('apps', () => (

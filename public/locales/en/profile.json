@@ -262,6 +262,9 @@
     "licenses": {
       "name": "Licenses"
     },
+    "actions": {
+      "name": "Actions"
+    },
     "apps": {
       "name": "Apps"
     },

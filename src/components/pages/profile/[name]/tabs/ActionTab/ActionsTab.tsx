@@ -1,0 +1,318 @@
+import { useEffect, useState } from 'react'
+import {
+  Address,
+  createWalletClient,
+  custom,
+  decodeAbiParameters,
+  encodeFunctionData,
+  getContract,
+  parseAbi,
+} from 'viem'
+import { sepolia } from 'viem/chains'
+import { useAccount } from 'wagmi'
+
+import contractAddresses from '../../../../../../constants/contractAddresses.json'
+import ActionsConfirmation from './ActionsConfirmation'
+import ActionsExecuted from './ActionsExecuted'
+import ActionsExecution from './ActionsExecution'
+import ActionsProposal from './ActionsProposal'
+
+const methodsNames: any = {
+  '0x9254f59a': 'operationSwitch',
+  '0x10f13a8c': 'setText',
+  '0xac9650d8': 'multicall',
+  '0x96393e81': 'toggleRoles',
+  '0xe1b09e0a': 'toggleContracts',
+  '0x528c198a': 'mintShares',
+  '0xee7a7c04': 'burnShares',
+  '0xa73f7f8a': 'addRole',
+  '0x208dd1ff': 'revokeRole',
+}
+
+const roles: any = {
+  manager: '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce',
+  signer: '0x2b0aecafcc9db9e85be7c1cee931b36fd598f30aec1c255376b92e2490cfe264',
+  holder: '0xb238d52ec7e0f2a9731685576ee3e720fb21bfd1cdd4c8de0c3d8df492028584',
+}
+
+const ActionsTab = ({ account, multisigAddress, entityTokensAddress, client, name }: any) => {
+  const [userRoles, setUserRoles]: any[] = useState([])
+  const [errorMessage, setErrorMessage] = useState<string>('')
+
+  const [wallet, setWallet] = useState<any>(null)
+  const { address } = useAccount()
+
+  const [methodsCallable, setMethodsCallable]: any = useState({})
+  const [txs, setTxs]: any[] = useState([])
+
+  const checkCallableByUser = async () => {
+    const readTxDataEncodes: any[] = []
+    const indexToMethod: any = {}
+    const indexToRole: any = {}
+    const methodToUserCanCall: any = {}
+    let objectIdx = 0
+    txs.forEach((tx: any) => {
+      userRoles.forEach((role: any) => {
+        readTxDataEncodes.push(
+          encodeFunctionData({
+            abi: [
+              {
+                inputs: [
+                  {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                  },
+                  {
+                    internalType: 'bytes4',
+                    name: '',
+                    type: 'bytes4',
+                  },
+                  {
+                    internalType: 'bytes32',
+                    name: '',
+                    type: 'bytes32',
+                  },
+                ],
+                name: 'methodCallableByRole',
+                outputs: [],
+                stateMutability: 'view',
+                type: 'function',
+              },
+            ],
+            functionName: 'methodCallableByRole',
+            args: [contractAddresses['public.registry'] as any, tx.method, role],
+          }),
+        )
+        indexToMethod[objectIdx] = tx.method
+        indexToRole[objectIdx] = role
+        objectIdx += 1
+      })
+    })
+    const resolver: any = await getContract({
+      client,
+      abi: parseAbi([
+        'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+      ]),
+      address: contractAddresses.PublicResolver as Address,
+    })
+
+    const encResArr = await resolver.read.multicallView([multisigAddress, readTxDataEncodes])
+
+    encResArr.forEach((x: any, idx: any) => {
+      const userCallableMethod = decodeAbiParameters([{ type: 'bool' }], x)[0]
+      if (userCallableMethod === true) {
+        methodToUserCanCall[indexToMethod[idx]] = indexToRole[idx]
+      }
+    })
+    setMethodsCallable(methodToUserCanCall)
+  }
+
+  const readUserRoles = async () => {
+    const resolver: any = await getContract({
+      client,
+      abi: parseAbi([
+        'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+      ]),
+      address: contractAddresses.PublicResolver as Address,
+    })
+
+    const readTxDataEncodes = Object.keys(roles).map((role: any) => {
+      return encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'address',
+                name: '',
+                type: 'address',
+              },
+              {
+                internalType: 'bytes32',
+                name: '',
+                type: 'bytes32',
+              },
+            ],
+            name: 'userRoleLookup',
+            outputs: [],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ],
+        functionName: 'userRoleLookup',
+        args: [account.address, roles[role]],
+      })
+    })
+
+    const encResArr = (
+      await resolver.read.multicallView([
+        entityTokensAddress, //entityTokens
+        readTxDataEncodes,
+      ])
+    ).map((x: any) => decodeAbiParameters([{ type: 'bool' }], x)[0])
+
+    const userRoles: any[] = []
+    Object.keys(roles).forEach((role, idx) => {
+      if (encResArr[idx] === true) {
+        userRoles.push(roles[role])
+      }
+    })
+    setUserRoles(userRoles)
+  }
+
+  const readTransactions = async () => {
+    const multisigState: any = await getContract({
+      client,
+      abi: parseAbi(['function entityToTransactionNonce(address entity) view returns (uint256)']),
+      address: contractAddresses.MultisigState as Address,
+    })
+    const count = await multisigState.read.entityToTransactionNonce([multisigAddress])
+
+    const readTxDataEncodes = Array.from({ length: Number(count) }).map((_: any, idx: any) => {
+      return encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'address',
+                name: '',
+                type: 'address',
+              },
+              {
+                internalType: 'uint256',
+                name: '',
+                type: 'uint256',
+              },
+            ],
+            name: 'entityToTransactions',
+            outputs: [],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ],
+        functionName: 'entityToTransactions',
+        args: [multisigAddress, idx],
+      })
+    })
+    const resolver: any = await getContract({
+      client,
+      abi: parseAbi([
+        'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+      ]),
+      address: contractAddresses.PublicResolver as Address,
+    })
+    const encResArr = await resolver.read.multicallView([
+      contractAddresses.MultisigState,
+      readTxDataEncodes,
+    ])
+    const txArray = encResArr.map((e: any, idx: any) => {
+      const decode = decodeAbiParameters(
+        [
+          { type: 'address' },
+          { type: 'string' },
+          { type: 'bytes4' },
+          { type: 'bytes' },
+          { type: 'bool' },
+          { type: 'uint256' },
+          { type: 'uint256' },
+        ],
+        e,
+      )
+      return {
+        targetContract: decode[0],
+        title: decode[1],
+        method: decode[2],
+        methodName: methodsNames[decode[2]],
+        dataBytes: decode[3],
+        executed: decode[4],
+        sigsMade: Number(decode[5]),
+        sigsNeeded: Number(decode[6]),
+        txIndex: Number(idx),
+      }
+    })
+    setTxs(txArray)
+  }
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const newWallet = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum),
+        account: address,
+      })
+      setWallet(newWallet)
+    } else {
+      console.error('Ethereum object not found on window')
+    }
+  }, [address])
+
+  useEffect(() => {
+    if (multisigAddress) {
+      readTransactions()
+    }
+    if (entityTokensAddress && account?.address) {
+      readUserRoles()
+    }
+  }, [multisigAddress, entityTokensAddress])
+
+  useEffect(() => {
+    if (multisigAddress && userRoles && txs) {
+      checkCallableByUser()
+    }
+  }, [multisigAddress, userRoles, txs])
+
+  const txsToConfirm = txs.filter((x: any) => x.sigsMade < x.sigsNeeded)
+  const txsToExecute = txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed)
+  const txsExecuted = txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed)
+
+  let amendmentsTrigger = null
+  if (userRoles.includes(roles.manager)) {
+    amendmentsTrigger = (
+      <ActionsProposal
+        setErrorMessage={setErrorMessage}
+        multisigAddress={multisigAddress}
+        wallet={wallet}
+        name={name}
+      />
+    )
+  }
+
+  let txToConfirm = (
+    <div style={{ margin: '16px 0' }}>
+      <ActionsConfirmation
+        txData={txsToConfirm}
+        userRoles={userRoles}
+        multisigAddress={multisigAddress}
+        methodsCallable={methodsCallable}
+        setErrorMessage={setErrorMessage}
+        wallet={wallet}
+      />
+    </div>
+  )
+
+  let txToExecute = (
+    <div style={{ margin: '16px 0' }}>
+      <ActionsExecution
+        txData={txsToExecute}
+        userRoles={userRoles}
+        multisigAddress={multisigAddress}
+        setErrorMessage={setErrorMessage}
+        methodsCallable={methodsCallable}
+        wallet={wallet}
+      />
+    </div>
+  )
+
+  let txHistory = <ActionsExecuted txData={txsExecuted} />
+
+  return (
+    <div>
+      {amendmentsTrigger}
+      {txToConfirm}
+      {txToExecute}
+      {txHistory}
+    </div>
+  )
+}
+
+export default ActionsTab

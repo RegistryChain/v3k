@@ -99,7 +99,7 @@ export default function Page() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
-        chain: addEnsContracts(sepolia),
+        chain: sepolia,
         transport: custom(window.ethereum),
         account: address,
       })
@@ -159,18 +159,18 @@ export default function Page() {
       const entityRegistrarAddress =
         contractAddresses[registrars[registrarKey]?.registrationAddressKey]
 
-      let contentHash = ''
-      try {
-        // Upload text as json to ipfs
-        const jsonString = JSON.stringify(texts, null, 2) // `null, 2` is for pretty-printing the JSON
-        // Step 2: Create a Blob from the JSON string
-        const blob = new Blob([jsonString], { type: 'application/json' })
-        const ipfsData = await pinFileToIPFS(blob)
-        contentHash = ipfsData.IpfsHash
-        console.log('IPFS:', contentHash)
-      } catch (err: any) {
-        console.log('ERROR IPFS!', err)
-      }
+      // let contentHash = ''
+      // try {
+      //   // Upload text as json to ipfs
+      //   const jsonString = JSON.stringify(texts, null, 2) // `null, 2` is for pretty-printing the JSON
+      //   // Step 2: Create a Blob from the JSON string
+      //   const blob = new Blob([jsonString], { type: 'application/json' })
+      //   const ipfsData = await pinFileToIPFS(blob)
+      //   contentHash = ipfsData.IpfsHash
+      //   console.log('IPFS:', contentHash)
+      // } catch (err: any) {
+      //   console.log('ERROR IPFS!', err)
+      // }
 
       try {
         const deployer: any = getContract({
@@ -183,7 +183,6 @@ export default function Page() {
         const generatedData = generateRecordCallArray({
           texts,
           namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
-          contentHash: 'ipfs://' + contentHash,
         })
         const constitutionData = generatedData.map(
           (x) =>
