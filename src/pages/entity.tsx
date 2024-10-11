@@ -162,9 +162,7 @@ export default function Page() {
       try {
         const deployer: any = getContract({
           address: contractAddresses.EntityFactory as Address,
-          abi: parseAbi([
-            'function formEntity(string,bool,address,bytes[],bytes4[],bytes[]) external',
-          ]),
+          abi: parseAbi(['function formEntity(string,address,bytes[],bytes4[],bytes[]) external']),
           client: wallet,
         })
         const generatedData = generateRecordCallArray({
@@ -181,7 +179,6 @@ export default function Page() {
         const userDataBytes = await generateUserDataBytes(partners)
         const registerChaserTx = await deployer.write.formEntity([
           entityNameToPass,
-          true,
           entityRegistrarAddress,
           constitutionData,
           methods,
@@ -281,7 +278,6 @@ export default function Page() {
 
   if (registrationStep === 5) {
     const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-    // console.log(texts, partners)
 
     content = (
       <div>

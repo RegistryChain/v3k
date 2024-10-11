@@ -102,8 +102,10 @@ const AppComponent = ({ appData, category }: any) => {
                 type="text"
               />
             </div>
-            <div style={{ height: '3rem', alignContent: 'center' }}>
-              <Button onClick={() => null}>{t('actions.order')}</Button>
+            <div style={{ height: '3rem', alignContent: 'center', cursor: 'not-allowed' }}>
+              <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
+                {t('actions.order')}
+              </Button>
             </div>
           </ItemsContainer>
         )

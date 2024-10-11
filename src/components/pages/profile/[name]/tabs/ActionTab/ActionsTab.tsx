@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Address,
   createWalletClient,
@@ -37,7 +37,6 @@ const roles: any = {
 
 const ActionsTab = ({
   refreshRecords,
-  account,
   multisigAddress,
   entityTokensAddress,
   client,
@@ -105,6 +104,13 @@ const ActionsTab = ({
         methodToUserCanCall[indexToMethod[idx]] = indexToRole[idx]
       }
     })
+
+    Object.values(indexToMethod).forEach((method: any) => {
+      if (!methodToUserCanCall[method]) {
+        methodToUserCanCall[method] = false
+      }
+    })
+
     setMethodsCallable(methodToUserCanCall)
   }
 
@@ -134,7 +140,7 @@ const ActionsTab = ({
           },
         ],
         functionName: 'userRoleLookup',
-        args: [account.address, roles[role]],
+        args: [address as any, roles[role]],
       })
     })
 
@@ -231,6 +237,42 @@ const ActionsTab = ({
     })
   }
 
+  const processTxAction = (tx: any) => {
+    let data: any[] = []
+    let name = tx.title
+    if (tx.method === '0xac9650d8') {
+      data = decodeMulticallDatabytes(tx.dataBytes)
+      name = 'Update Entity Information'
+    }
+    if (tx.method === '0x10f13a8c') {
+      return
+    }
+
+    return { name, data }
+  }
+
+  const decodeMulticallDatabytes = (databytes: any) => {
+    const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], databytes)[0]
+    const reformedData = txDataArray.map((data) => {
+      const dec = decodeAbiParameters(
+        [
+          {
+            type: 'bytes32',
+          },
+          {
+            type: 'string',
+          },
+          {
+            type: 'string',
+          },
+        ],
+        data.split('10f13a8c').join('') as any,
+      )
+      return { key: dec[1], value: dec[2] }
+    })
+    return reformedData
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
@@ -251,20 +293,26 @@ const ActionsTab = ({
   }, [multisigAddress])
 
   useEffect(() => {
-    if (entityTokensAddress && account?.address && userRoles.length === 0) {
+    if (entityTokensAddress && address && userRoles.length === 0) {
       readUserRoles()
     }
-  }, [account, entityTokensAddress])
+  }, [address, entityTokensAddress])
 
   useEffect(() => {
     if (multisigAddress && userRoles && txs && Object.keys(methodsCallable).length === 0) {
       checkCallableByUser()
     }
-  }, [multisigAddress, userRoles, txs, account])
+  }, [multisigAddress, userRoles, txs])
 
-  const txsToConfirm = txs.filter((x: any) => x.sigsMade < x.sigsNeeded)
-  const txsToExecute = txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed)
-  const txsExecuted = txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed)
+  const txsToConfirm = useMemo(() => txs.filter((x: any) => x.sigsMade < x.sigsNeeded), [txs])
+  const txsToExecute = useMemo(
+    () => txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed),
+    [txs],
+  )
+  const txsExecuted = useMemo(
+    () => txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed),
+    [txs],
+  )
 
   let amendmentsTrigger = null
   if (userRoles.includes(roles.manager)) {
@@ -281,6 +329,7 @@ const ActionsTab = ({
   let txToConfirm = (
     <div style={{ margin: '16px 0' }}>
       <ActionsConfirmation
+        processTxAction={processTxAction}
         refresh={refresh}
         client={client}
         txData={txsToConfirm}
@@ -303,6 +352,7 @@ const ActionsTab = ({
         client={client}
         txData={txsToExecute}
         userRoles={userRoles}
+        processTxAction={processTxAction}
         multisigAddress={multisigAddress}
         setErrorMessage={setErrorMessage}
         methodsCallable={methodsCallable}

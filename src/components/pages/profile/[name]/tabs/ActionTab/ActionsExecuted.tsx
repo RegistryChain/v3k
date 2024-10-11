@@ -80,8 +80,8 @@ const ActionsExecuted = ({ txData }: any) => {
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem
-                  itemKey={x.txIndex.toString()}
-                  value={x.method + ' - ' + x.methodName}
+                  itemKey={'Transaction ' + x.txIndex.toString()}
+                  value={x.title}
                   type="text"
                 />
               </ItemsContainer>

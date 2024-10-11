@@ -17,7 +17,6 @@ import {
 import { sepolia } from 'viem/chains'
 import { useAccount } from 'wagmi'
 
-import { decodeContentHash } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
@@ -41,6 +40,19 @@ import ActionsTab from './tabs/ActionTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
 import LicenseTab from './tabs/LicenseTab'
 import ProfileTab from './tabs/ProfileTab'
+
+const MessageContainer = styled.div(
+  ({ theme }) => css`
+    background-color: ${theme.colors.yellowSurface};
+    color: ${theme.colors.textPrimary};
+    font-size: ${theme.fontSizes.small};
+    padding: ${theme.space['2']} ${theme.space['4']};
+    text-align: center;
+    font-weight: ${theme.fontWeights.bold};
+    margin-bottom: 12px;
+    border-radius: 16px;
+  `,
+)
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
@@ -124,8 +136,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const { address, isConnected } = useAccount()
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityManagementTokens, setEntityManagementTokens] = useState('')
+  const [status, setStatus] = useState('')
   const [records, setRecords] = useState<any>([])
-  const [contentHash, setContentHash] = useState<any>('')
   const [template, setTemplate] = useState<any>('default')
 
   const registrars: any = registrarsObj
@@ -158,7 +170,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   useEffect(() => {
     if (name) {
-      getContent()
+      getRecords()
     }
   }, [name])
 
@@ -170,8 +182,40 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   }, [records])
 
   useEffect(() => {
-    getRecords()
-  }, [contentHash])
+    if (multisigAddress) {
+      checkEntityStatus()
+    }
+  }, [multisigAddress])
+
+  const checkEntityStatus = async () => {
+    const multisig: any = await getMultisig(multisigAddress)
+
+    // get localApproval from mutlisig
+    // get entityToTransactionNonce from multisig state
+    const localApproval = await multisig.read.localApproval()
+
+    const multisigState: any = getContract({
+      address: contractAddresses.MultisigState as Address,
+      abi: parseAbi(['function entityToTransactionNonce(address) view returns (uint256)']),
+      client: publicClient,
+    })
+
+    const entityNonce = await multisigState.read.entityToTransactionNonce([multisigAddress])
+    const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
+    // if localApproval is false and txNonce = 1, drafted
+    if (localApproval && operationApprovedByRegistrar) {
+      setStatus('approved')
+    } else if (localApproval) {
+      setStatus('submitted')
+    } else {
+      setStatus('draft')
+    }
+
+    // call to checkEntityOperational() on multisig. If true and localApproval , status is approved
+
+    // if localApproval is true, submitted
+    // approved will have logic designed later when registrars are implemented
+  }
 
   const getRecords = async () => {
     try {
@@ -298,34 +342,27 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     }
   }
 
+  const getMultisig = async (multisig: any) => {
+    return getContract({
+      address: multisig as Address,
+      abi: parseAbi([
+        'function entityManagementTokens() view returns (address)',
+        'function localApproval() view returns (bool)',
+        'function multisigState() view returns (address)',
+        'function checkEntityOperational() view returns (bool)',
+      ]),
+      client: publicClient,
+    })
+  }
+
   const getMultisigAddr = async (registry: any) => {
     if (name) {
       const multisigAddress = await registry.read.owner([namehash(name)])
-      const multisig: any = getContract({
-        address: multisigAddress as Address,
-        abi: parseAbi(['function entityManagementTokens() view returns (address)']),
-        client: publicClient,
-      })
+      const multisig = await getMultisig(multisigAddress)
       const tokenAddr = await multisig.read.entityManagementTokens()
 
       setEntityManagementTokens(tokenAddr)
       setMultisigAddress(multisigAddress)
-    }
-  }
-
-  const getContent = async () => {
-    const resolver: any = getContract({
-      address: contractAddresses.PublicResolver as Address,
-      abi: parseAbi(['function contenthash(bytes32) external view returns (bytes memory)']),
-      client: publicClient,
-    })
-
-    try {
-      const hash = await resolver.read.contenthash([namehash(nameToQuery)])
-      const decodedHash = decodeContentHash(hash)?.decoded || hash
-      setContentHash(decodedHash)
-    } catch (err) {
-      setContentHash(null)
     }
   }
 
@@ -410,7 +447,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const chainName = useChainName()
 
-  if (contentHash === null) {
+  const demoMessage = (
+    <MessageContainer>
+      This tab is for demonstration only. Eventually, services listed here will be integrated for
+      use by your entity.
+    </MessageContainer>
+  )
+
+  if (!records) {
     return (
       <>
         <Head>
@@ -475,10 +519,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 <ProfileTab
                   name={name}
                   nameDetails={nameDetails}
-                  texts={records}
                   multisigAddress={multisigAddress}
                 />
-                <RecordsSection texts={records || []} />
+                <RecordsSection status={status} texts={records || []} />
               </>
             ))
             .with('constitution', () => (
@@ -492,7 +535,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
             .with('actions', () => (
               <ActionsTab
                 refreshRecords={() => getRecords()}
-                account={{ address, isConnected }}
                 multisigAddress={multisigAddress}
                 entityTokensAddress={entityManagementTokens}
                 client={publicClient}
@@ -500,20 +542,26 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               />
             ))
             .with('apps', () => (
-              <AppsTab
-                registrarType={registrarType}
-                name={normalisedName}
-                nameDetails={nameDetails}
-                abilities={abilities.data}
-              />
+              <>
+                {demoMessage}
+                <AppsTab
+                  registrarType={registrarType}
+                  name={normalisedName}
+                  nameDetails={nameDetails}
+                  abilities={abilities.data}
+                />
+              </>
             ))
             .with('licenses', () => (
-              <LicenseTab
-                registrarType={registrarType}
-                name={normalisedName}
-                nameDetails={nameDetails}
-                abilities={abilities.data}
-              />
+              <>
+                {demoMessage}
+                <LicenseTab
+                  registrarType={registrarType}
+                  name={normalisedName}
+                  nameDetails={nameDetails}
+                  abilities={abilities.data}
+                />
+              </>
             ))
             .exhaustive(),
         }}

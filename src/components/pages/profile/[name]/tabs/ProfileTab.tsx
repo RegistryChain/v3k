@@ -26,10 +26,10 @@ const OutlinkWithMargin = styled(Outlink)`
   padding-right: 0;
 `
 
-const ProfileTab = ({ nameDetails, name, multisigAddress, texts }: any) => {
+const ProfileTab = ({ nameDetails, name, multisigAddress }: any) => {
   const { t } = useTranslation('profile')
 
-  const { profile, normalisedName, isWrapped, gracePeriodEndDate } = nameDetails
+  const { normalisedName, isWrapped } = nameDetails
 
   const isOffchainImport = useIsOffchainName({
     name,

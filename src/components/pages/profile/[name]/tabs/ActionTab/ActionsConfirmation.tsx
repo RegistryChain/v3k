@@ -1,5 +1,7 @@
+import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { Address, getContract, parseAbi } from 'viem'
+import { Address, decodeAbiParameters, encodeFunctionData, getContract, parseAbi } from 'viem'
+import { useAccount } from 'wagmi'
 
 import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 
@@ -7,6 +9,7 @@ import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 import RecordItem from '@app/components/RecordItem'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
+import RecordEntry from '../../../RecordEntry'
 import { TabWrapper } from '../../../TabWrapper'
 
 const Container = styled(TabWrapper)(
@@ -73,13 +76,91 @@ const ActionsConfirmation = ({
   refresh,
   client,
   setErrorMessage,
+  processTxAction,
   txData,
   userRoles,
   multisigAddress,
   methodsCallable,
   wallet,
 }: any) => {
-  console.log(userRoles)
+  const [txIndexToSigned, setTxIndexToSigned] = useState<any>({})
+
+  const { address } = useAccount()
+
+  useEffect(() => {
+    if (txData && address && multisigAddress) {
+      alreadySigned()
+    }
+  }, [txData, userRoles, address, multisigAddress])
+
+  useEffect(() => {}, [txData])
+
+  const getResolver = async () => {
+    return getContract({
+      client,
+      abi: parseAbi([
+        'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+      ]),
+      address: contractAddresses.PublicResolver as Address,
+    })
+  }
+
+  const alreadySigned = async () => {
+    const idxToTxIndex: any = {}
+    const txIndexToSignedByUser: any = {}
+    const readTxDataEncodes = txData.map((tx: any, idx: any) => {
+      idxToTxIndex[idx] = tx.txIndex
+      return encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'address',
+                name: '',
+                type: 'address',
+              },
+              {
+                internalType: 'uint256',
+                name: '',
+                type: 'uint256',
+              },
+              {
+                internalType: 'address',
+                name: '',
+                type: 'address',
+              },
+            ],
+            name: 'isConfirmed',
+            outputs: [
+              {
+                internalType: 'bool',
+                name: '',
+                type: 'bool',
+              },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ],
+        functionName: 'isConfirmed',
+        args: [contractAddresses['public.registry'] as any, tx.txIndex, address as any],
+      })
+    })
+    const resolver: any = await getResolver()
+    const encResArr = await resolver.read.multicallView([
+      contractAddresses.MultisigState,
+      readTxDataEncodes,
+    ])
+
+    encResArr.forEach((x: any, idx: any) => {
+      const userHasSigned = decodeAbiParameters([{ type: 'bool' }], x)[0]
+      const txIndex = idxToTxIndex[idx]
+      txIndexToSignedByUser[txIndex] = userHasSigned
+    })
+
+    setTxIndexToSigned(txIndexToSignedByUser)
+  }
+
   const signAction = async (txIndex: any, method: any) => {
     try {
       // IMPORTANT FETCH TO SEE IF USER HAS SIGNED THIS ALREADY
@@ -95,36 +176,44 @@ const ActionsConfirmation = ({
         methodsCallable[method],
       ])
       console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
+      alreadySigned()
       refresh()
     } catch (err: any) {
       setErrorMessage(err.message)
     }
   }
-
   return (
     <Container>
       <HeaderContainer>
         <Typography fontVariant="headingFour">Proposed Entity Actions</Typography>
       </HeaderContainer>
       {txData.map((x: any, idx: number) => {
+        const processedTx = processTxAction(x)
         return (
           <div key={x.dataBytes + 'confi'} style={{ display: 'flex' }}>
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem
-                  itemKey={x.txIndex.toString()}
-                  value={x.method + ' - ' + x.methodName}
+                  itemKey={'Transaction ' + x.txIndex.toString()}
+                  value={processedTx.name}
                   type="text"
                 />
               </ItemsContainer>
-              <ItemsContainer key={x.dataBytes + idx + 2}>
-                <RecordItem itemKey="" value={x.dataBytes} type="text" />
-              </ItemsContainer>
+              {processedTx?.data?.map((recordObject: any, idx2: any) => {
+                return (
+                  <div style={{ marginLeft: '40px' }}>
+                    <RecordEntry
+                      itemKey={'categoryActionsConf' + (x?.databytes || idx2)}
+                      data={recordObject}
+                    />
+                  </div>
+                )
+              })}
             </div>
             <div style={{ flex: 1, textAlign: 'center', alignContent: 'center' }}>
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
-                disabled={!methodsCallable?.[x?.method]}
+                disabled={!methodsCallable?.[x?.method] || txIndexToSigned[x.txIndex]}
                 onClick={() => signAction(x.txIndex, x.method)}
               >
                 Sign

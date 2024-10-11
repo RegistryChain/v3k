@@ -86,7 +86,9 @@ const LicenseComponent = ({ licenseData, category }: any) => {
               type="text"
             />
             <div style={{ height: '3rem', alignContent: 'center' }}>
-              <Button onClick={() => null}>Order</Button>
+              <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
+                Order
+              </Button>
             </div>
           </ItemsContainer>
         )

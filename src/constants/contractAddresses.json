@@ -1,9 +1,9 @@
 {
-  "RegistryChain": "0xbda218ce811836a2872f16c8b20033e8cc6e165d",
-  "Definitions": "0xdda2a8b0171bf7f6862875a6d192626ae6461c0a",
-  "EntityFactory": "0x90a73287e8f7cfb770aad4d7af59eb6934b5f632",
-  "PublicResolver": "0x8d4d22ebba497f59befb117b9b325d6087aab7d4",
-  "MultisigState": "0xfd603f9309468e8bbaeb25de9fc42a096baeadec",
-  "EntityRegistrar": "0x977e8f77532640f575a359b7901eac923b8c57f2",
-  "public.registry": "0x5ba02e56e8dc4513671761460445fd1bffe12845"
+  "RegistryChain": "0x2818d6f3d477348413e49629d14f005cab39073b",
+  "Definitions": "0x8f808e4cb837829288b08145e8182089ba685a1d",
+  "EntityFactory": "0x28a1aedcb8d469c419da3daf2c465dc50dbddfc2",
+  "PublicResolver": "0x2ae3b938123e9cf7b9d039124e0e7772f7f79ea3",
+  "MultisigState": "0xf433b25fd9aaae465e4cc436c70958070eb8fc37",
+  "EntityRegistrar": "0x70f6226c66b38b145d476cb3ddbdaac9493d1316",
+  "public.registry": "0xe963e1fa29c133ef9231b0a70c62d2cdfc59691b"
 }

@@ -84,11 +84,6 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   const router = useRouterWithHistory()
   const [error] = useErrorBoundary()
 
-  const [testMode, setTestMode] = useState<any>(true)
-
-  const LayoutContext = createContext({ testMode });
-
-
   useEffect(() => {
     // Do not initialise with uid and email without implementing identity verification first
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,13 +111,12 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
     // <LayoutContext.Provider value={{ testMode }}>
 
     <Container className="min-safe">
-      <Navigation testMode={testMode} setTestMode={setTestMode} />
+      <Navigation />
       <ContentWrapper>
         {error ? <ErrorScreen errorType="application-error" /> : children}
       </ContentWrapper>
       <BottomPlaceholder />
     </Container>
     // </LayoutContext.Provider>
-
   )
 })

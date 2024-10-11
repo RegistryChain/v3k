@@ -6,7 +6,7 @@ import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 import RecordItem from '@app/components/RecordItem'
 
-import contractAddresses from '../../../../../../constants/contractAddresses.json'
+import RecordEntry from '../../../RecordEntry'
 import { TabWrapper } from '../../../TabWrapper'
 
 const Container = styled(TabWrapper)(
@@ -74,6 +74,7 @@ const ActionsExecution = ({
   client,
   setErrorMessage,
   txData,
+  processTxAction,
   userRoles,
   multisigAddress,
   methodsCallable,
@@ -103,16 +104,27 @@ const ActionsExecution = ({
         <Typography fontVariant="headingFour">Transactions To Execute</Typography>
       </HeaderContainer>
       {txData.map((x: any, idx: number) => {
+        const processedTx = processTxAction(x)
         return (
           <div key={x.dataBytes + idx + 'exec'} style={{ display: 'flex' }}>
             <div style={{ flex: 4, marginRight: '4px' }}>
               <ItemsContainer key={x.dataBytes + idx}>
                 <RecordItem
-                  itemKey={x.txIndex.toString()}
-                  value={x.method + ' - ' + x.methodName}
+                  itemKey={'Transaction ' + x.txIndex.toString()}
+                  value={processedTx.name}
                   type="text"
                 />
               </ItemsContainer>
+              {processedTx?.data?.map((recordObject: any, idx2: any) => {
+                return (
+                  <div style={{ marginLeft: '40px' }}>
+                    <RecordEntry
+                      itemKey={'categoryActionsExec' + (x?.databytes || idx2)}
+                      data={recordObject}
+                    />
+                  </div>
+                )
+              })}
             </div>
             <div style={{ flex: 1, textAlign: 'center', alignContent: 'center' }}>
               <Button

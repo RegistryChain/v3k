@@ -22,8 +22,8 @@ const ActionsProposal = ({ refetchTx, setErrorMessage, multisigAddress, wallet, 
       const constitutionData2 = generateRecordCallArray({
         namehash: namehash(name),
         texts: [
-          { key: 'company__address', value: '345 Avenida Paulista' },
-          { key: 'company__purpose', value: 'Lorem Ipsum' },
+          { key: 'company__address', value: '3145 Avenida Paulista' },
+          { key: 'company__purpose', value: 'Lorem Ipsum lorem' },
         ],
       })
 

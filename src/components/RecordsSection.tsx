@@ -80,7 +80,7 @@ const SectionSubtitle = styled(Typography)(
   `,
 )
 
-export const RecordsSection = ({ texts }: { texts?: TextRecord[] }) => {
+export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status?: String }) => {
   const { t } = useTranslation('profile')
 
   const filteredTexts = useMemo(() => texts?.filter(({ value }) => value), [texts])
@@ -97,6 +97,26 @@ export const RecordsSection = ({ texts }: { texts?: TextRecord[] }) => {
     if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
     partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = text.value
   })
+
+  let statusSection = null
+  if (status) {
+    statusSection = (
+      <RecordSection key={'section1sRecords'}>
+        <SectionTitleContainer>
+          <SectionTitle
+            style={{ paddingLeft: '8px' }}
+            data-testid="text-heading"
+            fontVariant="bodyBold"
+          >
+            Status:{' '}
+            <span style={status === 'approved' ? { color: 'lime' } : { color: '#e9d228' }}>
+              {status}
+            </span>
+          </SectionTitle>
+        </SectionTitleContainer>
+      </RecordSection>
+    )
+  }
 
   const partnerSection = (
     <RecordSection key={'section1Partner'}>
@@ -155,6 +175,7 @@ export const RecordsSection = ({ texts }: { texts?: TextRecord[] }) => {
   return (
     <TabWrapper data-testid="records-tab">
       <AllRecords>
+        {statusSection}
         <RecordSection key={'section1Records'}>
           {Object.keys(recordCategoryToTitle).map((cat) => {
             const categoryTexts =
