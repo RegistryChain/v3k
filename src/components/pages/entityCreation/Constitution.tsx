@@ -143,7 +143,7 @@ const constitutionTemplate: any = {
       content: (profileData: any, userData: any) => {
         let totalShares = 0
         userData.forEach((x: any) => {
-          totalShares += x.shares
+          totalShares += Number(x.shares)
         })
         return [
           `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
@@ -252,7 +252,7 @@ const constitutionTemplate: any = {
       content: (profileData: any, userData: any) => {
         let totalShares = 0
         userData.forEach((x: any) => {
-          totalShares += x.shares
+          totalShares += Number(x.shares)
         })
         return [
           `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,

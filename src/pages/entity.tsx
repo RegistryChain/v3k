@@ -198,7 +198,7 @@ export default function Page() {
               failedCheck = !dateRegex.test(dateValue)
             }
             if (trueType === 'address') {
-              failedCheck = !isAddress(partner[field])
+              failedCheck = !isAddress(partner[field]) || partner[field] === zeroAddress
             }
             if (isOptional) {
               failedCheck = false
