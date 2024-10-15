@@ -1,11 +1,9 @@
 'use-client'
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 import styled, { css } from 'styled-components'
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
 
-import { Button, CrossSVG, Dialog, Input, mq } from '@ensdomains/thorin'
+import { Input, mq } from '@ensdomains/thorin'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -48,27 +46,15 @@ export type Props = {
   data?: Data
 }
 
-const SHARE_COUNT = 1000000
-
 const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any) => {
   const name = data?.name || ''
   const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
 
   const entityData = async () => {
-    const client: any = publicClient
-    // Here fetch the resolver data
     const properties: any = {}
-    // Texts needs to iterate over existing texts array and overwrite keys that already hold values
-    //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-    // const keys = Object.keys(fields[data?.registrarKey || "standard"])
     const texts: any = {}
-    const fetches: any = []
-    const textConstruction = keys.map((key: string) => {
+    keys.forEach((key: string) => {
       const existing = profile?.[key]
-      if (!existing) {
-        fetches.push('PROMISE CALL TO CONTRACT FOR DATA ')
-        // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
-      }
       texts[key] = existing || properties[key]
     })
     setProfile((prevProfile: any) => ({ ...prevProfile, ...texts }))

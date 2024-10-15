@@ -26,19 +26,19 @@
       "company": {
         "name": "string",
         "type": "string",
-        "address": "Address",
+        "address": "address",
         "physical__address": "string",
         "DOB": "date",
-        "roles": "Array",
-        "lockup": "Boolean",
+        "roles": "array",
+        "lockup": "boolean?",
         "shares": "number"
       },
       "civil": {
         "name": "string",
-        "address": "Address",
+        "address": "address",
         "physical__address": "string",
         "DOB": "date",
-        "roles": "Array"
+        "roles": "array"
       }
     },
     "PUB": {},

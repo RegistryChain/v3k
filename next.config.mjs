@@ -55,7 +55,7 @@ const nextConfig = {
         destination: '/address?address=:address',
       },
       {
-        source: '/:name',
+        source: '/entity/:name',
         destination: '/profile?name=:name',
       },
       {
@@ -69,26 +69,6 @@ const nextConfig = {
       {
         source: '/:name/import',
         destination: '/import?name=:name',
-      },
-      {
-        source: '/:name/dotbox',
-        destination: '/dotbox?name=:name',
-      },
-      {
-        source: '/tld/:tld',
-        destination: '/profile?name=:tld',
-      },
-      {
-        source: '/tld/:tld/register',
-        destination: '/register?name=:tld',
-      },
-      {
-        source: '/tld/:tld/expired-profile',
-        destination: '/profile?name=:tld&expired=true',
-      },
-      {
-        source: '/tld/:tld/import',
-        destination: '/import?name=:tld',
       },
     ]
   },

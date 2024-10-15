@@ -76,7 +76,7 @@ const Page = () => {
           leading: (
             <DetailsContainer>
               {primaryProfile?.name ? (
-                <ProfileSnippet name={primaryProfile.name} multisigAddress={address} />
+                <ProfileSnippet name={primaryProfile.name} multisigAddress={address} records={[]} />
               ) : (
                 <NoProfileSnippet />
               )}

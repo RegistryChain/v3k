@@ -1,5 +1,7 @@
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import styled, { css } from 'styled-components'
 import { Address, encodeFunctionData, getContract, parseAbi } from 'viem'
+import { useAccount } from 'wagmi'
 
 import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 
@@ -80,6 +82,9 @@ const ActionsExecution = ({
   methodsCallable,
   wallet,
 }: any) => {
+  const { address, isConnected } = useAccount()
+  const { openConnectModal }: any = useConnectModal()
+
   const executeAction = async (txIndex: any, method: any) => {
     try {
       const multisig: any = getContract({
@@ -130,7 +135,13 @@ const ActionsExecution = ({
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
                 disabled={!methodsCallable?.[x?.method]}
-                onClick={() => executeAction(x.txIndex, x.method)}
+                onClick={async () => {
+                  if (!isConnected || !address) {
+                    await openConnectModal()
+                  } else {
+                    executeAction(x.txIndex, x.method)
+                  }
+                }}
               >
                 Execute
               </Button>

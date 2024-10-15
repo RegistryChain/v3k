@@ -1,3 +1,4 @@
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { Address, decodeAbiParameters, encodeFunctionData, getContract, parseAbi } from 'viem'
@@ -85,7 +86,7 @@ const ActionsConfirmation = ({
 }: any) => {
   const [txIndexToSigned, setTxIndexToSigned] = useState<any>({})
 
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
 
   useEffect(() => {
     if (txData && address && multisigAddress) {
@@ -93,7 +94,7 @@ const ActionsConfirmation = ({
     }
   }, [txData, userRoles, address, multisigAddress])
 
-  useEffect(() => {}, [txData])
+  const { openConnectModal }: any = useConnectModal()
 
   const getResolver = async () => {
     return getContract({
@@ -147,15 +148,20 @@ const ActionsConfirmation = ({
       })
     })
     const resolver: any = await getResolver()
-    const encResArr = await resolver.read.multicallView([
-      contractAddresses.MultisigState,
-      readTxDataEncodes,
-    ])
+    let encResArr: any[] = []
+    try {
+      encResArr = await resolver.read.multicallView([
+        contractAddresses.MultisigState,
+        readTxDataEncodes,
+      ])
+    } catch (e) {}
 
     encResArr.forEach((x: any, idx: any) => {
-      const userHasSigned = decodeAbiParameters([{ type: 'bool' }], x)[0]
-      const txIndex = idxToTxIndex[idx]
-      txIndexToSignedByUser[txIndex] = userHasSigned
+      try {
+        const userHasSigned = decodeAbiParameters([{ type: 'bool' }], x)[0]
+        const txIndex = idxToTxIndex[idx]
+        txIndexToSignedByUser[txIndex] = userHasSigned
+      } catch (e) {}
     })
 
     setTxIndexToSigned(txIndexToSignedByUser)
@@ -214,7 +220,15 @@ const ActionsConfirmation = ({
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
                 disabled={!methodsCallable?.[x?.method] || txIndexToSigned[x.txIndex]}
-                onClick={() => signAction(x.txIndex, x.method)}
+                onClick={async () => {
+                  try {
+                    if (!isConnected || !address) {
+                      await openConnectModal()
+                    } else {
+                      signAction(x.txIndex, x.method)
+                    }
+                  } catch (err) {}
+                }}
               >
                 Sign
               </Button>

@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import {
-  Address,
-  createPublicClient,
-  getContract,
-  http,
-  namehash,
-  parseAbi,
-  zeroAddress,
-} from 'viem'
 
 import { Input, mq, Toggle, Typography } from '@ensdomains/thorin'
 
@@ -34,37 +25,36 @@ const Roles = ({
   publicClient,
 }: any) => {
   const { t } = useTranslation('intake')
-
   const relevantRoles = [...roleTypes.standard[intakeType], ...roleTypes[data?.registrarKey]]
-  const partnerPercentages: any = {}
 
+  const partnerPercentages: any = {}
   let totalSharesReconstruct = 0
+
   partners.forEach((f: any) => {
-    totalSharesReconstruct += f.shares
+    totalSharesReconstruct += f.shares || 0
+  })
+
+  partners.forEach((f: any) => {
+    partnerPercentages[f.name] = (100 * f.shares) / Number(totalSharesReconstruct) || 0
   })
   const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + '')
-  partners.forEach((f: any) => {
-    partnerPercentages[f.name] = (100 * f.shares) / Number(totalShares) || 0
-  })
   const [sharePercentages, setSharePercentages] = useState<any>({ ...partnerPercentages })
 
   const ownersData = async () => {
     const client: any = publicClient
     // Here fetch the resolver data
-    const resolver = await getContract({
-      client,
-      abi: parseAbi([
-        'function text(bytes32 node, string calldata key) view returns (string memory)',
-      ]),
-      address: contractAddresses.PublicResolver as Address,
-    })
+    // const resolver = await getContract({
+    //   client,
+    //   abi: parseAbi([
+    //     'function text(bytes32 node, string calldata key) view returns (string memory)',
+    //   ]),
+    //   address: contractAddresses.PublicResolver as Address,
+    // })
   }
 
   useEffect(() => {
     ownersData()
   }, [])
-
-  useEffect(() => {}, [])
 
   const align: any = '-webkit-right'
 
@@ -79,23 +69,25 @@ const Roles = ({
               <Toggle
                 size={'small'}
                 checked={partner.roles.includes(role)}
+                data-testid="primary-name-toggle"
                 onChange={(e) => {
                   e.stopPropagation()
                   const roleChecked = partner.roles.includes(role)
                   setPartners((prevPartners: any) => {
-                    const updatedPartners = [...prevPartners]
-                    let partnerRoles = [...partner.roles]
-                    if (!roleChecked) {
-                      partnerRoles.push(role)
-                    } else {
-                      partnerRoles = partnerRoles.filter((x: string) => x !== role)
-                    }
-                    const updatedPartner = { ...updatedPartners[idx], roles: partnerRoles }
-                    updatedPartners[idx] = updatedPartner
-                    return updatedPartners
+                    try {
+                      const updatedPartners = [...prevPartners]
+                      let partnerRoles = [...partner.roles]
+                      if (!roleChecked) {
+                        partnerRoles.push(role)
+                      } else {
+                        partnerRoles = partnerRoles.filter((x: string) => x !== role)
+                      }
+                      const updatedPartner = { ...updatedPartners[idx], roles: partnerRoles }
+                      updatedPartners[idx] = updatedPartner
+                      return updatedPartners
+                    } catch (err) {}
                   })
                 }}
-                data-testid="primary-name-toggle"
               />
             </div>
           )

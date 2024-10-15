@@ -33,14 +33,12 @@ import { useEstimateFullRegistration } from '@app/hooks/gasEstimation/useEstimat
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { ONE_DAY, ONE_YEAR } from '@app/utils/time'
 
-import FullInvoice from '../../FullInvoice'
 import {
   MoonpayTransactionStatus,
   PaymentMethod,
   RegistrationReducerDataItem,
   RegistrationStepData,
 } from '../../types'
-import { useMoonpayRegistration } from '../../useMoonpayRegistration'
 import TemporaryPremium from './TemporaryPremium'
 
 const StyledCard = styled(Card)(
@@ -374,9 +372,7 @@ export type ActionButtonProps = {
   paymentMethodChoice: PaymentMethod | ''
   reverseRecord: boolean
   callback: (props: RegistrationStepData['pricing']) => void
-  initiateMoonpayRegistrationMutation: ReturnType<
-    typeof useMoonpayRegistration
-  >['initiateMoonpayRegistrationMutation']
+  initiateMoonpayRegistrationMutation: any
   seconds: number
   balance: GetBalanceData | undefined
   totalRequiredBalance?: bigint
@@ -460,9 +456,7 @@ export type PricingProps = {
   hasPrimaryName: boolean
   registrationData: RegistrationReducerDataItem
   moonpayTransactionStatus?: MoonpayTransactionStatus
-  initiateMoonpayRegistrationMutation: ReturnType<
-    typeof useMoonpayRegistration
-  >['initiateMoonpayRegistrationMutation']
+  initiateMoonpayRegistrationMutation: any
 }
 
 const minSeconds = 28 * ONE_DAY
@@ -551,7 +545,6 @@ const Pricing = ({
     <StyledCard>
       <StyledHeading>{t('heading', { name: beautifiedName })}</StyledHeading>
       <DateSelection {...{ seconds, setSeconds, minSeconds }} />
-      <FullInvoice {...fullEstimate} />
       {hasPremium && gracePeriodEndDate ? (
         <TemporaryPremium startDate={gracePeriodEndDate} name={name} />
       ) : (

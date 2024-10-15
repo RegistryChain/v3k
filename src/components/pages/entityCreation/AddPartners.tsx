@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { createPublicClient, getContract, http, namehash, parseAbi, zeroAddress } from 'viem'
+import { zeroAddress } from 'viem'
 
 import { Button, Dialog, Input, mq } from '@ensdomains/thorin'
 
@@ -11,15 +11,6 @@ const InputWrapper = styled.div(
     flex: 1;
     position: relative;
     width: 100%;
-  `,
-)
-
-const FooterContainer = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    gap: ${theme.space['3']};
-    width: 100%;
-    margin: 0 auto;
   `,
 )
 
@@ -72,7 +63,6 @@ const AddPartners = ({
     const client: any = publicClient
     // Here fetch the resolver data
 
-    console.log('IMPORTANT - Fetch data from contracts here')
     // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
     // Texts needs to iterate over existing texts array and overwrite keys that already hold values
     //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc

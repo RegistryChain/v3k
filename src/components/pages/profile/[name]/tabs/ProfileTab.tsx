@@ -26,7 +26,7 @@ const OutlinkWithMargin = styled(Outlink)`
   padding-right: 0;
 `
 
-const ProfileTab = ({ nameDetails, name, multisigAddress }: any) => {
+const ProfileTab = ({ nameDetails, name, multisigAddress, records }: any) => {
   const { t } = useTranslation('profile')
 
   const { normalisedName, isWrapped } = nameDetails
@@ -38,7 +38,7 @@ const ProfileTab = ({ nameDetails, name, multisigAddress }: any) => {
 
   return (
     <DetailsWrapper>
-      <ProfileSnippet name={name + 'sid'} multisigAddress={multisigAddress}>
+      <ProfileSnippet name={name} records={records} multisigAddress={multisigAddress}>
         {isOffchainImport && (
           <Helper alignment="horizontal">
             <Trans

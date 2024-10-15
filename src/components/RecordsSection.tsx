@@ -88,15 +88,20 @@ export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status
     company: 'Company Details',
     civil: 'Civil Details',
   }
-
   const partnersOrganized: any = {}
   const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'partner') || []
 
   categoryTexts.forEach((text) => {
-    const keyComp = text.key.split('__')
-    if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
-    partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = text.value
+    try {
+      const keyComp = text.key.split('__')
+      if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
+      partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = text.value
+    } catch (err) {}
   })
+
+  if (Object.values(partnersOrganized)?.length === 0) {
+    return null
+  }
 
   let statusSection = null
   if (status) {

@@ -313,25 +313,27 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
   const companyObj: any = {}
   const users: any = {}
   formationData.forEach((field: any) => {
-    if (field.key.includes('company__')) {
-      const key = field.key.split('company__').join('')
-      companyObj[key] = field.value
-    }
-    if (field.key.includes('partner__[')) {
-      const splitData = field.key.split('partner__[').join('').split(']__')
-      if (!users[splitData[0]]) {
-        users[splitData[0]] = { roles: [] }
+    try {
+      if (field.key.includes('company__')) {
+        const key = field.key.split('company__').join('')
+        companyObj[key] = field.value
       }
-      let key = splitData[1]
-      if (key.includes('is__')) {
-        key = key.split('is__').join('')
-        if (!!key && key !== '' && field.value === 'true') {
-          users[splitData[0]].roles.push(key)
+      if (field.key.includes('partner__[')) {
+        const splitData = field.key.split('partner__[').join('').split(']__')
+        if (!users[splitData[0]]) {
+          users[splitData[0]] = { roles: [] }
         }
-      } else {
-        users[splitData[0]][key] = field.value
+        let key = splitData[1]
+        if (key.includes('is__')) {
+          key = key.split('is__').join('')
+          if (!!key && key !== '' && field.value === 'true') {
+            users[splitData[0]].roles.push(key)
+          }
+        } else {
+          users[splitData[0]][key] = field.value
+        }
       }
-    }
+    } catch (err) {}
   })
 
   const [viewConst, setViewConst] = useState<any>(true)

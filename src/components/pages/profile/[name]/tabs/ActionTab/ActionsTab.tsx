@@ -9,7 +9,7 @@ import {
   parseAbi,
 } from 'viem'
 import { sepolia } from 'viem/chains'
-import { useAccount } from 'wagmi'
+import { useAccount, useConnect } from 'wagmi'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
 import ActionsConfirmation from './ActionsConfirmation'
@@ -46,7 +46,7 @@ const ActionsTab = ({
   const [errorMessage, setErrorMessage] = useState<string>('')
 
   const [wallet, setWallet] = useState<any>(null)
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
 
   const [methodsCallable, setMethodsCallable]: any = useState({})
   const [txs, setTxs]: any[] = useState([])
@@ -63,47 +63,52 @@ const ActionsTab = ({
     let objectIdx = 0
     txs.forEach((tx: any) => {
       userRoles.forEach((role: any) => {
-        readTxDataEncodes.push(
-          encodeFunctionData({
-            abi: [
-              {
-                inputs: [
-                  {
-                    internalType: 'bytes4',
-                    name: '',
-                    type: 'bytes4',
-                  },
-                  {
-                    internalType: 'bytes32',
-                    name: '',
-                    type: 'bytes32',
-                  },
-                ],
-                name: 'methodCallableByRole',
-                outputs: [],
-                stateMutability: 'view',
-                type: 'function',
-              },
-            ],
-            functionName: 'methodCallableByRole',
-            args: [tx.method, role],
-          }),
-        )
+        try {
+          readTxDataEncodes.push(
+            encodeFunctionData({
+              abi: [
+                {
+                  inputs: [
+                    {
+                      internalType: 'bytes4',
+                      name: '',
+                      type: 'bytes4',
+                    },
+                    {
+                      internalType: 'bytes32',
+                      name: '',
+                      type: 'bytes32',
+                    },
+                  ],
+                  name: 'methodCallableByRole',
+                  outputs: [],
+                  stateMutability: 'view',
+                  type: 'function',
+                },
+              ],
+              functionName: 'methodCallableByRole',
+              args: [tx.method, role],
+            }),
+          )
+        } catch (err) {}
         indexToMethod[objectIdx] = tx.method
         indexToRole[objectIdx] = role
         objectIdx += 1
       })
     })
     const resolver: any = await getResolver()
+    let encResArr: any[] = []
 
-    const encResArr = await resolver.read.multicallView([multisigAddress, readTxDataEncodes])
+    try {
+      encResArr = await resolver.read.multicallView([multisigAddress, readTxDataEncodes])
 
-    encResArr.forEach((x: any, idx: any) => {
-      const userCallableMethod = decodeAbiParameters([{ type: 'bool' }], x)[0]
-      if (userCallableMethod === true) {
-        methodToUserCanCall[indexToMethod[idx]] = indexToRole[idx]
-      }
-    })
+      encResArr.forEach((x: any, idx: any) => {
+        const userCallableMethod = decodeAbiParameters([{ type: 'bool' }], x)[0]
+        if (userCallableMethod === true) {
+          methodToUserCanCall[indexToMethod[idx]] = indexToRole[idx]
+        }
+      })
+    } catch (e) {}
 
     Object.values(indexToMethod).forEach((method: any) => {
       if (!methodToUserCanCall[method]) {
@@ -116,40 +121,48 @@ const ActionsTab = ({
 
   const readUserRoles = async () => {
     const resolver: any = await getResolver()
-
     const readTxDataEncodes = Object.keys(roles).map((role: any) => {
-      return encodeFunctionData({
-        abi: [
-          {
-            inputs: [
-              {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-              },
-              {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-              },
-            ],
-            name: 'userRoleLookup',
-            outputs: [],
-            stateMutability: 'view',
-            type: 'function',
-          },
-        ],
-        functionName: 'userRoleLookup',
-        args: [address as any, roles[role]],
-      })
+      try {
+        return encodeFunctionData({
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'address',
+                  name: '',
+                  type: 'address',
+                },
+                {
+                  internalType: 'bytes32',
+                  name: '',
+                  type: 'bytes32',
+                },
+              ],
+              name: 'userRoleLookup',
+              outputs: [],
+              stateMutability: 'view',
+              type: 'function',
+            },
+          ],
+          functionName: 'userRoleLookup',
+          args: [address as any, roles[role]],
+        })
+      } catch (e) {}
     })
-
-    const encResArr = (
-      await resolver.read.multicallView([
+    let encResArr: any[] = []
+    let viewRes: any[] = []
+    try {
+      viewRes = await resolver.read.multicallView([
         entityTokensAddress, //entityTokens
         readTxDataEncodes,
       ])
-    ).map((x: any) => decodeAbiParameters([{ type: 'bool' }], x)[0])
+    } catch (e) {}
+
+    encResArr = viewRes.map((x: any) => {
+      try {
+        return decodeAbiParameters([{ type: 'bool' }], x)[0]
+      } catch (e) {}
+    })
 
     const userRoles: any[] = []
     Object.keys(roles).forEach((role, idx) => {
@@ -166,9 +179,13 @@ const ActionsTab = ({
       abi: parseAbi(['function entityToTransactionNonce(address entity) view returns (uint256)']),
       address: contractAddresses.MultisigState as Address,
     })
-    const count = await multisigState.read.entityToTransactionNonce([multisigAddress])
+    let count = 0
+    try {
+      count = await multisigState.read.entityToTransactionNonce([multisigAddress])
+      count = Number(count)
+    } catch (e) {}
 
-    const readTxDataEncodes = Array.from({ length: Number(count) }).map((_: any, idx: any) => {
+    const readTxDataEncodes = Array.from({ length: count }).map((_: any, idx: any) => {
       return encodeFunctionData({
         abi: [
           {
@@ -195,35 +212,46 @@ const ActionsTab = ({
       })
     })
     const resolver: any = await getResolver()
-    const encResArr = await resolver.read.multicallView([
-      contractAddresses.MultisigState,
-      readTxDataEncodes,
-    ])
-    const txArray = encResArr.map((e: any, idx: any) => {
-      const decode = decodeAbiParameters(
-        [
-          { type: 'address' },
-          { type: 'string' },
-          { type: 'bytes4' },
-          { type: 'bytes' },
-          { type: 'bool' },
-          { type: 'uint256' },
-          { type: 'uint256' },
-        ],
-        e,
-      )
-      return {
-        targetContract: decode[0],
-        title: decode[1],
-        method: decode[2],
-        methodName: methodsNames[decode[2]],
-        dataBytes: decode[3],
-        executed: decode[4],
-        sigsMade: Number(decode[5]),
-        sigsNeeded: Number(decode[6]),
-        txIndex: Number(idx),
-      }
-    })
+    let encResArr: any[] = []
+
+    try {
+      encResArr = await resolver.read.multicallView([
+        contractAddresses.MultisigState,
+        readTxDataEncodes,
+      ])
+    } catch (e) {}
+
+    const txArray = encResArr
+      .map((e: any, idx: any) => {
+        try {
+          const decode = decodeAbiParameters(
+            [
+              { type: 'address' },
+              { type: 'string' },
+              { type: 'bytes4' },
+              { type: 'bytes' },
+              { type: 'bool' },
+              { type: 'uint256' },
+              { type: 'uint256' },
+            ],
+            e,
+          )
+          return {
+            targetContract: decode[0],
+            title: decode[1],
+            method: decode[2],
+            methodName: methodsNames[decode[2]],
+            dataBytes: decode[3],
+            executed: decode[4],
+            sigsMade: Number(decode[5]),
+            sigsNeeded: Number(decode[6]),
+            txIndex: Number(idx),
+          }
+        } catch (e) {
+          return null
+        }
+      })
+      ?.filter((x: any) => x)
     setTxs(txArray)
   }
 

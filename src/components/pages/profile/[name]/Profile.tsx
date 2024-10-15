@@ -1,4 +1,3 @@
-import axios from 'axios'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -192,7 +191,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
     // get localApproval from mutlisig
     // get entityToTransactionNonce from multisig state
-    const localApproval = await multisig.read.localApproval()
 
     const multisigState: any = getContract({
       address: contractAddresses.MultisigState as Address,
@@ -200,21 +198,19 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       client: publicClient,
     })
 
-    const entityNonce = await multisigState.read.entityToTransactionNonce([multisigAddress])
-    const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
-    // if localApproval is false and txNonce = 1, drafted
-    if (localApproval && operationApprovedByRegistrar) {
-      setStatus('approved')
-    } else if (localApproval) {
-      setStatus('submitted')
-    } else {
-      setStatus('draft')
-    }
-
-    // call to checkEntityOperational() on multisig. If true and localApproval , status is approved
-
-    // if localApproval is true, submitted
-    // approved will have logic designed later when registrars are implemented
+    try {
+      const localApproval = await multisig.read.localApproval()
+      const entityNonce = await multisigState.read.entityToTransactionNonce([multisigAddress])
+      const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
+      // if localApproval is false and txNonce = 1, drafted
+      if (localApproval && operationApprovedByRegistrar) {
+        setStatus('approved')
+      } else if (localApproval) {
+        setStatus('submitted')
+      } else {
+        setStatus('draft')
+      }
+    } catch (e) {}
   }
 
   const getRecords = async () => {
@@ -324,17 +320,19 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         })
       })
 
-      const encResArr = await resolver.read.multicallView([
-        contractAddresses.PublicResolver,
-        encodes,
-      ])
-
       const recordsBuilt: any[] = []
+      let encResArr: any[] = []
+      try {
+        encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
+      } catch (e) {}
+
       encResArr.forEach((x: any, idx: any) => {
-        recordsBuilt.push({
-          key: keys[idx],
-          value: decodeAbiParameters([{ type: 'string' }], x)[0],
-        })
+        try {
+          recordsBuilt.push({
+            key: keys[idx],
+            value: decodeAbiParameters([{ type: 'string' }], x)[0],
+          })
+        } catch (e) {}
       })
       setRecords(recordsBuilt)
     } catch (err) {
@@ -357,12 +355,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const getMultisigAddr = async (registry: any) => {
     if (name) {
-      const multisigAddress = await registry.read.owner([namehash(name)])
-      const multisig = await getMultisig(multisigAddress)
-      const tokenAddr = await multisig.read.entityManagementTokens()
+      try {
+        const multisigAddress = await registry.read.owner([namehash(name)])
+        const multisig = await getMultisig(multisigAddress)
+        const tokenAddr = await multisig.read.entityManagementTokens()
 
-      setEntityManagementTokens(tokenAddr)
-      setMultisigAddress(multisigAddress)
+        setEntityManagementTokens(tokenAddr)
+        setMultisigAddress(multisigAddress)
+      } catch (e) {}
     }
   }
 
@@ -399,22 +399,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const registrarType = registrars[registrarKey || '']?.type
 
   const [titleContent, descriptionContent] = useMemo(() => {
-    if (isSelf) {
-      return [t('yourProfile'), '']
-    }
-    if (beautifiedName) {
-      return [
-        t('meta.title', {
-          name: beautifiedName,
-        }),
-        t('meta.description', {
-          name: beautifiedName,
-        }),
-      ]
-    }
-    if (typeof isValid === 'boolean' && isValid === false) {
-      return [t('errors.invalidName'), t('errors.invalidName')]
-    }
     return [
       t('meta.title', {
         name,
@@ -520,27 +504,50 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   name={name}
                   nameDetails={nameDetails}
                   multisigAddress={multisigAddress}
+                  records={records}
                 />
                 <RecordsSection status={status} texts={records || []} />
               </>
             ))
-            .with('constitution', () => (
-              <Constitution
-                formationData={records}
-                template={template}
-                setTemplate={null}
-                canDownload={true}
-              />
-            ))
-            .with('actions', () => (
-              <ActionsTab
-                refreshRecords={() => getRecords()}
-                multisigAddress={multisigAddress}
-                entityTokensAddress={entityManagementTokens}
-                client={publicClient}
-                name={name}
-              />
-            ))
+            .with('constitution', () => {
+              if (records && multisigAddress) {
+                return (
+                  <Constitution
+                    formationData={records}
+                    template={template}
+                    setTemplate={null}
+                    canDownload={true}
+                  />
+                )
+              } else {
+                return (
+                  <MessageContainer>
+                    Entity not found. Constitution is available for entities with drafted or
+                    submitted data.
+                  </MessageContainer>
+                )
+              }
+            })
+            .with('actions', () => {
+              if (records && multisigAddress) {
+                return (
+                  <ActionsTab
+                    refreshRecords={() => getRecords()}
+                    multisigAddress={multisigAddress}
+                    entityTokensAddress={entityManagementTokens}
+                    client={publicClient}
+                    name={name}
+                  />
+                )
+              } else {
+                return (
+                  <MessageContainer>
+                    Entity not found. Actions are available for entities with drafted or submitted
+                    data.
+                  </MessageContainer>
+                )
+              }
+            })
             .with('apps', () => (
               <>
                 {demoMessage}

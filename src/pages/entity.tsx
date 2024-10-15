@@ -135,13 +135,97 @@ export default function Page() {
   }
 
   const advance = async () => {
-    setErrorMessage('')
+    let blockAdvance = false
+    try {
+      if (registrationStep === 1 || registrationStep >= 5) {
+        const schemaToReturn = {
+          ...schema['corpFields'].standard,
+          ...schema['corpFields']?.[registrarKey],
+        }
 
-    if (registrationStep === 3) {
-      partners.forEach((partner, idx) => {
-        //If wanting to implenent validation on share amounts and percentages...
-      })
+        const fields = Object.keys(schemaToReturn)?.filter(
+          (field) => Object.keys(profile)?.includes(field),
+        )
+
+        fields.forEach((field) => {
+          let typeVal = schemaToReturn[field]
+          if (schemaToReturn[field] === 'array') {
+            typeVal = 'object'
+          }
+          if (typeof profile[field] !== typeVal) {
+            let errMsg = field + ' should be ' + schemaToReturn[field]
+            if (!profile[field]) {
+              errMsg = field + ' is required'
+            }
+            setErrorMessage(errMsg)
+            blockAdvance = true
+          }
+        })
+      }
+      if (registrationStep === 2 || registrationStep >= 5) {
+        // const schemaToReturn = {
+        //   ...schema['partnerFields']?.standard?.[intakeType],
+        //   ...schema['partnerFields']?.[registrarKey]?.[intakeType],
+        // }
+        // "partnerFields": {
+        //   "standard": {
+        //     "company": {
+      }
+      if (registrationStep === 3 || registrationStep >= 5) {
+        partners.forEach((partner, idx) => {
+          //If wanting to implenent validation on share amounts and percentages...
+          const schemaToReturn = {
+            ...schema['partnerFields']?.standard?.[intakeType],
+            ...schema['partnerFields']?.[registrarKey]?.[intakeType],
+          }
+
+          const fields = Object.keys(schemaToReturn)?.filter(
+            (field) => Object.keys(partner)?.includes(field),
+          )
+
+          fields.forEach((field) => {
+            const trueType = schemaToReturn[field].split('?').join('')
+            let typeVal = trueType
+            const isOptional = schemaToReturn[field].split('?')?.length > 1
+            let failedCheck = typeof partner[field] !== trueType
+            if (schemaToReturn[field] === 'array') {
+              failedCheck = !Array.isArray(partner[field]) && !!partner[field]
+            }
+
+            if (trueType === 'date') {
+              const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+              const dateValue = partner[field]
+              failedCheck = !dateRegex.test(dateValue)
+            }
+            if (trueType === 'address') {
+              failedCheck = !isAddress(partner[field])
+            }
+            if (isOptional) {
+              failedCheck = false
+            }
+            if (failedCheck) {
+              let errMsg = field + ' should be ' + trueType
+              if (!partner[field]) {
+                errMsg = field + ' is required'
+              }
+              setErrorMessage(errMsg)
+              blockAdvance = true
+            }
+          })
+        })
+      }
+      if (registrationStep === 4 || registrationStep >= 5) {
+      }
+    } catch (err: any) {
+      blockAdvance = true
+      setErrorMessage(err.details)
     }
+
+    if (blockAdvance) {
+      return
+    }
+
+    setErrorMessage('')
 
     if (registrationStep < 5) {
       setRegistrationStep(registrationStep + 1)
@@ -189,7 +273,9 @@ export default function Page() {
         setErrorMessage(err.details)
         return
       }
-      router.push('/' + entityNameToPass + '.' + registrars[registrarKey]?.subdomain + '.registry')
+      router.push(
+        '/entity/' + entityNameToPass + '.' + registrars[registrarKey]?.subdomain + '.registry',
+      )
     }
   }
 
@@ -285,7 +371,12 @@ export default function Page() {
           {name}
         </Typography>
         <Constitution formationData={texts} template={template} setTemplate={setTemplate} />
-        <Review name={name} profile={profile} partners={partners} />
+        <Review
+          name={name}
+          profile={profile}
+          partners={partners}
+          setErrorMessage={setErrorMessage}
+        />
       </div>
     )
   }

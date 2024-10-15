@@ -59,24 +59,42 @@ export const getUserDefinedUrl = (url?: string) => {
 export const ProfileSnippet = ({
   name,
   multisigAddress,
+  records,
   children,
 }: {
   name: string
   multisigAddress: string
+  records: any
   children?: React.ReactNode
 }) => {
   const { t } = useTranslation('common')
 
   const beautifiedName = useBeautifiedName(name)
-
+  let entityUnavailable = null
+  if (records.length > 0) {
+    entityUnavailable = (
+      <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
+        Entity Not Found
+      </NameRecord>
+    )
+  }
   return (
     <Container>
-      <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
-        <Link target={'_blank'} href={'https://sepolia.etherscan.io/address/' + multisigAddress}>
-          {multisigAddress}
-        </Link>
-      </NameRecord>
-      <Name data-testid="profile-snippet-name">Entity Multisig Address</Name>
+      {multisigAddress ? (
+        <>
+          <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
+            <Link
+              target={'_blank'}
+              href={'https://sepolia.etherscan.io/address/' + multisigAddress}
+            >
+              {multisigAddress}
+            </Link>
+          </NameRecord>
+          <Name data-testid="profile-snippet-name">Entity Multisig Address</Name>
+        </>
+      ) : (
+        entityUnavailable
+      )}
     </Container>
   )
 }
