@@ -126,9 +126,9 @@ const constitutionTemplate: any = {
           if (user.shares > 0) {
             roles.push('shareholder')
           }
-          return `${user.name} (ID: ${user.address})${roles.length > 0 ? ' - ' : ''}${roles.join(
-            ', ',
-          )}`
+          return `${user.name} (ID: ${user.wallet__address})${
+            roles.length > 0 ? ' - ' : ''
+          }${roles.join(', ')}`
         }),
       ],
     },
@@ -237,7 +237,9 @@ const constitutionTemplate: any = {
           if (user.shares > 0) {
             roles.push('shareholder')
           }
-          return `${user.name} (ID: ${user.address}) - ${roles.join(', ')}`
+          return `${user.name} (ID: ${user.wallet__address})${
+            roles.length > 0 ? ' - ' : ''
+          }${roles.join(', ')}`
         }),
       ],
     },

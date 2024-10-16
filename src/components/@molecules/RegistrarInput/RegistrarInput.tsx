@@ -334,7 +334,7 @@ const useSelectionManager = ({
 export const RegistrarInput = ({
   size = 'extraLarge',
   field,
-  registrars,
+  entityTypes,
   value,
   setValue,
 }: any) => {
@@ -375,13 +375,36 @@ export const RegistrarInput = ({
 
   const dropdownItems: any = [{ isHistory: '', text: '', nameType: '' }]
 
-  const regNamesLower: any = {}
-  Object.keys(registrars).forEach((key) => {
-    const name = registrars[key]?.name?.toLowerCase()
-    if (name) {
-      regNamesLower[name] = key
-    }
-  })
+  const [countries, setCountries]: any = useState([])
+
+  const uniqueCountries = useMemo(() => {
+    const uniques: any[] = []
+    entityTypes.forEach((x: any) => {
+      if (!uniques.find((u: any) => u.formationCountry === x.formationCountry)) {
+        uniques.push(x)
+      }
+    })
+    return uniques
+  }, [entityTypes])
+
+  useEffect(() => {
+    const validCountries: any[] = []
+    const inputUpper = inputVal.toUpperCase()
+
+    if (inputUpper?.length > 0)
+      for (let i = 0; i < uniqueCountries.length; i++) {
+        const countryUppercase = uniqueCountries[i].formationCountry.toUpperCase()
+        if (validCountries.length >= 5) break
+        if (
+          ((countryUppercase.includes(inputUpper) && inputUpper !== value.toUpperCase()) ||
+            countryUppercase === 'PUBLIC') &&
+          !validCountries.find((x) => x.formationCountry.toUpperCase() === countryUppercase)
+        ) {
+          validCountries.push(uniqueCountries[i])
+        }
+      }
+    setCountries(validCountries)
+  }, [inputVal])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSearch = useCallback(
@@ -413,7 +436,7 @@ export const RegistrarInput = ({
 
   useSelectionManager({ inputVal, setSelected, state })
 
-  const [showNamesState, setShowNamesState] = useState<any[]>([])
+  const [showNamesState, setShowNamesState] = useState<Boolean>(false)
   const SearchResultsElement = (
     <SearchResultsContainer
       style={{
@@ -449,18 +472,10 @@ export const RegistrarInput = ({
           size="small"
           label="search"
           value={inputVal}
+          onFocus={() => setShowNamesState(true)}
           onChange={(e) => {
             setInputVal(e.target.value)
-            const names = Object.keys(regNamesLower)
-            const userInput = e.target.value.toLowerCase()
-            const showNames: any[] = names.filter((x) => x.includes(userInput) || x.includes('pub'))
-            setShowNamesState(showNames)
-
-            const selectedName = names.find((x) => x === userInput)
-            if (selectedName) {
-              setValue(regNamesLower[selectedName])
-            }
-            return
+            setShowNamesState(true)
           }}
           hideLabel
           icon={<MagnifyingGlassSimpleSVG />}
@@ -477,28 +492,27 @@ export const RegistrarInput = ({
             borderRadius: '8px',
           }}
         >
-          {showNamesState?.length > 0 ? (
+          {countries?.length > 0 && showNamesState && inputVal !== value ? (
             <div style={{ backgroundColor: 'white', paddingBottom: '8px', borderRadius: '8px' }}>
-              {showNamesState.map((x) => {
+              {countries.map((x: any) => {
                 const style = { color: '#3888FF', paddingLeft: '10px' }
 
                 return (
                   <div
                     style={{
                       ...style,
-                      cursor: regNamesLower[x] !== 'PUB' ? 'not-allowed' : 'pointer',
-                      backgroundColor: regNamesLower[x] !== 'PUB' ? '#ebe5e5' : 'white',
-                      color: regNamesLower[x] !== 'PUB' ? 'rgb(41 116 229)' : '#3888FF',
+                      cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
+                      backgroundColor: x.countryCode !== 'public' ? '#ebe5e5' : 'white',
+                      color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
                     }}
                     onClick={() => {
-                      //IMPORTANT
-                      if (regNamesLower[x] !== 'PUB') return null
-                      setValue(regNamesLower[x])
-                      setInputVal(x)
-                      setShowNamesState([])
+                      if (x.countryCode !== 'public') return null
+                      setValue(x.countryCode)
+                      setInputVal(x.formationCountry)
+                      setShowNamesState(false)
                     }}
                   >
-                    <span>{x}</span>
+                    <span>{x.formationCountry}</span>
                   </div>
                 )
               })}

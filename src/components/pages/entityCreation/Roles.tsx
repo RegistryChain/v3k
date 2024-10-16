@@ -192,7 +192,7 @@ const Roles = ({
                   placeholder={t('steps.roles.ownershipShares.label')}
                   data-testid="record-input-input"
                   validated={true}
-                  disabled={false}
+                  disabled={true}
                   onChange={(e) => null}
                 />
               </InputWrapper>

@@ -4,29 +4,31 @@
       "company": ["individual", "entity"],
       "civil": ["individual"]
     },
-    "PUB": [],
+    "public": [],
     "DL": [],
     "WY": [],
     "BVI": [],
-    "CIV": []
+    "CIV": [],
+    "AR": []
   },
   "roles": {
     "standard": {
       "company": ["manager", "signer"],
       "civil": ["manager", "spender", "signer"]
     },
-    "PUB": [],
+    "public": [],
     "DL": [],
     "WY": [],
     "BVI": [],
-    "CIV": []
+    "CIV": [],
+    "AR": []
   },
   "partnerFields": {
     "standard": {
       "company": {
         "name": "string",
         "type": "string",
-        "address": "address",
+        "wallet__address": "address",
         "physical__address": "string",
         "DOB": "date",
         "roles": "array",
@@ -41,7 +43,7 @@
         "roles": "array"
       }
     },
-    "PUB": {},
+    "public": {},
     "DL": {},
     "WY": {},
     "BVI": {},
@@ -53,7 +55,7 @@
       "address": "string",
       "purpose": "string"
     },
-    "PUB": {},
+    "public": {},
     "DL": {},
     "WY": {},
     "BVI": {},
@@ -63,7 +65,7 @@
     "standard": {
       "additional__terms": "string"
     },
-    "PUB": {},
+    "public": {},
     "DL": {},
     "WY": {},
     "BVI": {},

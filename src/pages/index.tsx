@@ -20,14 +20,13 @@ import FaucetBanner from '@app/components/@molecules/FaucetBanner'
 import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
-import { SearchInput } from '@app/components/@molecules/SearchInput/SearchInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 import contractAddresses from '../constants/contractAddresses.json'
-import registrarsObj from '../constants/registrars.json'
+import entityTypesObj from '../constants/entityTypes.json'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -104,6 +103,8 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
+const tld = '.registry'
+
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
@@ -114,14 +115,13 @@ export default function Page() {
   })
 
   const [entityName, setEntityName] = useState<string>('')
-  const [registrar, setRegistrarInput] = useState<string>('')
-  const [entityType, setEntityType] = useState<any>('')
+  const [registrar, setRegistrar] = useState<string>('')
+  const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
-  const registrars: any = registrarsObj
 
   useEffect(() => {
     if (entityName.length >= 2 && registrar.length > 0) {
-      entityIsAvailable(registrars[registrar].registrationAddressKey, entityName)
+      entityIsAvailable(registrar + tld, entityName)
     }
   }, [entityName, registrar])
 
@@ -144,11 +144,10 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    if (entityName && registrars[registrar].name && entityType) {
+    if (entityName && registrar && entityType?.entityTypeName) {
       router.push('/entity', {
         name: entityName,
-        registrar: registrar,
-        type: entityType,
+        type: entityType.ELF,
       })
     }
   }
@@ -157,25 +156,30 @@ export default function Page() {
   if (entityName.length >= 2 && registrar.length > 0) {
     nameAvailableElement = nameAvailable ? (
       <Typography style={{ color: 'lime' }}>
-        {entityName}.{registrars[registrar].registrationAddressKey} is available!
+        {entityName}.{registrar + tld} is available!
       </Typography>
     ) : (
       <Typography style={{ color: 'red' }}>
-        {entityName}.{registrars[registrar].registrationAddressKey} is NOT available!
+        {entityName}.{registrar + tld} is NOT available!
       </Typography>
     )
   }
 
+  const [entityTypesAvailable, setEntityTypesAvailable]: any = useState([])
+  useEffect(() => {
+    setEntityTypesAvailable(entityTypesObj.filter((obj) => obj.countryCode === registrar))
+  }, [registrar])
+
   let entityTypeSelection = null
-  if (registrars[registrar] || registrar === '') {
+  if (registrar || registrar === '') {
     entityTypeSelection = (
       <LegacyDropdown
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
-        label={entityType || 'Entity Type Selection'}
-        items={registrars[registrar]?.entityTypes?.map((x: any) => ({
-          label: x,
+        label={entityType.entityTypeName || 'Entity Type Selection'}
+        items={entityTypesAvailable.map((x: any) => ({
+          label: x.entityTypeName,
           color: 'blue',
           onClick: () => setEntityType(x),
           value: x,
@@ -210,11 +214,11 @@ export default function Page() {
             setValue={(x: string) => setEntityName(x)}
           />
           <RegistrarInput
-            registrars={registrars}
+            entityTypes={entityTypesObj}
             field={'registrar'}
             value={registrar}
             setValue={(regKey: string) => {
-              setRegistrarInput(regKey)
+              setRegistrar(regKey)
             }}
           />
           <div key={'div1en'} style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>

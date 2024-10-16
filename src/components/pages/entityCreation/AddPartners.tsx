@@ -111,11 +111,11 @@ const AddPartners = ({
       const nPartner = partner
       if (!partner.DOB) {
         changeFlag = true
-        nPartner.DOB = '01-01-2000'
+        nPartner.DOB = '1970-01-01'
       }
-      if (!partner.address) {
+      if (!partner.wallet__address) {
         changeFlag = true
-        nPartner.address = zeroAddress
+        nPartner.wallet__address = zeroAddress
       }
       return nPartner
     })
@@ -178,7 +178,7 @@ const AddPartners = ({
               return (
                 <InputWrapper key={field}>
                   <Calendar
-                    labelText={'Partner ' + field}
+                    labelText={field}
                     labelHeight={62}
                     value={new Date(partner?.[field]).getTime() / 1000 + 15000}
                     onChange={(e) => {
@@ -209,11 +209,9 @@ const AddPartners = ({
                     size="large"
                     value={partner?.[field]}
                     ref={inputRef}
-                    label={'Partner ' + field}
-                    error={false}
+                    label={field}
                     placeholder={'Partner ' + field}
                     data-testid="record-type-input"
-                    validated={true}
                     disabled={false}
                     onFocus={() => setIsFocusedPartnerType(true)}
                     onChange={(e) => {
@@ -278,7 +276,7 @@ const AddPartners = ({
                 <Input
                   size="large"
                   value={partner?.[field]}
-                  label={'Partner ' + field.split('__').join(' ')}
+                  label={field.split('__').join(' ')}
                   error={false}
                   placeholder={'Partner ' + field.split('__').join(' ')}
                   data-testid="record-input-input"
