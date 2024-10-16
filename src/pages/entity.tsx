@@ -164,7 +164,7 @@ export default function Page() {
           failedCheck = partner[field]?.length === 0
         }
         if (schemaToReturn[field] === 'number') {
-          failedCheck = isNaN(Number(partner[field]))
+          failedCheck = Number.isNaN(Number(partner[field]))
           if (!failedCheck) {
             if (!cumulativePartnerVals[field]) cumulativePartnerVals[field] = 0
             cumulativePartnerVals[field] += partner[field]
