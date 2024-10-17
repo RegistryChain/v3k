@@ -71,7 +71,7 @@ export default function Page() {
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
 
-  const registrar: any = useMemo(
+  const entityTypeObj: any = useMemo(
     () => entityTypesObj.find((x) => x.ELF === entityType),
     [entityType],
   )
@@ -90,12 +90,19 @@ export default function Page() {
     [],
   )
 
+  const code = entityTypeObj?.countryJurisdictionCode
+    ? entityTypeObj.countryJurisdictionCode.split('-').join('.')
+    : entityTypeObj?.countryCode
+
   useEffect(() => {
     setProfile((prevProf: any) => ({
       ...prevProf,
       name: entityName,
-      registrar: registrar?.registrarName || registrar?.formationCountry,
-      type: registrar?.entityTypeName,
+      registrar: entityTypeObj?.formationJurisdiction
+        ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
+        : entityTypeObj?.formationCountry,
+      type: entityTypeObj?.entityTypeName,
+      entity__code: entityType,
     }))
   }, [entityName, entityType])
 
@@ -146,7 +153,7 @@ export default function Page() {
       //If wanting to implenent validation on share amounts and percentages...
       const schemaToReturn = {
         ...schema['partnerFields']?.standard?.[intakeType],
-        ...schema['partnerFields']?.[registrar.countryCode]?.[intakeType],
+        ...schema['partnerFields']?.[code]?.[intakeType],
       }
 
       const fields = Object.keys(partner)?.filter(
@@ -219,7 +226,7 @@ export default function Page() {
       if (registrationStep === 1 || registrationStep >= 5) {
         const schemaToReturn = {
           ...schema['corpFields'].standard,
-          ...schema['corpFields']?.[registrar.countryCode],
+          ...schema['corpFields']?.[code],
         }
 
         const fields = Object.keys(schemaToReturn)?.filter(
@@ -275,12 +282,13 @@ export default function Page() {
       profile.selected__template = template
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
 
-      const jurisSubdomainString = registrar?.countryCode
+      const jurisSubdomainString = code
 
       const entityNameToPass = name.toLowerCase().split(' ').join('-')
       const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + default_registry_domain
 
-      const entityRegistrarAddress = contractAddresses[registrar?.countryCode + tld]
+      const entityRegistrarAddress =
+        contractAddresses[code + tld] || contractAddresses['public.registry']
 
       try {
         const deployer: any = getContract({
@@ -309,7 +317,7 @@ export default function Page() {
         setErrorMessage(err.details)
         return
       }
-      router.push('/entity/' + entityNameToPass + '.' + registrar?.countryCode + tld)
+      router.push('/entity/' + entityNameToPass + '.' + code + tld)
     }
   }
 
@@ -344,7 +352,7 @@ export default function Page() {
   if (registrationStep === 1) {
     content = (
       <CorpInfo
-        data={{ name, registrarKey: registrar?.countryCode }}
+        data={{ name, registrarKey: code }}
         fields={schema.corpFields}
         step={registrationStep}
         profile={profile}
@@ -357,7 +365,7 @@ export default function Page() {
   if (registrationStep === 2) {
     content = (
       <AddPartners
-        data={{ name, registrarKey: registrar?.countryCode }}
+        data={{ name, registrarKey: code }}
         partnerTypes={schema.partnerTypes}
         partnerFields={schema.partnerFields}
         intakeType={intakeType}
@@ -371,7 +379,7 @@ export default function Page() {
   if (registrationStep === 3) {
     content = (
       <Roles
-        data={{ name, registrarKey: registrar?.countryCode }}
+        data={{ name, registrarKey: code }}
         intakeType={intakeType}
         roleTypes={schema.roles}
         profile={profile}
@@ -386,7 +394,7 @@ export default function Page() {
   if (registrationStep === 4) {
     content = (
       <CorpInfo
-        data={{ name, registrarKey: registrar?.countryCode }}
+        data={{ name, registrarKey: code }}
         fields={schema.additionalTermsFields}
         step={registrationStep}
         profile={profile}

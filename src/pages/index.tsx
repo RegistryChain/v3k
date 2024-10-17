@@ -115,17 +115,17 @@ export default function Page() {
   })
 
   const [entityName, setEntityName] = useState<string>('')
-  const [registrar, setRegistrar] = useState<string>('')
+  const [entityJurisdiction, setRegistrar] = useState<string>('')
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
   useEffect(() => {
-    if (entityName.length >= 2 && registrar.length > 0) {
-      entityIsAvailable(registrar + tld, entityName)
+    if (entityName.length >= 2 && entityJurisdiction.length > 0) {
+      entityIsAvailable(entityJurisdiction + tld, entityName)
     }
-  }, [entityName, registrar])
+  }, [entityName, entityJurisdiction])
 
-  const entityIsAvailable = async (registrar: string, entityName: string) => {
+  const entityIsAvailable = async (entityJurisdiction: string, entityName: string) => {
     const client: any = publicClient
     const registry: any = await getContract({
       client,
@@ -133,7 +133,7 @@ export default function Page() {
       address: contractAddresses.RegistryChain as Address,
     })
     if (entityName) {
-      const owner = await registry.read.owner([namehash(entityName + '.' + registrar)])
+      const owner = await registry.read.owner([namehash(entityName + '.' + entityJurisdiction)])
       if (owner === zeroAddress) {
         setNameAvailable(true)
       } else {
@@ -144,7 +144,7 @@ export default function Page() {
 
   const advance = () => {
     //Either register name or move to entity information form
-    if (entityName && registrar && entityType?.entityTypeName) {
+    if (entityName && entityJurisdiction && entityType?.entityTypeName) {
       router.push('/entity', {
         name: entityName,
         type: entityType.ELF,
@@ -153,36 +153,44 @@ export default function Page() {
   }
 
   let nameAvailableElement = null
-  if (entityName.length >= 2 && registrar.length > 0) {
+  if (entityName.length >= 2 && entityJurisdiction.length > 0) {
     nameAvailableElement = nameAvailable ? (
       <Typography style={{ color: 'lime' }}>
-        {entityName}.{registrar + tld} is available!
+        {entityName}.{entityJurisdiction + tld} is available!
       </Typography>
     ) : (
       <Typography style={{ color: 'red' }}>
-        {entityName}.{registrar + tld} is NOT available!
+        {entityName}.{entityJurisdiction + tld} is NOT available!
       </Typography>
     )
   }
 
   const [entityTypesAvailable, setEntityTypesAvailable]: any = useState([])
   useEffect(() => {
-    setEntityTypesAvailable(entityTypesObj.filter((obj) => obj.countryCode === registrar))
-  }, [registrar])
+    setEntityTypesAvailable(
+      entityTypesObj.filter((obj) => {
+        const code = obj.countryJurisdictionCode
+          ? obj.countryJurisdictionCode.split('-').join('.')
+          : obj.countryCode
+        return code === entityJurisdiction
+      }),
+    )
+  }, [entityJurisdiction])
 
   let entityTypeSelection = null
-  if (registrar || registrar === '') {
+  if (entityJurisdiction || entityJurisdiction === '') {
     entityTypeSelection = (
       <LegacyDropdown
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
         label={entityType.entityTypeName || 'Entity Type Selection'}
-        items={entityTypesAvailable.map((x: any) => ({
+        items={entityTypesAvailable.map((x: any, idx: any) => ({
+          key: x.entityTypeName + idx,
           label: x.entityTypeName,
           color: 'blue',
           onClick: () => setEntityType(x),
-          value: x,
+          value: x.entityTypeName,
         }))}
       />
     )
@@ -209,14 +217,14 @@ export default function Page() {
             </Typography>
           </SubtitleWrapper>
           <EntityInput
-            field={'entityName'}
+            field={'Name'}
             value={entityName}
             setValue={(x: string) => setEntityName(x)}
           />
           <RegistrarInput
             entityTypes={entityTypesObj}
-            field={'registrar'}
-            value={registrar}
+            field={'Jurisdiction'}
+            value={entityJurisdiction}
             setValue={(regKey: string) => {
               setRegistrar(regKey)
             }}
@@ -241,7 +249,10 @@ export default function Page() {
             shape="rounded"
             size="small"
             disabled={
-              !nameAvailable || entityName.length < 2 || registrar.length === 0 || !entityType
+              !nameAvailable ||
+              entityName.length < 2 ||
+              entityJurisdiction.length === 0 ||
+              !entityType
                 ? true
                 : false
             }

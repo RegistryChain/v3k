@@ -14,7 +14,41 @@ import { Button } from '@ensdomains/thorin'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 
 // Create styles
-const styles = StyleSheet.create({
+const styles: any = {
+  constitutionHeader: {
+    marginTop: 30,
+    marginBottom: 35,
+    textAlign: 'center',
+  },
+  headerTitle: {
+    fontSize: '25px',
+    fontWeight: 800,
+    marginBottom: '10px',
+  },
+  headerSubtitle: {
+    fontSize: '18px',
+    fontWeight: 800,
+  },
+  section: {
+    marginBottom: '15px',
+    marginLeft: '15px',
+  },
+  sectionHeader: {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    marginBottom: '8px',
+  },
+  listItem: {
+    marginLeft: '20px',
+    fontSize: '16px',
+  },
+  subListItem: {
+    marginLeft: '50px',
+    fontSize: '14px',
+    color: '#555',
+  },
+}
+const stylesPDF: any = StyleSheet.create({
   page: {
     padding: 20,
   },
@@ -37,6 +71,62 @@ const styles = StyleSheet.create({
   },
 })
 
+const buildConstitutionView = (profileData: any, userData: any, templateId: any) => {
+  const constitutionHeader = (
+    <div key="constheader" style={styles.constitutionHeader}>
+      <div style={styles.headerTitle}>
+        {profileData.name}, {profileData.type}
+      </div>
+      <div style={styles.headerSubtitle}>Certificate of Formation</div>
+    </div>
+  )
+
+  const constitutionContent = constitutionTemplate[templateId].map((section: any, idx: number) => {
+    const contentArray = section.content(profileData, userData)
+    let subSectionCount = 0
+
+    return (
+      <div key={section.header} style={styles.section}>
+        <div style={styles.sectionHeader}>
+          {idx + 1}. {section.header}
+        </div>
+
+        {contentArray.map((item: any, index: number) => {
+          if (typeof item === 'string') {
+            subSectionCount += 1
+            return (
+              <div key={index} style={styles.listItem}>
+                {idx + 1}.{subSectionCount} {item}
+              </div>
+            )
+          } else if (Array.isArray(item)) {
+            return item.map((subItem, subIndex) => (
+              <div key={`${index}-${subIndex}`} style={styles.subListItem}>
+                {subItem}
+              </div>
+            ))
+          }
+          return null
+        })}
+      </div>
+    )
+  })
+
+  return (
+    <div
+      style={{
+        backgroundColor: 'white',
+        border: '2px black solid',
+        maxHeight: '700px',
+        overflowY: 'scroll',
+      }}
+    >
+      {constitutionHeader}
+      {constitutionContent}
+    </div>
+  )
+}
+
 // Function to build the constitution sections
 const buildConstitution = (profileData: any, userData: any, templateId: any) => {
   const constitutionHeader = (
@@ -54,24 +144,26 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
     return (
       <View key={section.header} style={{ marginBottom: 15, marginLeft: 15 }}>
         {/* Render the section header */}
-        <Text style={styles.header}>
+        <Text style={stylesPDF.header}>
           {idx + 1}. {section.header}
         </Text>
 
-        {/* Map over the contentArray to generate Text elements */}
         {contentArray.map((item: any, index: any) => {
           if (typeof item === 'string') {
             // If it's a string, render it as a list item
             subSectionCount += 1
             return (
-              <Text key={index} style={{ ...styles.text, marginLeft: 20 }}>
+              <Text key={index} style={{ ...stylesPDF.text, marginLeft: 20 }}>
                 {idx + 1}.{subSectionCount} {item}
               </Text>
             )
           } else if (Array.isArray(item)) {
             // If it's an array, render each sub-list item
             return item.map((subItem, subIndex) => (
-              <Text key={`${index}-${subIndex}`} style={{ ...styles.subListItem, marginLeft: 50 }}>
+              <Text
+                key={`${index}-${subIndex}`}
+                style={{ ...stylesPDF.subListItem, marginLeft: 50 }}
+              >
                 {subItem}
               </Text>
             ))
@@ -344,7 +436,7 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
   // Add option buttons below PDF build to display JSON, download pdf, etc
   const constitutionDocument = (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={stylesPDF.page}>
         {buildConstitution(
           companyObj,
           Object.values(users).filter((x: any) => !!x.name),
@@ -382,9 +474,11 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
 
       {viewConst ? (
         <>
-          <PDFViewer width="100%" height="600" showToolbar={false}>
-            {constitutionDocument}
-          </PDFViewer>
+          {buildConstitutionView(
+            companyObj,
+            Object.values(users).filter((x: any) => !!x.name),
+            template,
+          )}
           {canDownload ? (
             <PDFDownloadLink
               fileName={

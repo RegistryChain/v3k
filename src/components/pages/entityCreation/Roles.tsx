@@ -25,7 +25,11 @@ const Roles = ({
   publicClient,
 }: any) => {
   const { t } = useTranslation('intake')
-  const relevantRoles = [...roleTypes.standard[intakeType], ...roleTypes[data?.registrarKey]]
+
+  const relevantRoles = [
+    ...roleTypes.standard[intakeType],
+    ...(roleTypes?.[data?.registrarKey] || []),
+  ]
 
   const partnerPercentages: any = {}
   let totalSharesReconstruct = 0

@@ -1,5 +1,4 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
-import debounce from 'lodash/debounce'
 import {
   Dispatch,
   RefObject,
@@ -10,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { TFunction, useTranslation } from 'react-i18next'
 import useTransition, { TransitionState } from 'react-transition-state'
 import styled, { css } from 'styled-components'
 import { Address, isAddress, namehash } from 'viem'
@@ -380,7 +378,17 @@ export const RegistrarInput = ({
   const uniqueCountries = useMemo(() => {
     const uniques: any[] = []
     entityTypes.forEach((x: any) => {
-      if (!uniques.find((u: any) => u.formationCountry === x.formationCountry)) {
+      if (
+        !uniques.find((u: any) => {
+          const uJuris = u?.formationJurisdiction
+            ? u?.formationJurisdiction + ' ' + u.formationCountry
+            : u.formationCountry
+          const xJuris = x?.formationJurisdiction
+            ? x?.formationJurisdiction + ' ' + x.formationCountry
+            : x.formationCountry
+          return uJuris === xJuris
+        })
+      ) {
         uniques.push(x)
       }
     })
@@ -393,12 +401,20 @@ export const RegistrarInput = ({
 
     if (inputUpper?.length > 0)
       for (let i = 0; i < uniqueCountries.length; i++) {
-        const countryUppercase = uniqueCountries[i].formationCountry.toUpperCase()
+        const uJuris = uniqueCountries[i]?.formationJurisdiction
+          ? uniqueCountries[i]?.formationJurisdiction + ' ' + uniqueCountries[i].formationCountry
+          : uniqueCountries[i].formationCountry
+        const countryUppercase = uJuris.toUpperCase()
         if (validCountries.length >= 5) break
         if (
           ((countryUppercase.includes(inputUpper) && inputUpper !== value.toUpperCase()) ||
             countryUppercase === 'PUBLIC') &&
-          !validCountries.find((x) => x.formationCountry.toUpperCase() === countryUppercase)
+          !validCountries.find((x) => {
+            const xJuris = x?.formationJurisdiction
+              ? x?.formationJurisdiction + ' ' + x.formationCountry
+              : x.formationCountry
+            return xJuris.toUpperCase() === countryUppercase
+          })
         ) {
           validCountries.push(uniqueCountries[i])
         }
@@ -496,7 +512,9 @@ export const RegistrarInput = ({
             <div style={{ backgroundColor: 'white', paddingBottom: '8px', borderRadius: '8px' }}>
               {countries.map((x: any) => {
                 const style = { color: '#3888FF', paddingLeft: '10px' }
-
+                const xJuris = x?.formationJurisdiction
+                  ? x.formationJurisdiction + ' - ' + x.formationCountry
+                  : x.formationCountry
                 return (
                   <div
                     style={{
@@ -506,13 +524,16 @@ export const RegistrarInput = ({
                       color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
                     }}
                     onClick={() => {
-                      if (x.countryCode !== 'public') return null
-                      setValue(x.countryCode)
-                      setInputVal(x.formationCountry)
+                      const code = x.countryJurisdictionCode
+                        ? x.countryJurisdictionCode.split('-').join('.')
+                        : x.countryCode
+                      // if (code !== 'public') return null
+                      setValue(code)
+                      setInputVal(xJuris)
                       setShowNamesState(false)
                     }}
                   >
-                    <span>{x.formationCountry}</span>
+                    <span>{xJuris}</span>
                   </div>
                 )
               })}
