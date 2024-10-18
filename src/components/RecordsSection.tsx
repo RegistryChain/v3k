@@ -89,9 +89,9 @@ export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status
     civil: 'Civil Details',
   }
   const partnersOrganized: any = {}
-  const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'partner') || []
+  const partnerTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'partner') || []
 
-  categoryTexts.forEach((text) => {
+  partnerTexts.forEach((text) => {
     try {
       const keyComp = text.key.split('__')
       if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
@@ -176,59 +176,54 @@ export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status
       </div>
     </RecordSection>
   )
-
+  const lei = filteredTexts?.find((x) => x.key === 'LEI')
+  const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'company') || []
+  if (lei) categoryTexts.unshift(lei)
+  const sectionsDisplay = (
+    <div key={'companydiv'} style={{ width: '100%' }}>
+      <RecordSection key={'section1SubRecordscompany'}>
+        <SectionHeader>
+          <SectionTitleContainer>
+            <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+              {recordCategoryToTitle['company']}
+            </SectionTitle>
+            <SectionSubtitle data-testid="text-amount">
+              {categoryTexts ? categoryTexts.length : 0} {t('records.label', { ns: 'common' })}
+            </SectionSubtitle>
+          </SectionTitleContainer>
+        </SectionHeader>
+        {categoryTexts &&
+          categoryTexts.map((text, idx) => {
+            return (
+              <div
+                key={'catTextEmbedded' + idx}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  padding: '0.625rem 0.75rem',
+                  background: 'hsl(0 0% 96%)',
+                  border: '1px solid hsl(0 0% 91%)',
+                  borderRadius: '8px',
+                }}
+              >
+                <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                  {text.key
+                    .split('__')
+                    .map((x: any) => x[0].toUpperCase() + x.slice(1))
+                    .join(' ')}
+                </Typography>
+                <Typography>{text.value}</Typography>
+              </div>
+            )
+          })}
+      </RecordSection>
+    </div>
+  )
   return (
     <TabWrapper data-testid="records-tab">
       <AllRecords>
         {statusSection}
-        <RecordSection key={'section1Records'}>
-          {Object.keys(recordCategoryToTitle).map((cat) => {
-            const categoryTexts =
-              filteredTexts?.filter((text) => text.key.split('__')[0] === cat) || []
-            if (!categoryTexts.length) return null
-            return (
-              <div key={cat + 'div'} style={{ width: '100%' }}>
-                <RecordSection key={'section1SubRecords' + cat}>
-                  <SectionHeader>
-                    <SectionTitleContainer>
-                      <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                        {recordCategoryToTitle[cat]}
-                      </SectionTitle>
-                      <SectionSubtitle data-testid="text-amount">
-                        {categoryTexts ? categoryTexts.length : 0}{' '}
-                        {t('records.label', { ns: 'common' })}
-                      </SectionSubtitle>
-                    </SectionTitleContainer>
-                  </SectionHeader>
-                  {categoryTexts &&
-                    categoryTexts.map((text, idx) => {
-                      return (
-                        <div
-                          key={'catTextEmbedded' + idx}
-                          style={{
-                            display: 'flex',
-                            width: '100%',
-                            padding: '0.625rem 0.75rem',
-                            background: 'hsl(0 0% 96%)',
-                            border: '1px solid hsl(0 0% 91%)',
-                            borderRadius: '8px',
-                          }}
-                        >
-                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {text.key
-                              .split('__')
-                              .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                              .join(' ')}
-                          </Typography>
-                          <Typography>{text.value}</Typography>
-                        </div>
-                      )
-                    })}
-                </RecordSection>
-              </div>
-            )
-          })}
-        </RecordSection>
+        <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
         {partnerSection}
       </AllRecords>
     </TabWrapper>

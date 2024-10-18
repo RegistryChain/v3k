@@ -200,6 +200,10 @@ export default function Page() {
           setErrorMessage(errMsg)
           blockAdvance = true
         }
+        if (registrationStep === 3 && !(partner.roles?.length > 0) && !partner.shares) {
+          setErrorMessage(partner.name + ' must have at least one role or be a shareholder.')
+          blockAdvance = true
+        }
       })
     })
 
@@ -314,7 +318,8 @@ export default function Page() {
         )
         console.log(await publicClient?.waitForTransactionReceipt({ hash: registerChaserTx }))
       } catch (err: any) {
-        setErrorMessage(err.details)
+        console.log('ERROR FORMING ENTITY', err.message)
+        setErrorMessage(err.message)
         return
       }
       router.push('/entity/' + entityNameToPass + '.' + code + tld)
@@ -457,7 +462,7 @@ const generateTexts = (partners: any, profile: any, entityName: any, intakeType:
         texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
       } else if (field !== 'roles') {
         texts.push({ key: partnerKey + field, value: partner[field] })
-      } else {
+      } else if (partner[field]) {
         partner[field].forEach((role: string) => {
           texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
         })

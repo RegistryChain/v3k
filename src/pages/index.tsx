@@ -167,6 +167,7 @@ export default function Page() {
 
   const [entityTypesAvailable, setEntityTypesAvailable]: any = useState([])
   useEffect(() => {
+    setEntityType({})
     setEntityTypesAvailable(
       entityTypesObj.filter((obj) => {
         const code = obj.countryJurisdictionCode
@@ -184,10 +185,17 @@ export default function Page() {
         style={{ maxWidth: '100%', textAlign: 'left' }}
         inheritContentWidth={true}
         size={'medium'}
-        label={entityType.entityTypeName || 'Entity Type Selection'}
+        label={
+          entityType.entityTypeName?.length > 30
+            ? entityType.entityTypeName?.slice(0, 30) + '...'
+            : entityType.entityTypeName || 'Entity Type Selection'
+        }
         items={entityTypesAvailable.map((x: any, idx: any) => ({
           key: x.entityTypeName + idx,
-          label: x.entityTypeName,
+          label:
+            x.entityTypeName?.length > 30
+              ? x.entityTypeName?.slice(0, 30) + '...'
+              : x.entityTypeName || 'Entity Type Selection',
           color: 'blue',
           onClick: () => setEntityType(x),
           value: x.entityTypeName,

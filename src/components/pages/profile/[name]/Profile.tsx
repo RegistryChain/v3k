@@ -225,6 +225,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       })
 
       const keys = [
+        'LEI',
         'name',
         'partner__[0]__name',
         'partner__[0]__type',

@@ -113,6 +113,10 @@ const AddPartners = ({
         changeFlag = true
         nPartner.DOB = '1970-01-01'
       }
+      if (!partner.roles && !Array.isArray(partner.roles)) {
+        changeFlag = true
+        nPartner.roles = []
+      }
       if (!partner.wallet__address) {
         changeFlag = true
         nPartner.wallet__address = zeroAddress
