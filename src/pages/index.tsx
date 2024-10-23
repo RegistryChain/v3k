@@ -115,7 +115,7 @@ export default function Page() {
   })
 
   const [entityName, setEntityName] = useState<string>('')
-  const [entityJurisdiction, setRegistrar] = useState<string>('')
+  const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
@@ -126,20 +126,20 @@ export default function Page() {
   }, [entityName, entityJurisdiction])
 
   const entityIsAvailable = async (entityJurisdiction: string, entityName: string) => {
-    const client: any = publicClient
-    const registry: any = await getContract({
-      client,
-      abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
-      address: contractAddresses.RegistryChain as Address,
-    })
-    if (entityName) {
-      const owner = await registry.read.owner([namehash(entityName + '.' + entityJurisdiction)])
-      if (owner === zeroAddress) {
-        setNameAvailable(true)
-      } else {
-        setNameAvailable(false)
-      }
-    }
+    // const client: any = publicClient
+    // const registry: any = await getContract({
+    //   client,
+    //   abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
+    //   address: contractAddresses.RegistryChain as Address,
+    // })
+    // if (entityName) {
+    //   const owner = await registry.read.owner([namehash(entityName + '.' + entityJurisdiction)])
+    //   if (owner === zeroAddress) {
+    //     setNameAvailable(true)
+    //   } else {
+    //     setNameAvailable(false)
+    //   }
+    // }
   }
 
   const advance = () => {
@@ -227,14 +227,20 @@ export default function Page() {
           <EntityInput
             field={'Name'}
             value={entityName}
-            setValue={(x: string) => setEntityName(x)}
+            setValue={(x: string) => {
+              const regex = /^[a-z0-9\s-]+$/
+              const valid = regex.test(x)
+              if (valid) {
+                setEntityName(x)
+              }
+            }}
           />
           <RegistrarInput
             entityTypes={entityTypesObj}
             field={'Jurisdiction'}
             value={entityJurisdiction}
             setValue={(regKey: string) => {
-              setRegistrar(regKey)
+              setEntityJurisdiction(regKey)
             }}
           />
           <div key={'div1en'} style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>
@@ -250,14 +256,14 @@ export default function Page() {
               height: '40px',
             }}
           >
-            {nameAvailableElement}
+            {/* {nameAvailableElement} */}
           </div>
           <Button
             style={{ width: '220px' }}
             shape="rounded"
             size="small"
             disabled={
-              !nameAvailable ||
+              entityJurisdiction !== 'public' ||
               entityName.length < 2 ||
               entityJurisdiction.length === 0 ||
               !entityType

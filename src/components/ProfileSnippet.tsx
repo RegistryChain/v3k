@@ -1,36 +1,40 @@
-import Link from 'next/link'
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
-import { useBeautifiedName } from '@app/hooks/useBeautifiedName'
-
 const Container = styled.div<{}>(
   ({ theme }) => css`
     width: 100%;
-    padding: ${theme.space['4']};
-    padding-top: ${theme.space['18']};
-    background-repeat: no-repeat;
-    background-attachment: scroll;
-    background-size: 100% ${theme.space['28']};
-    background-position-y: -1px; // for overlap with border i think
-    background-color: #007bff;
-    border-radius: ${theme.radii['2xLarge']};
-    border: ${theme.space.px} solid ${theme.colors.border};
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    gap: ${theme.space['4']};
+    gap: 6px;
     flex-gap: ${theme.space['4']};
     margin-bottom: 12px;
 
     ${mq.sm.min(css`
       padding: ${theme.space['6']};
-      padding-top: ${theme.space['12']};
+      padding-top: ${theme.space['6']};
     `)}
+  `,
+)
+
+const SectionTitleContainer = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: ${theme.space['4']};
+    flex-gap: ${theme.space['4']};
+  `,
+)
+
+const SectionTitle = styled(Typography)(
+  ({ theme }) => css`
+    color: black;
   `,
 )
 
@@ -43,7 +47,7 @@ const Name = styled(Typography)(
 
 const NameRecord = styled(Typography)(
   ({ theme }) => css`
-    color: white;
+    color: black;
     margin-top: -${theme.space['0.5']};
   `,
 )
@@ -60,16 +64,12 @@ export const ProfileSnippet = ({
   name,
   multisigAddress,
   records,
+  status,
+  domainName,
   children,
-}: {
-  name: string
-  multisigAddress: string
-  records: any
-  children?: React.ReactNode
-}) => {
+}: any) => {
   const { t } = useTranslation('common')
 
-  const beautifiedName = useBeautifiedName(name)
   let entityUnavailable = null
   if (records.length > 0) {
     entityUnavailable = (
@@ -78,19 +78,32 @@ export const ProfileSnippet = ({
       </NameRecord>
     )
   }
+
+  let statusSection = null
+  if (status) {
+    statusSection = (
+      <SectionTitleContainer>
+        <SectionTitle
+          style={{ paddingLeft: '8px' }}
+          data-testid="text-heading"
+          fontVariant="bodyBold"
+        >
+          Status:{' '}
+          <span style={status === 'approved' ? { color: 'lime' } : { color: '#e9d228' }}>
+            {status}
+          </span>
+        </SectionTitle>
+      </SectionTitleContainer>
+    )
+  }
   return (
     <Container>
       {multisigAddress ? (
         <>
-          <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
-            <Link
-              target={'_blank'}
-              href={'https://sepolia.etherscan.io/address/' + multisigAddress}
-            >
-              {multisigAddress}
-            </Link>
+          <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
+            {name}
           </NameRecord>
-          <Name data-testid="profile-snippet-name">Entity Multisig Address</Name>
+          {statusSection}
         </>
       ) : (
         entityUnavailable

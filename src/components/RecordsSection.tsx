@@ -1,6 +1,8 @@
+import Link from 'next/link'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
+import { isAddress } from 'viem'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
@@ -80,7 +82,15 @@ const SectionSubtitle = styled(Typography)(
   `,
 )
 
-export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status?: String }) => {
+export const RecordsSection = ({
+  texts,
+  status,
+  addressesObj,
+}: {
+  texts?: TextRecord[]
+  addressesObj?: any
+  status?: String
+}) => {
   const { t } = useTranslation('profile')
 
   const filteredTexts = useMemo(() => texts?.filter(({ value }) => value), [texts])
@@ -103,22 +113,56 @@ export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status
     return null
   }
 
-  let statusSection = null
-  if (status) {
-    statusSection = (
-      <RecordSection key={'section1sRecords'}>
-        <SectionTitleContainer>
-          <SectionTitle
-            style={{ paddingLeft: '8px' }}
-            data-testid="text-heading"
-            fontVariant="bodyBold"
-          >
-            Status:{' '}
-            <span style={status === 'approved' ? { color: 'lime' } : { color: '#e9d228' }}>
-              {status}
-            </span>
-          </SectionTitle>
-        </SectionTitleContainer>
+  let addressSection = null
+  if (addressesObj) {
+    addressSection = (
+      <RecordSection key={'section1Address'}>
+        <div style={{ width: '100%' }}>
+          <RecordSection key={'section1SubAddr'}>
+            <SectionHeader>
+              <SectionTitleContainer>
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  Addresses
+                </SectionTitle>
+              </SectionTitleContainer>
+            </SectionHeader>
+            <div style={{ width: '100%', paddingLeft: '40px' }}>
+              <RecordSection key={'section1SubSubadd'}>
+                {addressesObj.map((addressObj: any, idx: any) => {
+                  return (
+                    <div
+                      key={'embeddedDivAdd' + idx}
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        padding: '0.625rem 0.75rem',
+                        background: 'hsl(0 0% 96%)',
+                        border: '1px solid hsl(0 0% 91%)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                        {addressObj.key}
+                      </Typography>
+                      {isAddress(addressObj.value) ? (
+                        <Link
+                          target={'_blank'}
+                          href={'https://sepolia.etherscan.io/address/' + addressObj.value}
+                        >
+                          <u>{addressObj.value}</u>
+                        </Link>
+                      ) : (
+                        <Typography>
+                          <u>{addressObj.value}</u>
+                        </Typography>
+                      )}
+                    </div>
+                  )
+                })}
+              </RecordSection>
+            </div>
+          </RecordSection>
+        </div>
       </RecordSection>
     )
   }
@@ -222,8 +266,8 @@ export const RecordsSection = ({ texts, status }: { texts?: TextRecord[]; status
   return (
     <TabWrapper data-testid="records-tab">
       <AllRecords>
-        {statusSection}
         <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
+        {addressSection}
         {partnerSection}
       </AllRecords>
     </TabWrapper>

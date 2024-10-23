@@ -37,8 +37,8 @@ import { RecordsSection } from '../../../RecordsSection'
 import Constitution from '../../entityCreation/Constitution'
 import ActionsTab from './tabs/ActionTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
+import EntityViewTab from './tabs/EntityViewTab'
 import LicenseTab from './tabs/LicenseTab'
-import ProfileTab from './tabs/ProfileTab'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -501,13 +501,20 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           trailing: match(tab)
             .with('entity', () => (
               <>
-                <ProfileTab
-                  name={name}
+                <EntityViewTab
+                  domainName={name}
                   nameDetails={nameDetails}
                   multisigAddress={multisigAddress}
                   records={records}
+                  status={status}
                 />
-                <RecordsSection status={status} texts={records || []} />
+                <RecordsSection
+                  texts={records || []}
+                  addressesObj={[
+                    { key: 'Multisig Address', value: multisigAddress },
+                    { key: 'Member Tokens', value: entityManagementTokens },
+                  ]}
+                />
               </>
             ))
             .with('constitution', () => {

@@ -519,7 +519,7 @@ export const RegistrarInput = ({
                   <div
                     style={{
                       ...style,
-                      cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
+                      // cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
                       backgroundColor: x.countryCode !== 'public' ? '#ebe5e5' : 'white',
                       color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
                     }}
