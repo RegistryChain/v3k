@@ -134,7 +134,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const { t } = useTranslation('profile')
   const { address, isConnected } = useAccount()
   const [multisigAddress, setMultisigAddress] = useState('')
-  const [entityManagementTokens, setEntityManagementTokens] = useState('')
+  const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
   const [records, setRecords] = useState<any>([])
   const [template, setTemplate] = useState<any>('default')
@@ -345,7 +345,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     return getContract({
       address: multisig as Address,
       abi: parseAbi([
-        'function entityManagementTokens() view returns (address)',
+        'function entityMemberManager() view returns (address)',
         'function localApproval() view returns (bool)',
         'function multisigState() view returns (address)',
         'function checkEntityOperational() view returns (bool)',
@@ -359,9 +359,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       try {
         const multisigAddress = await registry.read.owner([namehash(name)])
         const multisig = await getMultisig(multisigAddress)
-        const tokenAddr = await multisig.read.entityManagementTokens()
+        const memberManagerAddress = await multisig.read.entityMemberManager()
 
-        setEntityManagementTokens(tokenAddr)
+        setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(multisigAddress)
       } catch (e) {}
     }
@@ -399,17 +399,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const registrarType = registrars[registrarKey || '']?.type
 
-  const [titleContent, descriptionContent] = useMemo(() => {
-    return [
-      t('meta.title', {
-        name,
-      }),
-      t('meta.description', {
-        name,
-      }),
-    ]
-  }, [isSelf, beautifiedName, isValid, name, t])
-
   const [tab, setTab_] = useQueryParameterState<Tab>('tab', 'entity')
   const setTab: typeof setTab_ = (value) => {
     refetchIfEnabled()
@@ -443,14 +432,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     return (
       <>
         <Head>
-          <title>{titleContent}</title>
-          <meta name="description" content={descriptionContent} />
+          <title>{name}</title>
+          <meta name="description" content={name + ' RegistryChain'} />
           <meta property="og:image" content={ogImageUrl} />
-          <meta property="og:title" content={titleContent} />
-          <meta property="og:description" content={descriptionContent} />
+          <meta property="og:title" content={name} />
+          <meta property="og:description" content={name + ' RegistryChain'} />
           <meta property="twitter:image" content={ogImageUrl} />
-          <meta property="twitter:title" content={titleContent} />
-          <meta property="twitter:description" content={descriptionContent} />
+          <meta property="twitter:title" content={name} />
+          <meta property="twitter:description" content={name + ' RegistryChain'} />
         </Head>
         <Typography fontVariant="extraLargeBold" color="inherit">
           Entity {name} is not registered on RegistryChain
@@ -459,19 +448,29 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     )
   }
 
+  let title = 'RegistryChain'
+  if (name) {
+    title = name + ' on RegistryChain'
+  }
+
+  const nameRecord = records?.find((x: any) => x.key === 'name')?.value
+  if (nameRecord) {
+    title = nameRecord + ' on RegistryChain'
+  }
+
   return (
     <>
       <Head>
-        <title>{titleContent}</title>
-        <meta name="description" content={descriptionContent} />
+        <title>{title}</title>
+        <meta name="description" content={title} />
         <meta property="og:image" content={ogImageUrl} />
-        <meta property="og:title" content={titleContent} />
-        <meta property="og:description" content={descriptionContent} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={name} />
         <meta property="twitter:image" content={ogImageUrl} />
-        <meta property="twitter:title" content={titleContent} />
-        <meta property="twitter:description" content={descriptionContent} />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={title} />
       </Head>
-      <Content noTitle title={name} loading={!isCachedData && parentIsLoading} copyValue={name}>
+      <Content noTitle title={title} loading={!isCachedData && parentIsLoading} copyValue={name}>
         {{
           warning,
           header: (
@@ -512,7 +511,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   texts={records || []}
                   addressesObj={[
                     { key: 'Multisig Address', value: multisigAddress },
-                    { key: 'Member Tokens', value: entityManagementTokens },
+                    { key: 'Member Manager Address', value: entityMemberManager },
                   ]}
                 />
               </>
@@ -542,7 +541,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   <ActionsTab
                     refreshRecords={() => getRecords()}
                     multisigAddress={multisigAddress}
-                    entityTokensAddress={entityManagementTokens}
+                    entityMemberManager={entityMemberManager}
                     client={publicClient}
                     name={name}
                   />

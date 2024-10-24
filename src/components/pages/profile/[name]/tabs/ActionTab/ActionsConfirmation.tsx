@@ -81,6 +81,8 @@ const ActionsConfirmation = ({
   txData,
   userRoles,
   multisigAddress,
+  memberBytes,
+  getMemberBytes,
   methodsCallable,
   wallet,
 }: any) => {
@@ -173,15 +175,41 @@ const ActionsConfirmation = ({
 
       const multisig: any = getContract({
         address: multisigAddress as Address,
-        abi: parseAbi(['function confirmTransaction(uint256,bytes32)']),
+        abi: parseAbi([
+          'function confirmTransaction(uint256,bytes32)',
+          'function initializeMember(uint256)',
+        ]),
         client: wallet,
       })
 
-      const confirmTxHash = await multisig.write.confirmTransaction([
-        txIndex,
-        methodsCallable[method],
-      ])
-      console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
+      if (txIndex === 0) {
+        let bytes: any = memberBytes
+        if (!memberBytes) {
+          bytes = await getMemberBytes()
+        }
+
+        const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], bytes)[0]
+        let memberIndex = null
+        txDataArray.forEach((data, idx) => {
+          const decoded = decodeAbiParameters(
+            [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+            data,
+          )
+          if (decoded[0] === address) {
+            memberIndex = idx
+          }
+        })
+
+        const confirmTxHash = await multisig.write.initializeMember([memberIndex])
+        console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
+      } else {
+        const confirmTxHash = await multisig.write.confirmTransaction([
+          txIndex,
+          methodsCallable[method],
+        ])
+        console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
+      }
+
       alreadySigned()
       refresh()
     } catch (err: any) {

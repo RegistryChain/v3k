@@ -38,13 +38,13 @@ const roles: any = {
 const ActionsTab = ({
   refreshRecords,
   multisigAddress,
-  entityTokensAddress,
+  entityMemberManager,
   client,
   name,
 }: any) => {
   const [userRoles, setUserRoles]: any[] = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
-
+  const [memberBytes, setMemberBytes] = useState('')
   const [wallet, setWallet] = useState<any>(null)
   const { address, isConnected } = useAccount()
 
@@ -55,12 +55,25 @@ const ActionsTab = ({
     readTransactions()
   }
 
+  const getMemberBytes = async () => {
+    const memberManager: any = getContract({
+      address: entityMemberManager as Address,
+      abi: parseAbi(['function userDataBytes() external view returns (bytes)']),
+      client: wallet,
+    })
+
+    const userDataBytes = await memberManager.read.userDataBytes()
+    setMemberBytes(userDataBytes)
+    return userDataBytes
+  }
+
   const checkCallableByUser = async () => {
     const readTxDataEncodes: any[] = []
     const indexToMethod: any = {}
     const indexToRole: any = {}
     const methodToUserCanCall: any = {}
     let objectIdx = 0
+    console.log('tx', txs, 'roles', userRoles)
     txs.forEach((tx: any) => {
       userRoles.forEach((role: any) => {
         try {
@@ -151,25 +164,53 @@ const ActionsTab = ({
     })
     let encResArr: any[] = []
     let viewRes: any[] = []
-    try {
-      viewRes = await resolver.read.multicallView([
-        entityTokensAddress, //entityTokens
-        readTxDataEncodes,
-      ])
-    } catch (e) {}
-
-    encResArr = viewRes.map((x: any) => {
-      try {
-        return decodeAbiParameters([{ type: 'bool' }], x)[0]
-      } catch (e) {}
-    })
 
     const userRoles: any[] = []
-    Object.keys(roles).forEach((role, idx) => {
-      if (encResArr[idx] === true) {
-        userRoles.push(roles[role])
+    if (!txs[0]?.executed && txs[0]?.txIndex === 0) {
+      //map through databytes and decode
+      // userDataBytes
+      let bytes: any = memberBytes
+      if (!memberBytes) {
+        bytes = await getMemberBytes()
       }
-    })
+
+      if (bytes) {
+        const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], bytes)[0]
+
+        txDataArray.forEach((data) => {
+          const userData = decodeAbiParameters(
+            [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+            data,
+          )
+          if (userData[0] === address) {
+            Object.keys(roles).forEach((role, idx) => {
+              if (userData[2].includes(roles[role].slice(2))) {
+                userRoles.push(roles[role])
+              }
+            })
+          }
+        })
+      }
+    } else {
+      try {
+        viewRes = await resolver.read.multicallView([
+          entityMemberManager, //entityTokens
+          readTxDataEncodes,
+        ])
+      } catch (e) {}
+
+      encResArr = viewRes.map((x: any) => {
+        try {
+          return decodeAbiParameters([{ type: 'bool' }], x)[0]
+        } catch (e) {}
+      })
+      Object.keys(roles).forEach((role, idx) => {
+        if (encResArr[idx] === true) {
+          userRoles.push(roles[role])
+        }
+      })
+    }
+
     setUserRoles(userRoles)
   }
 
@@ -321,16 +362,22 @@ const ActionsTab = ({
   }, [multisigAddress])
 
   useEffect(() => {
-    if (entityTokensAddress && address && userRoles.length === 0) {
+    if (entityMemberManager && address && userRoles.length === 0) {
       readUserRoles()
     }
-  }, [address, entityTokensAddress])
+  }, [address, txs, entityMemberManager])
 
   useEffect(() => {
     if (multisigAddress && userRoles && txs && Object.keys(methodsCallable).length === 0) {
       checkCallableByUser()
     }
   }, [multisigAddress, userRoles, txs])
+
+  useEffect(() => {
+    if (multisigAddress && userRoles && txs) {
+      checkCallableByUser()
+    }
+  }, [address])
 
   const txsToConfirm = useMemo(() => txs.filter((x: any) => x.sigsMade < x.sigsNeeded), [txs])
   const txsToExecute = useMemo(
@@ -363,6 +410,8 @@ const ActionsTab = ({
         txData={txsToConfirm}
         userRoles={userRoles}
         multisigAddress={multisigAddress}
+        getMemberBytes={getMemberBytes}
+        memberBytes={memberBytes}
         methodsCallable={methodsCallable}
         setErrorMessage={setErrorMessage}
         wallet={wallet}
