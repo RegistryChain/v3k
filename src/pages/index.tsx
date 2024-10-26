@@ -224,7 +224,7 @@ export default function Page() {
               {t('description')}
             </Typography>
             <Typography style={{ marginTop: '12px' }} fontVariant="small" color="grey">
-              (Only the "Public" registrar is available for entity formation at this time)
+              (Only the Public jurisdiction is available for entity formation at this time)
             </Typography>
           </SubtitleWrapper>
           <EntityInput
