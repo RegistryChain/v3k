@@ -223,6 +223,9 @@ export default function Page() {
             <Typography fontVariant="large" color="grey">
               {t('description')}
             </Typography>
+            <Typography style={{ marginTop: '12px' }} fontVariant="small" color="grey">
+              (Only the "Public" registrar is available for entity formation at this time)
+            </Typography>
           </SubtitleWrapper>
           <EntityInput
             field={'Name'}
