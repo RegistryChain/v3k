@@ -204,11 +204,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
       // if localApproval is false and txNonce = 1, drafted
       if (localApproval && operationApprovedByRegistrar) {
-        setStatus('approved')
+        setStatus('APPROVED')
       } else if (localApproval) {
-        setStatus('submitted')
+        setStatus('SUBMITTED')
       } else {
-        setStatus('draft')
+        setStatus('DRAFT')
       }
     } catch (e) {}
   }
@@ -321,7 +321,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         })
       })
 
-      const recordsBuilt: any[] = []
+      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
       let encResArr: any[] = []
       try {
         encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
@@ -470,24 +470,38 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>
-      <Content noTitle title={title} loading={!isCachedData && parentIsLoading} copyValue={name}>
+      <Content
+        noTitle={true}
+        title={nameRecord}
+        loading={!isCachedData && parentIsLoading}
+        copyValue={name}
+      >
         {{
           warning,
           header: (
-            <TabButtonContainer>
-              {tabs.map((tabItem: any) => (
-                <TabButton
-                  key={tabItem}
-                  data-testid={`${tabItem}-tab`}
-                  $selected={tabItem === tab}
-                  onClick={() => setTab(tabItem)}
-                >
-                  <Typography fontVariant="extraLargeBold" color="inherit">
-                    {t(`tabs.${tabItem}.name`)}
-                  </Typography>
-                </TabButton>
-              ))}
-            </TabButtonContainer>
+            <>
+              <EntityViewTab
+                domainName={name}
+                nameDetails={nameDetails}
+                multisigAddress={multisigAddress}
+                records={records}
+                status={status}
+              />
+              <TabButtonContainer>
+                {tabs.map((tabItem: any) => (
+                  <TabButton
+                    key={tabItem}
+                    data-testid={`${tabItem}-tab`}
+                    $selected={tabItem === tab}
+                    onClick={() => setTab(tabItem)}
+                  >
+                    <Typography fontVariant="extraLargeBold" color="inherit">
+                      {t(`tabs.${tabItem}.name`)}
+                    </Typography>
+                  </TabButton>
+                ))}
+              </TabButtonContainer>
+            </>
           ),
           titleExtra: profile?.address ? (
             <Outlink
@@ -500,13 +514,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           trailing: match(tab)
             .with('entity', () => (
               <>
-                <EntityViewTab
-                  domainName={name}
-                  nameDetails={nameDetails}
-                  multisigAddress={multisigAddress}
-                  records={records}
-                  status={status}
-                />
                 <RecordsSection
                   texts={records || []}
                   addressesObj={[

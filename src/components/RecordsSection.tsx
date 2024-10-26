@@ -220,8 +220,11 @@ export const RecordsSection = ({
       </div>
     </RecordSection>
   )
-  const lei = filteredTexts?.find((x) => x.key === 'LEI')
   const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'company') || []
+  const domain = filteredTexts?.find((x) => x.key === 'domain')
+  const lei = filteredTexts?.find((x) => x.key === 'LEI')
+
+  if (domain) categoryTexts.unshift(domain)
   if (lei) categoryTexts.unshift(lei)
   const sectionsDisplay = (
     <div key={'companydiv'} style={{ width: '100%' }}>

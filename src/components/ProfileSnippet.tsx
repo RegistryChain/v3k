@@ -38,13 +38,6 @@ const SectionTitle = styled(Typography)(
   `,
 )
 
-const Name = styled(Typography)(
-  () => css`
-    width: 100%;
-    overflow-wrap: anywhere;
-  `,
-)
-
 const NameRecord = styled(Typography)(
   ({ theme }) => css`
     color: black;
@@ -89,7 +82,9 @@ export const ProfileSnippet = ({
           fontVariant="bodyBold"
         >
           Status:{' '}
-          <span style={status === 'approved' ? { color: 'lime' } : { color: '#e9d228' }}>
+          <span
+            style={status === 'APPROVED' ? { color: 'rgb(56, 136, 255)' } : { color: '#e9d228' }}
+          >
             {status}
           </span>
         </SectionTitle>
@@ -103,6 +98,15 @@ export const ProfileSnippet = ({
           <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
             {name}
           </NameRecord>
+          <SectionTitle
+            style={{ paddingLeft: '8px', display: 'block' }}
+            data-testid="text-heading"
+            fontVariant="bodyBold"
+          >
+            <Typography>
+              <i>{domainName}</i>
+            </Typography>
+          </SectionTitle>
           {statusSection}
         </>
       ) : (

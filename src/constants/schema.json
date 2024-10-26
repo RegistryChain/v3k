@@ -51,7 +51,6 @@
   },
   "corpFields": {
     "standard": {
-      "description": "string",
       "address": "string",
       "purpose": "string"
     },
