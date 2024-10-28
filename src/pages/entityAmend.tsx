@@ -9,7 +9,9 @@ import {
   createPublicClient,
   createWalletClient,
   custom,
+  decodeAbiParameters,
   encodeAbiParameters,
+  encodeFunctionData,
   getContract,
   http,
   isAddress,
@@ -61,9 +63,13 @@ export default function Page() {
   const entityType = router.query.type as string
   const isSelf = router.query.connected === 'true'
 
+  const [multisigAddress, setMultisigAddress] = useState('')
+  const [entityMemberManager, setEntityMemberManager] = useState('')
   const [registrationStep, setRegistrationStep] = useState<number>(1)
   const [profile, setProfile] = useState<any>({})
   const [partners, setPartners] = useState<any[]>([])
+
+  const [initialRecords, setInitialRecords]: any = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
   const [template, setTemplate] = useState<any>('default')
@@ -97,11 +103,9 @@ export default function Page() {
   useEffect(() => {
     setProfile((prevProf: any) => ({
       ...prevProf,
-      name: entityName,
       registrar: entityTypeObj?.formationJurisdiction
         ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
         : entityTypeObj?.formationCountry,
-      type: entityTypeObj?.entityTypeName,
       entity__code: entityType,
     }))
   }, [entityName, entityType])
@@ -121,30 +125,229 @@ export default function Page() {
     }
   }, [address])
 
-  useEffect(() => {
-    const m = new Date().getMonth() + 1
-    const d = new Date().getDate()
-    const y = new Date().getFullYear()
-    setProfile((prevState: any) => ({ ...prevState, formation__date: d + '/' + m + '/' + y }))
-  }, [registrationStep])
   const intakeType = 'company'
 
-  async function generateUserDataBytes(userData: any) {
-    return userData.map((user: any, idx: any) => {
-      let roleDataBytes: any = '0x'
-      user.roles.forEach((role: any) => {
-        const encRole = encodeAbiParameters([{ type: 'string' }], [role])
-        const roleHash = keccak256(encRole).slice(2, 66)
-        roleDataBytes += roleHash
+  const getMultisigAddr = async () => {
+    if (name) {
+      const registry: any = getContract({
+        address: contractAddresses.RegistryChain as Address,
+        abi: parseAbi(['function owner(bytes32) view returns (address)']),
+        client: publicClient,
+      })
+      try {
+        const multisigAddress = await registry.read.owner([namehash(name)])
+        // const multisig = await getMultisig(multisigAddress)
+        // const memberManagerAddress = await multisig.read.entityMemberManager()
+
+        // setEntityMemberManager(memberManagerAddress)
+        setMultisigAddress(multisigAddress)
+      } catch (e) {}
+    }
+  }
+
+  // async function generateUserDataBytes(userData: any) {
+  //   return userData.map((user: any, idx: any) => {
+  //     let roleDataBytes: any = '0x'
+  //     user.roles.forEach((role: any) => {
+  //       const encRole = encodeAbiParameters([{ type: 'string' }], [role])
+  //       const roleHash = keccak256(encRole).slice(2, 66)
+  //       roleDataBytes += roleHash
+  //     })
+
+  //     const encodedUserData = encodeAbiParameters(
+  //       [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+  //       [user.wallet__address, user.shares, roleDataBytes],
+  //     )
+  //     return encodedUserData
+  //   })
+  // }
+
+  const parseSavedTexts = (texts: any[]) => {
+    const partnersArr: any[] = []
+    const profile: any = {}
+
+    texts.forEach(({ key, value }: any) => {
+      // Match keys for partner fields
+      const partnerMatch = key.match(/^partner__\[(\d+)\]__(.+)$/)
+      const roleMatch = key.match(/^partner__\[(\d+)\]__is__(.+)$/)
+
+      // Match keys for profile fields
+      const profileMatch = key.match(new RegExp(`^${intakeType}__(.+)$`))
+
+      if (partnerMatch && !roleMatch) {
+        const partnerIndex = parseInt(partnerMatch[1], 10)
+        const field = partnerMatch[2]
+
+        // Ensure the partner array is large enough to hold this partner
+        partnersArr[partnerIndex] = partnersArr[partnerIndex] || {}
+
+        if (field === 'address') {
+          partnersArr[partnerIndex][field] = value === zeroAddress ? '' : value
+        } else if (value === 'true' || value === 'false') {
+          partnersArr[partnerIndex][field] = value === 'true'
+        } else {
+          partnersArr[partnerIndex][field] = value
+        }
+      }
+      if (roleMatch) {
+        const partnerIndex = parseInt(roleMatch[1], 10)
+        const role = roleMatch[2]
+
+        partnersArr[partnerIndex] = partnersArr[partnerIndex] || {}
+        partnersArr[partnerIndex].roles = partnersArr[partnerIndex].roles || []
+        partnersArr[partnerIndex].roles.push(role)
+      }
+      if (profileMatch) {
+        const field = profileMatch[1].split('__').join(' ') // Convert back field name
+        profile[field] = value || ''
+      }
+    })
+
+    const returnObj = {
+      partners: partnersArr.filter((x) => !!x.name || isAddress(x.address)) || [],
+      profile,
+    }
+    return returnObj
+  }
+
+  const getRecords = async () => {
+    try {
+      const resolver: any = await getContract({
+        client: publicClient,
+        abi: parseAbi([
+          'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
+          'function text(bytes32,string memory) view returns (string memory)',
+        ]),
+        address: contractAddresses.PublicResolver as Address,
       })
 
-      const encodedUserData = encodeAbiParameters(
-        [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
-        [user.wallet__address, user.shares, roleDataBytes],
-      )
-      return encodedUserData
-    })
+      const keys = [
+        'LEI',
+        'name',
+        'partner__[0]__name',
+        'partner__[0]__type',
+        'partner__[0]__wallet__address',
+        'partner__[0]__physical__address',
+        'partner__[0]__DOB',
+        'partner__[0]__is__manager',
+        'partner__[0]__lockup',
+        'partner__[0]__shares',
+        'partner__[1]__name',
+        'partner__[1]__type',
+        'partner__[1]__wallet__address',
+        'partner__[1]__physical__address',
+        'partner__[1]__DOB',
+        'partner__[1]__is__signer',
+        'partner__[1]__lockup',
+        'partner__[1]__shares',
+        'partner__[2]__name',
+        'partner__[2]__type',
+        'partner__[2]__wallet__address',
+        'partner__[2]__physical__address',
+        'partner__[2]__DOB',
+        'partner__[2]__is__signer',
+        'partner__[2]__lockup',
+        'partner__[2]__shares',
+        'partner__[3]__name',
+        'partner__[3]__type',
+        'partner__[3]__wallet__address',
+        'partner__[3]__physical__address',
+        'partner__[3]__DOB',
+        'partner__[3]__is__signer',
+        'partner__[3]__lockup',
+        'partner__[3]__shares',
+        'partner__[4]__name',
+        'partner__[4]__type',
+        'partner__[4]__wallet__address',
+        'partner__[4]__physical__address',
+        'partner__[4]__DOB',
+        'partner__[4]__is__signer',
+        'partner__[4]__lockup',
+        'partner__[4]__shares',
+        'partner__[5]__name',
+        'partner__[5]__type',
+        'partner__[5]__wallet__address',
+        'partner__[5]__physical__address',
+        'partner__[5]__DOB',
+        'partner__[5]__is__signer',
+        'partner__[5]__lockup',
+        'partner__[5]__shares',
+        'company__name',
+        'company__entity__code',
+        'company__registrar',
+        'company__type',
+        'company__description',
+        'company__address',
+        'company__purpose',
+        'company__formation__date',
+        'company__lockup__days',
+        'company__additional__terms',
+        'company__selected__template',
+      ]
+
+      const encodes = keys.map((text) => {
+        return encodeFunctionData({
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'bytes32',
+                  name: 'node',
+                  type: 'bytes32',
+                },
+                {
+                  internalType: 'string',
+                  name: 'key',
+                  type: 'string',
+                },
+              ],
+              name: 'text',
+              outputs: [
+                {
+                  internalType: 'string',
+                  name: '',
+                  type: 'string',
+                },
+              ],
+              stateMutability: 'view',
+              type: 'function',
+            },
+          ],
+          functionName: 'text',
+          args: [namehash(name), text],
+        })
+      })
+
+      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
+      let encResArr: any[] = []
+      try {
+        encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
+      } catch (e) {}
+
+      encResArr.forEach((x: any, idx: any) => {
+        try {
+          recordsBuilt.push({
+            key: keys[idx],
+            value: decodeAbiParameters([{ type: 'string' }], x)[0],
+          })
+        } catch (e) {}
+      })
+
+      setInitialRecords(recordsBuilt)
+
+      const recs = parseSavedTexts(recordsBuilt)
+
+      setProfile(recs.profile)
+      setPartners(recs.partners)
+    } catch (err) {
+      console.log('AXIOS CATCH ERROR', err)
+    }
   }
+
+  useEffect(() => {
+    getRecords()
+    getMultisigAddr()
+  }, [name])
 
   const validatePartners = () => {
     let blockAdvance = false
@@ -285,44 +488,57 @@ export default function Page() {
     } else {
       profile.selected__template = template
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-
-      const jurisSubdomainString = code
+      // Take texts Object.keys(texts)
+      //Init changes array
+      const changedRecords: any[] = []
+      // map through text array
+      texts.forEach((obj) => {
+        // If the key is not in inital records, add the key/val to changes array
+        const correspondingOriginalRecord = initialRecords.find((x: any) => x.key === obj.key)
+        // If the val of the corresponding key is different in initialRecords, add the key/val to changes array
+        if (!correspondingOriginalRecord || correspondingOriginalRecord.value !== obj.value) {
+          changedRecords.push(obj)
+        }
+      })
 
       const entityNameToPass = name.toLowerCase().split(' ').join('-')
-      const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + default_registry_domain
 
-      const entityRegistrarAddress =
-        contractAddresses[code + tld] || contractAddresses['public.registry']
+      // const entityRegistrarAddress =
+      //   contractAddresses[code + tld] || contractAddresses['public.registry']
+
+      if (changedRecords.length === 0) return
 
       try {
-        const deployer: any = getContract({
-          address: contractAddresses.EntityFactory as Address,
-          abi: parseAbi(['function formEntity(string,address,bytes[],bytes4[],bytes[]) external']),
+        const multisig: any = getContract({
+          address: multisigAddress as Address,
+          abi: parseAbi([
+            'function submitMulticallTransaction(address,bytes32,string,bytes[]) external',
+          ]),
           client: wallet,
         })
-        const generatedData = generateRecordCallArray({
-          texts,
-          namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
+
+        // IMPORTANT - switch out manager hash and make call to registrar contracts to see what roles would work with the proposed tx
+        const roleHash = '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce'
+
+        const constitutionData2 = generateRecordCallArray({
+          namehash: namehash(entityNameToPass),
+          texts: changedRecords,
         })
-        const constitutionData = generatedData.map(
-          (x) =>
-            '0x' + x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[1],
-        )
-        const methods = generatedData.map(
-          (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
-        )
-        const userDataBytes = await generateUserDataBytes(partners)
-        const registerChaserTx = await deployer.write.formEntity(
-          [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
-          '1000000',
-        )
-        console.log(await publicClient?.waitForTransactionReceipt({ hash: registerChaserTx }))
+
+        const submitChangesTx = await multisig.write.submitMulticallTransaction([
+          contractAddresses.PublicResolver,
+          roleHash,
+          'update company constitution',
+          constitutionData2,
+        ])
+        console.log(await publicClient?.waitForTransactionReceipt({ hash: submitChangesTx }))
       } catch (err: any) {
         console.log('ERROR FORMING ENTITY', err.message)
         setErrorMessage(err.message)
         return
       }
-      router.push('/entity/' + entityNameToPass + '.' + code + tld)
+
+      router.push('/entity/' + entityNameToPass, { tab: 'actions' })
     }
   }
 
@@ -371,7 +587,7 @@ export default function Page() {
     content = (
       <AddPartners
         data={{ name, registrarKey: code }}
-        canChange={true}
+        canChange={false}
         partnerTypes={schema.partnerTypes}
         partnerFields={schema.partnerFields}
         intakeType={intakeType}
@@ -386,7 +602,7 @@ export default function Page() {
     content = (
       <Roles
         data={{ name, registrarKey: code }}
-        canChange={true}
+        canChange={false}
         intakeType={intakeType}
         roleTypes={schema.roles}
         profile={profile}
@@ -450,7 +666,7 @@ export default function Page() {
 }
 
 const generateTexts = (partners: any, profile: any, entityName: any, intakeType: any) => {
-  const texts = [{ key: 'name', value: entityName }]
+  const texts: any[] = []
   partners.forEach((partner: any, idx: any) => {
     const partnerKey = 'partner__[' + idx + ']__'
     Object.keys(partner).forEach((field) => {
@@ -474,7 +690,7 @@ const generateTexts = (partners: any, profile: any, entityName: any, intakeType:
 
   Object.keys(profile).forEach((field) => {
     const key = intakeType + '__' + field.split(' ').join('__')
-    texts.push({ key, value: profile[field] })
+    texts.push({ key, value: profile[field] || '' })
   })
   return texts
 }

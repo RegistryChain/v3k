@@ -41,6 +41,7 @@ const NameContainer = styled.div(({ theme }) => [
 
 const AddPartners = ({
   data,
+  canChange,
   partnerTypes,
   partnerFields,
   intakeType,
@@ -184,6 +185,7 @@ const AddPartners = ({
                   <Calendar
                     labelText={field}
                     labelHeight={62}
+                    disabled={!canChange}
                     value={new Date(partner?.[field]).getTime() / 1000 + 15000}
                     onChange={(e) => {
                       const { valueAsDate } = e.currentTarget
@@ -216,7 +218,7 @@ const AddPartners = ({
                     label={field}
                     placeholder={'Partner ' + field}
                     data-testid="record-type-input"
-                    disabled={false}
+                    disabled={!canChange}
                     onFocus={() => setIsFocusedPartnerType(true)}
                     onChange={(e) => {
                       if (
@@ -257,6 +259,7 @@ const AddPartners = ({
                           <div
                             key={idx}
                             onClick={() => {
+                              if (!canChange) return
                               setPartners((prevPartners: any) => {
                                 const updatedPartners = [...prevPartners]
                                 const updatedPartner = { ...updatedPartners[i], type }
@@ -285,7 +288,7 @@ const AddPartners = ({
                   placeholder={'Partner ' + field.split('__').join(' ')}
                   data-testid="record-input-input"
                   validated={true}
-                  disabled={false}
+                  disabled={!canChange}
                   onChange={(e) => {
                     if (
                       fieldType === 'number' &&
@@ -325,12 +328,13 @@ const AddPartners = ({
       <Button
         style={{ width: '260px', fontSize: '20px', marginTop: '12px', marginLeft: '6px' }}
         onClick={() => editPartner(partners.length)}
+        disabled={!canChange}
       >
         + Partner
       </Button>
       <Button
         style={{ width: '260px', fontSize: '20px', marginTop: '12px', marginLeft: '6px' }}
-        disabled={partners.length === 1}
+        disabled={partners.length === 1 || !canChange}
         colorStyle="redPrimary"
         onClick={() => removePartner(partnerInputNumber)}
       >

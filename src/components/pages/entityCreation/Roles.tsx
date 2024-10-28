@@ -16,6 +16,7 @@ const InputWrapper = styled.div(
 
 const Roles = ({
   data,
+  canChange,
   intakeType,
   roleTypes,
   profile,
@@ -74,6 +75,7 @@ const Roles = ({
                 size={'small'}
                 checked={partner.roles.includes(role)}
                 data-testid="primary-name-toggle"
+                disabled={!canChange}
                 onChange={(e) => {
                   e.stopPropagation()
                   const roleChecked = partner.roles.includes(role)
@@ -116,7 +118,7 @@ const Roles = ({
             placeholder={t('steps.roles.totalShares.label')}
             data-testid="record-input-input"
             validated={true}
-            disabled={false}
+            disabled={!canChange}
             onChange={(e) => {
               let input = e.target.value
               if (Number(input) || input === '') {
@@ -137,7 +139,7 @@ const Roles = ({
             placeholder={t('steps.roles.ownershipLockup.label')}
             data-testid="record-input-input"
             validated={true}
-            disabled={false}
+            disabled={!canChange}
             onChange={(e) => {
               let input = e.target.value
               if (Number(input) || input === '') {
@@ -165,7 +167,7 @@ const Roles = ({
                   placeholder={t('steps.roles.ownershipPercentage.label')}
                   data-testid="record-input-input"
                   validated={true}
-                  disabled={false}
+                  disabled={!canChange}
                   onChange={(e) => {
                     let input = e.target.value
                     if ((Number(input) && Number(input) <= 100) || input === '') {
@@ -220,6 +222,7 @@ const Roles = ({
                   <Toggle
                     size={'small'}
                     checked={partner.lockup || false}
+                    disabled={!canChange}
                     onChange={(e) => {
                       e.stopPropagation()
                       setPartners((prevPartners: any) => {
@@ -260,7 +263,7 @@ const Roles = ({
           })}
         </div>
         {partnersEle}
-        {intakeType !== 'civil' ? ownershipSection : null}
+        {ownershipSection}
       </div>
     </div>
   )

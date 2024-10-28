@@ -73,7 +73,6 @@ const ActionsTab = ({
     const indexToRole: any = {}
     const methodToUserCanCall: any = {}
     let objectIdx = 0
-    console.log('tx', txs, 'roles', userRoles)
     txs.forEach((tx: any) => {
       userRoles.forEach((role: any) => {
         try {

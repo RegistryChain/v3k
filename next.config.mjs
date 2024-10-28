@@ -59,6 +59,10 @@ const nextConfig = {
         destination: '/profile?name=:name',
       },
       {
+        source: '/entity/amend/:name',
+        destination: '/entityAmend?name=:name',
+      },
+      {
         source: '/:name/register',
         destination: '/register?name=:name',
       },
