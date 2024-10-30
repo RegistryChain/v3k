@@ -1,5 +1,7 @@
 import styled, { css } from 'styled-components'
 
+import { breakpoints } from '@ensdomains/thorin/dist/types/tokens'
+
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 
 import AppComponent from './AppComponent'
@@ -16,7 +18,7 @@ const AppsContainer = styled(CacheableComponent)(
   `,
 )
 
-const AppsTab = ({ registrarType = 'company' }: any) => {
+const AppsTab = ({ registrarType = 'company', breakpoints }: any) => {
   const apps: { [x: string]: any } = {
     company: {
       payment__processing: [
@@ -74,7 +76,13 @@ const AppsTab = ({ registrarType = 'company' }: any) => {
 
   const appComps: any[] = []
   Object.keys(apps[registrarType]).forEach((category: string) => {
-    appComps.push(<AppComponent appData={apps[registrarType][category]} category={category} />)
+    appComps.push(
+      <AppComponent
+        breakpoints={breakpoints}
+        appData={apps[registrarType][category]}
+        category={category}
+      />,
+    )
   })
 
   return <AppsContainer>{appComps}</AppsContainer>

@@ -19,6 +19,7 @@ import { useAccount } from 'wagmi'
 import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
+import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { Outlink } from '@app/components/Outlink'
 import { useAbilities } from '@app/hooks/abilities/useAbilities'
 import { useChainName } from '@app/hooks/chain/useChainName'
@@ -27,6 +28,7 @@ import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Content, ContentWarning } from '@app/layouts/Content'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { OG_IMAGE_URL } from '@app/utils/constants'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
@@ -138,6 +140,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const [status, setStatus] = useState('')
   const [records, setRecords] = useState<any>([])
   const [template, setTemplate] = useState<any>('default')
+  const breakpoints = useBreakpoint()
 
   const registrars: any = registrarsObj
   let nameToQuery = name
@@ -487,20 +490,35 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 records={records}
                 status={status}
               />
-              <TabButtonContainer>
-                {tabs.map((tabItem: any) => (
-                  <TabButton
-                    key={tabItem}
-                    data-testid={`${tabItem}-tab`}
-                    $selected={tabItem === tab}
-                    onClick={() => setTab(tabItem)}
-                  >
-                    <Typography fontVariant="extraLargeBold" color="inherit">
-                      {t(`tabs.${tabItem}.name`)}
-                    </Typography>
-                  </TabButton>
-                ))}
-              </TabButtonContainer>
+              {breakpoints.xs && !breakpoints.sm ? (
+                <LegacyDropdown
+                  style={{ maxWidth: '50%', textAlign: 'left' }}
+                  inheritContentWidth={true}
+                  size={'medium'}
+                  label={tab}
+                  items={tabs.map((tabItem: any) => ({
+                    key: tabItem,
+                    label: tabItem,
+                    color: 'blue',
+                    onClick: () => setTab(tabItem),
+                  }))}
+                />
+              ) : (
+                <TabButtonContainer>
+                  {tabs.map((tabItem: any) => (
+                    <TabButton
+                      key={tabItem}
+                      data-testid={`${tabItem}-tab`}
+                      $selected={tabItem === tab}
+                      onClick={() => setTab(tabItem)}
+                    >
+                      <Typography fontVariant="extraLargeBold" color="inherit">
+                        {t(`tabs.${tabItem}.name`)}
+                      </Typography>
+                    </TabButton>
+                  ))}
+                </TabButtonContainer>
+              )}
             </>
           ),
           titleExtra: profile?.address ? (
@@ -527,6 +545,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               if (records && multisigAddress) {
                 return (
                   <Constitution
+                    breakpoints={breakpoints}
                     formationData={records}
                     template={template}
                     setTemplate={null}
@@ -570,6 +589,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   name={normalisedName}
                   nameDetails={nameDetails}
                   abilities={abilities.data}
+                  breakpoints={breakpoints}
                 />
               </>
             ))
@@ -581,6 +601,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   name={normalisedName}
                   nameDetails={nameDetails}
                   abilities={abilities.data}
+                  breakpoints={breakpoints}
                 />
               </>
             ))

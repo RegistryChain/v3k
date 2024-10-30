@@ -16,7 +16,7 @@ const LicensesContainer = styled(CacheableComponent)(
   `,
 )
 
-const LicenseTab = ({ registrarType = 'company' }: any) => {
+const LicenseTab = ({ registrarType = 'company', breakpoints }: any) => {
   const licenses: { [x: string]: any } = {
     company: {
       tax__ids: [
@@ -50,7 +50,11 @@ const LicenseTab = ({ registrarType = 'company' }: any) => {
 
   Object.keys(licenses[registrarType]).forEach((category: string) => {
     licenseComps.push(
-      <LicenseComponent licenseData={licenses[registrarType][category]} category={category} />,
+      <LicenseComponent
+        licenseData={licenses[registrarType][category]}
+        category={category}
+        breakpoints={breakpoints}
+      />,
     )
   })
 

@@ -18,6 +18,7 @@ import { HeaderConnect } from './ConnectButton'
 const HeaderWrapper = styled.header(
   ({ theme }) => css`
     height: ${theme.space['12']};
+    overflow: hidden; /* Ensure hidden content doesn't cause layout shifts */
 
     ${mq.sm.max(css`
       display: none;

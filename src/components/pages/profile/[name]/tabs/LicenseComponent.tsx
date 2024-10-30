@@ -66,7 +66,7 @@ const ItemsContainer = styled(CacheableComponent)(
   `,
 )
 
-const LicenseComponent = ({ licenseData, category }: any) => {
+const LicenseComponent = ({ licenseData, category, breakpoints }: any) => {
   return (
     <Container>
       <HeaderContainer>
@@ -85,7 +85,13 @@ const LicenseComponent = ({ licenseData, category }: any) => {
               value={[x.org, x.licName].join(' - ')}
               type="text"
             />
-            <div style={{ height: '3rem', alignContent: 'center' }}>
+            <div
+              style={{
+                height: '3rem',
+                width: breakpoints.xs && !breakpoints.sm ? '100%' : '80px',
+                alignContent: 'center',
+              }}
+            >
               <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
                 Order
               </Button>

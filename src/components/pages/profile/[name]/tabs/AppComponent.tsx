@@ -68,7 +68,7 @@ const ItemsContainer = styled(CacheableComponent)(
   `,
 )
 
-const AppComponent = ({ appData, category }: any) => {
+const AppComponent = ({ appData, category, breakpoints }: any) => {
   const { t } = useTranslation('profile')
 
   return (
@@ -102,7 +102,14 @@ const AppComponent = ({ appData, category }: any) => {
                 type="text"
               />
             </div>
-            <div style={{ height: '3rem', alignContent: 'center', cursor: 'not-allowed' }}>
+            <div
+              style={{
+                height: '3rem',
+                width: breakpoints.xs && !breakpoints.sm ? '100%' : '80px',
+                alignContent: 'center',
+                cursor: 'not-allowed',
+              }}
+            >
               <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
                 {t('actions.order')}
               </Button>

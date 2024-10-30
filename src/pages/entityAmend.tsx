@@ -1,5 +1,4 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { default as axios } from 'axios'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -37,6 +36,7 @@ import { Review } from '@app/components/pages/entityCreation/Review'
 import Roles from '@app/components/pages/entityCreation/Roles'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
@@ -62,6 +62,7 @@ export default function Page() {
   const entityName = router.query.name as string
   const entityType = router.query.type as string
   const isSelf = router.query.connected === 'true'
+  const breakpoints = useBreakpoint()
 
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
@@ -635,7 +636,12 @@ export default function Page() {
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
           {name}
         </Typography>
-        <Constitution formationData={texts} template={template} setTemplate={setTemplate} />
+        <Constitution
+          breakpoints={breakpoints}
+          formationData={texts}
+          template={template}
+          setTemplate={setTemplate}
+        />
         <Review
           name={name}
           profile={profile}

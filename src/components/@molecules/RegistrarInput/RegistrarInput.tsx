@@ -480,83 +480,90 @@ export const RegistrarInput = ({
     </SearchResultsContainer>
   )
 
-  if (breakpoints.sm) {
-    return (
-      <Container data-testid="search-input-desktop" $size={size}>
-        <Input
-          data-testid="name-table-header-search"
-          size="small"
-          label="search"
-          value={inputVal}
-          onFocus={() => setShowNamesState(true)}
-          onChange={(e) => {
-            setInputVal(e.target.value)
-            setShowNamesState(true)
-          }}
-          hideLabel
-          icon={<MagnifyingGlassSimpleSVG />}
-          placeholder={field}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            zIndex: 1000,
-            width: '100%',
-            paddingLeft: '2px',
-            paddingRight: '100px',
-            cursor: 'pointer',
-            borderRadius: '8px',
-          }}
-        >
-          {countries?.length > 0 && showNamesState && inputVal !== value ? (
-            <div style={{ backgroundColor: 'white', paddingBottom: '8px', borderRadius: '8px' }}>
-              {countries.map((x: any) => {
-                const style = { color: '#3888FF', paddingLeft: '10px' }
-                const xJuris = x?.formationJurisdiction
-                  ? x.formationJurisdiction + ' - ' + x.formationCountry
-                  : x.formationCountry
-                return (
-                  <div
-                    style={{
-                      ...style,
-                      // cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
-                      backgroundColor: x.countryCode !== 'public' ? '#ebe5e5' : 'white',
-                      color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
-                    }}
-                    onClick={() => {
-                      const code = x.countryJurisdictionCode
-                        ? x.countryJurisdictionCode.split('-').join('.')
-                        : x.countryCode
-                      // if (code !== 'public') return null
-                      setValue(code)
-                      setInputVal(xJuris)
-                      setShowNamesState(false)
-                    }}
-                  >
-                    <span>{xJuris}</span>
-                  </div>
-                )
-              })}
-            </div>
-          ) : null}
-        </div>
-      </Container>
-    )
-  }
-
   return (
-    <Container data-testid="search-input-mobile" $size="extraLarge">
+    <Container data-testid="search-input-desktop" $size={size}>
       <Input
         data-testid="name-table-header-search"
-        size="small"
+        size="medium"
         label="search"
-        value={value}
-        onChange={(e) => setValue?.(e.target.value)}
+        value={inputVal}
+        onFocus={() => {
+          setShowNamesState(true)
+        }}
+        onChange={(e) => {
+          setInputVal(e.target.value)
+          setShowNamesState(true)
+        }}
         hideLabel
         icon={<MagnifyingGlassSimpleSVG />}
         placeholder={field}
       />
-      {SearchResultsElement}
+      <div
+        style={{
+          position: 'absolute',
+          zIndex: 1000,
+          width: '100%',
+          paddingLeft: '2px',
+          paddingRight: breakpoints.md ? '100px' : '0px',
+          cursor: 'pointer',
+          borderRadius: '8px',
+        }}
+      >
+        {countries?.length > 0 && showNamesState && inputVal !== value ? (
+          <div>
+            {countries.map((x: any, idx: any) => {
+              const style = { color: '#3888FF', paddingLeft: '20px' }
+              const xJuris = x?.formationJurisdiction
+                ? x.formationJurisdiction + ' - ' + x.formationCountry
+                : x.formationCountry
+              return (
+                <div
+                  style={{
+                    ...style,
+                    // cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
+                    backgroundColor: x.countryCode !== 'public' ? '#ebe5e5' : 'white',
+                    color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
+                    paddingBottom: idx === countries.length - 1 ? '8px' : '0px',
+                    borderBottomLeftRadius: idx === countries.length - 1 ? '8px' : '0px',
+                    borderBottomRightRadius: idx === countries.length - 1 ? '8px' : '0px',
+                    width: '100%',
+                    height: '50px',
+                    paddingTop: '12px',
+                    fontSize: '18px',
+                  }}
+                  onClick={() => {
+                    const code = x.countryJurisdictionCode
+                      ? x.countryJurisdictionCode.split('-').join('.')
+                      : x.countryCode
+                    // if (code !== 'public') return null
+                    setValue(code)
+                    setInputVal(xJuris)
+                    setShowNamesState(false)
+                  }}
+                >
+                  <span>{xJuris}</span>
+                </div>
+              )
+            })}
+          </div>
+        ) : null}
+      </div>
     </Container>
   )
+  // }
+  // return (
+  //   <Container data-testid="search-input-mobile" $size="extraLarge">
+  //     <Input
+  //       data-testid="name-table-header-search"
+  //       size="small"
+  //       label="search"
+  //       value={value}
+  //       onChange={(e) => setValue?.(e.target.value)}
+  //       hideLabel
+  //       icon={<MagnifyingGlassSimpleSVG />}
+  //       placeholder={field}
+  //     />
+  //     {SearchResultsElement}
+  //   </Container>
+  // )
 }

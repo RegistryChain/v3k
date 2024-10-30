@@ -121,7 +121,6 @@ const ActionsTab = ({
         }
       })
     } catch (e) {}
-
     Object.values(indexToMethod).forEach((method: any) => {
       if (!methodToUserCanCall[method]) {
         methodToUserCanCall[method] = false
@@ -186,6 +185,9 @@ const ActionsTab = ({
               if (userData[2].includes(roles[role].slice(2))) {
                 userRoles.push(roles[role])
               }
+              if (Number(userData[1]) > 0) {
+                userRoles.push(roles['holder'])
+              }
             })
           }
         })
@@ -209,7 +211,6 @@ const ActionsTab = ({
         }
       })
     }
-
     setUserRoles(userRoles)
   }
 

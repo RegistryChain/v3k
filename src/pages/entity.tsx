@@ -35,6 +35,7 @@ import { Review } from '@app/components/pages/entityCreation/Review'
 import Roles from '@app/components/pages/entityCreation/Roles'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
@@ -57,6 +58,8 @@ export default function Page() {
   const router = useRouterWithHistory()
   const { address } = useAccount()
   const { openConnectModal } = useConnectModal()
+  const breakpoints = useBreakpoint()
+
   const entityName = router.query.name as string
   const entityType = router.query.type as string
   const isSelf = router.query.connected === 'true'
@@ -371,6 +374,7 @@ export default function Page() {
     content = (
       <AddPartners
         data={{ name, registrarKey: code }}
+        breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
         partnerFields={schema.partnerFields}
@@ -386,6 +390,7 @@ export default function Page() {
     content = (
       <Roles
         data={{ name, registrarKey: code }}
+        breakpoints={breakpoints}
         canChange={true}
         intakeType={intakeType}
         roleTypes={schema.roles}
@@ -419,7 +424,12 @@ export default function Page() {
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
           {name}
         </Typography>
-        <Constitution formationData={texts} template={template} setTemplate={setTemplate} />
+        <Constitution
+          breakpoints={breakpoints}
+          formationData={texts}
+          template={template}
+          setTemplate={setTemplate}
+        />
         <Review
           name={name}
           profile={profile}
@@ -437,7 +447,7 @@ export default function Page() {
         <meta name="description" content={'RegistryChain Entity Formation'} />
       </Head>
       <div>
-        <div style={{ height: '28px', marginTop: '22px', padding: '24px', width: '100%' }}>
+        <div style={{ height: '28px', marginTop: '22px', padding: '36px', width: '100%' }}>
           <Typography style={{ fontSize: '22px', color: 'red', textAlign: 'center' }}>
             {errorMessage}
           </Typography>

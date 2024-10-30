@@ -139,6 +139,7 @@ export const RecordsSection = ({
                         background: 'hsl(0 0% 96%)',
                         border: '1px solid hsl(0 0% 91%)',
                         borderRadius: '8px',
+                        overflow: 'hidden',
                       }}
                     >
                       <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
@@ -200,6 +201,7 @@ export const RecordsSection = ({
                           background: 'hsl(0 0% 96%)',
                           border: '1px solid hsl(0 0% 91%)',
                           borderRadius: '8px',
+                          overflow: 'hidden',
                         }}
                       >
                         <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
@@ -251,6 +253,7 @@ export const RecordsSection = ({
                   background: 'hsl(0 0% 96%)',
                   border: '1px solid hsl(0 0% 91%)',
                   borderRadius: '8px',
+                  overflow: 'hidden',
                 }}
               >
                 <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
@@ -259,7 +262,7 @@ export const RecordsSection = ({
                     .map((x: any) => x[0].toUpperCase() + x.slice(1))
                     .join(' ')}
                 </Typography>
-                <Typography>{text.value}</Typography>
+                <Typography style={{ overflow: 'hidden' }}>{text.value}</Typography>
               </div>
             )
           })}

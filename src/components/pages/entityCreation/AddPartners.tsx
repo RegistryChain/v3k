@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { zeroAddress } from 'viem'
+import { isAddress, zeroAddress } from 'viem'
 
 import { Button, Dialog, Input, mq } from '@ensdomains/thorin'
 
@@ -48,6 +48,7 @@ const AddPartners = ({
   setPartners,
   partners,
   publicClient,
+  breakpoints,
 }: any) => {
   const name = data?.name || ''
   const [partnerInputNumber, setPartnerInputNumber] = useState(0)
@@ -91,11 +92,11 @@ const AddPartners = ({
       Object.keys(relevantFields).forEach((field) => {
         if (relevantFields[field] === 'number') {
           tempPartnerObj[field] = 0
-        } else if (relevantFields[field] === 'Array') {
+        } else if (relevantFields[field] === 'array') {
           tempPartnerObj[field] = []
-        } else if (relevantFields[field] === 'Boolean') {
+        } else if (relevantFields[field] === 'boolean') {
           tempPartnerObj[field] = false
-        } else if (relevantFields[field] === 'Address') {
+        } else if (relevantFields[field] === 'address') {
           tempPartnerObj[field] = zeroAddress
         } else {
           tempPartnerObj[field] = ''
@@ -118,10 +119,7 @@ const AddPartners = ({
         changeFlag = true
         nPartner.roles = []
       }
-      if (!partner.wallet__address) {
-        changeFlag = true
-        nPartner.wallet__address = zeroAddress
-      }
+
       return nPartner
     })
 
@@ -278,12 +276,38 @@ const AddPartners = ({
                 </InputWrapper>
               )
             }
+            let focusOnFunction: any = () => null
+            let focusOffFunction: any = () => null
+            if (field === 'wallet__address') {
+              focusOnFunction = () => {
+                if (!isAddress(partner?.[field]) || partner?.[field] === zeroAddress) {
+                  setPartners((prevPartners: any) => {
+                    const updatedPartners = [...prevPartners]
+                    const updatedPartner = { ...updatedPartners[i], [field]: '' }
+                    updatedPartners[i] = updatedPartner
+                    return updatedPartners
+                  })
+                }
+              }
+              focusOffFunction = () => {
+                if (!isAddress(partner?.[field]) || partner?.[field] === zeroAddress) {
+                  setPartners((prevPartners: any) => {
+                    const updatedPartners = [...prevPartners]
+                    const updatedPartner = { ...updatedPartners[i], [field]: zeroAddress }
+                    updatedPartners[i] = updatedPartner
+                    return updatedPartners
+                  })
+                }
+              }
+            }
             return (
               <InputWrapper key={field}>
                 <Input
                   size="large"
                   value={partner?.[field]}
                   label={field.split('__').join(' ')}
+                  onFocus={focusOnFunction}
+                  onBlur={focusOffFunction}
                   error={false}
                   placeholder={'Partner ' + field.split('__').join(' ')}
                   data-testid="record-input-input"
@@ -326,14 +350,24 @@ const AddPartners = ({
     <div style={{ marginBottom: '44px' }}>
       <NameContainer>{name}</NameContainer>
       <Button
-        style={{ width: '260px', fontSize: '20px', marginTop: '12px', marginLeft: '6px' }}
+        style={{
+          width: breakpoints.xs && !breakpoints.sm ? '100%' : '260px',
+          fontSize: '20px',
+          marginTop: '12px',
+          marginLeft: '6px',
+        }}
         onClick={() => editPartner(partners.length)}
         disabled={!canChange}
       >
         + Partner
       </Button>
       <Button
-        style={{ width: '260px', fontSize: '20px', marginTop: '12px', marginLeft: '6px' }}
+        style={{
+          width: breakpoints.xs && !breakpoints.sm ? '100%' : '260px',
+          fontSize: '20px',
+          marginTop: '12px',
+          marginLeft: '6px',
+        }}
         disabled={partners.length === 1 || !canChange}
         colorStyle="redPrimary"
         onClick={() => removePartner(partnerInputNumber)}

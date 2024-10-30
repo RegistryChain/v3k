@@ -403,7 +403,13 @@ const constitutionTemplate: any = {
 }
 
 // Render the document
-const Constitution = ({ formationData, template, setTemplate, canDownload = false }: any) => {
+const Constitution = ({
+  formationData,
+  template,
+  setTemplate,
+  breakpoints,
+  canDownload = false,
+}: any) => {
   const companyObj: any = {}
   const users: any = {}
   formationData.forEach((field: any) => {
@@ -492,10 +498,15 @@ const Constitution = ({ formationData, template, setTemplate, canDownload = fals
                   width: '100%',
                   display: 'flex',
                   justifyContent: 'flex-end',
-                  marginBottom: '12px',
+                  margin: '12px 0',
                 }}
               >
-                <Button style={{ width: '350px', textAlign: 'right' }}>
+                <Button
+                  style={{
+                    width: breakpoints.xs && !breakpoints.sm ? '100%' : '350px',
+                    textAlign: 'right',
+                  }}
+                >
                   Download Constitution PDF
                 </Button>
               </div>

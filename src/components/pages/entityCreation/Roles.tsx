@@ -16,6 +16,7 @@ const InputWrapper = styled.div(
 
 const Roles = ({
   data,
+  breakpoints,
   canChange,
   intakeType,
   roleTypes,
@@ -155,9 +156,22 @@ const Roles = ({
           return (
             <div
               key={'partners' + idx}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                display: 'flex',
+                flexDirection: breakpoints.xs && !breakpoints.sm ? 'column' : 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <Typography style={{ flex: 3 }}>{partner.name}</Typography>
+              <Typography
+                style={{
+                  flex: 3,
+                  margin: breakpoints.xs && !breakpoints.sm ? '20px 0' : '0',
+                  fontSize: '24px',
+                }}
+              >
+                {partner.name}
+              </Typography>
               <InputWrapper key={'inpwraPart1' + idx} style={{ flex: 3 }}>
                 <Input
                   size="medium"

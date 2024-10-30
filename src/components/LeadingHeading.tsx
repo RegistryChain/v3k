@@ -6,8 +6,6 @@ export const LeadingHeading = styled.div(
   ({ theme }) => css`
     width: calc(100% - calc(${theme.radii.large} * 2));
     margin-left: ${theme.radii.large};
-    display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     ${mq.sm.min(css`

@@ -22,6 +22,7 @@ import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/Legacy
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
@@ -113,6 +114,7 @@ export default function Page() {
     chain: sepolia,
     transport: http(infuraUrl('sepolia')),
   })
+  const breakpoints = useBreakpoint()
 
   const [entityName, setEntityName] = useState<string>('')
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
@@ -246,24 +248,33 @@ export default function Page() {
               setEntityJurisdiction(regKey)
             }}
           />
-          <div key={'div1en'} style={{ width: '100%', textAlign: 'left', padding: '0 48px' }}>
-            {entityTypeSelection}
-          </div>
           <div
-            key={'div2en'}
+            key={'div1en'}
             style={{
               width: '100%',
               textAlign: 'left',
-              paddingLeft: '48px',
-              paddingRight: '48px',
-              height: '40px',
+              padding: breakpoints.xs && !breakpoints.sm ? '0' : '0 48px',
             }}
           >
-            {/* {nameAvailableElement} */}
+            {entityTypeSelection}
           </div>
+          {breakpoints.sm ? (
+            <div
+              key={'div2en'}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                paddingLeft: '48px',
+                paddingRight: '48px',
+                height: '40px',
+              }}
+            ></div>
+          ) : null}
+          {/* {nameAvailableElement} */}
+          {/* </div> */}
           <Button
-            style={{ width: '220px' }}
-            shape="rounded"
+            style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
+            shape="square"
             size="small"
             disabled={
               entityJurisdiction !== 'public' ||

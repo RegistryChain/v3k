@@ -25,7 +25,6 @@ import i18n from '../i18n'
 
 import '../styles.css'
 
-
 const rainbowKitTheme: Theme = {
   ...lightTheme({
     accentColor: thorinLightTheme.colors.accent,
@@ -146,17 +145,17 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           <TransactionStoreProvider>
             <ThemeProvider theme={thorinLightTheme}>
               <BreakpointProvider queries={breakpoints}>
-                  <GlobalStyle />
-                  <ThorinGlobalStyles />
-                  <SyncProvider>
-                    <TransactionFlowProvider>
-                      <SyncDroppedTransaction>
-                        <Notifications />
-                        {/* <TestnetWarning /> */}
-                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                      </SyncDroppedTransaction>
-                    </TransactionFlowProvider>
-                  </SyncProvider>
+                <GlobalStyle />
+                <ThorinGlobalStyles />
+                <SyncProvider>
+                  <TransactionFlowProvider>
+                    <SyncDroppedTransaction>
+                      <Notifications />
+                      {/* <TestnetWarning /> */}
+                      <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                    </SyncDroppedTransaction>
+                  </TransactionFlowProvider>
+                </SyncProvider>
               </BreakpointProvider>
             </ThemeProvider>
           </TransactionStoreProvider>

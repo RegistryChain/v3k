@@ -724,39 +724,39 @@ export const EntityInput = ({ size = 'extraLarge', field, value, setValue }: any
     </SearchResultsContainer>
   )
 
-  if (breakpoints.sm) {
-    return (
-      <Container data-testid="search-input-desktop" $size={size}>
-        <Input
-          data-testid="name-table-header-search"
-          size="small"
-          label="search"
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value)
-            return
-          }}
-          hideLabel
-          icon={<MagnifyingGlassSimpleSVG />}
-          placeholder={field}
-        />
-      </Container>
-    )
-  }
-
+  // if (breakpoints.sm) {
   return (
-    <Container data-testid="search-input-mobile" $size="extraLarge">
+    <Container data-testid="search-input-desktop" $size={size}>
       <Input
         data-testid="name-table-header-search"
-        size="small"
+        size="medium"
         label="search"
         value={value}
-        onChange={(e) => setValue?.(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value)
+          return
+        }}
         hideLabel
         icon={<MagnifyingGlassSimpleSVG />}
         placeholder={field}
       />
-      {SearchResultsElement}
     </Container>
   )
+  // }
+
+  // return (
+  //   <Container data-testid="search-input-mobile" $size="extraLarge">
+  //     <Input
+  //       data-testid="name-table-header-search"
+  //       size="small"
+  //       label="search"
+  //       value={value}
+  //       onChange={(e) => setValue?.(e.target.value)}
+  //       hideLabel
+  //       icon={<MagnifyingGlassSimpleSVG />}
+  //       placeholder={field}
+  //     />
+  //     {SearchResultsElement}
+  //   </Container>
+  // )
 }
