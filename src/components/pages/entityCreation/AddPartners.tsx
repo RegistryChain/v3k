@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { isAddress, zeroAddress } from 'viem'
+import { useAccount } from 'wagmi'
 
 import { Button, Dialog, Input, mq } from '@ensdomains/thorin'
 
@@ -55,6 +56,7 @@ const AddPartners = ({
   const [isFocusedPartnerType, setIsFocusedPartnerType] = useState(false)
 
   const inputRef = useRef(null)
+  const { address } = useAccount()
 
   const relevantFields = {
     ...partnerFields.standard[intakeType],
@@ -97,7 +99,7 @@ const AddPartners = ({
         } else if (relevantFields[field] === 'boolean') {
           tempPartnerObj[field] = false
         } else if (relevantFields[field] === 'address') {
-          tempPartnerObj[field] = zeroAddress
+          tempPartnerObj[field] = address ?? zeroAddress
         } else {
           tempPartnerObj[field] = ''
         }

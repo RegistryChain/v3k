@@ -319,13 +319,18 @@ export default function Page() {
           [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
           '1000000',
         )
-        console.log(await publicClient?.waitForTransactionReceipt({ hash: registerChaserTx }))
+        const transactionRes = await publicClient?.waitForTransactionReceipt({
+          hash: registerChaserTx,
+        })
+        if (transactionRes.status === 'reverted') {
+          throw Error('Transaction failed - contract error')
+        }
+        router.push('/entity/' + entityNameToPass + '.' + code + tld)
       } catch (err: any) {
         console.log('ERROR FORMING ENTITY', err.message)
         setErrorMessage(err.message)
         return
       }
-      router.push('/entity/' + entityNameToPass + '.' + code + tld)
     }
   }
 
