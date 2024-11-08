@@ -11,6 +11,9 @@ import {
 import { sepolia } from 'viem/chains'
 import { useAccount, useConnect } from 'wagmi'
 
+import { ErrorModal } from '@app/components/ErrorModal'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
+
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
 import ActionsConfirmation from './ActionsConfirmation'
 import ActionsExecuted from './ActionsExecuted'
@@ -47,6 +50,7 @@ const ActionsTab = ({
   const [memberBytes, setMemberBytes] = useState('')
   const [wallet, setWallet] = useState<any>(null)
   const { address, isConnected } = useAccount()
+  const breakpoints = useBreakpoint()
 
   const [methodsCallable, setMethodsCallable]: any = useState({})
   const [txs, setTxs]: any[] = useState([])
@@ -442,6 +446,11 @@ const ActionsTab = ({
 
   return (
     <div>
+      <ErrorModal
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        breakpoints={breakpoints}
+      />
       {amendmentsTrigger}
       {txToConfirm}
       {txToExecute}

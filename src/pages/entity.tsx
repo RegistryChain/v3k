@@ -26,8 +26,9 @@ import { useAccount, useClient } from 'wagmi'
 
 import { addEnsContracts } from '@ensdomains/ensjs'
 import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
-import { Button, Typography } from '@ensdomains/thorin'
+import { Button, Modal, Typography } from '@ensdomains/thorin'
 
+import { ErrorModal } from '@app/components/ErrorModal'
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
 import Constitution from '@app/components/pages/entityCreation/Constitution'
 import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
@@ -452,11 +453,11 @@ export default function Page() {
         <meta name="description" content={'RegistryChain Entity Formation'} />
       </Head>
       <div>
-        <div style={{ height: '28px', marginTop: '22px', padding: '36px', width: '100%' }}>
-          <Typography style={{ fontSize: '22px', color: 'red', textAlign: 'center' }}>
-            {errorMessage}
-          </Typography>
-        </div>
+        <ErrorModal
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          breakpoints={breakpoints}
+        />
         {content}
         {buttons}
       </div>

@@ -9,7 +9,6 @@ import { useChainName } from '@app/hooks/chain/useChainName'
 import useResolverEditor from '@app/hooks/useResolverEditor'
 import { makeEtherscanLink } from '@app/utils/utils'
 
-import { DogFood } from '../DogFood'
 import EditResolverWarnings from './EditResolverWarnings'
 
 const LatestResolverLabel = styled.div<{ $offset: boolean }>(
@@ -108,26 +107,6 @@ const EditResolverForm = ({
       />
       <RadioButton
         label={t('input.editResolver.customLabel')}
-        description={
-          <DogFood
-            {...{
-              formState,
-              disabled: resolverChoice !== 'custom',
-              register,
-              getFieldState,
-              watch,
-              setValue,
-              hideLabel: true,
-              trigger,
-              validations: {
-                isCurrentResolver: (value: string) =>
-                  resolverChoice === 'custom' && value === resolverAddress
-                    ? 'This is the current resolver'
-                    : undefined,
-              },
-            }}
-          />
-        }
         value="custom"
         data-testid="custom-resolver-radio"
         {...register('resolverChoice')}

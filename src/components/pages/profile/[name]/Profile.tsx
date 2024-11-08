@@ -192,9 +192,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const checkEntityStatus = async () => {
     const multisig: any = await getMultisig(multisigAddress)
 
-    // get localApproval from mutlisig
-    // get entityToTransactionNonce from multisig state
-
     const multisigState: any = getContract({
       address: contractAddresses.MultisigState as Address,
       abi: parseAbi(['function entityToTransactionNonce(address) view returns (uint256)']),
