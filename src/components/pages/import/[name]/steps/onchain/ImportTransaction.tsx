@@ -7,7 +7,6 @@ import { CurrencyToggle, Helper, Typography } from '@ensdomains/thorin'
 
 import { CurrencyText } from '@app/components/@atoms/CurrencyText/CurrencyText'
 import GasDisplay from '@app/components/@atoms/GasDisplay'
-import { AvatarWithZorb } from '@app/components/AvatarWithZorb'
 import { useContractAddress } from '@app/hooks/chain/useContractAddress'
 import { useEstimateGasWithStateOverride } from '@app/hooks/chain/useEstimateGasWithStateOverride'
 import { useGasPrice } from '@app/hooks/chain/useGasPrice'
@@ -88,7 +87,6 @@ const InvoiceDnsOwner = ({ dnsOwner }: { dnsOwner: Address }) => {
           {shortenAddress(dnsOwner)}
         </Typography>
       </div>
-      <AvatarWithZorb size="10" address={dnsOwner} name={primary?.name} label="dns owner avatar" />
     </InvoiceDnsOwnerContainer>
   )
 }

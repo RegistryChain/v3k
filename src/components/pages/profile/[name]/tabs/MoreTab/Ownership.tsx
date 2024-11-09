@@ -11,7 +11,6 @@ import AeroplaneSVG from '@app/assets/Aeroplane.svg'
 import { BaseLinkWithHistory } from '@app/components/@atoms/BaseLink'
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
 import { DisabledButtonWithTooltip } from '@app/components/@molecules/DisabledButtonWithTooltip'
-import { AvatarWithZorb } from '@app/components/AvatarWithZorb'
 import { useDnsImportData } from '@app/hooks/ensjs/dns/useDnsImportData'
 import { GetDnsOwnerQueryKey, UseDnsOwnerError } from '@app/hooks/ensjs/dns/useDnsOwner'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
@@ -134,12 +133,6 @@ const Owner = ({ address, label }: OwnerItem) => {
     <BaseLinkWithHistory passHref href={`/address/${address}`}>
       <OwnerContainer as="a">
         <OwnerDetailContainer>
-          <AvatarWithZorb
-            label={primary.data?.name || address}
-            address={address}
-            name={primary.data?.name}
-            size="10"
-          />
           <TextContainer>
             <Name ellipsis data-testid={`owner-button-name-${label}`}>
               {primary.data?.beautifiedName || shortenAddress(address)}

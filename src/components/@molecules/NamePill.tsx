@@ -2,8 +2,6 @@ import styled, { css } from 'styled-components'
 
 import { Typography } from '@ensdomains/thorin'
 
-import { NameAvatar } from '../AvatarWithZorb'
-
 const Container = styled.div(
   ({ theme }) => css`
     border-radius: ${theme.radii.full};
@@ -45,9 +43,7 @@ export const NamePill = ({
 }) => {
   return (
     <Container>
-      <AvatarWrapper>
-        <NameAvatar label={name} name={truncatedName} />
-      </AvatarWrapper>
+      <AvatarWrapper></AvatarWrapper>
       <TypographyWrapper>
         <Typography ellipsis>{truncatedName}</Typography>
       </TypographyWrapper>

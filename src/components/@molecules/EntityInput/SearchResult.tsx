@@ -15,8 +15,6 @@ import { useDotBoxAvailabilityOnchain } from '@app/hooks/dotbox/useDotBoxAvailab
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useBasicName } from '@app/hooks/useBasicName'
 import { usePrefetchProfile } from '@app/hooks/useProfile'
-import { useZorb } from '@app/hooks/useZorb'
-import { zorbImageDataURI } from '@app/utils/gradient'
 import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 import type { RegistrationStatus } from '@app/utils/registrationStatus'
 import { shortenAddress } from '@app/utils/utils'
@@ -87,11 +85,6 @@ const NoInputYetTypography = styled(Typography)(
   `,
 )
 
-const placeholderZorb = zorbImageDataURI('placeholder', 'name', {
-  accent: lightTheme.colors.accentLight,
-  fg: lightTheme.colors.text,
-  bg: lightTheme.colors.background,
-})
 const AvatarWrapper = styled.div<{ $isPlaceholder?: boolean }>(
   ({ theme, $isPlaceholder }) => css`
     display: flex;
@@ -109,7 +102,6 @@ const AvatarWrapper = styled.div<{ $isPlaceholder?: boolean }>(
       left: 0;
       width: 100%;
       height: 100%;
-      background: url(${placeholderZorb});
       z-index: 1;
       filter: grayscale(100%);
       transition: all 0.2s ease-in-out;
@@ -229,20 +221,6 @@ const TextWrapper = styled.div(
   `,
 )
 
-const getAvatarUri = ({
-  usingPlaceholder,
-  ensAvatar,
-  zorb,
-}: {
-  usingPlaceholder: boolean
-  ensAvatar: string | undefined | null
-  zorb: string | undefined
-}) => {
-  if (ensAvatar) return { avatarUri: ensAvatar, avatarIsPlaceholder: false }
-  if (usingPlaceholder || !zorb) return { avatarUri: undefined, avatarIsPlaceholder: true }
-  return { avatarUri: zorb, avatarIsPlaceholder: false }
-}
-
 const AddressResultItem = ({
   hoverCallback,
   clickCallback,
@@ -261,9 +239,6 @@ const AddressResultItem = ({
     name: primaryName?.name,
     query: { enabled: !usingPlaceholder },
   })
-  const zorb = useZorb(address, 'address')
-
-  const { avatarUri, avatarIsPlaceholder } = getAvatarUri({ ensAvatar, usingPlaceholder, zorb })
 
   return (
     <SearchItemContainer
@@ -275,9 +250,6 @@ const AddressResultItem = ({
       $selected={selected}
     >
       <LeadingSearchItem>
-        <AvatarWrapper $isPlaceholder={avatarIsPlaceholder}>
-          <Avatar src={avatarUri} label="avatar" />
-        </AvatarWrapper>
         <AddressAndName>
           <Typography weight="bold">{shortenAddress(address, undefined, 8, 6)}</Typography>
           {primaryName?.name && <AddressPrimary>{primaryName?.beautifiedName}</AddressPrimary>}
@@ -302,13 +274,10 @@ const TldResultItem = ({
     name,
     query: { enabled: !usingPlaceholder },
   })
-  const zorb = useZorb(usingPlaceholder ? 'placeholder' : name, 'name')
   const { registrationStatus, isLoading, beautifiedName } = useBasicName({
     name,
     enabled: !usingPlaceholder,
   })
-
-  const { avatarUri, avatarIsPlaceholder } = getAvatarUri({ ensAvatar, usingPlaceholder, zorb })
 
   return (
     <SearchItemContainer
@@ -320,9 +289,6 @@ const TldResultItem = ({
       $selected={selected}
     >
       <LeadingSearchItem>
-        <AvatarWrapper $isPlaceholder={avatarIsPlaceholder}>
-          <Avatar src={avatarUri} label="avatar" />
-        </AvatarWrapper>
         <TextWrapper>
           <Typography weight="bold">{beautifiedName}</Typography>
         </TextWrapper>
@@ -352,13 +318,10 @@ const EthResultItem = ({
     name,
     query: { enabled: !usingPlaceholder },
   })
-  const zorb = useZorb(name, 'name')
   const { registrationStatus, isLoading, beautifiedName } = useBasicName({
     name,
     enabled: !usingPlaceholder,
   })
-
-  const { avatarUri, avatarIsPlaceholder } = getAvatarUri({ ensAvatar, usingPlaceholder, zorb })
 
   usePrefetchProfile({ name })
 
@@ -372,9 +335,6 @@ const EthResultItem = ({
       $selected={selected}
     >
       <LeadingSearchItem>
-        <AvatarWrapper $isPlaceholder={avatarIsPlaceholder}>
-          <Avatar src={avatarUri} label="avatar" />
-        </AvatarWrapper>
         <TextWrapper>
           <Typography weight="bold">{beautifiedName}</Typography>
         </TextWrapper>
@@ -416,14 +376,11 @@ const BoxResultItem = ({
     name,
     query: { enabled: !usingPlaceholder },
   })
-  const zorb = useZorb(usingPlaceholder ? 'placeholder' : name, 'name')
   const { data: isDotBoxAvailableOnchain, isLoading: isDotBoxAvailabilityLoading } =
     useDotBoxAvailabilityOnchain({ name, isValid, enabled: !usingPlaceholder })
   const isValidData = { isValid, isAvailable: isDotBoxAvailableOnchain }
 
   const status = getBoxNameStatus(isValidData)
-
-  const { avatarUri, avatarIsPlaceholder } = getAvatarUri({ ensAvatar, usingPlaceholder, zorb })
 
   return (
     <SearchItemContainer
@@ -435,9 +392,6 @@ const BoxResultItem = ({
       $selected={selected}
     >
       <LeadingSearchItem>
-        <AvatarWrapper $isPlaceholder={avatarIsPlaceholder}>
-          <Avatar src={avatarUri} label="avatar" />
-        </AvatarWrapper>
         <TextWrapper>
           <Typography weight="bold">{name}</Typography>
         </TextWrapper>

@@ -1,517 +1,63 @@
-# The ENS Manager App (V3)
+# RegistryChain - APP UI
 
-# Quick start
+This is a demo front-end for creating and managing blockchain-native entities on RegistryChain, built with Next.js v13. It connects to Ethereum Sepolia Testnet (chain 11155111) and is a fork of the [Ethereum Naming Service (ENS) front-end](https://app.ens.domains/).
 
-Install [pnpm](https://pnpm.io/installation), then:
+## Features
 
-```bash
-pnpm install
-pnpm dev
-```
+- Entity Formation: Begin by entering an entity name, selecting a jurisdiction, and choosing the entity type. Currently, only Partnership in the Public Registry jurisdiction is supported.
+- Entity Management: Create entities with basic information, member details, and roles. The protocol automatically generates and displays your corporate bylaws/constitution for review before finalizing the entity formation.
+- Transaction-Based Creation: Form your entity in a single Ethereum transaction. Upon success, you'll be directed to the entity profile page.
+- Entity Profile: View detailed information about your entity, including its members, records, and constitution. Explore available services like Apps/Licenses (demo purposes).
+- Actions Tab: Propose, confirm, and execute entity management actions, such as approving the constitution or making changes to the entity.
 
-Navigate to [localhost:3000](http://localhost:3000)
+## Setup
 
-# Why does this app exist?
+To get started, clone this repository and install the dependencies:
 
-The purpose of the manager app is to expose the functionality of the ENS protocol in a user
-friendly manor.
+`pnpm install`
 
-## Brief intro to ENS
+For building the project:
 
-ENS is a decentralized naming system that runs on the ethereum blockchain.
-The main purpose of ENS is to convert unfriendly blockchain addresses
-into human readable names (e.g. 0xb8c2c29ee19d8307cb7255e1cd9cbde883a267d5 -> nick.eth),
-but ENS has grown into so much more than that. For more info please visit our
-[docs site](https://docs.registrychain.com/learn/protocol).
+`npm run build`
 
-# Coming from web2
+To run the local development server:
 
-Web3 is the term used to describe the blockchain enabled web, web2 is the 'legacy' more
-centralized web.
-Much of this app is built in tech that will be familiar to many web2 devs.
+`npm run dev`
 
-<b>Web2 tech</b>
+## Usage
 
-- [Typescript - Language](https://www.typescriptlang.org/)
-- [React - Rendering library](https://react.dev/)
-- [NextJS - Web Framework](https://react.dev/)
-- [Tanstack query - State management](https://tanstack.com/query/latest)
-- [Immer - State management/Functional programming helper](https://immerjs.github.io/immer/)
-- [ts-pattern - Functional programming helper](https://github.com/gvergnaud/ts-pattern)
-- [Styled Components - Styling library](https://styled-components.com/)
-- [Cloudflare pages - Hosting](https://pages.cloudflare.com/)
-- [Cloudflare functions - Server side functionality](https://developers.cloudflare.com/pages/functions/)
-- [Github Actions - CI/CD](https://docs.github.com/en/actions)
-- [Docker - Test environment](https://www.docker.com/)
-- [Playwright - Integration tests](https://playwright.dev/)
-- [Vitest - Unit tests](https://vitest.dev/)
+### Start the Entity Formation Process:
 
-<b>Web3 tech</b>
+- From the landing page, enter a name for your entity.
+- Select the jurisdiction and entity type. The demo currently only supports the Partnership type in the Public Registry jurisdiction. This jurisdiction is open and permissionless, intended for testing the formation of blockchain-native entities.
 
-- [Infura - Ethereum node provider](https://www.infura.io/)
-- [Viem - Blockchain interaction](https://viem.sh/)
-- [The Graph - GraphQL interface for Blockchain info](https://thegraph.com/docs/en/)
-- [IPFS - Distributed file hosting](https://ipfs.tech/)
-- [Anvil - Local Blockchain for testing](https://github.com/foundry-rs/foundry/tree/master/crates/anvil)
+### Fill in Entity Information:
 
-## Explaining the web3 parts
+- Once you've chosen your entity type and jurisdiction, you will be directed to the entity formation flow.
+- Input the basic information for your entity (e.g., name, description, etc.).
+- Enter member details, including their roles and responsibilities within the entity (e.g., founder, partner).
+- Define the shares/roles distribution among the members. This establishes the governance structure of your entity.
 
-TBC
+### Review Corporate Bylaws/Constitution:
 
-## Setting up the development environment
+- The protocol will automatically generate a constitution based on the information you provided.
+- Review the constitution to ensure it matches your expectations, as this document will govern the entity.
 
-You must have [Docker](https://docs.docker.com/get-docker/) installed to run the test environment.
-For more information on the environment, see [ens-test-env](https://github.com/ensdomains/ensjs-v3/tree/main/packages/ens-test-env/).
+### Submit the Formation Transaction:
 
-Once installed, you can run:
+- After reviewing the constitution, you will be prompted to confirm and form the entity in a single transaction on Ethereum Sepolia Testnet.
+- Once confirmed, a transaction will be initiated. If successful, your entity will be officially created on the blockchain, and you'll be redirected to the entity profile page.
 
-```bash
-pnpm denv
-pnpm dev:glocal
-```
+### View Your Entity Profile:
 
-You can now navigate to `http://localhost:3000` to see the app running off of a
-local blockchain.
+- The entity profile page displays all records related to your entity, including member information, constitution, and entity actions.
+- You can navigate through various tabs to view and manage the following:
+  - Constitution: The legal document outlining the governance and rules of your entity.
+  - Entity Actions: Propose, confirm, and execute management actions for your entity (e.g., approving the constitution, adding/removing members).
+  - Apps/Licenses: Currently a demo tab to display available services that can be used by your entity (for future expansion).
 
-You will need a browser wallet to develop and test blockchain interactions.
-Download the Metamask browser extension [here](https://metamask.io/download/).
+### Entity Management through the Actions Tab:
 
-During the setup flow choose "Import existing wallet".
-
-When it asks for your "Secret recovery phrase", use
-`test test test test test test test test test test test junk`
-
-You can then follow the instructions [here](https://support.metamask.io/managing-my-wallet/using-metamask/using-a-local-node/)
-to connect metamask to our local dev blockchain.
-
-You should now have 10,000 ETH (local network eth) in your wallet.
-You're a legend on your local machine.
-
-# Architecture
-
-## High level overview
-
-![High level architecture diagram](./Manager%20App%20Architecture%20sans%20links.drawio.png)
-
-## CI/CD
-
-Github action scripts can be found in `.github/workflows`
-
-## [The Manager App](https://zygote.registrychain.com/)
-
-### Hosting
-
-The App is hosted on cloudflare and IPFS
-
-### Major dependencies
-
-#### [Ens.js](https://github.com/ensdomains/ensjs-v3)
-
-Much of the logic around interacting with the ENS contracts has been extraced into this
-library. This is mostly so that we can help to make the experience of interacting with
-ENS as simple as possible for other developers.
-
-#### [Thorin](https://github.com/ensdomains/thorin)
-
-As we have many different applications, and also would like to support the community, we
-have developed a design system in order to ensure consistent styling across the board.
-
-### Application Architecture: Key files and concepts
-
-#### Pages and components
-
-Pages folder has basic route layout and basic react needed for rendering pages. These
-files should be kept relatively simple
-
-Components that pages consume are kept in the components folder. This folder has a strucutre
-that mimicks the strucutre of the pages folder. If a component is only used on a specific page
-then it goes into the corresponding folder in the components folder.
-
-If a component is used across multiple pages and other components,
-then it goes into the `atoms` and `molecules` folder (link to atoms and molecules thingy).
-
-#### useQuery
-
-TBC
-
-#### Transactions
-
-#### `TransactionStore.ts`
-
-Transaction store is responsible for keeping track of the state of transactions.
-
-#### `TransactionFlowProvider.ts`
-
-We noticed transactions always follow a similar pattern and so created an internal API to
-streamline this. A transaction flow is a series of steps that occur in a modal, culminating
-in a successful or failed transaction. Transactions can have either an intro or an input step
-before the transaction step.
-
-#### Example of transaction with an input and multiple steps
-
-- Switch to test account 1 (the second account).
-- Go to 'My Names'
-- Select `migrated-resolver-to-be-updated.eth`
-- Click send
-- The Modal that pops up is rendered by the `TransactionDialogManager`, which is rendered
-  by `TransactionFlowProvider`. The logic for rendering the different steps is contained here.
-- This button is in `RolesSection.tsx`, which gets its actions from `useRoleActions.tsx`.
-  The `onClick` property here calls `showSendNameInput` from `usePreparedDataInput`.
-  This is a helper function provided by the `useTransactionFlow` hook.
-  We have various input components prepared already,
-  they are defined in `src/transaction-flow/input`. This one is using `input/SendName`. Once the
-  form data has been submitted we dispatch two actions to the `TransactionFlowProvider` reducer.
-  One to set the transactions required, and the next one to advance to the next step of the
-  transaction flow.
-- Enter any address or ENS name that exists in the dev environment
-- You should see a summary of changes, indicating the steps/transactions required
-- Follow the steps through and complete the multiple transactions
-- The code for managing the sending of transactions is in `TransactionStageModal`.
-
-#### Sync Provider
-
-This is for when the graph is behind and we are waiting for it to catchup.
-
-#### Notification system
-
-TBC
-
-### Metadata service
-
-ENS names are NFTs. NFTs can have metadata associated with them, that is
-data associated with them that is not stored directly on-chain. One of the
-main use cases of this is to display a nice image that represents the ENS
-name. You can see an example of this [here](https://zygote.registrychain.com/nick.eth?tab=more).
-
-https://metadata.registrychain.com/
-
-- https://metadata.registrychain.com/docs
-- https://github.com/ensdomains/ens-metadata-service
-
-#### Cloudflare workers
-
-avatar-upload: [url](https://avatar-upload.ens-cf.workers.dev/),
-[src](https://github.com/ensdomains/ens-avatar-worker)
-
-gas-estimate-worker: [url](https://gas-estimate-worker.ens-cf.workers.dev/),
-[src](https://github.com/ensdomains/gas-estimate-worker)
-
-app-v3-maintenance: [url](https://app-v3-maintenance.ens-cf.workers.dev/)
-
-moonpay-worker: [url](https://moonpay-worker.ens-cf.workers.dev/),
-[src](https://github.com/ensdomains/moonpay-worker)
-
-etherscan-api worker: [url](https://etherscan-api.ens-cf.workers.dev)
-
-#### Data indexing
-
-The graph hosted service: [url](https://api.thegraph.com/subgraphs/name/ensdomains/ens/graphql),
-[src](https://github.com/ensdomains/ens-subgraph)
-
-### Unit Test
-
-```bash
-pnpm test
-pnpm test:watch
-pnpm test:coverage
-```
-
-#### **If you need to deploy a new subgraph**
-
-You shouldn't deploy the subgraph on top of the existing dataset, instead you should create a clean dataset (explained below).
-
-1. Start the test environment
-
-```bash
-pnpm denv --save
-```
-
-2. Deploy the subgraph
-
-After the deploy scripts have run, you can deploy the subgraph. Assuming you are in the [ens-subgraph](https://github.com/ensdomains/ens-subgraph) repo, you can use:
-
-```bash
-yarn setup
-```
-
-3. Wait for the subgraph to sync
-
-Similar to the update process, a good indicator of sync status is if you see this message:
-
-```
-no chain head update for 30 seconds, polling for update, component: BlockStream
-```
-
-Dissimilar to the update process however is that you will never need to mine blocks manually.
-
-4. Exit the test environment
-
-You can exit out of the test environment using `Ctrl+C`.
-
-Once exited, you can commit the data to your branch. You do not need to run a separate save command.
-
-### E2E Testing
-
-#### Stateless vs Stateful
-
-Our e2e tests are split into two categories, stateless and stateful. Stateless test use the development environment, are faster, and is the general recommended way to write integration tests. Occasionally, you may need to test a feature that requires an external api or service. In this case, you can use the stateful tests. These tests are slower,
-
-#### Running the tests
-
-Running the entire stateless test suite:
-
-```bash
-pnpm denv
-pnpm dev:glocal
-pnpm e2e
-```
-
-Running a single test within a browser:
-
-```bash
-pnpm denv
-pnpm dev:glocal
-pnpm e2e < filename >:< linenumber > --headed
-```
-
-Running the entire stateful test suite:
-
-```bash
-pnpm dev
-pnpm e2e:stateful
-```
-
-Running a single stateful test within a browser:
-
-```bash
-pnpm dev
-pnpm e2e:stateful < filename >:< linenumber > --headed
-```
-
-#### makeName
-
-The most important function in the e2e stateless tests is `makeName`. This function is used to create a unique name for each test. This is important because we want to avoid any conflicts between tests.
-
-##### Syntax
-
-```typescript
-  const name = await makeName({
-    label: 'name',
-    type: 'legacy',
-    owner: '0x1234567890123456789012345678901234567890',
-    manager: '0x1234567890123456789012345678901234567890',
-    resolver: '0x1234567890123456789012345678901234567890',
-    records: {
-      texts: [{
-        key: 'text',
-        value: 'value'
-      }],
-      coins: [{
-        coin: 'eth',
-        value: '0x1234567890123456789012345678901234567890'
-      }],
-      contentHash: 'bafybeico3uuyj3vphxpvbowchdwjlrlrh62awxscrnii7w7flu5z6fk77y',
-      abi: await encodeAbi({ encodeAs: 'cbor', data: { test2: 'test2' } }),
-    }
-    subnames: [{
-      label: 'subname',
-      type: 'wrapped',
-      owner: '0x1234567890123456789012345678901234567890',
-      duration: 365,
-      resolver: '0x1234567890123456789012345678901234567890',
-      records: [{
-        key: 'text',
-        value: 'value'
-      }]
-    }]
-  })
-```
-
-##### Parameters
-
-###### nameOrNames
-
-A single or an array of names to create. Each name can have the following properties:
-
-**label**: _string_
-
-The label of the name.
-
-**type**: legacy | legacy-register | wrapped\*
-
-The type of the name. _legacy_ names adopt the original data structure of ENS and are not ERC1155 complaint. _wrapped_ names are names that have been wrapped with the _NameWrapper_ contract and are ERC1155 compliant. _legacy-register_ names simulate how mass registration services register names, usually without a resolver of other options that may increase gas.
-
-**owner**: _user | user2 | user3_
-
-_defaults to owner_
-
-The address of the owner of the name.
-
-**manager**: _user | user2 | user3_
-
-_defaults to value of owner_
-
-The address of the manager of the name. Only applicable to _legacy_ and _legacy-registr_ names.
-
-**duration**: _number_
-
-_defaults to 365 days in seconds_
-
-The number of seconds the name will be registered for. Negative values are allowed to simulate names that have expired or are in the grace period.
-
-**secret**: _hex_
-
-_defaults to a zero hex_
-
-The secret used during the register process. You will most likely not need to set this value.
-
-**resolver**: _address_
-
-_defaults to the legacy resolver for legacy names and the latest resolver for wrapped names_
-
-The address of the resolver for the name. Used to test cases where the resolver is misconfgured or not set.
-
-**addr**: _address_
-
-_defaults to the address of the owner_
-
-The address record for the name. Is used to test cases where the eth address is not set.
-
-**records**: _RecordOptions_
-
-The records for the name. Below is a type definition for the records object.
-
-```typescript
-type RecordOptions = {
-  texts: {
-    key: string
-    value: string
-  }[]
-  coins: {
-    coin: string | number
-    value: string
-  }[]
-  contentHash: string
-  abi: AbiObject
-}
-```
-
-**fuses**: _FusesType_
-
-_applicable to wrapped names only_
-
-The fuses to burn for a wrapped name. Below is a type definition for the fuses object. Note that _PARENT_CANNOT_CONTROL_ is not fuse option as it is burned by default when a 2LD name is wrapped.
-
-```typescript
-type FusesType = {
-  named: Array<
-    | 'CANNOT_UNWRAP'
-    | 'CANNOT_BURN_FUSES'
-    | 'CANNOT_TRANSFER'
-    | 'CANNOT_SET_RESOLVER'
-    | 'CANNOT_SET_TTL'
-    | 'CANNOT_CREATE_SUBDOMAIN'
-    | 'CANNOT_APPROVE'
-  >
-}
-```
-
-**subnames**: _SubnameType[]_
-
-The subnames for the name. Below is a type definition for the subname object.
-
-```typescript
-type SubnameType = {
-  label: string
-  type: 'legacy' | 'wrapped'
-  resolver: string
-  records: RecordOptions
-  duration: number
-  subnames: SubnameType[]
-  fuses: FusesType // Only applicable to wrapped names
-}
-```
-
-###### options
-
-**timeOffset**: _number_
-
-_defaults to 0_
-
-The duration in seconds to move the blockchain forward after the name has been registered. In rare use cases, usually when you are testing a name with a negative duration, the blockchain may need to be moved forward after all the transactions before it will resolve correctly.
-
-**syncSubgraph**: _boolean_
-
-_defaults to true_
-
-Whether to wait for the subgraph to sync before returning the name. It is useful to set this value to false when you are testing a feature that does not rely on the subgraph to speed up the tests.
-
-##### Returns
-
-Returns a string for the 2LD name that is made up of the label with a timestamp appended to it and .eth TLD. The appended timestamp ensures that each time that a name is generated that it is unique.
-
-### Building and Starting
-
-```bash
-pnpm build
-pnpm start
-
-# Or with the test environment running
-pnpm build:glocal
-pnpm buildandstart:glocal
-```
-
-### Debugging
-
-To debug a single test:
-
-```bash
-pnpm denv
-pnpm dev:glocal
-pnpm playwright test --project=stateless --ui stateless/extendNames
-```
-
-## PR builds
-
-Cloudflare will automatically build and deploy a test site when pushed to a new PR branch.
-
-## External Package Local Development
-
-1. Install yalc globally:
-
-```bash
-npm i -g yalc
-```
-
-2. Run relevant update script within external repo, for example:
-
-```bash
-# Example publish script for ENSjs, be aware this may have changed.
-pnpm publish:local:ensjs
-```
-
-3. Run pnpm install within this repo:
-
-```bash
-pnpm install
-```
-
-If updating an existing yalc installation, you can add the `--force` flag.
-
-## Coding guidelines
-
-- `any` is strictly prohibited, tempting as it may be.
-- Prefer small functions that do one thing.
-- Most business logic should be outside of hooks, e.g. useEffect, useQuery etc is just there
-  to manage react rendering and should be small, most of the logic should be in pure functions
-- `ts-pattern` for conditionally rendering components when something more than a ternary
-  expression is needed
-- Critical pieces of logic should be unit tested
-
-## Testing philosophy
-
-Our testing philosophy is user-centric, meaning we want to write out tests so that they resemble the way a user would use our app as much as possible. We've borrowed this from the excellent [testing-library](https://testing-library.com/docs/guiding-principles/).
-
-A user generally clicks, types and swipes, and so most tests should include one of these actions. A user may also load a page in a specific state (by clicking, typing or swiping outside of the app) so sometimes we just want to check a page renders correctly. The vast majority of our tests will be of these kinds.
-
-For deeper parts of the codebase that aren't directly related to a user interaction, such as utility functions, the user is the developer. So simply test the code in the way a developer would use it.
+- In the Actions tab, you can manage the entity’s operations by initiating proposals, confirming actions, and executing them.
+- For example, to approve the constitution, all founding members must sign a declaration in the Actions tab, which triggers the approval process.
+- Any changes to the entity's structure or rules (e.g., adding new members or modifying roles) can also be proposed and managed here.

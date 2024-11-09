@@ -5,8 +5,6 @@ import { Eth2ldName } from '@ensdomains/ensjs/dist/types/types'
 import { GetPriceReturnType } from '@ensdomains/ensjs/public'
 import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
-import { KNOWN_RESOLVER_DATA } from '@app/constants/resolverAddressData'
-
 import { CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE } from './constants'
 import { ONE_DAY, ONE_YEAR } from './time'
 
@@ -169,9 +167,7 @@ export const getResolverWrapperAwareness = ({
 }: {
   chainId: number
   resolverAddress?: Address
-}) =>
-  !!resolverAddress &&
-  !!KNOWN_RESOLVER_DATA[chainId]?.find((x) => x.address === resolverAddress)?.isNameWrapperAware
+}) => !!resolverAddress
 
 export const calculateValueWithBuffer = (value: bigint) =>
   (value * CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE) / 100n

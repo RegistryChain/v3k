@@ -6,7 +6,6 @@ import { GetOwnerReturnType, GetWrapperDataReturnType } from '@ensdomains/ensjs/
 import { Button, Typography } from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
-import { AddressAvatar, AvatarWithZorb } from '@app/components/AvatarWithZorb'
 import { NFTWithPlaceholder } from '@app/components/NFTWithPlaceholder'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
@@ -70,9 +69,6 @@ const NameOwnerItem = ({ address }: { address?: Address }) => {
           </Typography>
           <Typography weight="bold">{shortenAddress(address)}</Typography>
         </OwnerWithEns>
-        <AvatarWrapper>
-          <AvatarWithZorb label={nameData.name} address={address} name={nameData.name} />
-        </AvatarWrapper>
       </OwnerContainer>
     )
   }
@@ -80,9 +76,6 @@ const NameOwnerItem = ({ address }: { address?: Address }) => {
   return (
     <OwnerContainer>
       <Typography weight="bold">{shortenAddress(address)}</Typography>
-      <AvatarWrapper>
-        <AddressAvatar address={address || ''} label={address || ''} />
-      </AvatarWrapper>
     </OwnerContainer>
   )
 }

@@ -22,7 +22,6 @@ import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import useHasPendingTransactions from '@app/hooks/transactions/useHasPendingTransactions'
 import { useCopied } from '@app/hooks/useCopied'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import { useZorb } from '@app/hooks/useZorb'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 import { shortenAddress } from '@app/utils/utils'
@@ -131,7 +130,6 @@ const HeaderProfile = ({ address }: { address: Address }) => {
 
   const { data: primary } = usePrimaryName({ address })
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name: primary?.name })
-  const zorb = useZorb(address, 'address')
 
   const router = useRouterWithHistory()
 
@@ -157,11 +155,12 @@ const HeaderProfile = ({ address }: { address: Address }) => {
                   label: t('wallet.myProfile'),
                   wrapper: (children: ReactNode, key: Key) => {
                     console.log(children)
-                    return(
-                    <BaseLink href="/my/profile" key={key}>
-                      {children}
-                    </BaseLink>
-                  )},
+                    return (
+                      <BaseLink href="/my/profile" key={key}>
+                        {children}
+                      </BaseLink>
+                    )
+                  },
                   as: 'a' as 'a',
                   color: 'text',
                   icon: <PersonSVG />,
@@ -196,7 +195,7 @@ const HeaderProfile = ({ address }: { address: Address }) => {
         ] as DropdownItem[]
       }
       avatar={{
-        src: avatar || zorb,
+        src: avatar as any,
         decoding: 'sync',
         loading: 'eager',
         noBorder: true,

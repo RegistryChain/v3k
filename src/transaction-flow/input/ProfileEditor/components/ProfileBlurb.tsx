@@ -5,7 +5,6 @@ import { Avatar, Typography } from '@ensdomains/thorin'
 
 import { useAvatarFromRecord } from '@app/hooks/useAvatarFromRecord'
 import { useProfile } from '@app/hooks/useProfile'
-import { useZorb } from '@app/hooks/useZorb'
 import { Profile } from '@app/types'
 
 const Container = styled.div(
@@ -52,7 +51,6 @@ export const ProfileBlurb = ({ name, resolverAddress }: Props) => {
   const { data: profile } = useProfile({ name, resolverAddress })
   const avatarRecord = getTextRecordByKey(profile, 'avatar')
   const { avatar } = useAvatarFromRecord(avatarRecord)
-  const zorb = useZorb(name, 'name')
 
   const nickname = getTextRecordByKey(profile, 'name')
   const description = getTextRecordByKey(profile, 'description')
@@ -61,7 +59,7 @@ export const ProfileBlurb = ({ name, resolverAddress }: Props) => {
   return (
     <Container>
       <AvatarWrapper>
-        <Avatar label="profile-button-avatar" src={avatar || zorb} noBorder />
+        <Avatar label="profile-button-avatar" src={avatar as any} noBorder />
       </AvatarWrapper>
       <InfoContainer>
         <Typography fontVariant="extraLargeBold">{name}</Typography>

@@ -99,79 +99,6 @@ export const routes: RouteItemObj[] = [
     },
     onlyDropdown: true,
   },
-  {
-    name: 'support',
-    href: 'https://support.ens.domains',
-    label: 'navigation.support',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'feedback',
-    href: 'https://ens.canny.io/',
-    label: 'navigation.feedback',
-    disabled: false,
-    connected: false,
-    onlyDropdown: true,
-  },
-  {
-    name: 'governance',
-    href: 'https://ensdao.org/',
-    label: 'navigation.governance',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'community',
-    href: 'https://chat.registrychain.com/',
-    label: 'navigation.community',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'developers',
-    href: 'https://docs.registrychain.com/',
-    label: 'navigation.developers',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'bounty',
-    href: 'https://docs.registrychain.com/bug-bounty-program',
-    label: 'navigation.bounty',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'terms',
-    href: '/legal/terms-of-use',
-    label: 'navigation.terms',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'privacy',
-    href: '/legal/privacy-policy',
-    label: 'navigation.privacy',
-    disabled: false,
-    connected: false,
-  },
-  {
-    name: 'oldApp',
-    href: 'https://legacy.registrychain.com',
-    label: 'navigation.oldApp',
-    disabled: false,
-    connected: false,
-    onlyDropdown: true,
-  },
-  {
-    name: 'ipfsApp',
-    href: 'https://app.ens.eth.limo/',
-    label: 'navigation.ipfsApp',
-    disabled: false,
-    connected: false,
-    onlyDropdown: true,
-  },
 ]
 
 export const legacyFavouritesRoute: RouteItemObj = {
@@ -192,7 +119,6 @@ export const getRoute = (name: PublicRoute | ConnectedRoute): RouteItemObj =>
 // these rewrites are similar to the next.config.js rewrites
 // however the destination property uses the path index instead of a named parameter
 // e.g. /profile/:name => /profile?name=$2
-// evaluates to /profile/ens.eth => /profile?name=ens.eth
 export const rewrites = [
   {
     source: '/my/profile',

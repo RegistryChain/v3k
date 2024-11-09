@@ -3,7 +3,6 @@ import { Address } from 'viem'
 
 import { Typography } from '@ensdomains/thorin'
 
-import { AvatarWithZorb } from '@app/components/AvatarWithZorb'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { QuerySpace } from '@app/types'
 import { shortenAddress } from '@app/utils/utils'
@@ -63,7 +62,6 @@ export const AvatarWithIdentifier = ({
 
   return (
     <Container>
-      <AvatarWithZorb label={_title} address={address} name={_name} size={size} />
       <TextContainer>
         {isTitleFullAddress ? (
           <AddressTitleContainer data-testid="avatar-label-title">{_title}</AddressTitleContainer>

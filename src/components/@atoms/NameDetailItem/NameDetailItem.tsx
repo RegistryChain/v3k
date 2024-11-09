@@ -5,7 +5,6 @@ import { useEnsAvatar } from 'wagmi'
 import { Avatar, mq } from '@ensdomains/thorin'
 
 import CircleTick from '@app/assets/CircleTick.svg'
-import { useZorb } from '@app/hooks/useZorb'
 import { INVALID_NAME } from '@app/utils/constants'
 import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 import { checkETH2LDFromName } from '@app/utils/utils'
@@ -140,7 +139,6 @@ export const NameDetailItem = ({
   children: ReactNode
 }) => {
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name })
-  const zorb = useZorb(name, 'name')
 
   const handleClick = () => {
     if (disabled) return
@@ -149,38 +147,37 @@ export const NameDetailItem = ({
 
   const _expiryDate = safeDateObj(expiryDate)
   return (
-      <NameItemWrapper
-        $disabled={name === INVALID_NAME || disabled}
-        $highlight={mode === 'select' && selected}
-        as={mode !== 'select' ? 'a' : 'div'}
-        data-testid={`name-item-${name}`}
-        onClick={name !== INVALID_NAME ? handleClick : undefined}
-      >
-        <NameItemContainer>
-          <AvatarWrapper>
-            <Avatar
-              placeholder={`url(${zorb})`}
-              label={(truncatedName || name)}
-              src={avatar || zorb}
-              data-testid="name-detail-item-avatar"
-              disabled={disabled}
-            />
-            {mode === 'select' && selected && (
-              <AvatarOverlay>
-                <CircleTick />
-              </AvatarOverlay>
-            )}
-          </AvatarWrapper>
-          <NameItemContent>
-            <TitleWrapper name={(truncatedName || name)} disabled={disabled} />
-            {_expiryDate && (
-              <SubtitleWrapper>
-                <ShortExpiry expiry={_expiryDate} hasGracePeriod={checkETH2LDFromName(name)} />
-              </SubtitleWrapper>
-            )}
-          </NameItemContent>
-        </NameItemContainer>
-        <div>{children}</div>
-      </NameItemWrapper>
+    <NameItemWrapper
+      $disabled={name === INVALID_NAME || disabled}
+      $highlight={mode === 'select' && selected}
+      as={mode !== 'select' ? 'a' : 'div'}
+      data-testid={`name-item-${name}`}
+      onClick={name !== INVALID_NAME ? handleClick : undefined}
+    >
+      <NameItemContainer>
+        <AvatarWrapper>
+          <Avatar
+            label={truncatedName || name}
+            src={avatar as any}
+            data-testid="name-detail-item-avatar"
+            disabled={disabled}
+          />
+          {mode === 'select' && selected && (
+            <AvatarOverlay>
+              <CircleTick />
+            </AvatarOverlay>
+          )}
+        </AvatarWrapper>
+        <NameItemContent>
+          <TitleWrapper name={truncatedName || name} disabled={disabled} />
+          {_expiryDate && (
+            <SubtitleWrapper>
+              <ShortExpiry expiry={_expiryDate} hasGracePeriod={checkETH2LDFromName(name)} />
+            </SubtitleWrapper>
+          )}
+        </NameItemContent>
+      </NameItemContainer>
+      <div>{children}</div>
+    </NameItemWrapper>
   )
 }

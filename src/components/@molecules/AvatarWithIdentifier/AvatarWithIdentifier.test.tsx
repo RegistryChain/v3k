@@ -18,10 +18,6 @@ vi.mock('@app/hooks/ensjs/public/usePrimaryName', () => ({
     !enabled ? { isLoading: false } : mockUsePrimary({ address }),
 }))
 
-vi.mock('@app/components/AvatarWithZorb', () => ({
-  AvatarWithZorb: () => <div>ZORB</div>,
-}))
-
 afterEach(() => {
   vi.clearAllMocks()
 })

@@ -9,7 +9,6 @@ import { CrossSVG, LeftChevronSVG, mq, PersonSVG } from '@ensdomains/thorin'
 import { useAccountSafely } from '@app/hooks/account/useAccountSafely'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import useHasPendingTransactions from '@app/hooks/transactions/useHasPendingTransactions'
-import { useZorb } from '@app/hooks/useZorb'
 import { getDestination, getRoute, legacyFavouritesRoute } from '@app/routes'
 import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 
@@ -184,7 +183,6 @@ const TabBarProfile = ({
 }) => {
   const router = useRouter()
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name })
-  const zorb = useZorb(address, 'address')
   const hasPendingTransactions = useHasPendingTransactions()
 
   return (
@@ -196,7 +194,6 @@ const TabBarProfile = ({
         ) : (
           <>
             <ArrowOverlay as={PersonSVG} $isOpen={!isOpen} />
-            <img loading="eager" decoding="sync" alt="zorb" src={zorb} />
           </>
         )}
       </AvatarWrapper>

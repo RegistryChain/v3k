@@ -166,12 +166,6 @@ export const useQueryKeys = () => {
     simpleSearchBase: () => [...globalKeys, 'simpleSearch'],
     globalIndependent: {
       isSupportedTLD: (tld: string) => [tld, 'isSupportedTLD'],
-      zorb: (input: string, type: string, bg: string, fg: string, accent: string) => [
-        input,
-        type,
-        { bg, fg, accent },
-        'zorb',
-      ],
       gasCostJson: ['gasCostJson'],
       claimDomain: (name: string, syncWarning: boolean) => [
         'proverResult',
