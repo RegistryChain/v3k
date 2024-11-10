@@ -70,7 +70,7 @@ export default function Page() {
   const [partners, setPartners] = useState<any[]>([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
-  const [template, setTemplate] = useState<any>('default')
+  const [model, setModel] = useState<any>('Model 1')
 
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
@@ -129,7 +129,7 @@ export default function Page() {
     const m = new Date().getMonth() + 1
     const d = new Date().getDate()
     const y = new Date().getFullYear()
-    setProfile((prevState: any) => ({ ...prevState, formation__date: d + '/' + m + '/' + y }))
+    setProfile((prevState: any) => ({ ...prevState, formation__date: y + '-' + m + '-' + d }))
   }, [registrationStep])
   const intakeType = 'company'
 
@@ -287,7 +287,7 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      profile.selected__template = template
+      profile.selected__model = model
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
 
       const jurisSubdomainString = code
@@ -433,8 +433,8 @@ export default function Page() {
         <Constitution
           breakpoints={breakpoints}
           formationData={texts}
-          template={template}
-          setTemplate={setTemplate}
+          model={model}
+          setModel={setModel}
         />
         <Review
           name={name}
@@ -478,6 +478,11 @@ const generateTexts = (partners: any, profile: any, entityName: any, intakeType:
         }
       } else if (typeof partner[field] === 'boolean') {
         texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
+      } else if (field === 'Date') {
+        const m = new Date().getMonth() + 1
+        const d = new Date().getDate()
+        const y = new Date().getFullYear()
+        texts.push({ key: partnerKey + field, value: y + '-' + m + '-' + d })
       } else if (field !== 'roles') {
         texts.push({ key: partnerKey + field, value: partner[field] })
       } else if (partner[field]) {

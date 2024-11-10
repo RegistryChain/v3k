@@ -12,6 +12,7 @@ import React, { useMemo, useState } from 'react'
 import { Button } from '@ensdomains/thorin'
 
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
+import WatermarkedWrapper from '@app/components/WatermarkedWrapper'
 
 // Create styles
 const styles: any = {
@@ -50,7 +51,18 @@ const styles: any = {
 }
 const stylesPDF: any = StyleSheet.create({
   page: {
-    padding: 20,
+    padding: '20px',
+    paddingBottom: '70px',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    // backgroundRepeat: 'repeat',
+    // backgroundImage: `url(https://w7.pngwing.com/pngs/653/502/png-transparent-gray-draft-text-on-black-background-postage-stamps-draft-miscellaneous-angle-white-thumbnail.png)`,
+    // backgroundSize: '100px 120px', // Adjust the size as needed
+    opacity: 0.9, // Adjust transparency to make it subtle
+    // pointerEvents: 'none', // Ensures the watermark doesn't interfere with interactions
+    zIndex: 1,
   },
   header: {
     fontSize: 16,
@@ -71,47 +83,98 @@ const stylesPDF: any = StyleSheet.create({
   },
 })
 
-const buildConstitutionView = (profileData: any, userData: any, templateId: any) => {
+const buildConstitutionView = (profileData: any, userData: any, modelId: any, metadata: any) => {
   const constitutionHeader = (
     <div key="constheader" style={styles.constitutionHeader}>
       <div style={styles.headerTitle}>
         {profileData.name}, {profileData.type}
       </div>
-      <div style={styles.headerSubtitle}>Certificate of Formation</div>
+      <div style={styles.headerSubtitle}>{constitutionModel[modelId].title}</div>
     </div>
   )
 
-  const constitutionContent = constitutionTemplate[templateId].map((section: any, idx: number) => {
-    const contentArray = section.content(profileData, userData)
-    let subSectionCount = 0
+  const constitutionContent = constitutionModel[modelId].sections.map(
+    (section: any, idx: number) => {
+      const contentArray = section.content(profileData, userData)
+      let subSectionCount = 0
 
-    return (
-      <div key={section.header} style={styles.section}>
-        <div style={styles.sectionHeader}>
-          {idx + 1}. {section.header}
+      if (contentArray.length === 1 && !contentArray[0]) {
+        return null
+      }
+
+      return (
+        <div key={section.header} style={styles.section}>
+          <div style={styles.sectionHeader}>
+            {idx + 1}. {section.header}
+          </div>
+
+          {contentArray.map((item: any, index: number) => {
+            if (typeof item === 'string' && item.length >= 1) {
+              subSectionCount += 1
+              return (
+                <div key={index} style={styles.listItem}>
+                  {idx + 1}.{subSectionCount} {item}
+                </div>
+              )
+            } else if (Array.isArray(item) && item.length >= 1) {
+              return item.map((subItem, subIndex) => (
+                <div key={`${index}-${subIndex}`} style={styles.subListItem}>
+                  {subItem}
+                </div>
+              ))
+            }
+            return null
+          })}
         </div>
+      )
+    },
+  )
 
-        {contentArray.map((item: any, index: number) => {
-          if (typeof item === 'string') {
-            subSectionCount += 1
-            return (
-              <div key={index} style={styles.listItem}>
-                {idx + 1}.{subSectionCount} {item}
-              </div>
-            )
-          } else if (Array.isArray(item)) {
-            return item.map((subItem, subIndex) => (
-              <div key={`${index}-${subIndex}`} style={styles.subListItem}>
-                {subItem}
-              </div>
-            ))
-          }
-          return null
-        })}
-      </div>
+  const constitutionFooter = []
+  if (metadata.domain) {
+    constitutionFooter.push(
+      <div style={{ textAlign: 'right', marginTop: '30px', fontSize: '12px', marginLeft: '12px' }}>
+        {metadata.domain}
+      </div>,
     )
-  })
+  }
+  if (metadata.LEI) {
+    constitutionFooter.push(
+      <div style={{ textAlign: 'right', fontSize: '12px', marginLeft: '12px' }}>
+        {metadata.LEI}
+      </div>,
+    )
+  }
+  if (metadata.multisigAddress) {
+    constitutionFooter.push(
+      <div style={{ textAlign: 'right', fontSize: '12px', marginLeft: '12px' }}>
+        {metadata.multisigAddress}
+      </div>,
+    )
+  }
 
+  let sectionBackground = null
+  if (metadata.status === 'APPROVED') {
+    sectionBackground = (
+      <>
+        {constitutionHeader}
+        {constitutionContent}
+        {constitutionFooter}
+      </>
+    )
+  } else {
+    sectionBackground = (
+      <WatermarkedWrapper
+        watermark={
+          'https://w7.pngwing.com/pngs/653/502/png-transparent-gray-draft-text-on-black-background-postage-stamps-draft-miscellaneous-angle-white-thumbnail.png'
+        }
+      >
+        {constitutionHeader}
+        {constitutionContent}
+        {constitutionFooter}
+      </WatermarkedWrapper>
+    )
+  }
   return (
     <div
       style={{
@@ -121,23 +184,24 @@ const buildConstitutionView = (profileData: any, userData: any, templateId: any)
         overflowY: 'scroll',
       }}
     >
-      {constitutionHeader}
-      {constitutionContent}
+      {sectionBackground}
     </div>
   )
 }
 
 // Function to build the constitution sections
-const buildConstitution = (profileData: any, userData: any, templateId: any) => {
+const buildConstitution = (profileData: any, userData: any, modelId: any, metadata: any) => {
   const constitutionHeader = (
     <View key={'constheader'} style={{ marginTop: 30, marginBottom: 35, textAlign: 'center' }}>
       <Text style={{ fontSize: 25, fontWeight: 'extrabold' }}>
         {profileData.name}, {profileData.type}
       </Text>
-      <Text style={{ fontSize: 18, fontWeight: 'extrabold' }}>Certificate of Formation</Text>
+      <Text style={{ fontSize: 18, fontWeight: 'extrabold' }}>
+        {constitutionModel[modelId]?.title}
+      </Text>
     </View>
   )
-  const constitutionContent = constitutionTemplate[templateId].map((section: any, idx: any) => {
+  const constitutionContent = constitutionModel[modelId].sections.map((section: any, idx: any) => {
     const contentArray = section.content(profileData, userData)
     let subSectionCount = 0
 
@@ -174,251 +238,305 @@ const buildConstitution = (profileData: any, userData: any, templateId: any) => 
     )
   })
 
-  return [constitutionHeader, ...constitutionContent]
+  const constitutionFooter = []
+  if (metadata.domain) {
+    constitutionFooter.push(
+      <Text
+        style={{ textAlign: 'right', marginTop: '30px', fontSize: '10px', marginLeft: '12px' }}
+        fixed
+      >
+        {metadata.domain}
+      </Text>,
+    )
+  }
+  if (metadata.LEI) {
+    constitutionFooter.push(
+      <Text style={{ textAlign: 'right', fontSize: '10px', marginLeft: '12px' }} fixed>
+        {metadata.LEI}
+      </Text>,
+    )
+  }
+  if (metadata.multisigAddress) {
+    constitutionFooter.push(
+      <Text style={{ textAlign: 'right', fontSize: '10px', marginLeft: '12px' }} fixed>
+        {metadata.multisigAddress}
+      </Text>,
+    )
+  }
+
+  return [
+    constitutionHeader,
+    ...constitutionContent,
+    <View style={{ position: 'absolute', bottom: '24px', right: '40px', width: '100%' }} fixed>
+      {...constitutionFooter}
+    </View>,
+  ]
 }
 
-const constitutionTemplate: any = {
-  default: [
-    {
-      header: 'Name',
-      content: (profileData: any, userData: any) => [
-        `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
-      ],
-    },
-    {
-      header: 'Duration',
-      content: (profileData: any, userData: any) => [
-        `The ${profileData?.type || 'N/A'}’s activities begin on ${
-          profileData?.formation__date || 'N/A'
-        }, and its duration shall be perpetual.`,
-      ],
-    },
-    {
-      header: 'Purpose',
-      content: (profileData: any, userData: any) => [
-        `The purpose of this ${
-          profileData?.type || 'N/A'
-        } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
-      ],
-    },
-    {
-      header: 'Address',
-      content: (profileData: any, userData: any) => [
-        `Principal Office: The principal office of the ${
-          profileData?.type || 'N/A'
-        } is located at ${profileData?.address || 'N/A'}`,
-      ],
-    },
-    {
-      header: 'Members',
-      content: (profileData: any, userData: any) => [
-        `The initial member(s) of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
-        userData?.map((user: any, idx: any) => {
-          const roles = [...user.roles]
-          if (user.shares > 0) {
-            roles.push('shareholder')
-          }
-          return `${user.name} (ID: ${user.wallet__address})${
-            roles.length > 0 ? ' - ' : ''
-          }${roles.join(', ')}`
-        }),
-      ],
-    },
-    {
-      header: 'Management',
-      content: (profileData: any, userData: any) => [
-        `The ${profileData?.type || 'N/A'} shall be managed by  its members.`,
-      ],
-    },
-    {
-      header: 'Shares',
-      content: (profileData: any, userData: any) => {
-        let totalShares = 0
-        userData.forEach((x: any) => {
-          totalShares += Number(x.shares)
-        })
-        return [
-          `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
-          `The initial shares allocation are as follows: `,
+const constitutionModel: any = {
+  'Model 1': {
+    title: 'Certificate of Formation',
+    sections: [
+      {
+        header: 'Name',
+        content: (profileData: any, userData: any) => [
+          `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
+        ],
+      },
+      {
+        header: 'Duration',
+        content: (profileData: any, userData: any) => [
+          `The ${profileData?.type || 'N/A'}’s activities begin on ${
+            profileData?.formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          }, and its duration shall be perpetual.`,
+        ],
+      },
+      {
+        header: 'Purpose',
+        content: (profileData: any, userData: any) => [
+          `The purpose of this ${
+            profileData?.type || 'N/A'
+          } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
+        ],
+      },
+      {
+        header: 'Address',
+        content: (profileData: any, userData: any) => [
+          `Principal Office: The principal office of the ${
+            profileData?.type || 'N/A'
+          } is located at ${profileData?.address || 'N/A'}`,
+        ],
+      },
+      {
+        header: 'Members',
+        content: (profileData: any, userData: any) => [
+          `The initial member(s) of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
+          userData?.map((user: any, idx: any) => {
+            const roles = [...user.roles]
+            if (user.shares > 0) {
+              roles.push('shareholder')
+            }
+            return `${user.name} (ID: ${user.wallet__address})${
+              roles.length > 0 ? ' - ' : ''
+            }${roles.join(', ')}`
+          }),
+        ],
+      },
+      {
+        header: 'Management',
+        content: (profileData: any, userData: any) => [
+          `The ${profileData?.type || 'N/A'} shall be managed by  its members.`,
+        ],
+      },
+      {
+        header: 'Shares',
+        content: (profileData: any, userData: any) => {
+          let totalShares = 0
+          userData.forEach((x: any) => {
+            totalShares += Number(x.shares)
+          })
+          return [
+            `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
+            `The initial shares allocation are as follows: `,
+
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
+            }),
+          ]
+        },
+      },
+      {
+        header: 'Capital Contributions',
+        content: (profileData: any, userData: any) => {
+          let totalShares = 0
+          userData.forEach((x: any) => {
+            totalShares += x.shares
+          })
+          return [
+            `Initial Contributions: The initial capital contributions of the members are as follows:`,
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user?.capital || '0'} ${
+                profileData?.capitalCurrency || 'USD'
+              }`
+            }),
+          ]
+        },
+      },
+      {
+        header: 'Amendment',
+        content: (profileData: any, userData: any) => [
+          `This constitution may be amended or repealed by consent of all members`,
+        ],
+      },
+      {
+        header: 'Indemnification',
+        content: (profileData: any, userData: any) => [
+          `The members of the ${
+            profileData?.type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${
+            profileData?.type || 'N/A'
+          }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
+        ],
+      },
+      {
+        header: 'Distributions',
+        content: (profileData: any, userData: any) => [
+          `Distributions of cash, profit or other assets shall be made to members in proportion to their ownership interests, at such times as determined by the members.`,
+        ],
+      },
+      {
+        header: 'Additional Terms',
+        content: (profileData: any, userData: any) => [`${profileData.additional__terms}`],
+      },
+    ],
+  },
+
+  'Model 2': {
+    title: 'Articles of Incorporation',
+    sections: [
+      {
+        header: 'Name',
+        content: (profileData: any, userData: any) => [
+          `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
+        ],
+      },
+      {
+        header: 'Duration',
+        content: (profileData: any, userData: any) => [
+          `The ${profileData?.type || 'N/A'}’s activities begin on ${
+            profileData?.formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          }, and its duration shall be perpetual.`,
+        ],
+      },
+      {
+        header: 'Purpose',
+        content: (profileData: any, userData: any) => [
+          `The purpose of this ${
+            profileData?.type || 'N/A'
+          } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
+        ],
+      },
+      {
+        header: 'Address',
+        content: (profileData: any, userData: any) => [
+          `Main Office: The main office of the ${profileData?.type || 'N/A'} is located at ${
+            profileData?.address || 'N/A'
+          }`,
+        ],
+      },
+      {
+        header: 'Quotaholder',
+        content: (profileData: any, userData: any) => [
+          `The initial quotaholders of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
 
           userData?.map((user: any) => {
-            const ownership = (user.shares / totalShares) * 100
-            return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
+            const roles = [...user.roles]
+            if (user.shares > 0) {
+              roles.push('quotaholder')
+            }
+            return `${user.name} (ID: ${user.wallet__address})${
+              roles.length > 0 ? ' - ' : ''
+            }${roles.join(', ')}`
           }),
-        ]
+        ],
       },
-    },
-    {
-      header: 'Capital Contributions',
-      content: (profileData: any, userData: any) => {
-        let totalShares = 0
-        userData.forEach((x: any) => {
-          totalShares += x.shares
-        })
-        return [
-          `Initial Contributions: The initial capital contributions of the members are as follows:`,
-          userData?.map((user: any) => {
-            const ownership = (user.shares / totalShares) * 100
-            return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'}`
-          }),
-        ]
+      {
+        header: 'Management',
+        content: (profileData: any, userData: any) => [
+          `The ${profileData?.type || 'N/A'} shall be managed by its administrators.`,
+        ],
       },
-    },
-    {
-      header: 'Amendment',
-      content: (profileData: any, userData: any) => [
-        `This constitution may be amended or repealed by consent of all members`,
-      ],
-    },
-    {
-      header: 'Indemnification',
-      content: (profileData: any, userData: any) => [
-        `The members of the ${
-          profileData?.type || 'N/A'
-        } are not personally liable for the acts or debts of the  ${
-          profileData?.type || 'N/A'
-        }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
-      ],
-    },
-    {
-      header: 'Distributions',
-      content: (profileData: any, userData: any) => [
-        `Distributions of cash, profit or other assets shall be made to members in proportion to their ownership interests, at such times as determined by the members.`,
-      ],
-    },
-  ],
+      {
+        header: 'Quotas',
+        content: (profileData: any, userData: any) => {
+          let totalShares = 0
+          userData.forEach((x: any) => {
+            totalShares += Number(x.shares)
+          })
+          return [
+            `The aggregate number of quotas which this ${profileData?.type} shall be issuing is: ${totalShares} quotas of common stock, without par value.`,
+            `The initial quotas allocation are as follows: `,
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user.shares} quotas, ${ownership ? ownership : 0}% ownership`
+            }),
+          ]
+        },
+      },
+      {
+        header: 'Capital Contributions',
+        content: (profileData: any, userData: any) => {
+          let totalShares = 0
+          userData.forEach((x: any) => {
+            totalShares += x.shares
+          })
+          return [
+            `Initial Contributions: The initial capital contributions of the quotaholders are as follows:`,
 
-  alternative: [
-    {
-      header: 'Name',
-      content: (profileData: any, userData: any) => [
-        `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
-      ],
-    },
-    {
-      header: 'Duration',
-      content: (profileData: any, userData: any) => [
-        `The ${profileData?.type || 'N/A'}’s activities begin on ${
-          profileData?.formation__date || 'N/A'
-        }, and its duration shall be perpetual.`,
-      ],
-    },
-    {
-      header: 'Purpose',
-      content: (profileData: any, userData: any) => [
-        `The purpose of this ${
-          profileData?.type || 'N/A'
-        } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
-      ],
-    },
-    {
-      header: 'Address',
-      content: (profileData: any, userData: any) => [
-        `Main Office: The main office of the ${profileData?.type || 'N/A'} is located at ${
-          profileData?.address || 'N/A'
-        }`,
-      ],
-    },
-    {
-      header: 'Members',
-      content: (profileData: any, userData: any) => [
-        `The initial members of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
-
-        userData?.map((user: any) => {
-          const roles = [...user.roles]
-          if (user.shares > 0) {
-            roles.push('shareholder')
-          }
-          return `${user.name} (ID: ${user.wallet__address})${
-            roles.length > 0 ? ' - ' : ''
-          }${roles.join(', ')}`
-        }),
-      ],
-    },
-    {
-      header: 'Management',
-      content: (profileData: any, userData: any) => [
-        `The ${profileData?.type || 'N/A'} shall be managed by its members.`,
-      ],
-    },
-    {
-      header: 'Shares',
-      content: (profileData: any, userData: any) => {
-        let totalShares = 0
-        userData.forEach((x: any) => {
-          totalShares += Number(x.shares)
-        })
-        return [
-          `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
-          `The initial shares allocation are as follows: `,
-          userData?.map((user: any) => {
-            const ownership = (user.shares / totalShares) * 100
-            return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
-          }),
-          // Alice Smith , 700000 shares, 70% ownership
-          // Bob Johnson , 300000 shares, 30% ownership
-        ]
+            userData?.map((user: any) => {
+              const ownership = (user.shares / totalShares) * 100
+              return `${user.name} - ${user?.capital || '0'} ${
+                profileData?.capitalCurrency || 'USD'
+              }`
+            }),
+          ]
+        },
       },
-    },
-    {
-      header: 'Capital Contributions',
-      content: (profileData: any, userData: any) => {
-        let totalShares = 0
-        userData.forEach((x: any) => {
-          totalShares += x.shares
-        })
-        return [
-          `Initial Contributions: The initial capital contributions of the members are as follows:`,
-
-          userData?.map((user: any) => {
-            const ownership = (user.shares / totalShares) * 100
-            return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'}`
-          }),
-        ]
+      {
+        header: 'Amendment',
+        content: (profileData: any, userData: any) => [
+          `This constitution may be amended or repealed by consent of all quotaholders`,
+        ],
       },
-    },
-    {
-      header: 'Amendment',
-      content: (profileData: any, userData: any) => [
-        `This constitution may be amended or repealed by consent of all members`,
-      ],
-    },
-    {
-      header: 'Indemnification',
-      content: (profileData: any, userData: any) => [
-        `The members of the ${
-          profileData?.type || 'N/A'
-        } are not personally liable for the acts or debts of the  ${
-          profileData?.type || 'N/A'
-        }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
-      ],
-    },
-    {
-      header: 'Distributions',
-      content: (profileData: any, userData: any) => [
-        `Distributions of cash, profit or other assets shall be made to members in proportion to their ownership interests, at such times as determined by the members.`,
-      ],
-    },
-  ],
+      {
+        header: 'Indemnification',
+        content: (profileData: any, userData: any) => [
+          `The quotaholders of the ${
+            profileData?.type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${
+            profileData?.type || 'N/A'
+          }. The ${
+            profileData?.type || 'N/A'
+          } shall indemnify its quotaholders and administrators.`,
+        ],
+      },
+      {
+        header: 'Distributions',
+        content: (profileData: any, userData: any) => [
+          `Distributions of cash, profit or other assets shall be made to quotaholders in proportion to their ownership interests, at such times as determined by the quotaholders.`,
+        ],
+      },
+      {
+        header: 'Additional Terms',
+        content: (profileData: any, userData: any) => [`${profileData.additional__terms}`],
+      },
+    ],
+  },
 }
 
 // Render the document
 const Constitution = ({
   formationData,
-  template,
-  setTemplate,
+  model,
+  setModel,
   breakpoints,
+  multisigAddress = '',
   canDownload = false,
 }: any) => {
+  const [viewConst, setViewConst] = useState<any>(true)
+
   const companyObj: any = {}
   const users: any = {}
+  const metadata: any = {}
+  metadata.multisigAddress = multisigAddress
   formationData.forEach((field: any) => {
     try {
       if (field.key.includes('company__')) {
         const key = field.key.split('company__').join('')
         companyObj[key] = field.value
-      }
-      if (field.key.includes('partner__[')) {
+      } else if (field.key.includes('partner__[')) {
         const splitData = field.key.split('partner__[').join('').split(']__')
         if (!users[splitData[0]]) {
           users[splitData[0]] = { roles: [] }
@@ -432,13 +550,15 @@ const Constitution = ({
         } else {
           users[splitData[0]][key] = field.value
         }
+      } else {
+        metadata[field.key] = field.value
       }
     } catch (err) {}
   })
-
-  const [viewConst, setViewConst] = useState<any>(true)
-
-  // Add template selection dropdown
+  let downloadable = canDownload
+  downloadable = metadata.status === 'APPROVED' || metadata.status === 'SUBMITTED'
+  if (!model) return null
+  // Add model selection dropdown
   // Add option buttons below PDF build to display JSON, download pdf, etc
   const constitutionDocument = (
     <Document>
@@ -446,7 +566,8 @@ const Constitution = ({
         {buildConstitution(
           companyObj,
           Object.values(users).filter((x: any) => !!x.name),
-          template,
+          model,
+          metadata,
         )}
       </Page>
     </Document>
@@ -454,7 +575,7 @@ const Constitution = ({
   return (
     <>
       {/* <Button onClick={() => setViewConst(!viewConst)}>Show Constitution</Button> */}
-      {setTemplate !== null ? (
+      {setModel !== null ? (
         <div
           style={{
             width: '100%',
@@ -467,11 +588,11 @@ const Constitution = ({
             style={{ width: '350px', textAlign: 'right' }}
             inheritContentWidth={true}
             size={'medium'}
-            label={'Constitution Template: ' + template}
-            items={Object.keys(constitutionTemplate)?.map((x: any) => ({
+            label={'Constitution: ' + model}
+            items={Object.keys(constitutionModel)?.map((x: any) => ({
               label: x,
               color: 'blue',
-              onClick: () => setTemplate(x),
+              onClick: () => setModel(x),
               value: x,
             }))}
           />
@@ -483,9 +604,10 @@ const Constitution = ({
           {buildConstitutionView(
             companyObj,
             Object.values(users).filter((x: any) => !!x.name),
-            template,
+            model,
+            metadata,
           )}
-          {canDownload ? (
+          {downloadable ? (
             <PDFDownloadLink
               fileName={
                 formationData.find((x: any) => x.key === 'name')?.value ||

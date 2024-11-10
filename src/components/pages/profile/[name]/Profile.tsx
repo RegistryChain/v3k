@@ -139,7 +139,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
   const [records, setRecords] = useState<any>([])
-  const [template, setTemplate] = useState<any>('default')
+  const [model, setModel] = useState<any>('')
   const breakpoints = useBreakpoint()
 
   const registrars: any = registrarsObj
@@ -177,9 +177,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
   }, [name])
 
   useEffect(() => {
-    const templateObj = records.find((x: any) => x.key === 'company__selected__template')
-    if (templateObj?.value) {
-      setTemplate(templateObj?.value)
+    const modelObj = records.find((x: any) => x.key === 'company__selected__model')
+    if (modelObj?.value) {
+      setModel(modelObj?.value)
     }
   }, [records])
 
@@ -203,13 +203,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       const entityNonce = await multisigState.read.entityToTransactionNonce([multisigAddress])
       const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
       // if localApproval is false and txNonce = 1, drafted
+      let status = 'DRAFT'
       if (localApproval && operationApprovedByRegistrar) {
-        setStatus('APPROVED')
+        status = 'APPROVED'
       } else if (localApproval) {
-        setStatus('SUBMITTED')
-      } else {
-        setStatus('DRAFT')
+        status = 'SUBMITTED'
       }
+      setStatus(status)
+      setRecords((prev: { [x: string]: any }[]) => [...prev, { key: 'status', value: status }])
     } catch (e) {}
   }
 
@@ -285,7 +286,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         'company__formation__date',
         'company__lockup__days',
         'company__additional__terms',
-        'company__selected__template',
+        'company__selected__model',
       ]
 
       const encodes = keys.map((text) => {
@@ -335,7 +336,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
           })
         } catch (e) {}
       })
-      setRecords(recordsBuilt)
+      setRecords((prev: { [x: string]: any }[]) => [...prev, ...recordsBuilt])
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
@@ -453,9 +454,12 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     title = name + ' on RegistryChain'
   }
 
-  const nameRecord = records?.find((x: any) => x.key === 'name')?.value
-  if (nameRecord) {
-    title = nameRecord + ' on RegistryChain'
+  let nameRecord = title
+  if (records) {
+    nameRecord = records?.find((x: any) => x.key === 'name')?.value
+    if (nameRecord) {
+      title = nameRecord + ' on RegistryChain'
+    }
   }
 
   return (
@@ -544,8 +548,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                   <Constitution
                     breakpoints={breakpoints}
                     formationData={records}
-                    template={template}
-                    setTemplate={null}
+                    multisigAddress={multisigAddress}
+                    model={model}
+                    setModel={null}
                     canDownload={true}
                   />
                 )
@@ -567,6 +572,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                     entityMemberManager={entityMemberManager}
                     client={publicClient}
                     name={name}
+                    checkEntityStatus={() => checkEntityStatus()}
                   />
                 )
               } else {

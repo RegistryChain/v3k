@@ -44,6 +44,7 @@ const ActionsTab = ({
   entityMemberManager,
   client,
   name,
+  checkEntityStatus,
 }: any) => {
   const [userRoles, setUserRoles]: any[] = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
@@ -57,6 +58,7 @@ const ActionsTab = ({
 
   const refresh = async () => {
     readTransactions()
+    checkEntityStatus()
   }
 
   const getMemberBytes = async () => {

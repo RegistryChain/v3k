@@ -30,7 +30,6 @@ export const ErrorModal = ({ errorMessage, setErrorMessage, breakpoints }: any) 
               fontSize: '22px',
               color: 'hsl(7 76% 44%)',
               textAlign: 'center',
-              maxWidth: '350px',
               wordWrap: 'break-word',
             }}
           >

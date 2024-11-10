@@ -74,7 +74,7 @@ export default function Page() {
   const [initialRecords, setInitialRecords]: any = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
-  const [template, setTemplate] = useState<any>('default')
+  const [model, setModel] = useState<any>('')
 
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
@@ -284,7 +284,7 @@ export default function Page() {
         'company__formation__date',
         'company__lockup__days',
         'company__additional__terms',
-        'company__selected__template',
+        'company__selected__model',
       ]
 
       const encodes = keys.map((text) => {
@@ -488,7 +488,7 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      profile.selected__template = template
+      profile.selected__model = model
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
       // Take texts Object.keys(texts)
       //Init changes array
@@ -642,8 +642,8 @@ export default function Page() {
         <Constitution
           breakpoints={breakpoints}
           formationData={texts}
-          template={template}
-          setTemplate={setTemplate}
+          model={model}
+          setModel={setModel}
         />
         <Review
           name={name}
