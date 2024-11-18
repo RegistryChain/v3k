@@ -22,7 +22,7 @@ const styles: any = {
     height: '100%',
     backgroundRepeat: 'repeat',
     backgroundSize: '100px 120px', // Adjust the size as needed
-    opacity: 0.8, // Adjust transparency to make it subtle
+    opacity: 0.5, // Adjust transparency to make it subtle
     pointerEvents: 'none', // Ensures the watermark doesn't interfere with interactions
     zIndex: 1,
   },

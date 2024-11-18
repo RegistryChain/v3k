@@ -12,6 +12,7 @@ import { sepolia } from 'viem/chains'
 import { useAccount, useConnect } from 'wagmi'
 
 import { ErrorModal } from '@app/components/ErrorModal'
+import { roles } from '@app/constants/members'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
@@ -30,12 +31,6 @@ const methodsNames: any = {
   '0xee7a7c04': 'burnShares',
   '0xa73f7f8a': 'addRole',
   '0x208dd1ff': 'revokeRole',
-}
-
-const roles: any = {
-  manager: '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce',
-  signer: '0x2b0aecafcc9db9e85be7c1cee931b36fd598f30aec1c255376b92e2490cfe264',
-  holder: '0xb238d52ec7e0f2a9731685576ee3e720fb21bfd1cdd4c8de0c3d8df492028584',
 }
 
 const ActionsTab = ({
@@ -317,7 +312,7 @@ const ActionsTab = ({
     let name = tx.title
     if (tx.method === '0xac9650d8') {
       data = decodeMulticallDatabytes(tx.dataBytes)
-      name = 'Update Entity Information'
+      name = 'Update Entity - ' + tx.title
     }
     if (tx.method === '0x10f13a8c') {
       return
@@ -329,23 +324,41 @@ const ActionsTab = ({
   const decodeMulticallDatabytes = (databytes: any) => {
     const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], databytes)[0]
     const reformedData = txDataArray.map((data) => {
-      const dec = decodeAbiParameters(
-        [
-          {
-            type: 'bytes32',
-          },
-          {
-            type: 'string',
-          },
-          {
-            type: 'string',
-          },
-        ],
-        data.split('10f13a8c').join('') as any,
-      )
-      return { key: dec[1], value: dec[2] }
+      if (data.slice(0, 10) === '0x10f13a8c') {
+        const dec = decodeAbiParameters(
+          [
+            {
+              type: 'bytes32',
+            },
+            {
+              type: 'string',
+            },
+            {
+              type: 'string',
+            },
+          ],
+          data.split('10f13a8c').join('') as any,
+        )
+        return { key: dec[1], value: dec[2], method: 'setText' }
+      } else if (data.slice(0, 10) === '0xee7a7c04' || data.slice(0, 10) === '0x528c198a') {
+        const methods: any = { '0xee7a7c04': 'burnShares()', '0x528c198a': 'mintShares()' }
+        const dec = decodeAbiParameters(
+          [
+            {
+              type: 'address',
+            },
+            {
+              type: 'uint256',
+            },
+          ],
+          ('0x' + data.slice(10)) as any,
+        )
+        return { key: dec[0], value: dec[1], method: methods[data.slice(0, 10)] }
+      } else {
+        return null
+      }
     })
-    return reformedData
+    return reformedData.filter((x) => x)
   }
 
   useEffect(() => {

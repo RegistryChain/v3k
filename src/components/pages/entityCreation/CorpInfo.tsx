@@ -50,7 +50,7 @@ const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any
   const name = data?.name || ''
   const keys = [...Object.keys(fields.standard), ...Object.keys(fields[data?.registrarKey] || {})]
 
-  const entityData = async () => {
+  const initEntityData = async () => {
     const properties: any = {}
     const texts: any = {}
     keys.forEach((key: string) => {
@@ -61,7 +61,7 @@ const CorpInfo = ({ data, step, fields, profile, setProfile, publicClient }: any
   }
 
   useEffect(() => {
-    entityData()
+    initEntityData()
   }, [name])
 
   if (!profile) return null

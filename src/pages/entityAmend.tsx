@@ -25,7 +25,6 @@ import {
 import { sepolia } from 'viem/chains'
 import { useAccount, useClient } from 'wagmi'
 
-import { addEnsContracts } from '@ensdomains/ensjs'
 import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
 import { Button, Typography } from '@ensdomains/thorin'
 
@@ -33,8 +32,9 @@ import { ErrorModal } from '@app/components/ErrorModal'
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
 import Constitution from '@app/components/pages/entityCreation/Constitution'
 import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
-import { Review } from '@app/components/pages/entityCreation/Review'
 import Roles from '@app/components/pages/entityCreation/Roles'
+import { RecordsSection } from '@app/components/RecordsSection'
+import { roles } from '@app/constants/members'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -138,36 +138,22 @@ export default function Page() {
       })
       try {
         const multisigAddress = await registry.read.owner([namehash(name)])
-        // const multisig = await getMultisig(multisigAddress)
-        // const memberManagerAddress = await multisig.read.entityMemberManager()
+        const multisig: any = getContract({
+          address: multisigAddress as Address,
+          abi: parseAbi(['function entityMemberManager() external view returns (address)']),
+          client: wallet,
+        })
+        const memberManagerAddress = await multisig.read.entityMemberManager()
 
-        // setEntityMemberManager(memberManagerAddress)
+        setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(multisigAddress)
       } catch (e) {}
     }
   }
 
-  // async function generateUserDataBytes(userData: any) {
-  //   return userData.map((user: any, idx: any) => {
-  //     let roleDataBytes: any = '0x'
-  //     user.roles.forEach((role: any) => {
-  //       const encRole = encodeAbiParameters([{ type: 'string' }], [role])
-  //       const roleHash = keccak256(encRole).slice(2, 66)
-  //       roleDataBytes += roleHash
-  //     })
-
-  //     const encodedUserData = encodeAbiParameters(
-  //       [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
-  //       [user.wallet__address, user.shares, roleDataBytes],
-  //     )
-  //     return encodedUserData
-  //   })
-  // }
-
   const parseSavedTexts = (texts: any[]) => {
     const partnersArr: any[] = []
     const profile: any = {}
-
     texts.forEach(({ key, value }: any) => {
       // Match keys for partner fields
       const partnerMatch = key.match(/^partner__\[(\d+)\]__(.+)$/)
@@ -197,11 +183,13 @@ export default function Page() {
 
         partnersArr[partnerIndex] = partnersArr[partnerIndex] || {}
         partnersArr[partnerIndex].roles = partnersArr[partnerIndex].roles || []
-        partnersArr[partnerIndex].roles.push(role)
+        if (value === 'true' || value === true) {
+          partnersArr[partnerIndex].roles.push(role)
+        }
       }
       if (profileMatch) {
         const field = profileMatch[1].split('__').join(' ') // Convert back field name
-        profile[field] = value || ''
+        profile[profileMatch[1]] = value || ''
       }
     })
 
@@ -224,14 +212,13 @@ export default function Page() {
       })
 
       const keys = [
-        'LEI',
-        'name',
         'partner__[0]__name',
         'partner__[0]__type',
         'partner__[0]__wallet__address',
         'partner__[0]__physical__address',
         'partner__[0]__DOB',
         'partner__[0]__is__manager',
+        'partner__[0]__is__signer',
         'partner__[0]__lockup',
         'partner__[0]__shares',
         'partner__[1]__name',
@@ -239,6 +226,7 @@ export default function Page() {
         'partner__[1]__wallet__address',
         'partner__[1]__physical__address',
         'partner__[1]__DOB',
+        'partner__[1]__is__manager',
         'partner__[1]__is__signer',
         'partner__[1]__lockup',
         'partner__[1]__shares',
@@ -247,6 +235,7 @@ export default function Page() {
         'partner__[2]__wallet__address',
         'partner__[2]__physical__address',
         'partner__[2]__DOB',
+        'partner__[2]__is__manager',
         'partner__[2]__is__signer',
         'partner__[2]__lockup',
         'partner__[2]__shares',
@@ -255,6 +244,7 @@ export default function Page() {
         'partner__[3]__wallet__address',
         'partner__[3]__physical__address',
         'partner__[3]__DOB',
+        'partner__[3]__is__manager',
         'partner__[3]__is__signer',
         'partner__[3]__lockup',
         'partner__[3]__shares',
@@ -263,6 +253,7 @@ export default function Page() {
         'partner__[4]__wallet__address',
         'partner__[4]__physical__address',
         'partner__[4]__DOB',
+        'partner__[4]__is__manager',
         'partner__[4]__is__signer',
         'partner__[4]__lockup',
         'partner__[4]__shares',
@@ -272,6 +263,7 @@ export default function Page() {
         'partner__[5]__physical__address',
         'partner__[5]__DOB',
         'partner__[5]__is__signer',
+        'partner__[5]__is__manager',
         'partner__[5]__lockup',
         'partner__[5]__shares',
         'company__name',
@@ -320,7 +312,7 @@ export default function Page() {
         })
       })
 
-      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
+      const recordsBuilt: any[] = []
       let encResArr: any[] = []
       try {
         encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
@@ -338,7 +330,7 @@ export default function Page() {
       setInitialRecords(recordsBuilt)
 
       const recs = parseSavedTexts(recordsBuilt)
-
+      setModel(recs.profile.selected__model)
       setProfile(recs.profile)
       setPartners(recs.partners)
     } catch (err) {
@@ -429,6 +421,26 @@ export default function Page() {
     return blockAdvance
   }
 
+  const getChangedRecords = (texts: any[]) => {
+    const changedRecords: any[] = []
+    texts.forEach((obj) => {
+      //Never adds revoked role bcause in texts the role is not in partner.roles[], never gets turned into a text
+
+      // If the key is not in inital records, add the key/val to changes array
+      const correspondingOriginalRecord = initialRecords.find((x: any) => x.key === obj.key)
+      // If the val of the corresponding key is different in initialRecords, add the key/val to changes array
+      if (!correspondingOriginalRecord || correspondingOriginalRecord.value !== obj.value) {
+        changedRecords.push({ ...obj, oldValue: correspondingOriginalRecord?.value || '' })
+      }
+    })
+    initialRecords.forEach((record: any) => {
+      if (!texts.find((x) => x.key === record.key) && record.value) {
+        changedRecords.push({ key: record.key, oldValue: record.value, value: '' })
+      }
+    })
+    return changedRecords
+  }
+
   const advance = async () => {
     let blockAdvance = false
     try {
@@ -492,23 +504,14 @@ export default function Page() {
       const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
       // Take texts Object.keys(texts)
       //Init changes array
-      const changedRecords: any[] = []
-      // map through text array
-      texts.forEach((obj) => {
-        // If the key is not in inital records, add the key/val to changes array
-        const correspondingOriginalRecord = initialRecords.find((x: any) => x.key === obj.key)
-        // If the val of the corresponding key is different in initialRecords, add the key/val to changes array
-        if (!correspondingOriginalRecord || correspondingOriginalRecord.value !== obj.value) {
-          changedRecords.push(obj)
-        }
-      })
+      const changedRecords = getChangedRecords(texts)
 
       const entityNameToPass = name.toLowerCase().split(' ').join('-')
 
-      // const entityRegistrarAddress =
-      //   contractAddresses[code + tld] || contractAddresses['public.registry']
-
-      if (changedRecords.length === 0) return
+      if (changedRecords.length === 0) {
+        setErrorMessage('No changes were made to the entity!')
+        return
+      }
 
       try {
         const multisig: any = getContract({
@@ -519,28 +522,148 @@ export default function Page() {
           client: wallet,
         })
 
-        // IMPORTANT - switch out manager hash and make call to registrar contracts to see what roles would work with the proposed tx
         const roleHash = '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce'
+        const entityChanges = changedRecords.filter((x) => !x.key.includes('partner'))
+        const partnerChanges = changedRecords.filter((x) => x.key.includes('partner'))
+        // IMPORTANT - switch out manager hash and make call to registrar contracts to see what roles would work with the proposed tx
+        if (partnerChanges.length > 0) {
+          const partnerChangesToSubmit: any[] = []
+          const sharesChanges = partnerChanges.filter((x) => x.key.includes('shares'))
+          const roleChanges = partnerChanges.filter((x) => x.key.includes('is__'))
+          const textOnlyChanges = partnerChanges.filter(
+            (x) =>
+              !sharesChanges.find((y) => y.key === x.key) &&
+              !roleChanges.find((y) => y.key === x.key),
+          )
 
-        const constitutionData2 = generateRecordCallArray({
-          namehash: namehash(entityNameToPass),
-          texts: changedRecords,
-        })
+          if (textOnlyChanges.length > 0) {
+            textOnlyChanges.forEach((change) => {
+              const memberIndex = change.key.split('partner__[').join('').split(']')[0]
+              //check the address associated with that partner from partner__[idx]__wallet__address
+              const partnerAddress =
+                initialRecords.find((x: any) =>
+                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+                )?.value || zeroAddress
 
-        const submitChangesTx = await multisig.write.submitMulticallTransaction([
-          contractAddresses.PublicResolver,
-          roleHash,
-          'update company constitution',
-          constitutionData2,
-        ])
-        console.log(await publicClient?.waitForTransactionReceipt({ hash: submitChangesTx }))
+              const updateMemberDataCall = encodeFunctionData({
+                abi: parseAbi([
+                  'function updateMemberData(address member, string memory, string memory) external',
+                ]),
+                functionName: 'updateMemberData',
+                args: [partnerAddress, change.key, change.value],
+              })
+              partnerChangesToSubmit.push(updateMemberDataCall)
+            })
+          }
+          if (sharesChanges.length > 0) {
+            // ALSO NEED TO ADD RESOLVER CHANGE TO THE MULTICALL
+            // updateMemberData
+            sharesChanges.forEach((change) => {
+              const memberIndex = change.key.split('partner__[').join('').split(']')[0]
+              //check the address associated with that partner from partner__[idx]__wallet__address
+              const partnerAddress =
+                initialRecords.find((x: any) =>
+                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+                )?.value || zeroAddress
+
+              const updateMemberDataCall = encodeFunctionData({
+                abi: parseAbi([
+                  'function updateMemberData(address member, string memory, string memory) external',
+                ]),
+                functionName: 'updateMemberData',
+                args: [partnerAddress, change.key, change.value],
+              })
+              partnerChangesToSubmit.push(updateMemberDataCall)
+              if (change.value > Number(change.oldValue)) {
+                //get the partner memberIndex
+
+                const tokensToMint: any = change.value - Number(change.oldValue)
+
+                const mintCall = encodeFunctionData({
+                  abi: parseAbi(['function mintShares(address to, uint256 amount) external']),
+                  functionName: 'mintShares',
+                  args: [partnerAddress, tokensToMint],
+                })
+                partnerChangesToSubmit.push(mintCall)
+              } else if (change.value < Number(change.oldValue)) {
+                const tokensToBurn: any = Number(change.oldValue) - change.value
+
+                const burnCall = encodeFunctionData({
+                  abi: parseAbi(['function burnShares(address from, uint256 amount) external']),
+                  functionName: 'burnShares',
+                  args: [partnerAddress, tokensToBurn],
+                })
+                partnerChangesToSubmit.push(burnCall)
+              }
+            })
+          }
+          if (roleChanges.length > 0) {
+            // Update resolver data
+            roleChanges.forEach((change) => {
+              const memberIndex = change.key.split('partner__[').join('').split(']')[0]
+              //check the address associated with that partner from partner__[idx]__wallet__address
+              const partnerAddress =
+                initialRecords.find((x: any) =>
+                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+                )?.value || zeroAddress
+
+              const updateMemberDataCall = encodeFunctionData({
+                abi: parseAbi([
+                  'function updateMemberData(address member, string memory, string memory) external',
+                ]),
+                functionName: 'updateMemberData',
+                args: [partnerAddress, change.key, change.value],
+              })
+              partnerChangesToSubmit.push(updateMemberDataCall)
+
+              //Update role permissions in member contract
+              if (change.value) {
+                //add the role on member ocntract
+                const addRoleCall = encodeFunctionData({
+                  abi: parseAbi(['function addRole(address to, bytes32 roleHash) external']),
+                  functionName: 'addRole',
+                  args: [partnerAddress, roles[change.key.split('is__')[1]]],
+                })
+                partnerChangesToSubmit.push(addRoleCall)
+              } else if (!change.value && change.oldValue) {
+                //Remove the role
+                const revokeRoleCall = encodeFunctionData({
+                  abi: parseAbi(['function revokeRole(address from, bytes32 roleHash) external']),
+                  functionName: 'revokeRole',
+                  args: [partnerAddress, roles[change.key.split('is__')[1]]],
+                })
+                partnerChangesToSubmit.push(revokeRoleCall)
+              }
+            })
+          }
+          const submitChangesTx = await multisig.write.submitMulticallTransaction([
+            entityMemberManager,
+            roleHash,
+            'update company members',
+            partnerChangesToSubmit,
+          ])
+          console.log(await publicClient?.waitForTransactionReceipt({ hash: submitChangesTx }))
+        }
+        if (entityChanges.length > 0) {
+          const formattedChangedRecords = generateRecordCallArray({
+            namehash: namehash(entityNameToPass),
+            texts: entityChanges,
+          })
+
+          const submitChangesTx = await multisig.write.submitMulticallTransaction([
+            contractAddresses.PublicResolver,
+            roleHash,
+            'update company constitution',
+            formattedChangedRecords,
+          ])
+          console.log(await publicClient?.waitForTransactionReceipt({ hash: submitChangesTx }))
+        }
+        router.push('/entity/' + entityNameToPass, { tab: 'actions' })
       } catch (err: any) {
-        console.log('ERROR FORMING ENTITY', err.message)
+        console.log('ERROR FORMING ENTITY', err)
         setErrorMessage(err.message)
         return
       }
-
-      router.push('/entity/' + entityNameToPass, { tab: 'actions' })
     }
   }
 
@@ -552,25 +675,6 @@ export default function Page() {
   }
 
   let content = null
-  let buttons = (
-    <FooterContainer style={{ marginTop: '36px' }}>
-      <Button
-        disabled={registrationStep <= 1}
-        colorStyle="accentSecondary"
-        onClick={() => previous()}
-      >
-        Back
-      </Button>
-      <Button
-        disabled={false}
-        onClick={() => {
-          advance()
-        }}
-      >
-        {registrationStep < 5 ? t('action.next') : t('action.formEntity')}
-      </Button>
-    </FooterContainer>
-  )
 
   if (registrationStep === 1) {
     content = (
@@ -590,7 +694,7 @@ export default function Page() {
       <AddPartners
         data={{ name, registrarKey: code }}
         breakpoints={breakpoints}
-        canChange={false}
+        canChange={true}
         partnerTypes={schema.partnerTypes}
         partnerFields={schema.partnerFields}
         intakeType={intakeType}
@@ -606,7 +710,7 @@ export default function Page() {
       <Roles
         data={{ name, registrarKey: code }}
         breakpoints={breakpoints}
-        canChange={false}
+        canChange={true}
         intakeType={intakeType}
         roleTypes={schema.roles}
         profile={profile}
@@ -630,10 +734,10 @@ export default function Page() {
       />
     )
   }
-
+  let changedRecords: any[] = []
   if (registrationStep === 5) {
     const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-
+    changedRecords = getChangedRecords(texts)
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
@@ -645,15 +749,33 @@ export default function Page() {
           model={model}
           setModel={setModel}
         />
-        <Review
-          name={name}
-          profile={profile}
-          partners={partners}
-          setErrorMessage={setErrorMessage}
-        />
+        {changedRecords.length > 0 ? (
+          <div>
+            <RecordsSection texts={changedRecords} />
+          </div>
+        ) : null}
       </div>
     )
   }
+  let buttons = (
+    <FooterContainer style={{ marginTop: '36px' }}>
+      <Button
+        disabled={registrationStep <= 1}
+        colorStyle="accentSecondary"
+        onClick={() => previous()}
+      >
+        Back
+      </Button>
+      <Button
+        disabled={changedRecords?.length === 0 && registrationStep === 5}
+        onClick={() => {
+          advance()
+        }}
+      >
+        {registrationStep < 5 ? t('action.next') : t('action.formEntity')}
+      </Button>
+    </FooterContainer>
+  )
 
   return (
     <>

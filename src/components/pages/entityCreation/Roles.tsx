@@ -37,26 +37,15 @@ const Roles = ({
   let totalSharesReconstruct = 0
 
   partners.forEach((f: any) => {
-    totalSharesReconstruct += f.shares || 0
+    totalSharesReconstruct += Number(f.shares) || 0
   })
 
   partners.forEach((f: any) => {
-    partnerPercentages[f.name] = (100 * f.shares) / Number(totalSharesReconstruct) || 0
+    let input = (100 * Number(f.shares)) / Number(totalSharesReconstruct) || 0
+    partnerPercentages[f.name] = Number(Number(input).toFixed(2))
   })
   const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + '')
   const [sharePercentages, setSharePercentages] = useState<any>({ ...partnerPercentages })
-
-  const ownersData = async () => {
-    const client: any = publicClient
-    // Here fetch the resolver data
-    // const resolver = await getContract({
-    //   client,
-    //   abi: parseAbi([
-    //     'function text(bytes32 node, string calldata key) view returns (string memory)',
-    //   ]),
-    //   address: contractAddresses.PublicResolver as Address,
-    // })
-  }
 
   useEffect(() => {
     ownersData()
@@ -188,12 +177,15 @@ const Roles = ({
                       if (input[0] === '0' && input[1] !== '.' && input.length > 1) {
                         input = input.slice(1)
                       }
-                      setSharePercentages({ ...sharePercentages, [partner.name]: input })
+                      setSharePercentages({
+                        ...sharePercentages,
+                        [partner.name]: Number(Number(input).toFixed(2)),
+                      })
                       setPartners((prevPartners: any[]) => {
                         const updatedPartners = [...prevPartners]
                         const updatedPartner = {
                           ...updatedPartners[idx],
-                          shares: Math.ceil(Number(totalShares) * (Number(input) / 100)),
+                          shares: Math.round(Number(totalShares) * (Number(input) / 100)),
                         }
                         updatedPartners[idx] = updatedPartner
                         return updatedPartners
@@ -206,7 +198,7 @@ const Roles = ({
                 <Input
                   size="medium"
                   style={{ cursor: 'not-allowed' }}
-                  value={Math.ceil(Number(totalShares) * (sharePercentages[partner.name] / 100))}
+                  value={partner.shares}
                   label={t('steps.roles.ownershipShares.label')}
                   error={false}
                   placeholder={t('steps.roles.ownershipShares.label')}

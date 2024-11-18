@@ -1,6 +1,21 @@
 import { Typography } from '@ensdomains/thorin'
 
 const RecordEntry = ({ itemKey, data }: any) => {
+  let val = <Typography>{data?.value + '' || 'VAL N/A'}</Typography>
+  if (data.method === 'burnShares()') {
+    val = (
+      <Typography>
+        <span style={{ color: 'red' }}>{data?.value + '' || 'VAL N/A'}</span>
+      </Typography>
+    )
+  } else if (data.method === 'mintShares()') {
+    val = (
+      <Typography>
+        <span style={{ color: 'green' }}>{data?.value + '' || 'VAL N/A'}</span>
+      </Typography>
+    )
+  }
+
   return (
     <div
       key={itemKey}
@@ -14,13 +29,16 @@ const RecordEntry = ({ itemKey, data }: any) => {
         marginBottom: '6px',
       }}
     >
-      <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-        {data.key
-          .split('__')
-          .map((y: any) => y[0].toUpperCase() + y.slice(1))
-          .join(' ')}
-      </Typography>
-      <Typography>{data.value}</Typography>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, color: 'grey' }}>
+        <Typography>{data?.method}</Typography>
+        <Typography>
+          {data?.key
+            ?.split('__')
+            ?.map((y: any) => y[0]?.toUpperCase() + y.slice(1))
+            ?.join(' ') || 'N/A'}
+        </Typography>
+      </div>
+      {val}
     </div>
   )
 }

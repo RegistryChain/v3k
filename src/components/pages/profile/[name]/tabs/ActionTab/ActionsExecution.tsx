@@ -131,7 +131,7 @@ const ActionsExecution = ({
                 )
               })}
             </div>
-            <div style={{ flex: 1, textAlign: 'center', alignContent: 'center' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
                 disabled={!methodsCallable?.[x?.method]}

@@ -31,9 +31,11 @@ export const ErrorModal = ({ errorMessage, setErrorMessage, breakpoints }: any) 
               color: 'hsl(7 76% 44%)',
               textAlign: 'center',
               wordWrap: 'break-word',
+              maxHeight: breakpoints.xs && !breakpoints.sm ? '240px' : '300px',
+              overflowY: errorMessage.length > 250 ? 'scroll' : 'hidden',
             }}
           >
-            {errorMessage.length > 450 ? errorMessage.slice(0, 450) + '...' : errorMessage}
+            {errorMessage}
           </Typography>
 
           <Button

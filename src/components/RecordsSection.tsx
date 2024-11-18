@@ -93,25 +93,26 @@ export const RecordsSection = ({
 }) => {
   const { t } = useTranslation('profile')
 
-  const filteredTexts = useMemo(() => texts?.filter(({ value }) => value), [texts])
+  const filteredTexts = useMemo(
+    () => texts?.filter(({ oldValue, value }: any) => value || oldValue),
+    [texts],
+  )
   const recordCategoryToTitle: any = {
     company: 'Company Details',
     civil: 'Civil Details',
   }
   const partnersOrganized: any = {}
   const partnerTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'partner') || []
-
-  partnerTexts.forEach((text) => {
+  partnerTexts.forEach((text: any) => {
     try {
       const keyComp = text.key.split('__')
       if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
-      partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = text.value
+      partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = {
+        value: text.value,
+        oldValue: text?.oldValue || '',
+      }
     } catch (err) {}
   })
-
-  if (Object.values(partnersOrganized)?.length === 0) {
-    return null
-  }
 
   let addressSection = null
   if (addressesObj) {
@@ -168,107 +169,141 @@ export const RecordsSection = ({
     )
   }
 
-  const partnerSection = (
-    <RecordSection key={'section1Partner'}>
-      <div style={{ width: '100%' }}>
-        <RecordSection key={'section1SubPartner'}>
-          <SectionHeader>
-            <SectionTitleContainer>
-              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                Partners
-              </SectionTitle>
-            </SectionTitleContainer>
-          </SectionHeader>
-          <div style={{ width: '100%', paddingLeft: '40px' }}>
-            {Object.values(partnersOrganized).map((partner: any, idx) => {
-              return (
-                <RecordSection key={'section1SubSubPartner' + idx}>
-                  <SectionHeader>
-                    <SectionTitleContainer>
-                      <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                        Partner {idx + 1}
-                      </SectionTitle>
-                    </SectionTitleContainer>
-                  </SectionHeader>
-                  {Object.keys(partner).map((key, idx) => {
-                    return (
-                      <div
-                        key={'embeddedDiv' + idx}
-                        style={{
-                          display: 'flex',
-                          width: '100%',
-                          padding: '0.625rem 0.75rem',
-                          background: 'hsl(0 0% 96%)',
-                          border: '1px solid hsl(0 0% 91%)',
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                          {key
-                            .split('__')
-                            .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                            .join(' ')}
-                        </Typography>
-                        <Typography>{partner[key]}</Typography>
-                      </div>
-                    )
-                  })}
-                </RecordSection>
-              )
-            })}
-          </div>
-        </RecordSection>
-      </div>
-    </RecordSection>
-  )
+  let partnerSection = null
+  if (Object.values(partnersOrganized)?.length > 0) {
+    partnerSection = (
+      <RecordSection key={'section1Partner'}>
+        <div style={{ width: '100%' }}>
+          <RecordSection key={'section1SubPartner'}>
+            <SectionHeader>
+              <SectionTitleContainer>
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  Partners
+                </SectionTitle>
+              </SectionTitleContainer>
+            </SectionHeader>
+            <div style={{ width: '100%', paddingLeft: '40px' }}>
+              {Object.values(partnersOrganized).map((partner: any, idx) => {
+                return (
+                  <RecordSection key={'section1SubSubPartner' + idx}>
+                    <SectionHeader>
+                      <SectionTitleContainer>
+                        <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                          Partner {idx + 1}
+                        </SectionTitle>
+                      </SectionTitleContainer>
+                    </SectionHeader>
+                    {Object.keys(partner).map((key, idx) => {
+                      return (
+                        <div
+                          key={'embeddedDiv' + idx}
+                          style={{
+                            display: 'flex',
+                            width: '100%',
+                            padding: '0.625rem 0.75rem',
+                            background: 'hsl(0 0% 96%)',
+                            border: '1px solid hsl(0 0% 91%)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                            {key
+                              .split('__')
+                              .map((x: any) => x[0].toUpperCase() + x.slice(1))
+                              .join(' ')}
+                          </Typography>
+                          <Typography>
+                            {' '}
+                            {partner[key].oldValue ? (
+                              <span
+                                style={{
+                                  overflow: 'hidden',
+                                  color: 'red',
+                                  textDecorationLine: 'line-through',
+                                }}
+                              >
+                                {partner[key].oldValue}
+                              </span>
+                            ) : null}{' '}
+                            {partner[key].value}
+                          </Typography>
+                        </div>
+                      )
+                    })}
+                  </RecordSection>
+                )
+              })}
+            </div>
+          </RecordSection>
+        </div>
+      </RecordSection>
+    )
+  }
   const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'company') || []
   const domain = filteredTexts?.find((x) => x.key === 'domain')
   const lei = filteredTexts?.find((x) => x.key === 'LEI')
 
   if (domain) categoryTexts.unshift(domain)
   if (lei) categoryTexts.unshift(lei)
-  const sectionsDisplay = (
-    <div key={'companydiv'} style={{ width: '100%' }}>
-      <RecordSection key={'section1SubRecordscompany'}>
-        <SectionHeader>
-          <SectionTitleContainer>
-            <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-              {recordCategoryToTitle['company']}
-            </SectionTitle>
-            <SectionSubtitle data-testid="text-amount">
-              {categoryTexts ? categoryTexts.length : 0} {t('records.label', { ns: 'common' })}
-            </SectionSubtitle>
-          </SectionTitleContainer>
-        </SectionHeader>
-        {categoryTexts &&
-          categoryTexts.map((text, idx) => {
-            return (
-              <div
-                key={'catTextEmbedded' + idx}
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  padding: '0.625rem 0.75rem',
-                  background: 'hsl(0 0% 96%)',
-                  border: '1px solid hsl(0 0% 91%)',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                }}
-              >
-                <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                  {text.key
-                    .split('__')
-                    .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                    .join(' ')}
-                </Typography>
-                <Typography style={{ overflow: 'hidden' }}>{text.value}</Typography>
-              </div>
-            )
-          })}
-      </RecordSection>
-    </div>
-  )
+  let sectionsDisplay = null
+  if (categoryTexts?.length > 0) {
+    sectionsDisplay = (
+      <div key={'companydiv'} style={{ width: '100%' }}>
+        <RecordSection key={'section1SubRecordscompany'}>
+          <SectionHeader>
+            <SectionTitleContainer>
+              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                {recordCategoryToTitle['company']}
+              </SectionTitle>
+              <SectionSubtitle data-testid="text-amount">
+                {categoryTexts ? categoryTexts.length : 0} {t('records.label', { ns: 'common' })}
+              </SectionSubtitle>
+            </SectionTitleContainer>
+          </SectionHeader>
+          {categoryTexts &&
+            categoryTexts.map((text: any, idx: any) => {
+              return (
+                <div
+                  key={'catTextEmbedded' + idx}
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    padding: '0.625rem 0.75rem',
+                    background: 'hsl(0 0% 96%)',
+                    border: '1px solid hsl(0 0% 91%)',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                    {text.key
+                      .split('__')
+                      .map((x: any) => x[0].toUpperCase() + x.slice(1))
+                      .join(' ')}
+                  </Typography>
+
+                  <Typography style={{ overflow: 'hidden' }}>
+                    {text.oldValue ? (
+                      <span
+                        style={{
+                          overflow: 'hidden',
+                          color: 'red',
+                          textDecorationLine: 'line-through',
+                        }}
+                      >
+                        {text.oldValue}
+                      </span>
+                    ) : null}{' '}
+                    {text.value}
+                  </Typography>
+                </div>
+              )
+            })}
+        </RecordSection>
+      </div>
+    )
+  }
   return (
     <TabWrapper data-testid="records-tab">
       <AllRecords>
