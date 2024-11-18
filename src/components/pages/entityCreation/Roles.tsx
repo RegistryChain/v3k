@@ -47,10 +47,6 @@ const Roles = ({
   const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + '')
   const [sharePercentages, setSharePercentages] = useState<any>({ ...partnerPercentages })
 
-  useEffect(() => {
-    ownersData()
-  }, [])
-
   const align: any = '-webkit-right'
 
   const partnersEle = partners.map((partner: any, idx: number) => {
