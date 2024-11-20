@@ -130,24 +130,27 @@ export default function Page() {
   const intakeType = 'company'
 
   const getMultisigAddr = async () => {
-    if (name) {
-      const registry: any = getContract({
-        address: contractAddresses.RegistryChain as Address,
-        abi: parseAbi(['function owner(bytes32) view returns (address)']),
+    const registry: any = getContract({
+      address: contractAddresses.RegistryChain as Address,
+      abi: parseAbi(['function owner(bytes32) view returns (address)']),
+      client: publicClient,
+    })
+    try {
+      const multisigAddress = await registry.read.owner([namehash(name)])
+      const multisig: any = getContract({
+        address: multisigAddress as Address,
+        abi: parseAbi(['function entityMemberManager() external view returns (address)']),
         client: publicClient,
       })
-      try {
-        const multisigAddress = await registry.read.owner([namehash(name)])
-        const multisig: any = getContract({
-          address: multisigAddress as Address,
-          abi: parseAbi(['function entityMemberManager() external view returns (address)']),
-          client: wallet,
-        })
-        const memberManagerAddress = await multisig.read.entityMemberManager()
+      const memberManagerAddress = await multisig.read.entityMemberManager()
+      setEntityMemberManager(memberManagerAddress)
+      setMultisigAddress(multisigAddress)
+    } catch (err: any) {
+      let errMsg = err?.details
+      if (!errMsg) errMsg = err?.shortMessage
+      if (!errMsg) errMsg = err.message
 
-        setEntityMemberManager(memberManagerAddress)
-        setMultisigAddress(multisigAddress)
-      } catch (e) {}
+      setErrorMessage(errMsg)
     }
   }
 
@@ -316,19 +319,33 @@ export default function Page() {
       let encResArr: any[] = []
       try {
         encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
-      } catch (e) {}
+      } catch (err: any) {
+        let errMsg = err?.details
+        if (!errMsg) errMsg = err?.shortMessage
+        if (!errMsg) errMsg = err.message
 
+        setErrorMessage(errMsg)
+      }
+      let cumulativeString = ''
       encResArr.forEach((x: any, idx: any) => {
+        const valDecode = decodeAbiParameters([{ type: 'string' }], x)[0]
+        cumulativeString += valDecode
         try {
           recordsBuilt.push({
             key: keys[idx],
-            value: decodeAbiParameters([{ type: 'string' }], x)[0],
+            value: valDecode,
           })
-        } catch (e) {}
+        } catch (err: any) {
+          let errMsg = err?.details
+          if (!errMsg) errMsg = err?.shortMessage
+          if (!errMsg) errMsg = err.message
+
+          setErrorMessage(errMsg)
+        }
       })
+      if (!cumulativeString) return
 
       setInitialRecords(recordsBuilt)
-
       const recs = parseSavedTexts(recordsBuilt)
       setModel(recs.profile.selected__model)
       setProfile(recs.profile)
@@ -339,8 +356,10 @@ export default function Page() {
   }
 
   useEffect(() => {
-    getRecords()
-    getMultisigAddr()
+    if (name) {
+      getRecords()
+      getMultisigAddr()
+    }
   }, [name])
 
   const validatePartners = () => {
@@ -660,8 +679,11 @@ export default function Page() {
         }
         router.push('/entity/' + entityNameToPass, { tab: 'actions' })
       } catch (err: any) {
-        console.log('ERROR FORMING ENTITY', err)
-        setErrorMessage(err.message)
+        if (err.shortMessage === 'User rejected the request.') return
+        let errMsg = err?.shortMessage
+        if (!errMsg) errMsg = err?.details
+        if (!errMsg) errMsg = err.message
+        setErrorMessage(errMsg)
         return
       }
     }

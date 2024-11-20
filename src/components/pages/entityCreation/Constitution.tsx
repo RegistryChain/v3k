@@ -340,7 +340,7 @@ const constitutionModel: any = {
             `The initial shares allocation are as follows: `,
 
             userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
+              const ownership = ((user.shares / totalShares) * 100).toFixed(2)
               return `${user.name} - ${user.shares} shares, ${ownership ? ownership : 0}% ownership`
             }),
           ]
@@ -459,7 +459,7 @@ const constitutionModel: any = {
             `The aggregate number of quotas which this ${profileData?.type} shall be issuing is: ${totalShares} quotas of common stock, without par value.`,
             `The initial quotas allocation are as follows: `,
             userData?.map((user: any) => {
-              const ownership = (user.shares / totalShares) * 100
+              const ownership = ((user.shares / totalShares) * 100).toFixed(2)
               return `${user.name} - ${user.shares} quotas, ${ownership ? ownership : 0}% ownership`
             }),
           ]

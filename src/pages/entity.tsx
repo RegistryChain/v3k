@@ -273,7 +273,11 @@ export default function Page() {
       }
     } catch (err: any) {
       blockAdvance = true
-      setErrorMessage(err.details)
+      let errMsg = err?.details
+      if (!errMsg) errMsg = err?.shortMessage
+      if (!errMsg) errMsg = err.message
+
+      setErrorMessage(errMsg)
     }
 
     if (blockAdvance) {
@@ -328,8 +332,12 @@ export default function Page() {
         }
         router.push('/entity/' + entityNameToPass + '.' + code + tld)
       } catch (err: any) {
-        console.log('ERROR FORMING ENTITY', err.message)
-        setErrorMessage(err.message)
+        if (err.shortMessage === 'User rejected the request.') return
+        let errMsg = err?.details
+        if (!errMsg) errMsg = err?.shortMessage
+        if (!errMsg) errMsg = err.message
+
+        setErrorMessage(errMsg)
         return
       }
     }
