@@ -57,15 +57,19 @@ const ActionsTab = ({
   }
 
   const getMemberBytes = async () => {
-    const memberManager: any = getContract({
-      address: entityMemberManager as Address,
-      abi: parseAbi(['function userDataBytes() external view returns (bytes)']),
-      client: wallet,
-    })
+    try {
+      const memberManager: any = getContract({
+        address: entityMemberManager as Address,
+        abi: parseAbi(['function userDataBytes() external view returns (bytes)']),
+        client: wallet,
+      })
 
-    const userDataBytes = await memberManager.read.userDataBytes()
-    setMemberBytes(userDataBytes)
-    return userDataBytes
+      const userDataBytes = await memberManager.read.userDataBytes()
+      setMemberBytes(userDataBytes)
+      return userDataBytes
+    } catch (err) {
+      return ''
+    }
   }
 
   const checkCallableByUser = async () => {

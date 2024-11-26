@@ -188,17 +188,19 @@ const ActionsConfirmation = ({
           bytes = await getMemberBytes()
         }
 
-        const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], bytes)[0]
         let memberIndex = null
-        txDataArray.forEach((data, idx) => {
-          const decoded = decodeAbiParameters(
-            [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
-            data,
-          )
-          if (decoded[0] === address) {
-            memberIndex = idx
-          }
-        })
+        if (bytes) {
+          const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], bytes)[0]
+          txDataArray.forEach((data, idx) => {
+            const decoded = decodeAbiParameters(
+              [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+              data,
+            )
+            if (decoded[0] === address) {
+              memberIndex = idx
+            }
+          })
+        }
 
         const confirmTxHash = await multisig.write.initializeMember([memberIndex])
         console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))

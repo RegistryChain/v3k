@@ -1,10 +1,10 @@
 {
-  "RegistryChain": "0x3abdaf9b1f8c327a7d37a6ea38652ae4b569d31d",
-  "Definitions": "0xe6c80c5c8c91a0bab0ebf9b9380d46888b28e69c",
-  "EntityFactory": "0xfd241a9908a70076dbfc66fe4303e88ee7597a25",
-  "PublicResolver": "0x848c7d11cd19b293303f4edc66c3eab888375982",
-  "MultisigState": "0xdfc3005076f44f34abcfe060a9d4cf94487bfee1",
-  "EntityRegistrar": "0x66ab6bcb4c36f76f87d767d33422fdd78555cfae",
-  "public.registry": "0x86b0efc0788a7a99424c96e8d8b786c954150fea",
-  "LEI": "0xee4ddd75191cae56b2361a4a45fc22255b4c5e83"
+  "RegistryChain": "0xe37483d0609670eb49194b596d65a0f824f1557d",
+  "Definitions": "0xf6d3496817cf78c8309ab5dd5fefffdced479580",
+  "EntityFactory": "0x1f75d3f2c311a3559984b36b990868b5d62dd4d2",
+  "PublicResolver": "0xa6590f797808ac69549b9758d3b183c27fe588fd",
+  "MultisigState": "0xc460a6df928c88c787caba74ccc1b582e79ea823",
+  "EntityRegistrar": "0x73ad8ee7ce98f0f15a8c0d90c7a4224b44cb2f03",
+  "public.registry": "0x4b8c99650e1dc811ccfda64021289472fd98c727",
+  "LEI": "0x54a64d33a5863e8de4d6f66cc72470395cfec68a"
 }
