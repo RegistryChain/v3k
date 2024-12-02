@@ -235,7 +235,7 @@ export default function Page() {
             setValue={(x: string) => {
               const regex = /^[a-zA-Z0-9\s-]+$/
               const valid = regex.test(x)
-              if (valid) {
+              if (valid || x === '') {
                 setEntityName(x)
               }
             }}
