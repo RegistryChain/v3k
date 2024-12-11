@@ -95,7 +95,6 @@ export async function ccipRequest({ body, url }: CcipRequestParameters): Promise
 
     return res
   } catch (err) {
-    console.log('ERRROROROOR', err)
     return Promise.resolve(new Response(null, { status: 204 }))
   }
 }
