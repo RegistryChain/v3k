@@ -16,7 +16,7 @@ const DetailsWrapper = styled.div(
   `,
 )
 
-const EntityViewTab = ({ nameDetails, domainName, multisigAddress, records, status }: any) => {
+const EntityViewTab = ({ domainName, multisigAddress, records, status }: any) => {
   const { t } = useTranslation('profile')
 
   const nameRecord = records?.find((x: any) => x.key === 'name')?.value || domainName

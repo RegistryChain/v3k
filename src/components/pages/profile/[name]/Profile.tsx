@@ -14,15 +14,14 @@ import {
   parseAbi,
 } from 'viem'
 import { sepolia } from 'viem/chains'
-import { useAccount } from 'wagmi'
 
+import { normalise } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { Outlink } from '@app/components/Outlink'
-import { useAbilities } from '@app/hooks/abilities/useAbilities'
-import { useChainName } from '@app/hooks/chain/useChainName'
+import { ccipRequest, getRevertErrorData } from '@app/hooks/useExecuteWriteToResolver'
 import { useNameDetails } from '@app/hooks/useNameDetails'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
@@ -34,6 +33,7 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 
 import contractAddresses from '../../../../constants/contractAddresses.json'
+import l1abi from '../../../../constants/l1abi.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
 import Constitution from '../../entityCreation/Constitution'
@@ -131,10 +131,8 @@ export const NameAvailableBanner = ({
   )
 }
 
-const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => {
-  const router = useRouterWithHistory()
+const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, address }: any) => {
   const { t } = useTranslation('profile')
-  const { address, isConnected } = useAccount()
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
@@ -144,13 +142,15 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const registrars: any = registrarsObj
   let nameToQuery = name
-  const nameDetailsRes: any = useNameDetails({ name: nameToQuery })
 
   const publicClient = useMemo(
     () =>
       createPublicClient({
         chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
+        transport: http('https://gateway.tenderly.co/public/sepolia', {
+          retryCount: 0,
+          timeout: 10000,
+        }),
       }),
     [],
   )
@@ -159,7 +159,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     if (isSelf && name) {
       router.replace(`/profile/${name}`)
     }
-  }, [isSelf, name, router])
+  }, [isSelf, name])
 
   useEffect(() => {
     const registry: any = getContract({
@@ -200,7 +200,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
     try {
       const localApproval = await multisig.read.localApproval()
-      const entityNonce = await multisigState.read.entityToTransactionNonce([multisigAddress])
       const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
       // if localApproval is false and txNonce = 1, drafted
       let status = 'DRAFT'
@@ -218,11 +217,14 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
     try {
       const resolver: any = await getContract({
         client: publicClient,
-        abi: parseAbi([
-          'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
-          'function text(bytes32,string memory) view returns (string memory)',
-        ]),
-        address: contractAddresses.PublicResolver as Address,
+        abi: [
+          ...parseAbi([
+            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
+            'function text(bytes32,string memory) view returns (string memory)',
+          ]),
+          ...l1abi,
+        ],
+        address: contractAddresses.DatabaseResolver as Address,
       })
 
       const keys = [
@@ -295,53 +297,93 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         'company__selected__model',
       ]
 
-      const encodes = keys.map((text) => {
-        return encodeFunctionData({
+      // const encodes = keys.map((text) => {
+      //   return encodeFunctionData({
+      //     abi: [
+      //       {
+      //         inputs: [
+      //           {
+      //             internalType: 'bytes32',
+      //             name: 'node',
+      //             type: 'bytes32',
+      //           },
+      //           {
+      //             internalType: 'string',
+      //             name: 'key',
+      //             type: 'string',
+      //           },
+      //         ],
+      //         name: 'text',
+      //         outputs: [
+      //           {
+      //             internalType: 'string',
+      //             name: '',
+      //             type: 'string',
+      //           },
+      //         ],
+      //         stateMutability: 'view',
+      //         type: 'function',
+      //       },
+      //     ],
+      //     functionName: 'text',
+      //     args: [namehash(name), text],
+      //   })
+      // })
+      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
+      let encResArr: any[] = []
+      try {
+        encResArr = await resolver.read.multicall([[]])
+      } catch (err) {
+        const data = getRevertErrorData(err)
+        const [domain, url, message] = data.args as any[]
+
+        const getRecord = encodeFunctionData({
           abi: [
             {
               inputs: [
                 {
                   internalType: 'bytes32',
-                  name: 'node',
+                  name: '',
                   type: 'bytes32',
                 },
-                {
-                  internalType: 'string',
-                  name: 'key',
-                  type: 'string',
-                },
               ],
-              name: 'text',
+              name: 'getRecord',
               outputs: [
                 {
-                  internalType: 'string',
+                  internalType: 'string[] memory',
                   name: '',
-                  type: 'string',
+                  type: 'string[] memory',
                 },
               ],
               stateMutability: 'view',
               type: 'function',
             },
           ],
-          functionName: 'text',
-          args: [namehash(name), text],
+          functionName: 'getRecord',
+          args: [namehash(name)],
         })
-      })
+        const res = await ccipRequest({
+          body: {
+            data: getRecord,
+            signature: { message, domain },
+            sender: message.sender,
+          },
+          url,
+        })
+        const recordResponse = (await res.text()) as any
+        const dec1 = decodeAbiParameters(
+          [{ type: 'bytes' }, { type: 'uint64' }, { type: 'bytes' }],
+          recordResponse,
+        )
+        const records = decodeAbiParameters([{ type: 'string[]' }], dec1[0])[0]
 
-      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
-      let encResArr: any[] = []
-      try {
-        encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
-      } catch (e) {}
-
-      encResArr.forEach((x: any, idx: any) => {
-        try {
+        records.forEach((text) => {
           recordsBuilt.push({
-            key: keys[idx],
-            value: decodeAbiParameters([{ type: 'string' }], x)[0],
+            key: text.split('//')[0],
+            value: text.split('//')[1],
           })
-        } catch (e) {}
-      })
+        })
+      }
       setRecords((prev: { [x: string]: any }[]) => [...prev, ...recordsBuilt])
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
@@ -367,30 +409,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         const multisigAddress = await registry.read.owner([namehash(name)])
         const multisig = await getMultisig(multisigAddress)
         const memberManagerAddress = await multisig.read.entityMemberManager()
-
         setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(multisigAddress)
       } catch (e) {}
     }
   }
-
-  const nameDetails: any = {}
-  Object.keys(nameDetailsRes).forEach((key) => {
-    let val: any = nameDetailsRes[key]
-
-    nameDetails[key] = val
-  })
-
-  const {
-    error,
-    errorTitle,
-    profile,
-    normalisedName,
-    beautifiedName,
-    isValid,
-    isCachedData,
-    refetchIfEnabled,
-  } = nameDetails
 
   useProtectedRoute(
     '/',
@@ -408,25 +431,10 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
 
   const [tab, setTab_] = useQueryParameterState<Tab>('tab', 'entity')
   const setTab: typeof setTab_ = (value) => {
-    refetchIfEnabled()
     setTab_(value)
   }
 
-  const abilities = useAbilities({ name: normalisedName })
-
-  const warning: ContentWarning = useMemo(() => {
-    if (error)
-      return {
-        type: 'warning',
-        message: error,
-        title: errorTitle,
-      }
-    return undefined
-  }, [error, errorTitle])
-
-  const ogImageUrl = `${OG_IMAGE_URL}/name/${normalisedName || name}`
-
-  const chainName = useChainName()
+  const ogImageUrl = `${OG_IMAGE_URL}/name/${normalise(name) || name}`
 
   const demoMessage = (
     <MessageContainer>
@@ -467,7 +475,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
       title = nameRecord + ' on RegistryChain'
     }
   }
-
   return (
     <>
       <Head>
@@ -480,19 +487,12 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>
-      <Content
-        noTitle={true}
-        title={nameRecord}
-        loading={!isCachedData && parentIsLoading}
-        copyValue={name}
-      >
+      <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={name}>
         {{
-          warning,
           header: (
             <>
               <EntityViewTab
                 domainName={name}
-                nameDetails={nameDetails}
                 multisigAddress={multisigAddress}
                 records={records}
                 status={status}
@@ -528,14 +528,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
               )}
             </>
           ),
-          titleExtra: profile?.address ? (
-            <Outlink
-              fontVariant="bodyBold"
-              href={makeEtherscanLink(profile.address!, chainName, 'address')}
-            >
-              {t('etherscan', { ns: 'common' })}
-            </Outlink>
-          ) : null,
           trailing: match(tab)
             .with('entity', () => (
               <>
@@ -595,9 +587,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 {demoMessage}
                 <AppsTab
                   registrarType={registrarType}
-                  name={normalisedName}
-                  nameDetails={nameDetails}
-                  abilities={abilities.data}
+                  name={normalise(name)}
+                  nameDetails={{}}
                   breakpoints={breakpoints}
                 />
               </>
@@ -607,9 +598,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name }: Props) => 
                 {demoMessage}
                 <LicenseTab
                   registrarType={registrarType}
-                  name={normalisedName}
-                  nameDetails={nameDetails}
-                  abilities={abilities.data}
+                  name={normalise(name)}
+                  nameDetails={{}}
                   breakpoints={breakpoints}
                 />
               </>

@@ -36,12 +36,14 @@ import Roles from '@app/components/pages/entityCreation/Roles'
 import { RecordsSection } from '@app/components/RecordsSection'
 import { roles } from '@app/constants/members'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
+import { ccipRequest, getRevertErrorData } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
+import l1abi from '../constants/l1abi.json'
 import schemaObj from '../constants/schema.json'
 
 const FooterContainer = styled.div(
@@ -93,7 +95,10 @@ export default function Page() {
     () =>
       createPublicClient({
         chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
+        transport: http(infuraUrl('sepolia'), {
+          retryCount: 0,
+          timeout: 10000,
+        }),
       }),
     [],
   )
@@ -207,11 +212,14 @@ export default function Page() {
     try {
       const resolver: any = await getContract({
         client: publicClient,
-        abi: parseAbi([
-          'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
-          'function text(bytes32,string memory) view returns (string memory)',
-        ]),
-        address: contractAddresses.PublicResolver as Address,
+        abi: [
+          ...parseAbi([
+            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
+            'function text(bytes32,string memory) view returns (string memory)',
+          ]),
+          ...l1abi,
+        ],
+        address: contractAddresses.DatabaseResolver as Address,
       })
 
       const keys = [
@@ -282,68 +290,126 @@ export default function Page() {
         'company__selected__model',
       ]
 
-      const encodes = keys.map((text) => {
-        return encodeFunctionData({
+      // const encodes = keys.map((text) => {
+      //   return encodeFunctionData({
+      //     abi: [
+      //       {
+      //         inputs: [
+      //           {
+      //             internalType: 'bytes32',
+      //             name: 'node',
+      //             type: 'bytes32',
+      //           },
+      //           {
+      //             internalType: 'string',
+      //             name: 'key',
+      //             type: 'string',
+      //           },
+      //         ],
+      //         name: 'text',
+      //         outputs: [
+      //           {
+      //             internalType: 'string',
+      //             name: '',
+      //             type: 'string',
+      //           },
+      //         ],
+      //         stateMutability: 'view',
+      //         type: 'function',
+      //       },
+      //     ],
+      //     functionName: 'text',
+      //     args: [namehash(name), text],
+      //   })
+      // })
+
+      // const recordsBuilt: any[] = []
+      // let encResArr: any[] = []
+      // try {
+      //   encResArr = await resolver.read.multicallView([contractAddresses.DatabaseResolver, encodes])
+      // } catch (err: any) {
+      //   let errMsg = err?.details
+      //   if (!errMsg) errMsg = err?.shortMessage
+      //   if (!errMsg) errMsg = err.message
+
+      //   setErrorMessage(errMsg)
+      // }
+      // let cumulativeString = ''
+      // encResArr.forEach((x: any, idx: any) => {
+      //   const valDecode = decodeAbiParameters([{ type: 'string' }], x)[0]
+      //   cumulativeString += valDecode
+      //   try {
+      //     recordsBuilt.push({
+      //       key: keys[idx],
+      //       value: valDecode,
+      //     })
+      //   } catch (err: any) {
+      //     let errMsg = err?.details
+      //     if (!errMsg) errMsg = err?.shortMessage
+      //     if (!errMsg) errMsg = err.message
+
+      //     setErrorMessage(errMsg)
+      //   }
+      // })
+      // if (!cumulativeString) return
+      const recordsBuilt: any[] = []
+      let encResArr: any[] = []
+      try {
+        encResArr = await resolver.read.multicall([[]])
+      } catch (err) {
+        const data = getRevertErrorData(err)
+        console.log('errrr', err)
+        const [domain, url, message] = data.args as any[]
+
+        const getRecord = encodeFunctionData({
           abi: [
             {
               inputs: [
                 {
                   internalType: 'bytes32',
-                  name: 'node',
+                  name: '',
                   type: 'bytes32',
                 },
-                {
-                  internalType: 'string',
-                  name: 'key',
-                  type: 'string',
-                },
               ],
-              name: 'text',
+              name: 'getRecord',
               outputs: [
                 {
-                  internalType: 'string',
+                  internalType: 'string[] memory',
                   name: '',
-                  type: 'string',
+                  type: 'string[] memory',
                 },
               ],
               stateMutability: 'view',
               type: 'function',
             },
           ],
-          functionName: 'text',
-          args: [namehash(name), text],
+          functionName: 'getRecord',
+          args: [namehash(name)],
         })
-      })
+        const res = await ccipRequest({
+          body: {
+            data: getRecord,
+            signature: { message, domain },
+            sender: message.sender,
+          },
+          url,
+        })
+        const recordResponse = (await res.text()) as any
+        const dec1 = decodeAbiParameters(
+          [{ type: 'bytes' }, { type: 'uint64' }, { type: 'bytes' }],
+          recordResponse,
+        )
+        const records = decodeAbiParameters([{ type: 'string[]' }], dec1[0])[0]
 
-      const recordsBuilt: any[] = []
-      let encResArr: any[] = []
-      try {
-        encResArr = await resolver.read.multicallView([contractAddresses.PublicResolver, encodes])
-      } catch (err: any) {
-        let errMsg = err?.details
-        if (!errMsg) errMsg = err?.shortMessage
-        if (!errMsg) errMsg = err.message
-
-        setErrorMessage(errMsg)
+        records.forEach((text) => {
+          if (keys.includes(text.split('//')[0])) {
+            recordsBuilt.push({
+              key: text.split('//')[0],
+              value: text.split('//')[1],
+            })
+          }
+        })
       }
-      let cumulativeString = ''
-      encResArr.forEach((x: any, idx: any) => {
-        const valDecode = decodeAbiParameters([{ type: 'string' }], x)[0]
-        cumulativeString += valDecode
-        try {
-          recordsBuilt.push({
-            key: keys[idx],
-            value: valDecode,
-          })
-        } catch (err: any) {
-          let errMsg = err?.details
-          if (!errMsg) errMsg = err?.shortMessage
-          if (!errMsg) errMsg = err.message
-
-          setErrorMessage(errMsg)
-        }
-      })
-      if (!cumulativeString) return
 
       setInitialRecords(recordsBuilt)
       const recs = parseSavedTexts(recordsBuilt)
@@ -585,14 +651,14 @@ export default function Page() {
                   x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
                 )?.value || zeroAddress
 
-              const updateMemberDataCall = encodeFunctionData({
-                abi: parseAbi([
-                  'function updateMemberData(address member, string memory, string memory) external',
-                ]),
-                functionName: 'updateMemberData',
-                args: [partnerAddress, change.key, change.value],
-              })
-              partnerChangesToSubmit.push(updateMemberDataCall)
+              // const updateMemberDataCall = encodeFunctionData({
+              //   abi: parseAbi([
+              //     'function updateMemberData(address member, string memory, string memory) external',
+              //   ]),
+              //   functionName: 'updateMemberData',
+              //   args: [partnerAddress, change.key, change.value],
+              // })
+              // partnerChangesToSubmit.push(updateMemberDataCall)
               if (change.value > Number(change.oldValue)) {
                 //get the partner memberIndex
 
@@ -626,14 +692,14 @@ export default function Page() {
                   x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
                 )?.value || zeroAddress
 
-              const updateMemberDataCall = encodeFunctionData({
-                abi: parseAbi([
-                  'function updateMemberData(address member, string memory, string memory) external',
-                ]),
-                functionName: 'updateMemberData',
-                args: [partnerAddress, change.key, change.value],
-              })
-              partnerChangesToSubmit.push(updateMemberDataCall)
+              // const updateMemberDataCall = encodeFunctionData({
+              //   abi: parseAbi([
+              //     'function updateMemberData(address member, string memory, string memory) external',
+              //   ]),
+              //   functionName: 'updateMemberData',
+              //   args: [partnerAddress, change.key, change.value],
+              // })
+              // partnerChangesToSubmit.push(updateMemberDataCall)
 
               //Update role permissions in member contract
               if (change.value) {
@@ -670,7 +736,7 @@ export default function Page() {
           })
 
           const submitChangesTx = await multisig.write.submitMulticallTransaction([
-            contractAddresses.PublicResolver,
+            contractAddresses.DatabaseResolver,
             roleHash,
             'update company constitution',
             formattedChangedRecords,

@@ -4,8 +4,6 @@ import styled, { css } from 'styled-components'
 
 import { Input, mq, Toggle, Typography } from '@ensdomains/thorin'
 
-import contractAddresses from '../../../constants/contractAddresses.json'
-
 const InputWrapper = styled.div(
   ({ theme }) => css`
     flex: 1;

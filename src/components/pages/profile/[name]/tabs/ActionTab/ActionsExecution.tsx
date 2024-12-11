@@ -1,13 +1,16 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import styled, { css } from 'styled-components'
-import { Address, encodeFunctionData, getContract, parseAbi } from 'viem'
-import { useAccount } from 'wagmi'
+import { Address, decodeAbiParameters, getContract, isAddressEqual, parseAbi, zeroHash } from 'viem'
+import { useAccount, useTransactionReceipt } from 'wagmi'
 
 import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 import RecordItem from '@app/components/RecordItem'
+import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 
+import contractAddresses from '../../../../../../constants/contractAddresses.json'
+import l1abi from '../../../../../../constants/l1abi.json'
 import RecordEntry from '../../../RecordEntry'
 import { TabWrapper } from '../../../TabWrapper'
 
@@ -85,20 +88,79 @@ const ActionsExecution = ({
   const { address, isConnected } = useAccount()
   const { openConnectModal }: any = useConnectModal()
 
-  const executeAction = async (txIndex: any, method: any) => {
+  const executeAction = async (transaction: any) => {
+    if (isAddressEqual(transaction.targetContract, contractAddresses.DatabaseResolver as any)) {
+      await DBResolverFlow(transaction)
+    } else {
+      try {
+        const multisig: any = getContract({
+          address: multisigAddress as Address,
+          abi: parseAbi(['function executeTransaction(uint256,bytes32, bytes, bytes) external']),
+          client: wallet,
+        })
+        const executionTxHash = await multisig.write.executeTransaction([
+          transaction.txIndex,
+          methodsCallable[transaction.method],
+          zeroHash,
+          zeroHash,
+        ])
+        console.log(await client?.waitForTransactionReceipt({ hash: executionTxHash }))
+        refresh()
+      } catch (err: any) {
+        if (err.shortMessage === 'User rejected the request.') return
+        let errMsg = err?.details
+        if (!errMsg) errMsg = err?.shortMessage
+        if (!errMsg) errMsg = err.message
+
+        setErrorMessage(errMsg)
+      }
+    }
+  }
+
+  const DBResolverFlow = async (transaction: any) => {
+    const args: any[] = []
     try {
-      const multisig: any = getContract({
-        address: multisigAddress as Address,
-        abi: parseAbi(['function executeTransaction(uint256,bytes32) external']),
-        client: wallet,
-      })
-      const executionTxHash = await multisig.write.executeTransaction([
-        txIndex,
-        methodsCallable[method],
-      ])
+      if (transaction.method === '0x10f13a8c') {
+        // On setText, I just need to separate from tx bytes the key, value, and prepend the nodeHash
+        args.push(
+          decodeAbiParameters(
+            [{ type: 'bytes32' }, { type: 'string' }, { type: 'string' }],
+            transaction.dataBytes,
+          ),
+        )
+      } else {
+        // For multicall I have to decode the tx bytes into an array of bytes, then add to args
+        args.push(decodeAbiParameters([{ type: 'bytes[]' }], transaction.dataBytes))
+      }
+
+      const executionTxHash = await executeWriteToResolver(
+        wallet,
+        {
+          functionName: transaction.method === '0x10f13a8c' ? 'setText' : 'multicall',
+          abi: l1abi,
+          address: contractAddresses.DatabaseResolver,
+          args,
+        },
+        {
+          functionName: 'executeTransaction',
+          abi: [
+            ...l1abi,
+            ...parseAbi(['function executeTransaction(uint256,bytes32, bytes, bytes) external']),
+          ],
+          address: multisigAddress,
+          args: [
+            transaction.txIndex,
+            '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce',
+          ],
+        },
+      )
       console.log(await client?.waitForTransactionReceipt({ hash: executionTxHash }))
       refresh()
     } catch (err: any) {
+      if (err.message === 'Cannot convert undefined to a BigInt') {
+        refresh()
+        return
+      }
       if (err.shortMessage === 'User rejected the request.') return
       let errMsg = err?.details
       if (!errMsg) errMsg = err?.shortMessage
@@ -129,7 +191,7 @@ const ActionsExecution = ({
                 return (
                   <div style={{ marginLeft: '40px' }}>
                     <RecordEntry
-                      itemKey={'categoryActionsExec' + (x?.databytes || idx2)}
+                      itemKey={'categoryActionsExec' + (x?.dataBytes || idx2)}
                       data={recordObject}
                     />
                   </div>
@@ -144,7 +206,7 @@ const ActionsExecution = ({
                   if (!isConnected || !address) {
                     await openConnectModal()
                   } else {
-                    executeAction(x.txIndex, x.method)
+                    executeAction(x)
                   }
                 }}
               >

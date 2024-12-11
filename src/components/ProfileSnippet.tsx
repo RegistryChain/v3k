@@ -93,7 +93,9 @@ export const ProfileSnippet = ({
   }
   return (
     <Container>
-      {multisigAddress ? (
+      {!multisigAddress && !name ? (
+        entityUnavailable
+      ) : (
         <>
           <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
             {name}
@@ -109,8 +111,6 @@ export const ProfileSnippet = ({
           </SectionTitle>
           {statusSection}
         </>
-      ) : (
-        entityUnavailable
       )}
     </Container>
   )

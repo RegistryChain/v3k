@@ -369,7 +369,9 @@ const ActionsTab = ({
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
         chain: sepolia,
-        transport: custom(window.ethereum),
+        transport: custom(window.ethereum, {
+          retryCount: 0,
+        }),
         account: address,
       })
       setWallet(newWallet)
@@ -391,16 +393,15 @@ const ActionsTab = ({
   }, [address, txs, entityMemberManager])
 
   useEffect(() => {
-    if (multisigAddress && userRoles && txs && Object.keys(methodsCallable).length === 0) {
+    if (
+      multisigAddress &&
+      userRoles.length > 0 &&
+      txs.length > 0 &&
+      Object.keys(methodsCallable).length === 0
+    ) {
       checkCallableByUser()
     }
-  }, [multisigAddress, userRoles, txs])
-
-  useEffect(() => {
-    if (multisigAddress && userRoles && txs) {
-      checkCallableByUser()
-    }
-  }, [address])
+  }, [multisigAddress, userRoles, txs, address])
 
   const txsToConfirm = useMemo(() => txs.filter((x: any) => x.sigsMade < x.sigsNeeded), [txs])
   const txsToExecute = useMemo(

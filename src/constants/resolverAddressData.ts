@@ -374,7 +374,7 @@ export const KNOWN_RESOLVER_DATA: KnownResolverData = {
     ? {
         '1337': [
           {
-            address: deploymentAddresses.PublicResolver,
+            address: deploymentAddresses.DatabaseResolver,
             deployer: 'ENS Labs',
             tag: 'latest',
             isNameWrapperAware: true,

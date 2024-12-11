@@ -14,18 +14,15 @@ import {
   http,
   isAddress,
   keccak256,
-  labelhash,
-  namehash,
-  parseAbi,
-  stringToBytes,
+  toHex,
   zeroAddress,
+  zeroHash,
   type Hex,
 } from 'viem'
 import { sepolia } from 'viem/chains'
-import { useAccount, useClient } from 'wagmi'
+import { useAccount } from 'wagmi'
 
-import { addEnsContracts } from '@ensdomains/ensjs'
-import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
+import { generateRecordCallArray, packetToBytes } from '@ensdomains/ensjs/utils'
 import { Button, Modal, Typography } from '@ensdomains/thorin'
 
 import { ErrorModal } from '@app/components/ErrorModal'
@@ -35,12 +32,14 @@ import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
 import { Review } from '@app/components/pages/entityCreation/Review'
 import Roles from '@app/components/pages/entityCreation/Roles'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
+import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
-import { infuraUrl } from '@app/utils/query/wagmi'
+import { infuraUrl, wagmiConfig } from '@app/utils/query/wagmi'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
+import l1abi from '../constants/l1abi.json'
 import schemaObj from '../constants/schema.json'
 
 const FooterContainer = styled.div(
@@ -116,7 +115,9 @@ export default function Page() {
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
         chain: sepolia,
-        transport: custom(window.ethereum),
+        transport: custom(window.ethereum, {
+          retryCount: 0,
+        }),
         account: address,
       })
       setWallet(newWallet)
@@ -303,35 +304,92 @@ export default function Page() {
         contractAddresses[code + tld] || contractAddresses['public.registry']
 
       try {
-        const deployer: any = getContract({
-          address: contractAddresses.EntityFactory as Address,
-          abi: parseAbi(['function formEntity(string,address,bytes[],bytes4[],bytes[]) external']),
-          client: wallet,
-        })
-        const generatedData = generateRecordCallArray({
-          texts,
-          namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
-        })
-        const constitutionData = generatedData.map(
-          (x) =>
-            '0x' + x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[1],
-        )
-        const methods = generatedData.map(
-          (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
-        )
+        // const deployer: any = getContract({
+        //   address: contractAddresses.EntityFactory as Address,
+        //   abi: parseAbi(['function formEntity(string,address,bytes[],bytes4[],bytes[]) external']),
+        //   client: wallet,
+        // })
+        // const generatedData = generateRecordCallArray({
+        //   texts,
+        //   namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
+        // })
+        // const constitutionData = generatedData.map(
+        //   (x) =>
+        //     '0x' + x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[1],
+        // )
+        // const methods = generatedData.map(
+        //   (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
+        // )
         const userDataBytes = await generateUserDataBytes(partners)
-        const registerChaserTx = await deployer.write.formEntity(
-          [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
-          '1000000',
+        // const registerChaserTx = await deployer.write.formEntity(
+        //   [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
+        //   '1000000',
+        // )
+
+        const constitutionData = texts.map((x) =>
+          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+        )
+
+        const formationPrep: any = {
+          functionName: 'register',
+          args: [
+            toHex(packetToBytes(entityName)),
+            address,
+            0 /* duration */,
+            zeroHash /* secret */,
+            zeroAddress /* resolver */,
+            constitutionData /* data */,
+            false /* reverseRecord */,
+            0 /* fuses */,
+            zeroHash /* extraData */,
+          ],
+          abi: l1abi,
+          address: contractAddresses['DatabaseResolver'],
+        }
+
+        const formationCallback: any = {
+          functionName: 'formEntity',
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'bytes',
+                  name: 'responseBytes',
+                  type: 'bytes',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'extraData',
+                  type: 'bytes',
+                },
+              ],
+              name: 'formEntity',
+              outputs: [],
+              stateMutability: 'nonpayable',
+              type: 'function',
+            },
+          ],
+          address: contractAddresses.EntityFactory,
+          args: [],
+        }
+        const registerChaserTx = await executeWriteToResolver(
+          wallet,
+          formationPrep,
+          formationCallback,
         )
         const transactionRes = await publicClient?.waitForTransactionReceipt({
           hash: registerChaserTx,
         })
-        if (transactionRes.status === 'reverted') {
+        if (transactionRes?.status === 'reverted') {
           throw Error('Transaction failed - contract error')
         }
         router.push('/entity/' + entityNameToPass + '.' + code + tld)
       } catch (err: any) {
+        console.log('ERROR', err.details, 'n', err.message)
+        if (err.message === 'Cannot convert undefined to a BigInt') {
+          router.push('/entity/' + entityNameToPass + '.' + code + tld)
+          return
+        }
         if (err.shortMessage === 'User rejected the request.') return
         let errMsg = err?.details
         if (!errMsg) errMsg = err?.shortMessage

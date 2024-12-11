@@ -11,18 +11,13 @@ import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 
 export default function Page() {
   const router = useRouterWithHistory()
-  const _name = router.query.name as string
+  const name = router.query.name as string
   const isSelf = router.query.connected === 'true'
-  const isViewingExpired = router.query.expired === 'true'
   const { openConnectModal } = useConnectModal()
 
   const initial = useInitial()
 
   const { address, isConnected } = useAccount()
-
-  const dotBoxResult = useDotBoxAvailabilityOffchain({
-    name: _name,
-  })
 
   const openConnect = async () => {
     if (openConnectModal && !address) await openConnectModal()
@@ -32,16 +27,7 @@ export default function Page() {
     openConnect()
   }, [isConnected])
 
-  const primary = usePrimaryName({ address: address as Hex })
-
-  const name = isSelf && primary.data?.name ? primary.data.name : _name
-
-  const isLoading = primary.isLoading || initial || !router.isReady || dotBoxResult.isLoading
-
-  if (isViewingExpired) {
-    router.push(`/profile/${name}`)
-    return null
-  }
+  const isLoading = initial || !router.isReady
 
   return (
     <ProfileContent
@@ -49,6 +35,8 @@ export default function Page() {
         isSelf,
         isLoading,
         name,
+        router,
+        address,
       }}
     />
   )

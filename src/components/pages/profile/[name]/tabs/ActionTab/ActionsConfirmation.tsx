@@ -91,7 +91,11 @@ const ActionsConfirmation = ({
   const { address, isConnected } = useAccount()
 
   useEffect(() => {
-    if (txData && address && multisigAddress) {
+    const txToConfirmCountAllshown =
+      txData.filter((x: any) => x.sigsMade < x.sigsNeeded).length !==
+      Object.keys(txIndexToSigned)?.length
+
+    if (txToConfirmCountAllshown && address && multisigAddress) {
       alreadySigned()
     }
   }, [txData, userRoles, address, multisigAddress])
@@ -111,6 +115,7 @@ const ActionsConfirmation = ({
   const alreadySigned = async () => {
     const idxToTxIndex: any = {}
     const txIndexToSignedByUser: any = {}
+    if (txData.length === 0) return
     const readTxDataEncodes = txData.map((tx: any, idx: any) => {
       idxToTxIndex[idx] = tx.txIndex
       return encodeFunctionData({
@@ -156,7 +161,9 @@ const ActionsConfirmation = ({
         contractAddresses.MultisigState,
         readTxDataEncodes,
       ])
-    } catch (e) {}
+    } catch (e) {
+      console.log('FAIL', e)
+    }
 
     encResArr.forEach((x: any, idx: any) => {
       try {
