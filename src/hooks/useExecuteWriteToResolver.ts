@@ -38,12 +38,16 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
             [{ type: 'bytes' }, { type: 'address' }],
             [message.callData, wallet.account.address],
           )
-          callbackData.args = [...callbackData.args, resBytes, req]
-          const callbackContract = getContract({
+          const callbackContract: any = getContract({
             client: wallet,
+            args: [...callbackData.args, resBytes, req],
             ...callbackData,
           })
-          const tx = await callbackContract.write[callbackData.functionName](callbackData.args)
+          const tx = await callbackContract.write[callbackData.functionName]([
+            ...callbackData.args,
+            resBytes,
+            req,
+          ])
           console.log('callback', tx)
           return tx.hash
 
@@ -92,7 +96,7 @@ export async function ccipRequest({ body, url }: CcipRequestParameters): Promise
     return res
   } catch (err) {
     console.log('ERRROROROOR', err)
-    return new Promise(() => null)
+    return Promise.resolve(new Response(null, { status: 204 }))
   }
 }
 
@@ -120,7 +124,7 @@ export async function handleDBStorage({
     },
     primaryType: 'Message',
   })
-  return await ccipRequest({
+  const requestResponse = await ccipRequest({
     body: {
       data: message.callData,
       signature: { message, domain, signature },
@@ -128,6 +132,7 @@ export async function handleDBStorage({
     },
     url,
   })
+  return requestResponse
 }
 
 export function getChain(chainId: number): chains.Chain | undefined {

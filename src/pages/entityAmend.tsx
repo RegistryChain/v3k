@@ -357,8 +357,7 @@ export default function Page() {
       try {
         encResArr = await resolver.read.multicall([[]])
       } catch (err) {
-        const data = getRevertErrorData(err)
-        console.log('errrr', err)
+        const data: any = getRevertErrorData(err)
         const [domain, url, message] = data.args as any[]
 
         const getRecord = encodeFunctionData({
