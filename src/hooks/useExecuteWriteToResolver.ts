@@ -15,7 +15,6 @@ import * as chains from 'viem/chains'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
   try {
-    // await client.
     await simulateContract(wallet, calldata)
   } catch (err) {
     const data = getRevertErrorData(err)
@@ -64,7 +63,6 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
         return '0x'
       }
       default:
-        console.log(data?.errorName)
         console.error('error registering domain: ', { err })
     }
   }

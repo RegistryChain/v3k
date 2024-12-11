@@ -126,11 +126,11 @@ const ActionsExecution = ({
           decodeAbiParameters(
             [{ type: 'bytes32' }, { type: 'string' }, { type: 'string' }],
             transaction.dataBytes,
-          ),
+          )[0],
         )
       } else {
         // For multicall I have to decode the tx bytes into an array of bytes, then add to args
-        args.push(decodeAbiParameters([{ type: 'bytes[]' }], transaction.dataBytes))
+        args.push(decodeAbiParameters([{ type: 'bytes[]' }], transaction.dataBytes)[0])
       }
 
       const executionTxHash = await executeWriteToResolver(
