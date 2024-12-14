@@ -18,8 +18,6 @@ const Roles = ({
   canChange,
   intakeType,
   roleTypes,
-  profile,
-  setProfile,
   setPartners,
   partners,
   publicClient,
@@ -33,14 +31,13 @@ const Roles = ({
 
   const partnerPercentages: any = {}
   let totalSharesReconstruct = 0
-
   partners.forEach((f: any) => {
-    totalSharesReconstruct += Number(f.shares) || 0
+    totalSharesReconstruct += Number(f.shares.setValue) || 0
   })
 
   partners.forEach((f: any) => {
-    let input = (100 * Number(f.shares)) / Number(totalSharesReconstruct) || 0
-    partnerPercentages[f.name] = Number(Number(input).toFixed(2))
+    let input = (100 * Number(f.shares.setValue)) / Number(totalSharesReconstruct) || 0
+    partnerPercentages[f.name.setValue] = Number(Number(input).toFixed(2))
   })
   const [totalShares, setTotalShares] = useState<string>((totalSharesReconstruct || 1000000) + '')
   const [sharePercentages, setSharePercentages] = useState<any>({ ...partnerPercentages })
@@ -50,33 +47,34 @@ const Roles = ({
   const partnersEle = partners.map((partner: any, idx: number) => {
     const inputEle = (
       <div key={'partnersEleDiv' + idx} style={{ display: 'flex' }}>
-        <Typography style={{ flex: 3 }}>{partner.name}</Typography>
+        <Typography style={{ flex: 3 }}>{partner.name.setValue}</Typography>
 
         {relevantRoles.map((role) => {
           return (
             <div key={'rolediv' + role} style={{ flex: 2, textAlign: align }}>
               <Toggle
                 size={'small'}
-                checked={partner.roles.includes(role)}
+                checked={partner.roles.setValue.includes(role)}
                 data-testid="primary-name-toggle"
                 disabled={!canChange}
                 onChange={(e) => {
                   e.stopPropagation()
-                  const roleChecked = partner.roles.includes(role)
-                  setPartners((prevPartners: any) => {
-                    try {
-                      const updatedPartners = [...prevPartners]
-                      let partnerRoles = [...partner.roles]
-                      if (!roleChecked) {
-                        partnerRoles.push(role)
-                      } else {
-                        partnerRoles = partnerRoles.filter((x: string) => x !== role)
-                      }
-                      const updatedPartner = { ...updatedPartners[idx], roles: partnerRoles }
-                      updatedPartners[idx] = updatedPartner
-                      return updatedPartners
-                    } catch (err) {}
-                  })
+                  const roleChecked = partner.roles.setValue.includes(role)
+                  try {
+                    const updatedPartners = [...partners]
+                    let partnerRoles = [...partner.roles.setValue]
+                    if (!roleChecked) {
+                      partnerRoles.push(role)
+                    } else {
+                      partnerRoles = partnerRoles.filter((x: string) => x !== role)
+                    }
+                    const updatedPartner = {
+                      ...updatedPartners[idx],
+                      roles: { ...updatedPartners[idx].roles, setValue: partnerRoles },
+                    }
+                    updatedPartners[idx] = updatedPartner
+                    setPartners(updatedPartners)
+                  } catch (err) {}
                 }}
               />
             </div>
@@ -114,7 +112,7 @@ const Roles = ({
             }}
           />
         </InputWrapper>
-        <InputWrapper key={'inpwra2'} style={{ flex: 2 }}>
+        {/* <InputWrapper key={'inpwra2'} style={{ flex: 2 }}>
           <Input
             size="medium"
             value={profile.lockup__days || 0}
@@ -134,7 +132,7 @@ const Roles = ({
               }
             }}
           />
-        </InputWrapper>
+        </InputWrapper> */}
         {partners.map((partner: any, idx: number) => {
           return (
             <div
@@ -153,12 +151,12 @@ const Roles = ({
                   fontSize: '24px',
                 }}
               >
-                {partner.name}
+                {partner.name.setValue}
               </Typography>
               <InputWrapper key={'inpwraPart1' + idx} style={{ flex: 3 }}>
                 <Input
                   size="medium"
-                  value={sharePercentages[partner.name]}
+                  value={sharePercentages[partner.name.setValue]}
                   label={t('steps.roles.ownershipPercentage.label')}
                   error={false}
                   placeholder={t('steps.roles.ownershipPercentage.label')}
@@ -173,17 +171,19 @@ const Roles = ({
                       }
                       setSharePercentages({
                         ...sharePercentages,
-                        [partner.name]: Number(Number(input).toFixed(2)),
+                        [partner.name.setValue]: Number(Number(input).toFixed(2)),
                       })
-                      setPartners((prevPartners: any[]) => {
-                        const updatedPartners = [...prevPartners]
-                        const updatedPartner = {
-                          ...updatedPartners[idx],
-                          shares: Math.round(Number(totalShares) * (Number(input) / 100)),
-                        }
-                        updatedPartners[idx] = updatedPartner
-                        return updatedPartners
-                      })
+                      const updatedPartners = [...partners]
+                      const updatedPartner = {
+                        ...updatedPartners[idx],
+                        shares: {
+                          ...updatedPartners[idx].shares,
+                          setValue: Math.round(Number(totalShares) * (Number(input) / 100)),
+                        },
+                      }
+                      updatedPartners[idx] = updatedPartner
+
+                      setPartners(updatedPartners)
                     }
                   }}
                 />
@@ -192,7 +192,7 @@ const Roles = ({
                 <Input
                   size="medium"
                   style={{ cursor: 'not-allowed' }}
-                  value={partner.shares}
+                  value={partner.shares.setValue}
                   label={t('steps.roles.ownershipShares.label')}
                   error={false}
                   placeholder={t('steps.roles.ownershipShares.label')}
@@ -202,7 +202,7 @@ const Roles = ({
                   onChange={(e) => null}
                 />
               </InputWrapper>
-              <div key={'lockup' + partner.name} style={{ flex: 1, textAlign: align }}>
+              <div key={'lockup' + partner.name.setValue} style={{ flex: 1, textAlign: align }}>
                 <div style={{ alignContent: 'center', marginBottom: '8px' }}>
                   <label
                     style={{
@@ -216,21 +216,25 @@ const Roles = ({
                   </label>
                 </div>
                 <div
-                  key={'lockupinput' + partner.name}
+                  key={'lockupinput' + partner.name.setValue}
                   style={{ height: '3rem', alignContent: 'center' }}
                 >
                   <Toggle
                     size={'small'}
-                    checked={partner.lockup || false}
+                    checked={partner.lockup.setValue || false}
                     disabled={!canChange}
                     onChange={(e) => {
                       e.stopPropagation()
-                      setPartners((prevPartners: any) => {
-                        const updatedPartners = [...prevPartners]
-                        const updatedPartner = { ...updatedPartners[idx], lockup: !partner.lockup }
-                        updatedPartners[idx] = updatedPartner
-                        return updatedPartners
-                      })
+                      const updatedPartners = [...partners]
+                      const updatedPartner = {
+                        ...updatedPartners[idx],
+                        lockup: {
+                          ...updatedPartners[idx].lockup,
+                          setValue: !partner.lockup.setValue,
+                        },
+                      }
+                      updatedPartners[idx] = updatedPartner
+                      setPartners(updatedPartners)
                     }}
                     data-testid="primary-name-toggle"
                   />

@@ -83,36 +83,24 @@ const SectionSubtitle = styled(Typography)(
 )
 
 export const RecordsSection = ({
-  texts,
-  status,
+  fields,
+  compareToOldValues,
   addressesObj,
 }: {
-  texts?: TextRecord[]
+  fields: any
   addressesObj?: any
-  status?: String
+  compareToOldValues: Boolean
 }) => {
   const { t } = useTranslation('profile')
 
-  const filteredTexts = useMemo(
-    () => texts?.filter(({ oldValue, value }: any) => value || oldValue),
-    [texts],
+  const filteredCompanyData = useMemo(
+    () => Object.keys(fields)?.filter((field) => fields[field].setValue || fields[field].oldValue),
+    [fields],
   )
   const recordCategoryToTitle: any = {
     company: 'Company Details',
     civil: 'Civil Details',
   }
-  const partnersOrganized: any = {}
-  const partnerTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'partner') || []
-  partnerTexts.forEach((text: any) => {
-    try {
-      const keyComp = text.key.split('__')
-      if (!partnersOrganized[keyComp[1]]) partnersOrganized[keyComp[1]] = {}
-      partnersOrganized[keyComp[1]][keyComp.slice(2).join(' ')] = {
-        value: text.value,
-        oldValue: text?.oldValue || '',
-      }
-    } catch (err) {}
-  })
 
   let addressSection = null
   if (addressesObj) {
@@ -170,7 +158,7 @@ export const RecordsSection = ({
   }
 
   let partnerSection = null
-  if (Object.values(partnersOrganized)?.length > 0) {
+  if (fields.partners?.length > 0) {
     partnerSection = (
       <RecordSection key={'section1Partner'}>
         <div style={{ width: '100%' }}>
@@ -183,7 +171,7 @@ export const RecordsSection = ({
               </SectionTitleContainer>
             </SectionHeader>
             <div style={{ width: '100%', paddingLeft: '40px' }}>
-              {Object.values(partnersOrganized).map((partner: any, idx) => {
+              {fields.partners.map((partner: any, idx: number) => {
                 return (
                   <RecordSection key={'section1SubSubPartner' + idx}>
                     <SectionHeader>
@@ -208,14 +196,11 @@ export const RecordsSection = ({
                           }}
                         >
                           <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {key
-                              .split('__')
-                              .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                              .join(' ')}
+                            {partner[key]?.label}
                           </Typography>
                           <Typography>
                             {' '}
-                            {partner[key].oldValue ? (
+                            {partner[key].oldValue && compareToOldValues ? (
                               <span
                                 style={{
                                   overflow: 'hidden',
@@ -226,7 +211,7 @@ export const RecordsSection = ({
                                 {partner[key].oldValue}
                               </span>
                             ) : null}{' '}
-                            {partner[key].value}
+                            {partner[key].setValue}
                           </Typography>
                         </div>
                       )
@@ -240,14 +225,15 @@ export const RecordsSection = ({
       </RecordSection>
     )
   }
-  const categoryTexts = filteredTexts?.filter((text) => text.key.split('__')[0] === 'company') || []
-  const domain = filteredTexts?.find((x) => x.key === 'domain')
-  const lei = filteredTexts?.find((x) => x.key === 'LEI')
+  // const categoryTexts =
+  //   filteredCompanyData?.filter((text) => text.key.split('__')[0] === 'company') || []
+  // const domain = filteredCompanyData?.find((x) => x.key === 'domain')
+  // const lei = filteredCompanyData?.find((x) => x.key === 'LEI')
 
-  if (domain) categoryTexts.unshift(domain)
-  if (lei) categoryTexts.unshift(lei)
+  // if (domain) categoryTexts.unshift(domain)
+  // if (lei) categoryTexts.unshift(lei)
   let sectionsDisplay = null
-  if (categoryTexts?.length > 0) {
+  if (filteredCompanyData?.length > 0) {
     sectionsDisplay = (
       <div key={'companydiv'} style={{ width: '100%' }}>
         <RecordSection key={'section1SubRecordscompany'}>
@@ -257,12 +243,13 @@ export const RecordsSection = ({
                 {recordCategoryToTitle['company']}
               </SectionTitle>
               <SectionSubtitle data-testid="text-amount">
-                {categoryTexts ? categoryTexts.length : 0} {t('records.label', { ns: 'common' })}
+                {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
+                {t('records.label', { ns: 'common' })}
               </SectionSubtitle>
             </SectionTitleContainer>
           </SectionHeader>
-          {categoryTexts &&
-            categoryTexts.map((text: any, idx: any) => {
+          {filteredCompanyData &&
+            filteredCompanyData.map((field: any, idx: any) => {
               return (
                 <div
                   key={'catTextEmbedded' + idx}
@@ -277,14 +264,11 @@ export const RecordsSection = ({
                   }}
                 >
                   <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                    {text.key
-                      .split('__')
-                      .map((x: any) => x[0].toUpperCase() + x.slice(1))
-                      .join(' ')}
+                    {fields[field].label || field}
                   </Typography>
 
                   <Typography style={{ overflow: 'hidden' }}>
-                    {text.oldValue ? (
+                    {fields[field].oldValue && compareToOldValues ? (
                       <span
                         style={{
                           overflow: 'hidden',
@@ -292,10 +276,10 @@ export const RecordsSection = ({
                           textDecorationLine: 'line-through',
                         }}
                       >
-                        {text.oldValue}
+                        {fields[field].oldValue}
                       </span>
                     ) : null}{' '}
-                    {text.value}
+                    {fields[field].setValue}
                   </Typography>
                 </div>
               )

@@ -9,6 +9,7 @@ import {
   PrivateKeyAccount,
   RawContractError,
   WalletClient,
+  zeroHash,
 } from 'viem'
 import { simulateContract } from 'viem/actions'
 import * as chains from 'viem/chains'
@@ -77,6 +78,23 @@ export function getRevertErrorData(err: unknown) {
 export type CcipRequestParameters = {
   body: { data: Hex; signature: any; sender: Address }
   url: string
+}
+
+export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }: any) {
+  try {
+    const res = await fetch(
+      `http://localhost:2000/getRecord/nodeHash=${nodeHash}&needsSchema=${needsSchema + ''}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    return await res.json()
+  } catch (err) {
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
 }
 
 export async function ccipRequest({ body, url }: CcipRequestParameters): Promise<Response> {

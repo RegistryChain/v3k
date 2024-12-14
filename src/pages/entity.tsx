@@ -28,11 +28,11 @@ import { Button, Modal, Typography } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
 import Constitution from '@app/components/pages/entityCreation/Constitution'
-import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
-import { Review } from '@app/components/pages/entityCreation/Review'
+import EntityInfo from '@app/components/pages/entityCreation/EntityInfo'
 import Roles from '@app/components/pages/entityCreation/Roles'
+import { RecordsSection } from '@app/components/RecordsSection'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
-import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl, wagmiConfig } from '@app/utils/query/wagmi'
@@ -65,11 +65,10 @@ export default function Page() {
   const isSelf = router.query.connected === 'true'
 
   const [registrationStep, setRegistrationStep] = useState<number>(1)
-  const [profile, setProfile] = useState<any>({})
-  const [partners, setPartners] = useState<any[]>([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
-  const [model, setModel] = useState<any>('Model 1')
+  const [schemaFields, setSchemaFields] = useState<any>({})
+  const [emptyPartner, setEmptyPartner] = useState({})
 
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
@@ -98,20 +97,6 @@ export default function Page() {
     : entityTypeObj?.countryCode
 
   useEffect(() => {
-    setProfile((prevProf: any) => ({
-      ...prevProf,
-      name: entityName,
-      registrar: entityTypeObj?.formationJurisdiction
-        ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
-        : entityTypeObj?.formationCountry,
-      type: entityTypeObj?.entityTypeName,
-      entity__code: entityType,
-    }))
-  }, [entityName, entityType])
-
-  // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
-
-  useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
         chain: sepolia,
@@ -130,76 +115,82 @@ export default function Page() {
     const m = new Date().getMonth() + 1
     const d = new Date().getDate()
     const y = new Date().getFullYear()
-    setProfile((prevState: any) => ({ ...prevState, formation__date: y + '-' + m + '-' + d }))
+    setSchemaFields((prevState: any) => ({
+      ...prevState,
+      company__formation__date: {
+        ...prevState.company__formation__date,
+        setValue: y + '-' + m + '-' + d,
+      },
+    }))
   }, [registrationStep])
   const intakeType = 'company'
 
-  async function generateUserDataBytes(userData: any) {
-    return userData.map((user: any, idx: any) => {
-      let roleDataBytes: any = '0x'
-      user.roles.forEach((role: any) => {
-        const encRole = encodeAbiParameters([{ type: 'string' }], [role])
-        const roleHash = keccak256(encRole).slice(2, 66)
-        roleDataBytes += roleHash
-      })
-
-      const encodedUserData = encodeAbiParameters(
-        [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
-        [user.wallet__address, user.shares, roleDataBytes],
-      )
-      return encodedUserData
+  const getSchemaFields = async () => {
+    const registrar = entityTypeObj?.formationJurisdiction
+      ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
+      : entityTypeObj?.formationCountry
+    const fields = await getRecordData({})
+    setSchemaFields({
+      ...fields,
+      name: { ...fields.name, setValue: entityName },
+      company__name: { ...fields.company__name, setValue: entityName },
+      company__registrar: { ...fields.company__registrar, setValue: registrar },
+      company__type: { ...fields.company__type, setValue: entityTypeObj?.entityTypeName },
+      company__entity__code: { ...fields.company__entity__code, setValue: entityType },
+      company__selected__model: { ...fields.company__selected__model, setValue: 'Model 1' },
     })
+    setEmptyPartner(fields.partners?.[0])
   }
 
-  const validatePartners = () => {
+  useEffect(() => {
+    if (entityName && entityType) {
+      getSchemaFields()
+    }
+  }, [entityName, entityType])
+
+  const validatePartners = (fieldsToValidate: string[]) => {
     let blockAdvance = false
     const cumulativePartnerVals: any = {}
-    partners.forEach((partner, idx) => {
+    schemaFields.partners.forEach((partner: any) => {
       //If wanting to implenent validation on share amounts and percentages...
-      const schemaToReturn = {
-        ...schema['partnerFields']?.standard?.[intakeType],
-        ...schema['partnerFields']?.[code]?.[intakeType],
-      }
+      fieldsToValidate.forEach((field) => {
+        const msgField = partner[field].label
+        const trueType = partner[field].type.split('?').join('').toLowerCase()
+        let errMsg = ''
+        const isOptional = partner[field].type.split('?')?.length > 1
+        let failedCheck = typeof partner[field].setValue !== trueType
 
-      const fields = Object.keys(partner)?.filter(
-        (field) => Object.keys(schemaToReturn)?.includes(field),
-      )
-
-      fields.forEach((field) => {
-        const msgField = field.split('__').join(' ')
-        const trueType = schemaToReturn[field].split('?').join('')
-        let typeVal = trueType
-        const isOptional = schemaToReturn[field].split('?')?.length > 1
-        let failedCheck = typeof partner[field] !== trueType
-
-        if (schemaToReturn[field] === 'string') {
-          failedCheck = partner[field]?.length === 0
+        if (trueType === 'string') {
+          failedCheck = partner[field].setValue?.length === 0
         }
-        if (schemaToReturn[field] === 'number') {
-          failedCheck = Number.isNaN(Number(partner[field]))
+        if (trueType === 'number') {
+          failedCheck = Number.isNaN(Number(partner[field].setValue))
           if (!failedCheck) {
             if (!cumulativePartnerVals[field]) cumulativePartnerVals[field] = 0
-            cumulativePartnerVals[field] += partner[field]
+            cumulativePartnerVals[field] += partner[field].setValue
           }
         }
-        if (schemaToReturn[field] === 'array') {
-          failedCheck = !Array.isArray(partner[field]) && !!partner[field]
+        if (trueType === 'array') {
+          failedCheck = !Array.isArray(partner[field].setValue) && !!partner[field].setValue
         }
         if (trueType === 'date') {
           const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-          const dateValue = partner[field]
+          const dateValue = partner[field].setValue
           failedCheck = !dateRegex.test(dateValue)
         }
-        if (trueType === 'address') {
+        if (trueType === 'address' || field === 'wallet__address') {
           failedCheck =
-            !isAddress(partner[field]) || (partner[field] === zeroAddress && !isOptional)
+            !isAddress(partner[field].setValue) ||
+            (partner[field].setValue === zeroAddress && !isOptional)
+          if (failedCheck) errMsg = `${msgField} must be a valid EVM address`
         }
-        if (isOptional && !partner[field]) {
+        if (isOptional && !partner[field].setValue) {
           failedCheck = false
         }
         if (failedCheck) {
-          let errMsg = `'${msgField}' field is invalid. It should be of type '${schemaToReturn[field]}'`
-          if (!partner[field]) {
+          if (!errMsg) {
+            errMsg = `'${msgField}' field is invalid. It should be of type '${partner[field].type}'`
+          } else if (!partner[field].setValue) {
             errMsg = `'${msgField}' is a required field`
           }
           setErrorMessage(errMsg)
@@ -233,28 +224,21 @@ export default function Page() {
     let blockAdvance = false
     try {
       if (registrationStep === 1 || registrationStep >= 5) {
-        const schemaToReturn = {
-          ...schema['corpFields'].standard,
-          ...schema['corpFields']?.[code],
-        }
+        const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
 
-        const fields = Object.keys(schemaToReturn)?.filter(
-          (field) => Object.keys(profile)?.includes(field),
-        )
-
-        fields.forEach((field) => {
+        stepKeys.forEach((field) => {
           let errMsg = ''
           let failedCheck = false
-          const msgField = field.split('__').join(' ')
-          let typeVal = schemaToReturn[field]
-          if (schemaToReturn[field] === 'array') {
+          const msgField = schemaFields[field].label
+          let typeVal = schemaFields[field].type.toLowerCase()
+          if (schemaFields[field].type === 'Array') {
             typeVal = 'object'
           }
-          if (typeof profile[field] !== typeVal) {
-            errMsg = `'${msgField}' is invalid. It should be of type '${schemaToReturn[field]}'`
+          if (typeof schemaFields[field].setValue !== typeVal) {
+            errMsg = `'${msgField}' is invalid. It should be of type '${schemaFields[field].type}'`
             failedCheck = true
           }
-          if (!profile[field]) {
+          if (!schemaFields[field].setValue) {
             errMsg = `'${msgField}' is a required field.`
             failedCheck = true
           }
@@ -265,10 +249,16 @@ export default function Page() {
         })
       }
       if (registrationStep === 2 || registrationStep >= 5) {
-        blockAdvance = validatePartners()
+        blockAdvance = validatePartners([
+          'name',
+          'type',
+          'wallet__address',
+          'DOB',
+          'physical__address',
+        ])
       }
       if (registrationStep === 3 || registrationStep >= 5) {
-        blockAdvance = validatePartners()
+        blockAdvance = validatePartners(['roles', 'shares'])
       }
       if (registrationStep === 4 || registrationStep >= 5) {
       }
@@ -292,8 +282,7 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      profile.selected__model = model
-      const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
+      const texts: any[] = generateTexts(schemaFields)
 
       const jurisSubdomainString = code
 
@@ -320,12 +309,11 @@ export default function Page() {
         // const methods = generatedData.map(
         //   (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
         // )
-        const userDataBytes = await generateUserDataBytes(partners)
+        // const userDataBytes = await generateUserDataBytes(schemaFields.partners)
         // const registerChaserTx = await deployer.write.formEntity(
         //   [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
         //   '1000000',
         // )
-
         const constitutionData = texts.map((x) =>
           encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
         )
@@ -430,13 +418,15 @@ export default function Page() {
   )
 
   if (registrationStep === 1) {
+    const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
     content = (
-      <CorpInfo
+      <EntityInfo
         data={{ name, registrarKey: code }}
-        fields={schema.corpFields}
         step={registrationStep}
-        profile={profile}
-        setProfile={setProfile}
+        fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
+        setField={(key: string, value: any) =>
+          setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
+        }
         publicClient={publicClient}
       />
     )
@@ -449,10 +439,12 @@ export default function Page() {
         breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
-        partnerFields={schema.partnerFields}
+        emptyPartner={emptyPartner}
         intakeType={intakeType}
-        partners={partners}
-        setPartners={setPartners}
+        partners={schemaFields.partners}
+        setPartners={(partnersData: any[]) =>
+          setSchemaFields({ ...schemaFields, partners: partnersData })
+        }
         publicClient={publicClient}
       />
     )
@@ -466,31 +458,33 @@ export default function Page() {
         canChange={true}
         intakeType={intakeType}
         roleTypes={schema.roles}
-        profile={profile}
-        setProfile={setProfile}
-        partners={partners}
-        setPartners={setPartners}
+        partners={schemaFields.partners}
+        setPartners={(partnersData: any[]) =>
+          setSchemaFields({ ...schemaFields, partners: partnersData })
+        }
         publicClient={publicClient}
       />
     )
   }
 
   if (registrationStep === 4) {
+    const stepKeys = Object.keys(schemaFields).filter((x) =>
+      schema.additionalTermsFields.includes(x),
+    )
     content = (
-      <CorpInfo
+      <EntityInfo
         data={{ name, registrarKey: code }}
-        fields={schema.additionalTermsFields}
+        fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
+        setField={(key: string, value: any) =>
+          setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
+        }
         step={registrationStep}
-        profile={profile}
-        setProfile={setProfile}
         publicClient={publicClient}
       />
     )
   }
 
   if (registrationStep === 5) {
-    const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
@@ -498,16 +492,21 @@ export default function Page() {
         </Typography>
         <Constitution
           breakpoints={breakpoints}
-          formationData={texts}
-          model={model}
-          setModel={setModel}
+          formationData={schemaFields}
+          model={schemaFields.company__selected__model}
+          setModel={(modelId: string) =>
+            setSchemaFields({
+              ...schemaFields,
+              company__selected__model: {
+                ...schemaFields.company__selected__model,
+                setValue: modelId,
+              },
+            })
+          }
         />
-        <Review
-          name={name}
-          profile={profile}
-          partners={partners}
-          setErrorMessage={setErrorMessage}
-        />
+        <div>
+          <RecordsSection fields={schemaFields} compareToOldValues={false} />
+        </div>
       </div>
     )
   }
@@ -531,37 +530,39 @@ export default function Page() {
   )
 }
 
-const generateTexts = (partners: any, profile: any, entityName: any, intakeType: any) => {
-  const texts = [{ key: 'name', value: entityName }]
-  partners.forEach((partner: any, idx: any) => {
+const generateTexts = (fields: any) => {
+  // THE PURPOSE OF THIS FUNCTION IS TO CONVERT THE ENTIRE DATA OBJECT COLLECTED INTO TEXT RECORDS FOR ALL RESOLVER TYPES
+  const texts: any[] = []
+  fields.partners.forEach((partner: any, idx: any) => {
     const partnerKey = 'partner__[' + idx + ']__'
     Object.keys(partner).forEach((field) => {
-      if (field === 'address') {
-        if (!isAddress(partner[field])) {
+      if (partner[field].type === 'address' || field === 'wallet__address') {
+        if (!isAddress(partner[field]?.setValue)) {
           texts.push({ key: partnerKey + field, value: zeroAddress })
         } else {
-          texts.push({ key: partnerKey + field, value: partner[field] })
+          texts.push({ key: partnerKey + field, value: partner[field]?.setValue })
         }
-      } else if (typeof partner[field] === 'boolean') {
-        texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
-      } else if (field === 'Date') {
+      } else if (partner[field].type === 'boolean') {
+        texts.push({ key: partnerKey + field, value: partner[field]?.setValue ? 'true' : 'false' })
+      } else if (partner[field].type === 'Date') {
         const m = new Date().getMonth() + 1
         const d = new Date().getDate()
         const y = new Date().getFullYear()
         texts.push({ key: partnerKey + field, value: y + '-' + m + '-' + d })
       } else if (field !== 'roles') {
-        texts.push({ key: partnerKey + field, value: partner[field] })
-      } else if (partner[field]) {
-        partner[field].forEach((role: string) => {
+        texts.push({ key: partnerKey + field, value: partner[field]?.setValue })
+      } else if (partner[field]?.setValue) {
+        partner[field]?.setValue.forEach((role: string) => {
           texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
         })
       }
     })
   })
 
-  Object.keys(profile).forEach((field) => {
-    const key = intakeType + '__' + field.split(' ').join('__')
-    texts.push({ key, value: profile[field] })
+  Object.keys(fields).forEach((key) => {
+    if (key !== 'partners') {
+      texts.push({ key: key, value: fields[key]?.setValue })
+    }
   })
   return texts
 }

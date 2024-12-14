@@ -403,6 +403,7 @@ const ActionsTab = ({
     }
   }, [multisigAddress, userRoles, txs, address])
 
+  console.log('txtsst', txs)
   const txsToConfirm = useMemo(() => txs.filter((x: any) => x.sigsMade < x.sigsNeeded), [txs])
   const txsToExecute = useMemo(
     () => txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed),

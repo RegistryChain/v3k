@@ -12,6 +12,7 @@ import {
   http,
   namehash,
   parseAbi,
+  zeroAddress,
 } from 'viem'
 import { sepolia } from 'viem/chains'
 
@@ -20,12 +21,14 @@ import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
-import { Outlink } from '@app/components/Outlink'
-import { ccipRequest, getRevertErrorData } from '@app/hooks/useExecuteWriteToResolver'
+import { useConvertFlatResolverToFull } from '@app/hooks/useConvertFlatResolverToFull'
+import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useNameDetails } from '@app/hooks/useNameDetails'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { useTextResolverReadBytes } from '@app/hooks/useTextResolverReadBytes'
+import { useTextResolverResultsDecoded } from '@app/hooks/useTextResolverResultsDecoded'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { OG_IMAGE_URL } from '@app/utils/constants'
@@ -33,11 +36,10 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 
 import contractAddresses from '../../../../constants/contractAddresses.json'
-import l1abi from '../../../../constants/l1abi.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
 import Constitution from '../../entityCreation/Constitution'
-import ActionsTab from './tabs/ActionTab/ActionsTab'
+import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import LicenseTab from './tabs/LicenseTab'
@@ -136,8 +138,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
-  const [records, setRecords] = useState<any>([])
-  const [model, setModel] = useState<any>('')
+  const [records, setRecords] = useState<any>({})
+  const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
 
   const registrars: any = registrarsObj
@@ -172,16 +174,10 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
 
   useEffect(() => {
     if (name) {
+      setRecordsRequestPending(true)
       getRecords()
     }
   }, [name])
-
-  useEffect(() => {
-    const modelObj = records.find((x: any) => x.key === 'company__selected__model')
-    if (modelObj?.value) {
-      setModel(modelObj?.value)
-    }
-  }, [records])
 
   useEffect(() => {
     if (multisigAddress) {
@@ -209,182 +205,28 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
         status = 'SUBMITTED'
       }
       setStatus(status)
-      setRecords((prev: { [x: string]: any }[]) => [...prev, { key: 'status', value: status }])
+      setRecords((prev: { [x: string]: any }) => ({
+        ...prev,
+        status: { ...prev.status, setValue: status },
+      }))
     } catch (e) {}
   }
 
   const getRecords = async () => {
     try {
-      const resolver: any = await getContract({
-        client: publicClient,
-        abi: [
-          ...parseAbi([
-            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
-            'function text(bytes32,string memory) view returns (string memory)',
-          ]),
-          ...l1abi,
-        ],
-        address: contractAddresses.DatabaseResolver as Address,
-      })
-
-      const keys = [
-        'LEI',
-        'name',
-        'partner__[0]__name',
-        'partner__[0]__type',
-        'partner__[0]__wallet__address',
-        'partner__[0]__physical__address',
-        'partner__[0]__DOB',
-        'partner__[0]__is__manager',
-        'partner__[0]__is__signer',
-        'partner__[0]__lockup',
-        'partner__[0]__shares',
-        'partner__[1]__name',
-        'partner__[1]__type',
-        'partner__[1]__wallet__address',
-        'partner__[1]__physical__address',
-        'partner__[1]__DOB',
-        'partner__[1]__is__manager',
-        'partner__[1]__is__signer',
-        'partner__[1]__lockup',
-        'partner__[1]__shares',
-        'partner__[2]__name',
-        'partner__[2]__type',
-        'partner__[2]__wallet__address',
-        'partner__[2]__physical__address',
-        'partner__[2]__DOB',
-        'partner__[2]__is__manager',
-        'partner__[2]__is__signer',
-        'partner__[2]__lockup',
-        'partner__[2]__shares',
-        'partner__[3]__name',
-        'partner__[3]__type',
-        'partner__[3]__wallet__address',
-        'partner__[3]__physical__address',
-        'partner__[3]__DOB',
-        'partner__[3]__is__manager',
-        'partner__[3]__is__signer',
-        'partner__[3]__lockup',
-        'partner__[3]__shares',
-        'partner__[4]__name',
-        'partner__[4]__type',
-        'partner__[4]__wallet__address',
-        'partner__[4]__physical__address',
-        'partner__[4]__DOB',
-        'partner__[4]__is__manager',
-        'partner__[4]__is__signer',
-        'partner__[4]__lockup',
-        'partner__[4]__shares',
-        'partner__[5]__name',
-        'partner__[5]__type',
-        'partner__[5]__wallet__address',
-        'partner__[5]__physical__address',
-        'partner__[5]__DOB',
-        'partner__[5]__is__manager',
-        'partner__[5]__is__signer',
-        'partner__[5]__lockup',
-        'partner__[5]__shares',
-        'company__name',
-        'company__entity__code',
-        'company__registrar',
-        'company__type',
-        'company__description',
-        'company__address',
-        'company__purpose',
-        'company__formation__date',
-        'company__lockup__days',
-        'company__additional__terms',
-        'company__selected__model',
-      ]
-
-      // const encodes = keys.map((text) => {
-      //   return encodeFunctionData({
-      //     abi: [
-      //       {
-      //         inputs: [
-      //           {
-      //             internalType: 'bytes32',
-      //             name: 'node',
-      //             type: 'bytes32',
-      //           },
-      //           {
-      //             internalType: 'string',
-      //             name: 'key',
-      //             type: 'string',
-      //           },
-      //         ],
-      //         name: 'text',
-      //         outputs: [
-      //           {
-      //             internalType: 'string',
-      //             name: '',
-      //             type: 'string',
-      //           },
-      //         ],
-      //         stateMutability: 'view',
-      //         type: 'function',
-      //       },
-      //     ],
-      //     functionName: 'text',
-      //     args: [namehash(name), text],
-      //   })
-      // })
-      const recordsBuilt: any[] = [{ key: 'domain', value: name }]
-      let encResArr: any[] = []
-      try {
-        encResArr = await resolver.read.multicall([[]])
-      } catch (err) {
-        const data: any = getRevertErrorData(err)
-        const [domain, url, message] = data.args as any[]
-
-        const getRecord = encodeFunctionData({
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'bytes32',
-                  name: '',
-                  type: 'bytes32',
-                },
-              ],
-              name: 'getRecord',
-              outputs: [
-                {
-                  internalType: 'string[] memory',
-                  name: '',
-                  type: 'string[] memory',
-                },
-              ],
-              stateMutability: 'view',
-              type: 'function',
-            },
-          ],
-          functionName: 'getRecord',
-          args: [namehash(name)],
-        })
-        const res = await ccipRequest({
-          body: {
-            data: getRecord,
-            signature: { message, domain },
-            sender: message.sender,
-          },
-          url,
-        })
-        const recordResponse = (await res.text()) as any
-        const dec1 = decodeAbiParameters(
-          [{ type: 'bytes' }, { type: 'uint64' }, { type: 'bytes' }],
-          recordResponse,
-        )
-        const records = decodeAbiParameters([{ type: 'string[]' }], dec1[0])[0]
-
-        records.forEach((text) => {
-          recordsBuilt.push({
-            key: text.split('//')[0],
-            value: text.split('//')[1],
-          })
-        })
-      }
-      setRecords((prev: { [x: string]: any }[]) => [...prev, ...recordsBuilt])
+      // if (resolver === 'textResolver') {
+      //   const encodes = await useTextResolverReadBytes(namehash(name))
+      //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
+      //   const fields = await useConvertFlatResolverToFull(records)
+      // }
+      const fields = await getRecordData({ nodeHash: namehash(name), needsSchema: true })
+      console.log(fields, namehash(name), name)
+      fields.partners = fields.partners.filter(
+        (partner: any) => partner?.wallet__address?.setValue !== '',
+      )
+      console.log(fields.partners)
+      setRecords(fields)
+      setRecordsRequestPending(false)
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
@@ -443,7 +285,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
     </MessageContainer>
   )
 
-  if (!records) {
+  if (Object.keys(records)?.length === 0 && !recordsRequestPending) {
     return (
       <>
         <Head>
@@ -469,8 +311,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
   }
 
   let nameRecord = title
-  if (records) {
-    nameRecord = records?.find((x: any) => x.key === 'name')?.value
+  if (Object.keys(records)?.length > 0) {
+    nameRecord = records?.name?.setValue
     if (nameRecord) {
       title = nameRecord + ' on RegistryChain'
     }
@@ -532,7 +374,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
             .with('entity', () => (
               <>
                 <RecordsSection
-                  texts={records || []}
+                  fields={records}
+                  compareToOldValues={false}
                   addressesObj={[
                     { key: 'Multisig Address', value: multisigAddress },
                     { key: 'Member Manager Address', value: entityMemberManager },
@@ -547,7 +390,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
                     breakpoints={breakpoints}
                     formationData={records}
                     multisigAddress={multisigAddress}
-                    model={model}
+                    model={records.company__selected__model}
                     setModel={null}
                     canDownload={true}
                   />

@@ -23,51 +23,7 @@
     "CIV": [],
     "AR": []
   },
-  "partnerFields": {
-    "standard": {
-      "company": {
-        "name": "string",
-        "type": "string",
-        "wallet__address": "address",
-        "physical__address": "string",
-        "DOB": "date",
-        "roles": "array",
-        "lockup": "boolean?",
-        "shares": "number"
-      },
-      "civil": {
-        "name": "string",
-        "address": "address",
-        "physical__address": "string",
-        "DOB": "date",
-        "roles": "array"
-      }
-    },
-    "public": {},
-    "DL": {},
-    "WY": {},
-    "BVI": {},
-    "CIV": {}
-  },
-  "corpFields": {
-    "standard": {
-      "address": "string",
-      "purpose": "string"
-    },
-    "public": {},
-    "DL": {},
-    "WY": {},
-    "BVI": {},
-    "CIV": {}
-  },
-  "additionalTermsFields": {
-    "standard": {
-      "additional__terms": "string"
-    },
-    "public": {},
-    "DL": {},
-    "WY": {},
-    "BVI": {},
-    "CIV": {}
-  }
+
+  "corpFields": ["company__address", "company__purpose"],
+  "additionalTermsFields": ["company__additional__terms"]
 }

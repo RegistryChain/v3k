@@ -31,12 +31,12 @@ import { Button, Typography } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
 import Constitution from '@app/components/pages/entityCreation/Constitution'
-import CorpInfo from '@app/components/pages/entityCreation/CorpInfo'
+import EntityInfo from '@app/components/pages/entityCreation/EntityInfo'
 import Roles from '@app/components/pages/entityCreation/Roles'
 import { RecordsSection } from '@app/components/RecordsSection'
 import { roles } from '@app/constants/members'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
-import { ccipRequest, getRevertErrorData } from '@app/hooks/useExecuteWriteToResolver'
+import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
@@ -70,13 +70,11 @@ export default function Page() {
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [registrationStep, setRegistrationStep] = useState<number>(1)
-  const [profile, setProfile] = useState<any>({})
-  const [partners, setPartners] = useState<any[]>([])
+  const [schemaFields, setSchemaFields] = useState<any>({})
+  const [emptyPartner, setEmptyPartner] = useState({})
 
-  const [initialRecords, setInitialRecords]: any = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
-  const [model, setModel] = useState<any>('')
 
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
@@ -85,8 +83,6 @@ export default function Page() {
     () => entityTypesObj.find((x) => x.ELF === entityType),
     [entityType],
   )
-
-  const default_registry_domain = 'registry'
 
   const contractAddresses: any = contractAddressesObj
   const schema: any = schemaObj
@@ -106,16 +102,6 @@ export default function Page() {
   const code = entityTypeObj?.countryJurisdictionCode
     ? entityTypeObj.countryJurisdictionCode.split('-').join('.')
     : entityTypeObj?.countryCode
-
-  useEffect(() => {
-    setProfile((prevProf: any) => ({
-      ...prevProf,
-      registrar: entityTypeObj?.formationJurisdiction
-        ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
-        : entityTypeObj?.formationCountry,
-      entity__code: entityType,
-    }))
-  }, [entityName, entityType])
 
   // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',
 
@@ -159,262 +145,18 @@ export default function Page() {
     }
   }
 
-  const parseSavedTexts = (texts: any[]) => {
-    const partnersArr: any[] = []
-    const profile: any = {}
-    texts.forEach(({ key, value }: any) => {
-      // Match keys for partner fields
-      const partnerMatch = key.match(/^partner__\[(\d+)\]__(.+)$/)
-      const roleMatch = key.match(/^partner__\[(\d+)\]__is__(.+)$/)
-
-      // Match keys for profile fields
-      const profileMatch = key.match(new RegExp(`^${intakeType}__(.+)$`))
-
-      if (partnerMatch && !roleMatch) {
-        const partnerIndex = parseInt(partnerMatch[1], 10)
-        const field = partnerMatch[2]
-
-        // Ensure the partner array is large enough to hold this partner
-        partnersArr[partnerIndex] = partnersArr[partnerIndex] || {}
-
-        if (field === 'address') {
-          partnersArr[partnerIndex][field] = value === zeroAddress ? '' : value
-        } else if (value === 'true' || value === 'false') {
-          partnersArr[partnerIndex][field] = value === 'true'
-        } else {
-          partnersArr[partnerIndex][field] = value
-        }
-      }
-      if (roleMatch) {
-        const partnerIndex = parseInt(roleMatch[1], 10)
-        const role = roleMatch[2]
-
-        partnersArr[partnerIndex] = partnersArr[partnerIndex] || {}
-        partnersArr[partnerIndex].roles = partnersArr[partnerIndex].roles || []
-        if (value === 'true' || value === true) {
-          partnersArr[partnerIndex].roles.push(role)
-        }
-      }
-      if (profileMatch) {
-        const field = profileMatch[1].split('__').join(' ') // Convert back field name
-        profile[profileMatch[1]] = value || ''
-      }
-    })
-
-    const returnObj = {
-      partners: partnersArr.filter((x) => !!x.name || isAddress(x.address)) || [],
-      profile,
-    }
-    return returnObj
-  }
-
   const getRecords = async () => {
     try {
-      const resolver: any = await getContract({
-        client: publicClient,
-        abi: [
-          ...parseAbi([
-            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
-            'function text(bytes32,string memory) view returns (string memory)',
-          ]),
-          ...l1abi,
-        ],
-        address: contractAddresses.DatabaseResolver as Address,
-      })
-
-      const keys = [
-        'partner__[0]__name',
-        'partner__[0]__type',
-        'partner__[0]__wallet__address',
-        'partner__[0]__physical__address',
-        'partner__[0]__DOB',
-        'partner__[0]__is__manager',
-        'partner__[0]__is__signer',
-        'partner__[0]__lockup',
-        'partner__[0]__shares',
-        'partner__[1]__name',
-        'partner__[1]__type',
-        'partner__[1]__wallet__address',
-        'partner__[1]__physical__address',
-        'partner__[1]__DOB',
-        'partner__[1]__is__manager',
-        'partner__[1]__is__signer',
-        'partner__[1]__lockup',
-        'partner__[1]__shares',
-        'partner__[2]__name',
-        'partner__[2]__type',
-        'partner__[2]__wallet__address',
-        'partner__[2]__physical__address',
-        'partner__[2]__DOB',
-        'partner__[2]__is__manager',
-        'partner__[2]__is__signer',
-        'partner__[2]__lockup',
-        'partner__[2]__shares',
-        'partner__[3]__name',
-        'partner__[3]__type',
-        'partner__[3]__wallet__address',
-        'partner__[3]__physical__address',
-        'partner__[3]__DOB',
-        'partner__[3]__is__manager',
-        'partner__[3]__is__signer',
-        'partner__[3]__lockup',
-        'partner__[3]__shares',
-        'partner__[4]__name',
-        'partner__[4]__type',
-        'partner__[4]__wallet__address',
-        'partner__[4]__physical__address',
-        'partner__[4]__DOB',
-        'partner__[4]__is__manager',
-        'partner__[4]__is__signer',
-        'partner__[4]__lockup',
-        'partner__[4]__shares',
-        'partner__[5]__name',
-        'partner__[5]__type',
-        'partner__[5]__wallet__address',
-        'partner__[5]__physical__address',
-        'partner__[5]__DOB',
-        'partner__[5]__is__signer',
-        'partner__[5]__is__manager',
-        'partner__[5]__lockup',
-        'partner__[5]__shares',
-        'company__name',
-        'company__entity__code',
-        'company__registrar',
-        'company__type',
-        'company__description',
-        'company__address',
-        'company__purpose',
-        'company__formation__date',
-        'company__lockup__days',
-        'company__additional__terms',
-        'company__selected__model',
-      ]
-
-      // const encodes = keys.map((text) => {
-      //   return encodeFunctionData({
-      //     abi: [
-      //       {
-      //         inputs: [
-      //           {
-      //             internalType: 'bytes32',
-      //             name: 'node',
-      //             type: 'bytes32',
-      //           },
-      //           {
-      //             internalType: 'string',
-      //             name: 'key',
-      //             type: 'string',
-      //           },
-      //         ],
-      //         name: 'text',
-      //         outputs: [
-      //           {
-      //             internalType: 'string',
-      //             name: '',
-      //             type: 'string',
-      //           },
-      //         ],
-      //         stateMutability: 'view',
-      //         type: 'function',
-      //       },
-      //     ],
-      //     functionName: 'text',
-      //     args: [namehash(name), text],
-      //   })
-      // })
-
-      // const recordsBuilt: any[] = []
-      // let encResArr: any[] = []
-      // try {
-      //   encResArr = await resolver.read.multicallView([contractAddresses.DatabaseResolver, encodes])
-      // } catch (err: any) {
-      //   let errMsg = err?.details
-      //   if (!errMsg) errMsg = err?.shortMessage
-      //   if (!errMsg) errMsg = err.message
-
-      //   setErrorMessage(errMsg)
+      // if (resolver === 'textResolver') {
+      //   const encodes = await useTextResolverReadBytes(namehash(name))
+      //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
+      //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      // let cumulativeString = ''
-      // encResArr.forEach((x: any, idx: any) => {
-      //   const valDecode = decodeAbiParameters([{ type: 'string' }], x)[0]
-      //   cumulativeString += valDecode
-      //   try {
-      //     recordsBuilt.push({
-      //       key: keys[idx],
-      //       value: valDecode,
-      //     })
-      //   } catch (err: any) {
-      //     let errMsg = err?.details
-      //     if (!errMsg) errMsg = err?.shortMessage
-      //     if (!errMsg) errMsg = err.message
 
-      //     setErrorMessage(errMsg)
-      //   }
-      // })
-      // if (!cumulativeString) return
-      const recordsBuilt: any[] = []
-      let encResArr: any[] = []
-      try {
-        encResArr = await resolver.read.multicall([[]])
-      } catch (err) {
-        const data: any = getRevertErrorData(err)
-        const [domain, url, message] = data.args as any[]
+      const fields = await getRecordData({ nodeHash: namehash(name) })
 
-        const getRecord = encodeFunctionData({
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'bytes32',
-                  name: '',
-                  type: 'bytes32',
-                },
-              ],
-              name: 'getRecord',
-              outputs: [
-                {
-                  internalType: 'string[] memory',
-                  name: '',
-                  type: 'string[] memory',
-                },
-              ],
-              stateMutability: 'view',
-              type: 'function',
-            },
-          ],
-          functionName: 'getRecord',
-          args: [namehash(name)],
-        })
-        const res = await ccipRequest({
-          body: {
-            data: getRecord,
-            signature: { message, domain },
-            sender: message.sender,
-          },
-          url,
-        })
-        const recordResponse = (await res.text()) as any
-        const dec1 = decodeAbiParameters(
-          [{ type: 'bytes' }, { type: 'uint64' }, { type: 'bytes' }],
-          recordResponse,
-        )
-        const records = decodeAbiParameters([{ type: 'string[]' }], dec1[0])[0]
-
-        records.forEach((text) => {
-          if (keys.includes(text.split('//')[0])) {
-            recordsBuilt.push({
-              key: text.split('//')[0],
-              value: text.split('//')[1],
-            })
-          }
-        })
-      }
-
-      setInitialRecords(recordsBuilt)
-      const recs = parseSavedTexts(recordsBuilt)
-      setModel(recs.profile.selected__model)
-      setProfile(recs.profile)
-      setPartners(recs.partners)
+      setEmptyPartner(fields.partners?.[fields.partners.length - 1])
+      setSchemaFields({ ...fields, partners: fields.partners.slice(0, fields.partners.length - 1) })
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
@@ -427,55 +169,50 @@ export default function Page() {
     }
   }, [name])
 
-  const validatePartners = () => {
+  const validatePartners = (fieldsToValidate: string[]) => {
     let blockAdvance = false
     const cumulativePartnerVals: any = {}
-    partners.forEach((partner, idx) => {
+    schemaFields.partners.forEach((partner: any) => {
       //If wanting to implenent validation on share amounts and percentages...
-      const schemaToReturn = {
-        ...schema['partnerFields']?.standard?.[intakeType],
-        ...schema['partnerFields']?.[code]?.[intakeType],
-      }
+      fieldsToValidate.forEach((field) => {
+        const msgField = partner[field].label
+        const trueType = partner[field].type.split('?').join('').toLowerCase()
+        let errMsg = ''
+        // let typeVal = trueType
+        const isOptional = partner[field].type.split('?')?.length > 1
+        let failedCheck = typeof partner[field].setValue !== trueType
 
-      const fields = Object.keys(partner)?.filter(
-        (field) => Object.keys(schemaToReturn)?.includes(field),
-      )
-
-      fields.forEach((field) => {
-        const msgField = field.split('__').join(' ')
-        const trueType = schemaToReturn[field].split('?').join('')
-        let typeVal = trueType
-        const isOptional = schemaToReturn[field].split('?')?.length > 1
-        let failedCheck = typeof partner[field] !== trueType
-
-        if (schemaToReturn[field] === 'string') {
-          failedCheck = partner[field]?.length === 0
+        if (trueType === 'string') {
+          failedCheck = partner[field].setValue?.length === 0
         }
-        if (schemaToReturn[field] === 'number') {
-          failedCheck = Number.isNaN(Number(partner[field]))
+        if (trueType === 'number') {
+          failedCheck = Number.isNaN(Number(partner[field].setValue))
           if (!failedCheck) {
             if (!cumulativePartnerVals[field]) cumulativePartnerVals[field] = 0
-            cumulativePartnerVals[field] += partner[field]
+            cumulativePartnerVals[field] += partner[field].setValue
           }
         }
-        if (schemaToReturn[field] === 'array') {
-          failedCheck = !Array.isArray(partner[field]) && !!partner[field]
+        if (trueType === 'array') {
+          failedCheck = !Array.isArray(partner[field].setValue) && !!partner[field].setValue
         }
         if (trueType === 'date') {
           const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-          const dateValue = partner[field]
+          const dateValue = partner[field].setValue
           failedCheck = !dateRegex.test(dateValue)
         }
-        if (trueType === 'address') {
+        if (trueType === 'address' || field === 'wallet__address') {
           failedCheck =
-            !isAddress(partner[field]) || (partner[field] === zeroAddress && !isOptional)
+            !isAddress(partner[field].setValue) ||
+            (partner[field].setValue === zeroAddress && !isOptional)
+          if (failedCheck) errMsg = `${msgField} must be a valid EVM address`
         }
-        if (isOptional && !partner[field]) {
+        if (isOptional && !partner[field].setValue) {
           failedCheck = false
         }
         if (failedCheck) {
-          let errMsg = `'${msgField}' field is invalid. It should be of type '${schemaToReturn[field]}'`
-          if (!partner[field]) {
+          if (!errMsg) {
+            errMsg = `'${msgField}' field is invalid. It should be of type '${partner[field].type}'`
+          } else if (!partner[field].setValue) {
             errMsg = `'${msgField}' is a required field`
           }
           setErrorMessage(errMsg)
@@ -504,22 +241,25 @@ export default function Page() {
 
     return blockAdvance
   }
-
   const getChangedRecords = (texts: any[]) => {
     const changedRecords: any[] = []
-    texts.forEach((obj) => {
-      //Never adds revoked role bcause in texts the role is not in partner.roles[], never gets turned into a text
 
-      // If the key is not in inital records, add the key/val to changes array
-      const correspondingOriginalRecord = initialRecords.find((x: any) => x.key === obj.key)
-      // If the val of the corresponding key is different in initialRecords, add the key/val to changes array
-      if (!correspondingOriginalRecord || correspondingOriginalRecord.value !== obj.value) {
-        changedRecords.push({ ...obj, oldValue: correspondingOriginalRecord?.value || '' })
+    Object.keys(schemaFields).forEach((key) => {
+      if (schemaFields[key].setValue !== schemaFields[key].oldValue) {
+        changedRecords.push({ key, value: schemaFields[key].setValue })
       }
-    })
-    initialRecords.forEach((record: any) => {
-      if (!texts.find((x) => x.key === record.key) && record.value) {
-        changedRecords.push({ key: record.key, oldValue: record.value, value: '' })
+
+      if (key === 'partner') {
+        schemaFields.partners.forEach((partner: any, idx: Number) => {
+          Object.keys(partner).forEach((partnerKey) => {
+            if (partner[partnerKey].setValue !== partner[partnerKey].oldValue) {
+              // if (!changedRecords.partners) {
+              //   changedRecords.partners = []
+              // }
+              // changedRecords.partners.push(partner[partnerKey])
+            }
+          })
+        })
       }
     })
     return changedRecords
@@ -529,28 +269,21 @@ export default function Page() {
     let blockAdvance = false
     try {
       if (registrationStep === 1 || registrationStep >= 5) {
-        const schemaToReturn = {
-          ...schema['corpFields'].standard,
-          ...schema['corpFields']?.[code],
-        }
+        const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
 
-        const fields = Object.keys(schemaToReturn)?.filter(
-          (field) => Object.keys(profile)?.includes(field),
-        )
-
-        fields.forEach((field) => {
+        stepKeys.forEach((field) => {
           let errMsg = ''
           let failedCheck = false
-          const msgField = field.split('__').join(' ')
-          let typeVal = schemaToReturn[field]
-          if (schemaToReturn[field] === 'array') {
+          const msgField = schemaFields[field].label
+          let typeVal = schemaFields[field].type.toLowerCase()
+          if (schemaFields[field].type === 'Array') {
             typeVal = 'object'
           }
-          if (typeof profile[field] !== typeVal) {
-            errMsg = `'${msgField}' is invalid. It should be of type '${schemaToReturn[field]}'`
+          if (typeof schemaFields[field].setValue !== typeVal) {
+            errMsg = `'${msgField}' is invalid. It should be of type '${schemaFields[field].type}'`
             failedCheck = true
           }
-          if (!profile[field]) {
+          if (!schemaFields[field].setValue) {
             errMsg = `'${msgField}' is a required field.`
             failedCheck = true
           }
@@ -561,10 +294,16 @@ export default function Page() {
         })
       }
       if (registrationStep === 2 || registrationStep >= 5) {
-        blockAdvance = validatePartners()
+        blockAdvance = validatePartners([
+          'name',
+          'type',
+          'wallet__address',
+          'DOB',
+          'physical__address',
+        ])
       }
       if (registrationStep === 3 || registrationStep >= 5) {
-        blockAdvance = validatePartners()
+        blockAdvance = validatePartners(['roles', 'shares'])
       }
       if (registrationStep === 4 || registrationStep >= 5) {
       }
@@ -584,11 +323,7 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      profile.selected__model = model
-      const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-      // Take texts Object.keys(texts)
-      //Init changes array
-      const changedRecords = getChangedRecords(texts)
+      const changedRecords = getChangedRecords(schemaFields)
 
       const entityNameToPass = name.toLowerCase().split(' ').join('-')
 
@@ -621,75 +356,70 @@ export default function Page() {
           )
 
           if (textOnlyChanges.length > 0) {
-            textOnlyChanges.forEach((change) => {
-              const memberIndex = change.key.split('partner__[').join('').split(']')[0]
-              //check the address associated with that partner from partner__[idx]__wallet__address
-              const partnerAddress =
-                initialRecords.find((x: any) =>
-                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
-                )?.value || zeroAddress
-
-              const updateMemberDataCall = encodeFunctionData({
-                abi: parseAbi([
-                  'function updateMemberData(address member, string memory, string memory) external',
-                ]),
-                functionName: 'updateMemberData',
-                args: [partnerAddress, change.key, change.value],
-              })
-              partnerChangesToSubmit.push(updateMemberDataCall)
-            })
+            // textOnlyChanges.forEach((change) => {
+            //   const memberIndex = change.key.split('partner__[').join('').split(']')[0]
+            //   //check the address associated with that partner from partner__[idx]__wallet__address
+            //   const partnerAddress =
+            //     initialRecords.find((x: any) =>
+            //       x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+            //     )?.value || zeroAddress
+            //   const updateMemberDataCall = encodeFunctionData({
+            //     abi: parseAbi([
+            //       'function updateMemberData(address member, string memory, string memory) external',
+            //     ]),
+            //     functionName: 'updateMemberData',
+            //     args: [partnerAddress, change.key, change.value],
+            //   })
+            //   partnerChangesToSubmit.push(updateMemberDataCall)
+            // })
           }
           if (sharesChanges.length > 0) {
             // ALSO NEED TO ADD RESOLVER CHANGE TO THE MULTICALL
             // updateMemberData
-            sharesChanges.forEach((change) => {
-              const memberIndex = change.key.split('partner__[').join('').split(']')[0]
-              //check the address associated with that partner from partner__[idx]__wallet__address
-              const partnerAddress =
-                initialRecords.find((x: any) =>
-                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
-                )?.value || zeroAddress
-
-              // const updateMemberDataCall = encodeFunctionData({
-              //   abi: parseAbi([
-              //     'function updateMemberData(address member, string memory, string memory) external',
-              //   ]),
-              //   functionName: 'updateMemberData',
-              //   args: [partnerAddress, change.key, change.value],
-              // })
-              // partnerChangesToSubmit.push(updateMemberDataCall)
-              if (change.value > Number(change.oldValue)) {
-                //get the partner memberIndex
-
-                const tokensToMint: any = change.value - Number(change.oldValue)
-
-                const mintCall = encodeFunctionData({
-                  abi: parseAbi(['function mintShares(address to, uint256 amount) external']),
-                  functionName: 'mintShares',
-                  args: [partnerAddress, tokensToMint],
-                })
-                partnerChangesToSubmit.push(mintCall)
-              } else if (change.value < Number(change.oldValue)) {
-                const tokensToBurn: any = Number(change.oldValue) - change.value
-
-                const burnCall = encodeFunctionData({
-                  abi: parseAbi(['function burnShares(address from, uint256 amount) external']),
-                  functionName: 'burnShares',
-                  args: [partnerAddress, tokensToBurn],
-                })
-                partnerChangesToSubmit.push(burnCall)
-              }
-            })
+            // sharesChanges.forEach((change) => {
+            //   const memberIndex = change.key.split('partner__[').join('').split(']')[0]
+            //   //check the address associated with that partner from partner__[idx]__wallet__address
+            //   const partnerAddress =
+            //     initialRecords.find((x: any) =>
+            //       x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+            //     )?.value || zeroAddress
+            //   // const updateMemberDataCall = encodeFunctionData({
+            //   //   abi: parseAbi([
+            //   //     'function updateMemberData(address member, string memory, string memory) external',
+            //   //   ]),
+            //   //   functionName: 'updateMemberData',
+            //   //   args: [partnerAddress, change.key, change.value],
+            //   // })
+            //   // partnerChangesToSubmit.push(updateMemberDataCall)
+            //   if (change.value > Number(change.oldValue)) {
+            //     //get the partner memberIndex
+            //     const tokensToMint: any = change.value - Number(change.oldValue)
+            //     const mintCall = encodeFunctionData({
+            //       abi: parseAbi(['function mintShares(address to, uint256 amount) external']),
+            //       functionName: 'mintShares',
+            //       args: [partnerAddress, tokensToMint],
+            //     })
+            //     partnerChangesToSubmit.push(mintCall)
+            //   } else if (change.value < Number(change.oldValue)) {
+            //     const tokensToBurn: any = Number(change.oldValue) - change.value
+            //     const burnCall = encodeFunctionData({
+            //       abi: parseAbi(['function burnShares(address from, uint256 amount) external']),
+            //       functionName: 'burnShares',
+            //       args: [partnerAddress, tokensToBurn],
+            //     })
+            //     partnerChangesToSubmit.push(burnCall)
+            //   }
+            // })
           }
           if (roleChanges.length > 0) {
             // Update resolver data
             roleChanges.forEach((change) => {
               const memberIndex = change.key.split('partner__[').join('').split(']')[0]
               //check the address associated with that partner from partner__[idx]__wallet__address
-              const partnerAddress =
-                initialRecords.find((x: any) =>
-                  x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
-                )?.value || zeroAddress
+              // const partnerAddress =
+              //   initialRecords.find((x: any) =>
+              //     x.key.includes('partner__[' + memberIndex + ']__wallet__address'),
+              //   )?.value || zeroAddress
 
               // const updateMemberDataCall = encodeFunctionData({
               //   abi: parseAbi([
@@ -701,23 +431,23 @@ export default function Page() {
               // partnerChangesToSubmit.push(updateMemberDataCall)
 
               //Update role permissions in member contract
-              if (change.value) {
-                //add the role on member ocntract
-                const addRoleCall = encodeFunctionData({
-                  abi: parseAbi(['function addRole(address to, bytes32 roleHash) external']),
-                  functionName: 'addRole',
-                  args: [partnerAddress, roles[change.key.split('is__')[1]]],
-                })
-                partnerChangesToSubmit.push(addRoleCall)
-              } else if (!change.value && change.oldValue) {
-                //Remove the role
-                const revokeRoleCall = encodeFunctionData({
-                  abi: parseAbi(['function revokeRole(address from, bytes32 roleHash) external']),
-                  functionName: 'revokeRole',
-                  args: [partnerAddress, roles[change.key.split('is__')[1]]],
-                })
-                partnerChangesToSubmit.push(revokeRoleCall)
-              }
+              // if (change.value) {
+              //   //add the role on member ocntract
+              //   const addRoleCall = encodeFunctionData({
+              //     abi: parseAbi(['function addRole(address to, bytes32 roleHash) external']),
+              //     functionName: 'addRole',
+              //     args: [partnerAddress, roles[change.key.split('is__')[1]]],
+              //   })
+              //   partnerChangesToSubmit.push(addRoleCall)
+              // } else if (!change.value && change.oldValue) {
+              //   //Remove the role
+              //   const revokeRoleCall = encodeFunctionData({
+              //     abi: parseAbi(['function revokeRole(address from, bytes32 roleHash) external']),
+              //     functionName: 'revokeRole',
+              //     args: [partnerAddress, roles[change.key.split('is__')[1]]],
+              //   })
+              //   partnerChangesToSubmit.push(revokeRoleCall)
+              // }
             })
           }
           const submitChangesTx = await multisig.write.submitMulticallTransaction([
@@ -764,13 +494,15 @@ export default function Page() {
   let content = null
 
   if (registrationStep === 1) {
+    const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
     content = (
-      <CorpInfo
+      <EntityInfo
         data={{ name, registrarKey: code }}
-        fields={schema.corpFields}
         step={registrationStep}
-        profile={profile}
-        setProfile={setProfile}
+        fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
+        setField={(key: string, value: any) =>
+          setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
+        }
         publicClient={publicClient}
       />
     )
@@ -783,10 +515,12 @@ export default function Page() {
         breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
-        partnerFields={schema.partnerFields}
+        emptyPartner={emptyPartner}
         intakeType={intakeType}
-        partners={partners}
-        setPartners={setPartners}
+        partners={schemaFields.partners}
+        setPartners={(partnersData: any[]) =>
+          setSchemaFields({ ...schemaFields, partners: partnersData })
+        }
         publicClient={publicClient}
       />
     )
@@ -800,31 +534,39 @@ export default function Page() {
         canChange={true}
         intakeType={intakeType}
         roleTypes={schema.roles}
-        profile={profile}
-        setProfile={setProfile}
-        partners={partners}
-        setPartners={setPartners}
+        partners={schemaFields.partners}
+        setPartners={(partnersData: any[]) =>
+          setSchemaFields({ ...schemaFields, partners: partnersData })
+        }
         publicClient={publicClient}
       />
     )
   }
 
   if (registrationStep === 4) {
+    const stepKeys = Object.keys(schemaFields).filter((x) =>
+      schema.additionalTermsFields.includes(x),
+    )
     content = (
-      <CorpInfo
+      <EntityInfo
         data={{ name, registrarKey: code }}
-        fields={schema.additionalTermsFields}
+        fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
+        setField={(key: string, value: any) =>
+          setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
+        }
         step={registrationStep}
-        profile={profile}
-        setProfile={setProfile}
         publicClient={publicClient}
       />
     )
   }
   let changedRecords: any[] = []
   if (registrationStep === 5) {
-    const texts: any[] = generateTexts(partners, profile, entityName, intakeType)
-    changedRecords = getChangedRecords(texts)
+    changedRecords = getChangedRecords(schemaFields)
+    const fieldsOfChangedRecords: any = {}
+    changedRecords.forEach((field) => {
+      fieldsOfChangedRecords[field.key] = schemaFields[field.key]
+    })
+
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
@@ -832,13 +574,21 @@ export default function Page() {
         </Typography>
         <Constitution
           breakpoints={breakpoints}
-          formationData={texts}
-          model={model}
-          setModel={setModel}
+          formationData={schemaFields}
+          model={schemaFields.company__selected__model}
+          setModel={(modelId: string) =>
+            setSchemaFields({
+              ...schemaFields,
+              company__selected__model: {
+                ...schemaFields.company__selected__model,
+                setValue: modelId,
+              },
+            })
+          }
         />
         {changedRecords.length > 0 ? (
           <div>
-            <RecordsSection texts={changedRecords} />
+            <RecordsSection fields={fieldsOfChangedRecords} compareToOldValues={true} />
           </div>
         ) : null}
       </div>
@@ -881,34 +631,4 @@ export default function Page() {
       </div>
     </>
   )
-}
-
-const generateTexts = (partners: any, profile: any, entityName: any, intakeType: any) => {
-  const texts: any[] = []
-  partners.forEach((partner: any, idx: any) => {
-    const partnerKey = 'partner__[' + idx + ']__'
-    Object.keys(partner).forEach((field) => {
-      if (field === 'address') {
-        if (!isAddress(partner[field])) {
-          texts.push({ key: partnerKey + field, value: zeroAddress })
-        } else {
-          texts.push({ key: partnerKey + field, value: partner[field] })
-        }
-      } else if (typeof partner[field] === 'boolean') {
-        texts.push({ key: partnerKey + field, value: partner[field] ? 'true' : 'false' })
-      } else if (field !== 'roles') {
-        texts.push({ key: partnerKey + field, value: partner[field] })
-      } else if (partner[field]) {
-        partner[field].forEach((role: string) => {
-          texts.push({ key: partnerKey + 'is__' + role, value: 'true' })
-        })
-      }
-    })
-  })
-
-  Object.keys(profile).forEach((field) => {
-    const key = intakeType + '__' + field.split(' ').join('__')
-    texts.push({ key, value: profile[field] || '' })
-  })
-  return texts
 }

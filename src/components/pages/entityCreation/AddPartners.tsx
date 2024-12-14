@@ -44,7 +44,7 @@ const AddPartners = ({
   data,
   canChange,
   partnerTypes,
-  partnerFields,
+  emptyPartner,
   intakeType,
   setPartners,
   partners,
@@ -58,108 +58,33 @@ const AddPartners = ({
   const inputRef = useRef(null)
   const { address } = useAccount()
 
-  const relevantFields = {
-    ...partnerFields.standard[intakeType],
-    ...partnerFields[data?.registrarKey],
-  }
-
-  const partnersData = async () => {
-    const client: any = publicClient
-    // Here fetch the resolver data
-
-    // const text = await resolver.read.text([namehash(entityName + '.' + registrar), "test"])
-    // Texts needs to iterate over existing texts array and overwrite keys that already hold values
-    //KEYS IS PULLED FROM REGISTRAR, DEPENDS IF THE ENTITY IS TO BE FORMED BY JUSESP, BoT, etc
-
-    // const keys = []
-    // for(let i = 1; i <= partnerCount; i++) {
-
-    //   keys.push("partner__" + i + "__name")
-    //   keys.push("partner__" + i + "__type")
-    //   keys.push("partner__" + i + "__address")
-    //   keys.push("partner__" + i + "__DOB")
-    // }
-
-    // const texts: any = {}
-    // const textConstruction= keys.map((key: string) => {
-    //   const existing = partners?.[key]
-    //   texts[key] = existing?.value || properties[key]})
-    // setPartners({...texts})
-  }
-
   useEffect(() => {
-    partnersData()
-    let tempPartnerObj: any = {}
-    if (partners.length === 0) {
-      Object.keys(relevantFields).forEach((field) => {
-        if (relevantFields[field] === 'number') {
-          tempPartnerObj[field] = 0
-        } else if (relevantFields[field] === 'array') {
-          tempPartnerObj[field] = []
-        } else if (relevantFields[field] === 'boolean') {
-          tempPartnerObj[field] = false
-        } else if (relevantFields[field] === 'address') {
-          tempPartnerObj[field] = address ?? zeroAddress
-        } else {
-          tempPartnerObj[field] = ''
-        }
-      })
-      setPartners([tempPartnerObj])
+    const firstPartnerWallet = partners[0].wallet__address.setValue
+    if (!firstPartnerWallet || !isAddress(firstPartnerWallet)) {
+      const updatedPartners = [...partners]
+      const updatedPartner = {
+        ...updatedPartners[0],
+        wallet__address: {
+          ...updatedPartners[0].wallet__address,
+          setValue: address,
+        },
+      }
+      updatedPartners[0] = updatedPartner
+      setPartners(updatedPartners)
     }
   }, [])
 
   useEffect(() => {
-    let changeFlag = false // Upon mount, map through partners object
-
-    const newPartners = partners.map((partner: any) => {
-      const nPartner = partner
-      if (!partner.DOB) {
-        changeFlag = true
-        nPartner.DOB = '1970-01-01'
-      }
-      if (!partner.roles && !Array.isArray(partner.roles)) {
-        changeFlag = true
-        nPartner.roles = []
-      }
-
-      return nPartner
-    })
-
-    if (changeFlag) setPartners(newPartners)
-    //Check if partner has DOB already
-    //If not, set to default
     if (document.activeElement?.getAttribute('data-testid') !== 'record-type-input') {
       setIsFocusedPartnerType(false)
     }
   }, [partners])
 
-  useEffect(() => {
-    //Upon partnerInputNumber change, check if the partners[partnerInputNumber] object has keys/vals already
-    // If not, add a new object using the correct partnerSchema to instantiate an object to updated in the input (with empty placeholder vals)
-    if (partners.length === partnerInputNumber && partners.length > 0) {
-      let tempPartnerObj: any = {}
-      Object.keys(relevantFields).forEach((field) => {
-        if (relevantFields[field] === 'number') {
-          tempPartnerObj[field] = 0
-        } else if (relevantFields[field] === 'Array') {
-          tempPartnerObj[field] = []
-        } else {
-          tempPartnerObj[field] = ''
-        }
-      })
-      setPartners((prevPartners: any) => [...prevPartners, tempPartnerObj])
-    }
-  }, [partnerInputNumber])
-
   const removePartner = (partnerNumber: number) => {
-    setPartners((prevPartners: any) => {
-      // Filter out the element at the specified index
-      const updatedPartners = prevPartners.filter(
-        (_: any, index: number) => index !== partnerNumber,
-      )
-      // Return the updated partners array
-      return updatedPartners
-    })
+    const updatedPartners = partners.filter((_: any, index: number) => index !== partnerNumber)
+    // Filter out the element at the specified index
+    // Return the updated partners array
+    setPartners(updatedPartners)
 
     let newInputNumber = partnerNumber - 1
     if (newInputNumber < 0) newInputNumber = 0
@@ -167,38 +92,45 @@ const AddPartners = ({
   }
 
   const editPartner = (partnerNumber: number) => {
+    if (partners.length === partnerNumber && partners.length > 0) {
+      setPartners([...partners, { ...emptyPartner }])
+    }
     setPartnerInputNumber(partnerNumber)
   }
 
   let inputEle = null
-
   const partnersEle = partners.map((partner: any, i: number) => {
-    if (i === partnerInputNumber && Object.keys(partner)?.length > 0) {
+    if (i === partnerInputNumber) {
       inputEle = (
         <>
           {Object.keys(partner).map((field) => {
-            const fieldType = relevantFields?.[field]
+            const fieldType = partner?.[field]?.type
             if (field === 'roles' || field === 'shares' || field === 'lockup') return null
-            if (fieldType === 'date') {
+            if (fieldType === 'Date') {
+              let inputValue = 946699800
+              if (partner?.[field]?.setValue) {
+                inputValue = new Date(partner?.[field]?.setValue).getTime() / 1000 + 15000
+              }
               return (
-                <InputWrapper key={field}>
+                <InputWrapper key={partner[field]?.label}>
                   <Calendar
-                    labelText={field}
+                    labelText={partner[field]?.label}
                     labelHeight={62}
                     disabled={!canChange}
-                    value={new Date(partner?.[field]).getTime() / 1000 + 15000}
+                    value={inputValue}
                     onChange={(e) => {
                       const { valueAsDate } = e.currentTarget
                       if (valueAsDate) {
-                        setPartners((prevPartners: any) => {
-                          const updatedPartners = [...prevPartners]
-                          const updatedPartner = {
-                            ...updatedPartners[i],
-                            [field]: e.currentTarget.value,
-                          }
-                          updatedPartners[i] = updatedPartner
-                          return updatedPartners
-                        })
+                        const updatedPartners = [...partners]
+                        const updatedPartner = {
+                          ...updatedPartners[i],
+                          [field]: {
+                            ...updatedPartners[i][field],
+                            setValue: e.currentTarget.value,
+                          },
+                        }
+                        updatedPartners[i] = updatedPartner
+                        setPartners(updatedPartners)
                       }
                     }}
                     highlighted
@@ -210,13 +142,13 @@ const AddPartners = ({
             }
             if (field === 'type') {
               return (
-                <InputWrapper key={field}>
+                <InputWrapper key={partner?.[field]?.label}>
                   <Input
                     size="large"
-                    value={partner?.[field]}
+                    value={partner?.[field]?.setValue}
                     ref={inputRef}
-                    label={field}
-                    placeholder={'Partner ' + field}
+                    label={partner?.[field]?.label}
+                    placeholder={'Partner ' + partner?.[field]?.label}
                     data-testid="record-type-input"
                     disabled={!canChange}
                     onFocus={() => setIsFocusedPartnerType(true)}
@@ -228,12 +160,13 @@ const AddPartners = ({
                       ) {
                         return
                       }
-                      setPartners((prevPartners: any) => {
-                        const updatedPartners = [...prevPartners]
-                        const updatedPartner = { ...updatedPartners[i], [field]: e.target.value }
-                        updatedPartners[i] = updatedPartner
-                        return updatedPartners
-                      })
+                      const updatedPartners = [...partners]
+                      const updatedPartner = {
+                        ...updatedPartners[i],
+                        [field]: { ...updatedPartners[i][field], setValue: e.target.value },
+                      }
+                      updatedPartners[i] = updatedPartner
+                      setPartners(updatedPartners)
                     }}
                   />
                   {isFocusedPartnerType ? (
@@ -260,12 +193,13 @@ const AddPartners = ({
                             key={idx}
                             onClick={() => {
                               if (!canChange) return
-                              setPartners((prevPartners: any) => {
-                                const updatedPartners = [...prevPartners]
-                                const updatedPartner = { ...updatedPartners[i], type }
-                                updatedPartners[i] = updatedPartner
-                                return updatedPartners
-                              })
+                              const updatedPartners = [...partners]
+                              const updatedPartner = {
+                                ...updatedPartners[i],
+                                [field]: { ...updatedPartners[i][field], setValue: type },
+                              }
+                              updatedPartners[i] = updatedPartner
+                              setPartners(updatedPartners)
                             }}
                             style={{ width: '100%', padding: '4px 10px', cursor: 'pointer' }}
                           >
@@ -282,36 +216,45 @@ const AddPartners = ({
             let focusOffFunction: any = () => null
             if (field === 'wallet__address') {
               focusOnFunction = () => {
-                if (!isAddress(partner?.[field]) || partner?.[field] === zeroAddress) {
-                  setPartners((prevPartners: any) => {
-                    const updatedPartners = [...prevPartners]
-                    const updatedPartner = { ...updatedPartners[i], [field]: '' }
-                    updatedPartners[i] = updatedPartner
-                    return updatedPartners
-                  })
+                if (
+                  !isAddress(partner?.[field]?.setValue) ||
+                  partner?.[field]?.setValue === zeroAddress
+                ) {
+                  const updatedPartners = [...partners]
+                  const updatedPartner = {
+                    ...updatedPartners[i],
+                    [field]: { ...updatedPartners[i][field], setValue: '' },
+                  }
+                  updatedPartners[i] = updatedPartner
+                  setPartners(updatedPartners)
                 }
               }
               focusOffFunction = () => {
-                if (!isAddress(partner?.[field]) || partner?.[field] === zeroAddress) {
-                  setPartners((prevPartners: any) => {
-                    const updatedPartners = [...prevPartners]
-                    const updatedPartner = { ...updatedPartners[i], [field]: zeroAddress }
-                    updatedPartners[i] = updatedPartner
-                    return updatedPartners
-                  })
+                if (
+                  !isAddress(partner?.[field]?.setValue) ||
+                  partner?.[field]?.setValue === zeroAddress
+                ) {
+                  const updatedPartners = [...partners]
+                  const updatedPartner = {
+                    ...updatedPartners[i],
+                    [field]: { ...updatedPartners[i][field], setValue: zeroAddress },
+                  }
+                  updatedPartners[i] = updatedPartner
+
+                  setPartners(updatedPartners)
                 }
               }
             }
             return (
-              <InputWrapper key={field}>
+              <InputWrapper key={partner?.[field]?.label}>
                 <Input
                   size="large"
-                  value={partner?.[field]}
-                  label={field.split('__').join(' ')}
+                  value={partner?.[field]?.setValue}
+                  label={partner?.[field]?.label}
                   onFocus={focusOnFunction}
                   onBlur={focusOffFunction}
                   error={false}
-                  placeholder={'Partner ' + field.split('__').join(' ')}
+                  placeholder={'Partner ' + partner?.[field]?.label}
                   data-testid="record-input-input"
                   validated={true}
                   disabled={!canChange}
@@ -323,12 +266,13 @@ const AddPartners = ({
                     ) {
                       return
                     }
-                    setPartners((prevPartners: any) => {
-                      const updatedPartners = [...prevPartners]
-                      const updatedPartner = { ...updatedPartners[i], [field]: e.target.value }
-                      updatedPartners[i] = updatedPartner
-                      return updatedPartners
-                    })
+                    const updatedPartners = [...partners]
+                    const updatedPartner = {
+                      ...updatedPartners[i],
+                      [field]: { ...updatedPartners[i][field], setValue: e.target.value },
+                    }
+                    updatedPartners[i] = updatedPartner
+                    setPartners(updatedPartners)
                   }}
                 />
               </InputWrapper>
@@ -341,7 +285,7 @@ const AddPartners = ({
       return (
         <div key={i + 'partner'} style={{ margin: '10px', textAlign: 'left' }}>
           <Button colorStyle="blueSecondary" onClick={() => editPartner(i)}>
-            Partner - {partner?.name || '...'}
+            Partner - {partner?.name?.setValue || '...'}
           </Button>
         </div>
       )

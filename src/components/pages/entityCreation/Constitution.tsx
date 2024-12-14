@@ -191,6 +191,7 @@ const buildConstitutionView = (profileData: any, userData: any, modelId: any, me
 
 // Function to build the constitution sections
 const buildConstitution = (profileData: any, userData: any, modelId: any, metadata: any) => {
+  console.log('prfofo', profileData)
   const constitutionHeader = (
     <View key={'constheader'} style={{ marginTop: 30, marginBottom: 35, textAlign: 'center' }}>
       <Text style={{ fontSize: 25, fontWeight: 'extrabold' }}>
@@ -280,14 +281,16 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
+          `The name of the ${profileData?.company__type || 'N/A'} is ${
+            profileData?.company__name || 'N/A'
+          }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.type || 'N/A'}’s activities begin on ${
-            profileData?.formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${
+            profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
@@ -295,22 +298,24 @@ const constitutionModel: any = {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
           `The purpose of this ${
-            profileData?.type || 'N/A'
-          } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
+            profileData?.company__type || 'N/A'
+          } is to engage in the following activities: ${profileData?.company__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
           `Principal Office: The principal office of the ${
-            profileData?.type || 'N/A'
-          } is located at ${profileData?.address || 'N/A'}`,
+            profileData?.company__type || 'N/A'
+          } is located at ${profileData?.company__address || 'N/A'}`,
         ],
       },
       {
         header: 'Members',
         content: (profileData: any, userData: any) => [
-          `The initial member(s) of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
+          `The initial member(s) of this ${
+            profileData?.company__type || 'N/A'
+          } are (as Name, ID, Role)`,
           userData?.map((user: any, idx: any) => {
             const roles = [...user.roles]
             if (user.shares > 0) {
@@ -325,7 +330,7 @@ const constitutionModel: any = {
       {
         header: 'Management',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.type || 'N/A'} shall be managed by  its members.`,
+          `The ${profileData?.company__type || 'N/A'} shall be managed by  its members.`,
         ],
       },
       {
@@ -336,7 +341,7 @@ const constitutionModel: any = {
             totalShares += Number(x.shares)
           })
           return [
-            `The aggregate number of shares which this ${profileData?.type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
+            `The aggregate number of shares which this ${profileData?.company__type} shall be issuing is: ${totalShares} shares of common stock, without par value.`,
             `The initial shares allocation are as follows: `,
 
             userData?.map((user: any) => {
@@ -374,10 +379,10 @@ const constitutionModel: any = {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
           `The members of the ${
-            profileData?.type || 'N/A'
+            profileData?.company__type || 'N/A'
           } are not personally liable for the acts or debts of the  ${
-            profileData?.type || 'N/A'
-          }. The ${profileData?.type || 'N/A'} shall indemnify its members and managers.`,
+            profileData?.company__type || 'N/A'
+          }. The ${profileData?.company__type || 'N/A'} shall indemnify its members and managers.`,
         ],
       },
       {
@@ -388,7 +393,7 @@ const constitutionModel: any = {
       },
       {
         header: 'Additional Terms',
-        content: (profileData: any, userData: any) => [`${profileData.additional__terms}`],
+        content: (profileData: any, userData: any) => [`${profileData.company__additional__terms}`],
       },
     ],
   },
@@ -399,14 +404,16 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.type || 'N/A'} is ${profileData?.name || 'N/A'}.`,
+          `The name of the ${profileData?.company__type || 'N/A'} is ${
+            profileData?.company__name || 'N/A'
+          }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.type || 'N/A'}’s activities begin on ${
-            profileData?.formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${
+            profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
@@ -414,22 +421,24 @@ const constitutionModel: any = {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
           `The purpose of this ${
-            profileData?.type || 'N/A'
-          } is to engage in the following activities: ${profileData?.purpose || 'N/A'}.`,
+            profileData?.company__type || 'N/A'
+          } is to engage in the following activities: ${profileData?.company__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
-          `Main Office: The main office of the ${profileData?.type || 'N/A'} is located at ${
-            profileData?.address || 'N/A'
-          }`,
+          `Main Office: The main office of the ${
+            profileData?.company__type || 'N/A'
+          } is located at ${profileData?.company__address || 'N/A'}`,
         ],
       },
       {
         header: 'Quotaholder',
         content: (profileData: any, userData: any) => [
-          `The initial quotaholders of this ${profileData?.type || 'N/A'} are (as Name, ID, Role)`,
+          `The initial quotaholders of this ${
+            profileData?.company__type || 'N/A'
+          } are (as Name, ID, Role)`,
 
           userData?.map((user: any) => {
             const roles = [...user.roles]
@@ -445,7 +454,7 @@ const constitutionModel: any = {
       {
         header: 'Management',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.type || 'N/A'} shall be managed by its administrators.`,
+          `The ${profileData?.company__type || 'N/A'} shall be managed by its administrators.`,
         ],
       },
       {
@@ -456,7 +465,7 @@ const constitutionModel: any = {
             totalShares += Number(x.shares)
           })
           return [
-            `The aggregate number of quotas which this ${profileData?.type} shall be issuing is: ${totalShares} quotas of common stock, without par value.`,
+            `The aggregate number of quotas which this ${profileData?.company__type} shall be issuing is: ${totalShares} quotas of common stock, without par value.`,
             `The initial quotas allocation are as follows: `,
             userData?.map((user: any) => {
               const ownership = ((user.shares / totalShares) * 100).toFixed(2)
@@ -494,11 +503,11 @@ const constitutionModel: any = {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
           `The quotaholders of the ${
-            profileData?.type || 'N/A'
+            profileData?.company__type || 'N/A'
           } are not personally liable for the acts or debts of the  ${
-            profileData?.type || 'N/A'
+            profileData?.company__type || 'N/A'
           }. The ${
-            profileData?.type || 'N/A'
+            profileData?.company__type || 'N/A'
           } shall indemnify its quotaholders and administrators.`,
         ],
       },
@@ -510,7 +519,7 @@ const constitutionModel: any = {
       },
       {
         header: 'Additional Terms',
-        content: (profileData: any, userData: any) => [`${profileData.additional__terms}`],
+        content: (profileData: any, userData: any) => [`${profileData.company__additional__terms}`],
       },
     ],
   },
@@ -526,49 +535,71 @@ const Constitution = ({
   canDownload = false,
 }: any) => {
   const [viewConst, setViewConst] = useState<any>(true)
+  console.log('MODEL', model)
 
-  const companyObj: any = {}
-  const users: any = {}
   const metadata: any = {}
+  Object.keys(formationData)
+    .filter((x) => !x.includes('company__') && x !== 'partners')
+    .forEach((field) => {
+      metadata[field] = formationData[field].setValue
+    })
+
   metadata.multisigAddress = multisigAddress
-  formationData.forEach((field: any) => {
-    try {
-      if (field.key.includes('company__')) {
-        const key = field.key.split('company__').join('')
-        companyObj[key] = field.value
-      } else if (field.key.includes('partner__[')) {
-        const splitData = field.key.split('partner__[').join('').split(']__')
-        if (!users[splitData[0]]) {
-          users[splitData[0]] = { roles: [] }
-        }
-        let key = splitData[1]
-        if (key.includes('is__')) {
-          key = key.split('is__').join('')
-          if (!!key && key !== '' && field.value === 'true') {
-            users[splitData[0]].roles.push(key)
-          }
-        } else {
-          users[splitData[0]][key] = field.value
-        }
-      } else {
-        metadata[field.key] = field.value
-      }
-    } catch (err) {}
-  })
+  const companyLevelData: any = {}
+  Object.keys(formationData)
+    .filter((x) => x.includes('company__'))
+    .forEach((field) => {
+      companyLevelData[field] = formationData[field].setValue
+    })
+
+  const userData = formationData.partners
+    .filter((partner: any) => !!partner.name.setValue)
+    .map((partner: any) => {
+      const returnObj: any = {}
+      Object.keys(partner).forEach((field) => {
+        returnObj[field] = partner[field].setValue
+      })
+      return returnObj
+    })
+  // Object.keys(formationData).forEach((field: any) => {
+  //   try {
+  //     if (field !== 'partners'){
+  //       companyObj[field]
+  //     }
+
+  // if (field.key.includes('company__')) {
+  //   const key = field.key.split('company__').join('')
+  //   companyObj[key] = field.value
+  // } else if (field.key.includes('partner__[')) {
+  //   const splitData = field.key.split('partner__[').join('').split(']__')
+  //   if (!users[splitData[0]]) {
+  //     users[splitData[0]] = { roles: [] }
+  //   }
+  //   let key = splitData[1]
+  //   if (key.includes('is__')) {
+  //     key = key.split('is__').join('')
+  //     if (!!key && key !== '' && field.value === 'true') {
+  //       users[splitData[0]].roles.push(key)
+  //     }
+  //   } else {
+  //     users[splitData[0]][key] = field.value
+  //   }
+  // } else {
+  //   metadata[field.key] = field.value
+  // }
+  // } catch (err) {}
+  // })
+
   let downloadable = canDownload
   downloadable = metadata.status === 'APPROVED' || metadata.status === 'SUBMITTED'
-  if (!model) return null
+  console.log('MODEL?', model)
+  if (!model?.setValue) return null
   // Add model selection dropdown
   // Add option buttons below PDF build to display JSON, download pdf, etc
   const constitutionDocument = (
     <Document>
       <Page size="A4" style={stylesPDF.page}>
-        {buildConstitution(
-          companyObj,
-          Object.values(users).filter((x: any) => !!x.name),
-          model,
-          metadata,
-        )}
+        {buildConstitution(companyLevelData, userData, model?.setValue, metadata)}
       </Page>
     </Document>
   )
@@ -588,7 +619,7 @@ const Constitution = ({
             style={{ width: '350px', textAlign: 'right' }}
             inheritContentWidth={true}
             size={'medium'}
-            label={'Constitution: ' + model}
+            label={'Constitution: ' + model?.setValue}
             items={Object.keys(constitutionModel)?.map((x: any) => ({
               label: x,
               color: 'blue',
@@ -601,18 +632,10 @@ const Constitution = ({
 
       {viewConst ? (
         <>
-          {buildConstitutionView(
-            companyObj,
-            Object.values(users).filter((x: any) => !!x.name),
-            model,
-            metadata,
-          )}
+          {buildConstitutionView(companyLevelData, userData, model?.setValue, metadata)}
           {downloadable ? (
             <PDFDownloadLink
-              fileName={
-                formationData.find((x: any) => x.key === 'name')?.value ||
-                'company' + '-ArticlesOfIncorporation'
-              }
+              fileName={formationData.name?.setValue || 'company' + '-ArticlesOfIncorporation'}
               document={constitutionDocument}
             >
               <div
