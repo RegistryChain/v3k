@@ -19,7 +19,7 @@ const DetailsWrapper = styled.div(
 const EntityViewTab = ({ domainName, multisigAddress, records, status }: any) => {
   const { t } = useTranslation('profile')
 
-  const nameRecord = records?.name?.setValue || domainName
+  const nameRecord = records?.company__name?.setValue
 
   return (
     <DetailsWrapper>

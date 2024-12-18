@@ -87,7 +87,7 @@ const buildConstitutionView = (profileData: any, userData: any, modelId: any, me
   const constitutionHeader = (
     <div key="constheader" style={styles.constitutionHeader}>
       <div style={styles.headerTitle}>
-        {profileData.name}, {profileData.type}
+        {profileData.company__name}, {profileData.company__type}
       </div>
       <div style={styles.headerSubtitle}>{constitutionModel[modelId].title}</div>
     </div>

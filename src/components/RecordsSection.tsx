@@ -196,7 +196,7 @@ export const RecordsSection = ({
                           }}
                         >
                           <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {partner[key]?.label}
+                            {partner[key]?.label || key}
                           </Typography>
                           <Typography>
                             {' '}

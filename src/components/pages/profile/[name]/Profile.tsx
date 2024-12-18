@@ -219,12 +219,11 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      const fields = await getRecordData({ nodeHash: namehash(name), needsSchema: true })
+      const fields = await getRecordData({ nodeHash: namehash(name) })
       console.log(fields, namehash(name), name)
       fields.partners = fields.partners.filter(
-        (partner: any) => partner?.wallet__address?.setValue !== '',
+        (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
       )
-      console.log(fields.partners)
       setRecords(fields)
       setRecordsRequestPending(false)
     } catch (err) {
@@ -289,7 +288,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
     return (
       <>
         <Head>
-          <title>{name}</title>
+          <title>{records?.company__name?.setValue}</title>
           <meta name="description" content={name + ' RegistryChain'} />
           <meta property="og:image" content={ogImageUrl} />
           <meta property="og:title" content={name} />
@@ -312,7 +311,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
 
   let nameRecord = title
   if (Object.keys(records)?.length > 0) {
-    nameRecord = records?.name?.setValue
+    nameRecord = records?.company__name?.setValue
     if (nameRecord) {
       title = nameRecord + ' on RegistryChain'
     }

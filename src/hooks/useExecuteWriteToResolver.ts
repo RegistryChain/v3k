@@ -83,9 +83,7 @@ export type CcipRequestParameters = {
 export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/getRecord/nodeHash=${nodeHash}&needsSchema=${
-        needsSchema + ''
-      }.json`,
+      `https://oyster-app-mn4sb.ondigitalocean.app/getRecord/nodeHash=${nodeHash}.json`,
       {
         method: 'GET',
         headers: {
