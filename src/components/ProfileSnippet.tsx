@@ -3,6 +3,8 @@ import styled, { css } from 'styled-components'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
+import { ExclamationSymbol } from './ExclamationSymbol'
+
 const Container = styled.div<{}>(
   ({ theme }) => css`
     width: 100%;
@@ -83,11 +85,24 @@ export const ProfileSnippet = ({
         >
           Status:{' '}
           <span
-            style={status === 'APPROVED' ? { color: 'rgb(56, 136, 255)' } : { color: '#e9d228' }}
+            style={
+              status === 'APPROVED' || status === 'ACTIVE'
+                ? { color: 'rgb(56, 136, 255)' }
+                : { color: '#e9d228' }
+            }
           >
             {status}
           </span>
         </SectionTitle>
+        {records.company__registrar?.oldValue !== 'public' &&
+        records.sourceActive &&
+        records.sourceActive?.setValue === false ? (
+          <ExclamationSymbol
+            tooltipText={
+              'This entity is not active according to the jurisdictional registrar source.'
+            }
+          />
+        ) : null}
       </SectionTitleContainer>
     )
   }

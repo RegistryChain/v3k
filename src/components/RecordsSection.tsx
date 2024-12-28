@@ -9,6 +9,7 @@ import { Button, mq, Typography } from '@ensdomains/thorin'
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
 import { AddressRecord, Profile, TextRecord } from '@app/types'
 
+import { ExclamationSymbol } from './ExclamationSymbol'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
 
 const TabWrapper = styled(OriginalTabWrapper)(
@@ -19,6 +20,19 @@ const TabWrapper = styled(OriginalTabWrapper)(
     justify-content: flex-start;
   `,
   cacheableComponentStyles,
+)
+
+const MessageContainer = styled.div(
+  ({ theme }) => css`
+    background-color: ${theme.colors.yellowSurface};
+    color: ${theme.colors.textPrimary};
+    font-size: ${theme.fontSizes.small};
+    padding: ${theme.space['2']} ${theme.space['4']};
+    text-align: center;
+    font-weight: ${theme.fontWeights.bold};
+    margin-bottom: 12px;
+    border-radius: 16px;
+  `,
 )
 
 const AllRecords = styled.div(
@@ -94,7 +108,7 @@ export const RecordsSection = ({
   const { t } = useTranslation('profile')
 
   const filteredCompanyData = useMemo(
-    () => Object.keys(fields)?.filter((field) => fields[field].setValue || fields[field].oldValue),
+    () => Object.keys(fields)?.filter((field) => field.includes('company')),
     [fields],
   )
   const recordCategoryToTitle: any = {
@@ -251,50 +265,73 @@ export const RecordsSection = ({
           {filteredCompanyData &&
             filteredCompanyData.map((field: any, idx: any) => {
               return (
-                <div
-                  key={'catTextEmbedded' + idx}
-                  style={{
-                    display: 'flex',
-                    width: '100%',
-                    padding: '0.625rem 0.75rem',
-                    background: 'hsl(0 0% 96%)',
-                    border: '1px solid hsl(0 0% 91%)',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                    {fields[field].label || field}
-                  </Typography>
-
-                  <Typography style={{ overflow: 'hidden' }}>
-                    {fields[field].oldValue && compareToOldValues ? (
-                      <span
-                        style={{
-                          overflow: 'hidden',
-                          color: 'red',
-                          textDecorationLine: 'line-through',
-                        }}
-                      >
-                        {fields[field].oldValue}
-                      </span>
-                    ) : null}{' '}
-                    {fields[field].setValue}
-                  </Typography>
-                </div>
+                <>
+                  <div
+                    key={'catTextEmbedded' + idx}
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      background: 'hsl(0 0% 96%)',
+                      border: '1px solid hsl(0 0% 91%)',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Typography
+                      style={{ paddingRight: '10px', display: 'flex', flex: 1, color: 'grey' }}
+                    >
+                      {fields[field].label || field}{' '}
+                      {fields.contradictoryFields.setValue.includes(field) ? (
+                        <div style={{ marginLeft: '4px', alignItems: 'center' }}>
+                          <ExclamationSymbol
+                            tooltipText={
+                              fields[field].label +
+                              ' is not matching on jurisdictional registrar source'
+                            }
+                          />
+                        </div>
+                      ) : null}
+                    </Typography>
+                    <Typography style={{ overflow: 'hidden' }}>
+                      {fields[field].oldValue && compareToOldValues ? (
+                        <span
+                          style={{
+                            overflow: 'hidden',
+                            color: 'red',
+                            textDecorationLine: 'line-through',
+                          }}
+                        >
+                          {fields[field].oldValue}
+                        </span>
+                      ) : null}{' '}
+                      {fields[field].setValue + ''}
+                    </Typography>
+                  </div>
+                </>
               )
             })}
         </RecordSection>
       </div>
     )
   }
+  // Message should be triggered when the entity exists in real world registrar but has not been claime don chain
+  //Has LEI but no multisig
   return (
-    <TabWrapper data-testid="records-tab">
-      <AllRecords>
-        <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
-        {addressSection}
-        {partnerSection}
-      </AllRecords>
-    </TabWrapper>
+    <>
+      {!addressesObj.multisigAddress ? (
+        <MessageContainer>
+          This entity has not deployed its Contract Account. This means it is not currently active
+          on RegistryChain.
+        </MessageContainer>
+      ) : null}
+      <TabWrapper data-testid="records-tab">
+        <AllRecords>
+          <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
+          {addressSection}
+          {partnerSection}
+        </AllRecords>
+      </TabWrapper>
+    </>
   )
 }

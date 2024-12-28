@@ -226,6 +226,13 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
       )
       setRecords(fields)
       setRecordsRequestPending(false)
+      if (!status) {
+        if (fields.sourceActive?.setValue === true) {
+          setStatus('ACTIVE')
+        } else {
+          setStatus('INACTIVE')
+        }
+      }
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
