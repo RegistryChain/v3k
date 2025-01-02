@@ -219,8 +219,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      const fields = await getRecordData({ nodeHash: namehash(name) })
-      console.log(fields, namehash(name), name)
+      const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
       fields.partners = fields.partners.filter(
         (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
       )
@@ -254,7 +253,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
   const getMultisigAddr = async (registry: any) => {
     if (name) {
       try {
-        const multisigAddress = await registry.read.owner([namehash(name)])
+        const multisigAddress = await registry.read.owner([namehash(normalise(name))])
         const multisig = await getMultisig(multisigAddress)
         const memberManagerAddress = await multisig.read.entityMemberManager()
         setEntityMemberManager(memberManagerAddress)
@@ -282,8 +281,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
     setTab_(value)
   }
 
-  const ogImageUrl = `${OG_IMAGE_URL}/name/${normalise(name) || name}`
-
   const demoMessage = (
     <MessageContainer>
       This tab is for demonstration only. Eventually, services listed here will be integrated for
@@ -297,10 +294,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
         <Head>
           <title>{records?.company__name?.setValue}</title>
           <meta name="description" content={name + ' RegistryChain'} />
-          <meta property="og:image" content={ogImageUrl} />
           <meta property="og:title" content={name} />
           <meta property="og:description" content={name + ' RegistryChain'} />
-          <meta property="twitter:image" content={ogImageUrl} />
           <meta property="twitter:title" content={name} />
           <meta property="twitter:description" content={name + ' RegistryChain'} />
         </Head>
@@ -328,10 +323,8 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
       <Head>
         <title>{title}</title>
         <meta name="description" content={title} />
-        <meta property="og:image" content={ogImageUrl} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={name} />
-        <meta property="twitter:image" content={ogImageUrl} />
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>

@@ -25,7 +25,7 @@ import {
 import { sepolia } from 'viem/chains'
 import { useAccount, useClient } from 'wagmi'
 
-import { generateRecordCallArray } from '@ensdomains/ensjs/utils'
+import { generateRecordCallArray, normalise } from '@ensdomains/ensjs/utils'
 import { Button, Typography } from '@ensdomains/thorin'
 
 import { ErrorModal } from '@app/components/ErrorModal'
@@ -127,7 +127,7 @@ export default function Page() {
       client: publicClient,
     })
     try {
-      const multisigAddress = await registry.read.owner([namehash(name)])
+      const multisigAddress = await registry.read.owner([namehash(normalise(name))])
       const multisig: any = getContract({
         address: multisigAddress as Address,
         abi: parseAbi(['function entityMemberManager() external view returns (address)']),
@@ -153,7 +153,7 @@ export default function Page() {
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
 
-      const fields = await getRecordData({ nodeHash: namehash(name) })
+      const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
 
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
       setSchemaFields({ ...fields, partners: fields.partners.slice(0, fields.partners.length - 1) })
@@ -460,7 +460,7 @@ export default function Page() {
         }
         if (entityChanges.length > 0) {
           const formattedChangedRecords = generateRecordCallArray({
-            namehash: namehash(entityNameToPass),
+            namehash: namehash(normalise(entityNameToPass)),
             texts: entityChanges,
           })
 
