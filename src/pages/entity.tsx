@@ -505,7 +505,7 @@ export default function Page() {
           }
         />
         <div>
-          <RecordsSection fields={schemaFields} compareToOldValues={false} />
+          <RecordsSection fields={schemaFields} compareToOldValues={false} hasRegistered={false} />
         </div>
       </div>
     )

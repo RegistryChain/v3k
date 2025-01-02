@@ -100,10 +100,12 @@ export const RecordsSection = ({
   fields,
   compareToOldValues,
   addressesObj,
+  hasRegistered,
 }: {
   fields: any
   addressesObj?: any
   compareToOldValues: Boolean
+  hasRegistered: Boolean
 }) => {
   const { t } = useTranslation('profile')
 
@@ -319,7 +321,8 @@ export const RecordsSection = ({
   //Has LEI but no multisig
   return (
     <>
-      {!addressesObj.multisigAddress ? (
+      {!addressesObj?.find((x: any) => x.key === 'Multisig Address' && isAddress(x.value)) &&
+      hasRegistered ? (
         <MessageContainer>
           This entity has not deployed its Contract Account. This means it is not currently active
           on RegistryChain.

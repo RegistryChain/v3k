@@ -588,7 +588,11 @@ export default function Page() {
         />
         {changedRecords.length > 0 ? (
           <div>
-            <RecordsSection fields={fieldsOfChangedRecords} compareToOldValues={true} />
+            <RecordsSection
+              fields={fieldsOfChangedRecords}
+              compareToOldValues={true}
+              hasRegistered={true}
+            />
           </div>
         ) : null}
       </div>

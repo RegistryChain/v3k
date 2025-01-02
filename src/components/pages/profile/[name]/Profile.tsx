@@ -386,6 +386,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
                     { key: 'Multisig Address', value: multisigAddress },
                     { key: 'Member Manager Address', value: entityMemberManager },
                   ]}
+                  hasRegistered={true}
                 />
               </>
             ))
