@@ -10,6 +10,7 @@ import {
   encodeFunctionData,
   getContract,
   http,
+  isAddress,
   namehash,
   parseAbi,
   zeroAddress,
@@ -372,6 +373,12 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
           trailing: match(tab)
             .with('entity', () => (
               <>
+                {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? (
+                  <MessageContainer>
+                    This entity has not deployed its Contract Account. This means it is not
+                    currently active on RegistryChain.
+                  </MessageContainer>
+                ) : null}
                 <RecordsSection
                   fields={records}
                   compareToOldValues={false}
@@ -379,7 +386,6 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
                     { key: 'Multisig Address', value: multisigAddress },
                     { key: 'Member Manager Address', value: entityMemberManager },
                   ]}
-                  hasRegistered={true}
                 />
               </>
             ))

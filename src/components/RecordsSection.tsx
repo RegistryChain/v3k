@@ -100,12 +100,10 @@ export const RecordsSection = ({
   fields,
   compareToOldValues,
   addressesObj,
-  hasRegistered,
 }: {
   fields: any
   addressesObj?: any
   compareToOldValues: Boolean
-  hasRegistered: Boolean
 }) => {
   const { t } = useTranslation('profile')
 
@@ -224,10 +222,14 @@ export const RecordsSection = ({
                                   textDecorationLine: 'line-through',
                                 }}
                               >
-                                {partner[key].oldValue}
+                                {Array.isArray(partner[key].oldValue)
+                                  ? partner[key].oldValue.join(', ')
+                                  : partner[key].oldValue}
                               </span>
                             ) : null}{' '}
-                            {partner[key].setValue}
+                            {Array.isArray(partner[key].setValue)
+                              ? partner[key].setValue.join(', ')
+                              : partner[key].setValue}
                           </Typography>
                         </div>
                       )
@@ -284,7 +286,7 @@ export const RecordsSection = ({
                       style={{ paddingRight: '10px', display: 'flex', flex: 1, color: 'grey' }}
                     >
                       {fields[field].label || field}{' '}
-                      {fields.contradictoryFields.setValue.includes(field) ? (
+                      {fields?.contradictoryFields?.setValue?.includes(field) ? (
                         <div style={{ marginLeft: '4px', alignItems: 'center' }}>
                           <ExclamationSymbol
                             tooltipText={
@@ -317,17 +319,9 @@ export const RecordsSection = ({
       </div>
     )
   }
-  // Message should be triggered when the entity exists in real world registrar but has not been claime don chain
-  //Has LEI but no multisig
+
   return (
     <>
-      {!addressesObj?.find((x: any) => x.key === 'Multisig Address' && isAddress(x.value)) &&
-      hasRegistered ? (
-        <MessageContainer>
-          This entity has not deployed its Contract Account. This means it is not currently active
-          on RegistryChain.
-        </MessageContainer>
-      ) : null}
       <TabWrapper data-testid="records-tab">
         <AllRecords>
           <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>

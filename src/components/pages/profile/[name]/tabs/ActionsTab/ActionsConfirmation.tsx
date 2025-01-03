@@ -79,102 +79,12 @@ const ActionsConfirmation = ({
   setErrorMessage,
   processTxAction,
   txData,
-  userRoles,
   multisigAddress,
-  memberBytes,
-  getMemberBytes,
-  methodsCallable,
   wallet,
 }: any) => {
-  const [txIndexToSigned, setTxIndexToSigned] = useState<any>({})
-
   const { address, isConnected } = useAccount()
 
-  useEffect(() => {
-    const txToConfirmCountAllshown =
-      txData.filter((x: any) => x.sigsMade < x.sigsNeeded).length !==
-      Object.keys(txIndexToSigned)?.length
-
-    if (txToConfirmCountAllshown && address && multisigAddress) {
-      alreadySigned()
-    }
-  }, [txData, userRoles, address, multisigAddress])
-
   const { openConnectModal }: any = useConnectModal()
-
-  const getResolver = async () => {
-    return getContract({
-      client,
-      abi: parseAbi([
-        'function multicallView(address contract, bytes[] memory data) view returns (bytes[] memory)',
-      ]),
-      address: contractAddresses.PublicResolver as Address,
-    })
-  }
-
-  const alreadySigned = async () => {
-    const idxToTxIndex: any = {}
-    const txIndexToSignedByUser: any = {}
-    if (txData.length === 0) return
-    const readTxDataEncodes = txData.map((tx: any, idx: any) => {
-      idxToTxIndex[idx] = tx.txIndex
-      return encodeFunctionData({
-        abi: [
-          {
-            inputs: [
-              {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-              },
-              {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-              },
-              {
-                internalType: 'address',
-                name: '',
-                type: 'address',
-              },
-            ],
-            name: 'isConfirmed',
-            outputs: [
-              {
-                internalType: 'bool',
-                name: '',
-                type: 'bool',
-              },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-          },
-        ],
-        functionName: 'isConfirmed',
-        args: [contractAddresses['public.registry'] as any, tx.txIndex, address as any],
-      })
-    })
-    const resolver: any = await getResolver()
-    let encResArr: any[] = []
-    try {
-      encResArr = await resolver.read.multicallView([
-        contractAddresses.MultisigState,
-        readTxDataEncodes,
-      ])
-    } catch (e) {
-      console.log('FAIL', e)
-    }
-
-    encResArr.forEach((x: any, idx: any) => {
-      try {
-        const userHasSigned = decodeAbiParameters([{ type: 'bool' }], x)[0]
-        const txIndex = idxToTxIndex[idx]
-        txIndexToSignedByUser[txIndex] = userHasSigned
-      } catch (e) {}
-    })
-
-    setTxIndexToSigned(txIndexToSignedByUser)
-  }
 
   const signAction = async (txIndex: any, method: any) => {
     try {
@@ -184,42 +94,22 @@ const ActionsConfirmation = ({
         address: multisigAddress as Address,
         abi: parseAbi([
           'function confirmTransaction(uint256,bytes32)',
-          'function initializeMember(uint256)',
+          'function initializeMember()',
         ]),
         client: wallet,
       })
 
       if (txIndex === 0) {
-        let bytes: any = memberBytes
-        if (!memberBytes) {
-          bytes = await getMemberBytes()
-        }
-
-        let memberIndex = null
-        if (bytes) {
-          const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], bytes)[0]
-          txDataArray.forEach((data, idx) => {
-            const decoded = decodeAbiParameters(
-              [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
-              data,
-            )
-            if (decoded[0] === address) {
-              memberIndex = idx
-            }
-          })
-        }
-
-        const confirmTxHash = await multisig.write.initializeMember([memberIndex])
+        const confirmTxHash = await multisig.write.initializeMember([])
         console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
       } else {
         const confirmTxHash = await multisig.write.confirmTransaction([
           txIndex,
-          methodsCallable[method],
+          '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce',
         ])
         console.log(await client?.waitForTransactionReceipt({ hash: confirmTxHash }))
       }
 
-      alreadySigned()
       refresh()
     } catch (err: any) {
       if (err.shortMessage === 'User rejected the request.') return
@@ -261,7 +151,7 @@ const ActionsConfirmation = ({
             <div style={{ flex: 1, textAlign: 'center', alignContent: 'center' }}>
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
-                disabled={!methodsCallable?.[x?.method] || txIndexToSigned[x.txIndex]}
+                disabled={!x.memberCanSign}
                 onClick={async () => {
                   try {
                     if (!isConnected || !address) {

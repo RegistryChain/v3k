@@ -191,7 +191,6 @@ const buildConstitutionView = (profileData: any, userData: any, modelId: any, me
 
 // Function to build the constitution sections
 const buildConstitution = (profileData: any, userData: any, modelId: any, metadata: any) => {
-  console.log('prfofo', profileData)
   const constitutionHeader = (
     <View key={'constheader'} style={{ marginTop: 30, marginBottom: 35, textAlign: 'center' }}>
       <Text style={{ fontSize: 25, fontWeight: 'extrabold' }}>

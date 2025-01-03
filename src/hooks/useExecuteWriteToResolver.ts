@@ -48,7 +48,6 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
             resBytes,
             req,
           ])
-          console.log('callback', tx)
           return tx.hash
 
           // const multisigAddr = await checkOwner(decodedData[1])
@@ -84,6 +83,23 @@ export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }:
   try {
     const res = await fetch(
       `https://oyster-app-mn4sb.ondigitalocean.app/getRecord/nodeHash=${nodeHash}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    return await res.json()
+  } catch (err) {
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
+}
+
+export async function getTransactions({ nodeHash = zeroHash, address }: any) {
+  try {
+    const res = await fetch(
+      `https://oyster-app-mn4sb.ondigitalocean.app/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {

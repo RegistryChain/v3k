@@ -80,9 +80,7 @@ const ActionsExecution = ({
   setErrorMessage,
   txData,
   processTxAction,
-  userRoles,
   multisigAddress,
-  methodsCallable,
   wallet,
 }: any) => {
   const { address, isConnected } = useAccount()
@@ -100,7 +98,7 @@ const ActionsExecution = ({
         })
         const executionTxHash = await multisig.write.executeTransaction([
           transaction.txIndex,
-          methodsCallable[transaction.method],
+          '0x9a57c351532c19ba0d9d0f5f5524a133d80a3ebcd8b10834145295a87ddce7ce',
           zeroHash,
           zeroHash,
         ])
@@ -201,7 +199,7 @@ const ActionsExecution = ({
             <div style={{ flex: 1, textAlign: 'center' }}>
               <Button
                 style={{ marginBottom: '6px', height: '42px' }}
-                disabled={!methodsCallable?.[x?.method]}
+                disabled={!x.memberCanExecute}
                 onClick={async () => {
                   if (!isConnected || !address) {
                     await openConnectModal()
