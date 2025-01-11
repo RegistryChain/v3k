@@ -1,28 +1,118 @@
-# RegistryChain - APP UI
+# RegistryChain Front End Developer Documentation
 
-This is a demo front-end for creating and managing blockchain-native entities on RegistryChain, built with Next.js v13. It connects to Ethereum Sepolia Testnet (chain 11155111) and is a fork of the [Ethereum Naming Service (ENS) front-end](https://app.ens.domains/).
+## Overview
 
-## Features
+### Project Context
 
-- Entity Formation: Begin by entering an entity name, selecting a jurisdiction, and choosing the entity type. Currently, only Partnership in the Public Registry jurisdiction is supported.
-- Entity Management: Create entities with basic information, member details, and roles. The protocol automatically generates and displays your corporate bylaws/constitution for review before finalizing the entity formation.
-- Transaction-Based Creation: Form your entity in a single Ethereum transaction. Upon success, you'll be directed to the entity profile page.
-- Entity Profile: View detailed information about your entity, including its members, records, and constitution. Explore available services like Apps/Licenses (demo purposes).
-- Actions Tab: Propose, confirm, and execute entity management actions, such as approving the constitution or making changes to the entity.
+The front end of the RegistryChain platform is built with **React** and **Next.js**, modeled after the Ethereum Name Service (ENS) domain app ([live ENS site](https://app.ens.domains/)). We have redesigned this to demo the core workflows of **Entity Formation**, **Entity Amendments**, and **Entity Management** on the RegistryChain platform.
 
-## Setup
+This app allows users to:
 
-To get started, clone this repository and install the dependencies:
+- **Create** new entities with governance structures.
+- **Amend** existing entities, including constitutions and metadata.
+- **View** entity details, including records, constitution, and metadata.
 
-`pnpm install`
+The front end relies on **ERC-3668** and **ERC-5559** standards for handling off-chain data storage and on-chain interactions, communicating between the blockchain, backend gateway, and client.
 
-For building the project:
+---
 
-`npm run build`
+## Getting Started
 
-To run the local development server:
+### Installation and Setup
 
-`npm run dev`
+1. **Clone** the repository from the version control system.
+2. **Install dependencies** by running:
+   ```bash
+   pnpm install
+   ```
+3. **Start the local development server** with:
+   ```bash
+   npm run dev
+   ```
+4. Ensure the development environment is set up with:
+   - A wallet like **Metamask** for blockchain interactions.
+   - Access to the **Sepolia Testnet** for testing blockchain transactions.
+   - **Sepolia ETH** in your wallet for testing transactions (message **Michael** if needed).
+
+---
+
+## Main Workflows and Codebase Structure
+
+### Workflows and Associated Files
+
+#### Entity Formation
+
+**File**: `entity.tsx`
+
+**Purpose**: Handles the creation of new entities.
+
+**Workflow**:
+
+1. Users input entity details such as roles, partners, and constitution data.
+2. Uses state to render a Single Page Application (SPA) for managing components containing different input types collected for the entity.
+3. Data is encoded, signed by the user using **ERC-3668** standards, and sent to the backend.
+4. The response is processed by functions in `useExecuteWriteToResolver.ts`, which creates a transaction to update the blockchain.
+
+#### Entity Amendments
+
+**File**: `entityAmend.tsx`
+
+**Purpose**: Enables updates to existing entities.
+
+**Workflow**:
+
+1. Fetches current entity data using `getRecordData` from `useExecuteWriteToResolver.ts`.
+2. Populates input fields with the fetched data.
+3. Tracks user changes and validates them against existing data.
+4. Sends update requests to the Gateway backend and creates on-chain transactions, similar to `entity.tsx`, but distinguished by the methods called.
+5. Update methods are separated by type:
+   - Some updates are **on-chain only**.
+   - Other amendments are made to the **Gateway resolver**.
+6. The `entityAmend` component submits a **proposal** that must collect signatures in the `Actions` section of the profile before being realized.
+7. Access is restricted to **authorized members** with specific roles (e.g., `manager` or `signer`).
+
+#### Entity Management
+
+**File**: `profile.tsx` (and its children, which contain most logic for tabs)
+
+**Purpose**: Displays detailed information about entities and provides tools for managing them.
+
+**Workflow**:
+
+1. Fetches and renders entity records, including metadata and constitution data.
+2. Highlights inconsistencies between fetched metadata and jurisdictional sources using `contradictoryFields`.
+3. Provides the following tabs:
+   - **Constitution**: Displays governance rules in plain-English format.
+   - **Actions**: Lists current proposals, transactions needing confirmations, and execution options. This logic is managed in `ActionsTab.tsx`, where users control and manage their entities.
+   - **Apps and Licenses**: Demonstrate integration points for third-party services or regulatory compliance data.
+
+---
+
+## Important File: `useExecuteWriteToResolver.ts`
+
+This hook manages interactions between the front end, backend, and blockchain.
+
+### Key Features
+
+#### Data Handling
+
+- Encodes user inputs for submission to the backend and blockchain.
+- Decodes blockchain data for display on the front end.
+
+#### Signature Management
+
+- Generates and validates user signatures for secure data handling.
+
+#### Backend Integration
+
+- Provides functions for retrieving and submitting entity data.
+- Handles transaction statuses and backend API calls.
+
+### Key Functions
+
+- **`getRecordData`**: Fetches JSON-formatted entity records for display.
+- **`executeWriteToResolver`**: Handles special contract reversions for initiating **ERC-3668** flow. Encodes and sends data to the backend and blockchain.
+- **`handleDBStorage`**: Makes signatures over data to be passed to the Gateway.
 
 ## Usage
 
