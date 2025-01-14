@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
+import { normalize } from 'viem/ens'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
@@ -121,7 +122,7 @@ export const ProfileSnippet = ({
             fontVariant="bodyBold"
           >
             <Typography>
-              <i>{domainName}</i>
+              <i>{normalize(domainName)}</i>
             </Typography>
           </SectionTitle>
           {statusSection}
