@@ -247,20 +247,20 @@ export const TabBar = () => {
         <TabContainer $shrink={!!(address && ((isOpen && !hasPrimary) || !isOpen))}>
           <TabItems $isConnected={!!address}>
             <RouteItem route={getRoute('search')} />
-            {address && (
-              <>
-                <RouteItem route={getRoute('names')} />
-                {globalThis?.localStorage?.getItem('ensFavourites') && (
-                  <RouteItem route={legacyFavouritesRoute} />
-                )}
+            <>
+              <RouteItem route={getRoute('names')} />
+              {globalThis?.localStorage?.getItem('ensFavourites') && (
+                <RouteItem route={legacyFavouritesRoute} />
+              )}
+              {address && (
                 <TabBarProfile
                   address={address}
                   isOpen={isOpen}
                   setIsOpen={setIsOpen}
                   name={primary.data?.name}
                 />
-              </>
-            )}
+              )}
+            </>
           </TabItems>
           {!address && <ConnectButton isTabBar />}
         </TabContainer>

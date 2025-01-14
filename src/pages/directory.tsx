@@ -26,9 +26,6 @@ export default function Page() {
 
   const isLoading = !router.isReady || isConnecting || isReconnecting
 
-  useProtectedRoute('/', isLoading ? true : address && (address as any) !== '')
-  const acctAddr: any = address
-
   return (
     <Content title={t('title')} singleColumnContent loading={isLoading}>
       {{

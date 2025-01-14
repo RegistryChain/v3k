@@ -166,7 +166,7 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
 
   useEffect(() => {
     const registry: any = getContract({
-      address: contractAddresses.RegistryChain as Address,
+      address: contractAddresses.ENSRegistry as Address,
       abi: parseAbi(['function owner(bytes32) view returns (address)']),
       client: publicClient,
     })

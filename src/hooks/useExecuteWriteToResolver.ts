@@ -96,6 +96,23 @@ export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }:
   }
 }
 
+export async function getEntitiesList({ registrar = 'public', nameSubstring = '', page = 0 }: any) {
+  try {
+    const res = await fetch(
+      `https://oyster-app-mn4sb.ondigitalocean.app/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    return await res.json()
+  } catch (err) {
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
+}
+
 export async function getTransactions({ nodeHash = zeroHash, address }: any) {
   try {
     const res = await fetch(

@@ -1,11 +1,13 @@
 {
-  "RegistryChain": "0xa169d669b6a29924814c04027f8b8eeef8b5e5d3",
+  "ENSRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
   "Definitions": "0x4d9c6313cad0acc6dadb820d42d08b1da7feebe0",
-  "EntityFactory": "0xa1731fcea1633e8fb6b6ada9267ea7ee2fb1f4d6",
+  "EntityFactory": "0xcc8b30b4c2a7dffa87aeef283bb80686eb288f00",
   "PublicResolver": "0xa6590f797808ac69549b9758d3b183c27fe588fd",
-  "MultisigState": "0xb63c83a82d161d0e10ed9e63b93fa8a7635c20ce",
+  "MultisigState": "0xf709fc8bf7b574713a1d5a36fbf35d440221a683",
   "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
   "public.registry": "0x2cd125531431d74399cc1b2402c7bc9c8fdb68eb",
   "LEI": "0x86c850f9d9634dc891070fa04bcf5b1c1622d34c",
-  "DatabaseResolver": "0xf912e35a45bffef09f9689849424382c084fcb06"
+  "DatabaseResolver": "0x8acfa8800490e258f589c2419a3920b8b16015b3",
+  "chaser.finance": "0x7cbe5e15feaca518fc9aae04bff57fddf0a6914e",
+  "public.chaser.finance": "0x0e9737cb8f35a7c26e1709287d809527561dd7b6"
 }

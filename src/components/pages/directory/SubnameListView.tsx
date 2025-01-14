@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { match, P } from 'ts-pattern'
-import { createPublicClient, http, type Address } from 'viem'
+import { createPublicClient, http, zeroAddress, type Address } from 'viem'
 import { sepolia } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
 import { createEnsPublicClient } from '@ensdomains/ensjs'
@@ -17,6 +18,7 @@ import {
   SortType,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
+import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
@@ -57,6 +59,7 @@ type SubnameListViewProps = {}
 export const SubnameListView = ({}: SubnameListViewProps) => {
   const router = useRouterWithHistory()
   const { address } = useAccount()
+  const tld = 'chaser.finance'
 
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
@@ -64,8 +67,18 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   }, [])
 
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
-  const handleClickName = (name: Name) => () => {
-    router.push('/profile/' + name.name)
+  const handleClickName = (entity: any) => () => {
+    router.push(
+      '/entity/' +
+        entity.company__name
+          .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
+          .replace(/ /g, '-') // Replace spaces with hyphens
+          .replace(/-{2,}/g, '-') +
+        '.' +
+        entity.company__registrar +
+        '.' +
+        tld,
+    )
   }
 
   const [sortType, setSortType] = useQueryParameterState<SortType>('sort', 'expiryDate')
@@ -89,30 +102,28 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   )
 
   const getSubs = async () => {
-    const results = await getSubnames(client, { name: 'publicregistry.eth', pageSize: 1000 })
-    setSubnameResults(results)
+    try {
+      const results = await getEntitiesList({ registrar: '', nameSubstring: searchInput })
+      setSubnameResults(results)
+    } catch (err) {
+      console.log(err)
+    }
     setSubnameResLoaded(true)
   }
 
   useEffect(() => {
     getSubs()
-  }, [client])
+  }, [client, searchInput])
 
-  const filteredSet = subnameResults
-    .map((name) => {
-      const labelName = name.name.split(name.parentName).join('').split('.').join('.')
-      const domainId = labelName.split('-').pop().split('.').join('')
-      const commonName = labelName
-        .split('-')
-        .slice(0, labelName.split('-').length - 1)
-        .join(' ')
-      return { ...name, labelName, commonName, domainId }
-    })
-    .filter(
-      (name) =>
-        name.parentName === 'publicregistry.eth' &&
-        (name.labelName.includes(searchInput) || searchInput === ''),
-    )
+  const filteredSet = subnameResults.map((name) => {
+    const labelName = name.name.split(name.parentName).join('').split('.').join('.')
+    const domainId = labelName.split('-').pop().split('.').join('')
+    const commonName = labelName
+      .split('-')
+      .slice(0, labelName.split('-').length - 1)
+      .join(' ')
+    return { ...name, labelName, commonName, domainId }
+  })
 
   return (
     <TabWrapperWithButtons>
@@ -147,16 +158,32 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
             return (
               <InfiniteScrollContainer onIntersectingChange={() => null}>
                 <div>
-                  {filteredSet.map((name) => {
+                  {filteredSet.map((entity) => {
                     return (
                       <TaggedNameItem
-                        isOwner={address === name.owner}
-                        name={name.commonName + ' [' + name.domainId + ']' || ''}
-                        key={name.id}
+                        isOwner={
+                          address === entity.owner && entity.owner && entity.owner !== zeroAddress
+                        }
+                        name={
+                          entity.company__name +
+                          ' (' +
+                          normalize(
+                            entity.company__name
+                              .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
+                              .replace(/ /g, '-') // Replace spaces with hyphens
+                              .replace(/-{2,}/g, '-') +
+                              '.' +
+                              entity.company__registrar +
+                              '.' +
+                              tld,
+                          ) +
+                          ')'
+                        }
+                        key={entity.id}
                         mode={'view'}
                         selected={false}
                         disabled={false}
-                        onClick={handleClickName(name)}
+                        onClick={handleClickName(entity)}
                       />
                     )
                   })}

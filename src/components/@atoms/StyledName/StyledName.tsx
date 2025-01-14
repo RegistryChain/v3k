@@ -41,11 +41,7 @@ export const StyledName = ({ name, disabled = false }: { name: string; disabled?
 
   return (
     <Container>
-      <Name $disabled={disabled}>
-        {label}
-        {restName.length > 0 && <Dot>.</Dot>}
-      </Name>
-      <Tld>{restName.join('.')}</Tld>
+      <Name $disabled={disabled}>{beautifiedName}</Name>
     </Container>
   )
 }
