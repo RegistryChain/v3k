@@ -81,8 +81,8 @@ const TableHeaderTrailing = styled.div<{
     align-items: center;
     justify-content: center;
     ${mq.sm.min(css`
-      flex: ${$isDesktopFlexibleWidth ? '2' : `0 0 ${theme.space['32']}`};
-      width: ${theme.space['32']};
+      flex: ${$isDesktopFlexibleWidth ? '2' : `0 0 ${theme.space['72']}`};
+      width: ${theme.space['48']};
     `)}
   `,
 )
@@ -118,23 +118,26 @@ export type SortType = NonNullable<GetNamesForAddressParameters['orderBy']>
 export type SortDirection = 'asc' | 'desc'
 
 export type SortValue = {
-  type: SortType
+  type: string
   direction: SortDirection
 }
 
 export type NameTableMode = 'view' | 'select'
 
 type Props = {
-  sortType?: SortType
-  sortTypeOptionValues: SortType[]
+  sortType?: string
+  sortTypeOptionValues: string[]
   sortDirection: SortDirection
+  registrar?: string
+  registrarOptionValues?: any[]
   searchQuery?: string
   mode: NameTableMode
   selectedCount?: number
   selectable?: boolean
   onModeChange?: (mode: NameTableMode) => void
   onSearchChange?: (query: string) => void
-  onSortTypeChange?: (type: SortType) => void
+  onSortTypeChange?: any
+  onRegistrarChange?: (type: string) => void
   onSortDirectionChange?: (direction: SortDirection) => void
 }
 
@@ -142,6 +145,8 @@ export const NameTableHeader = ({
   sortType,
   sortTypeOptionValues,
   sortDirection,
+  registrar,
+  registrarOptionValues,
   searchQuery,
   mode,
   selectedCount = 0,
@@ -149,6 +154,7 @@ export const NameTableHeader = ({
   children,
   onModeChange,
   onSortTypeChange,
+  onRegistrarChange,
   onSortDirectionChange,
   onSearchChange,
 }: PropsWithChildren<Props>) => {
@@ -156,10 +162,19 @@ export const NameTableHeader = ({
 
   const inSelectMode = selectable && mode === 'select'
 
+  const fieldToLabelMap: any = { company__formation__date: 'Formation Date', name: 'name' }
   const sortTypeOptions = sortTypeOptionValues.map((value) => ({
-    label: t(`sortTypes.${value}`),
+    label: fieldToLabelMap[value],
     value,
   }))
+
+  let registrarOptions: any[] = []
+  if (registrarOptionValues) {
+    registrarOptions = registrarOptionValues.map((value) => ({
+      label: value,
+      value,
+    }))
+  }
 
   return (
     <TableHeader $desktopGap={selectable ? 'small' : 'medium'}>
@@ -180,9 +195,9 @@ export const NameTableHeader = ({
                 size="small"
                 label="Sort by"
                 hideLabel
-                placeholder={t('action.sort')}
+                placeholder={sortType}
                 onChange={(e) => {
-                  onSortTypeChange?.(e.target.value as SortType)
+                  onSortTypeChange?.(e.target.value)
                 }}
                 options={sortTypeOptions}
                 id="sort-by"
@@ -205,6 +220,20 @@ export const NameTableHeader = ({
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>
       </TableHeaderLeading>
       <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
+        {registrar ? (
+          <Select
+            value={registrar}
+            size="small"
+            label="Sort by"
+            hideLabel
+            placeholder={t('action.sort')}
+            onChange={(e) => {
+              onRegistrarChange?.(e.target.value as any)
+            }}
+            options={registrarOptions}
+            id="sort-by"
+          />
+        ) : null}
         <Input
           data-testid="name-table-header-search"
           size="small"

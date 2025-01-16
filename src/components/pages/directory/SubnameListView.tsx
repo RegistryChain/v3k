@@ -81,13 +81,15 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
     )
   }
 
-  const [sortType, setSortType] = useQueryParameterState<SortType>('sort', 'expiryDate')
-  const [sortDirection, setSortDirection] = useQueryParameterState<SortDirection>(
-    'direction',
-    'asc',
-  )
-  const [searchQuery, setSearchQuery] = useQueryParameterState<string>('search', '')
+  const [sortType, setSortType] = useState<any>('name')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [registrar, setRegistrarSelected] = useState<string>('US-WY')
+
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchInput, setSearchInput] = useState(searchQuery)
+  const [pageNumber, setPageNumber] = useState(0)
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false)
+  const [finishedLoading, setFinishedLoading] = useState(false)
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
   const [subnameResLoaded, setSubnameResLoaded] = useState<Boolean>(false)
@@ -101,10 +103,21 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
     [],
   )
 
-  const getSubs = async () => {
+  const getSubs = async (currentRes: any[], page: number = pageNumber) => {
     try {
-      const results = await getEntitiesList({ registrar: '', nameSubstring: searchInput })
-      setSubnameResults(results)
+      const results = await getEntitiesList({
+        registrar,
+        nameSubstring: searchInput,
+        page,
+        sortDirection,
+        sortType,
+      })
+
+      setSubnameResults([...currentRes, ...results])
+      setIsLoadingNextPage(false)
+      if (results.length !== 25) {
+        setFinishedLoading(true)
+      }
     } catch (err) {
       console.log(err)
     }
@@ -112,8 +125,16 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   }
 
   useEffect(() => {
-    getSubs()
-  }, [client, searchInput])
+    setIsLoadingNextPage(true)
+    if (pageNumber !== 0) {
+      getSubs(subnameResults, pageNumber)
+    }
+  }, [pageNumber])
+
+  useEffect(() => {
+    setPageNumber(0)
+    getSubs([], 0)
+  }, [client, searchInput, registrar, sortType, sortDirection])
 
   const filteredSet = subnameResults.map((name) => {
     const labelName = name.name.split(name.parentName).join('').split('.').join('.')
@@ -130,13 +151,16 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
       <NameTableHeader
         mode={'view'}
         sortType={sortType}
-        sortTypeOptionValues={['expiryDate', 'labelName', 'createdAt']}
+        sortTypeOptionValues={['company__formation__date', 'name']}
         sortDirection={sortDirection}
+        registrar={registrar}
+        registrarOptionValues={['public', 'US-WY']}
         searchQuery={searchInput}
         selectedCount={selectedNames.length}
         onModeChange={(m) => {
           setSelectedNames([])
         }}
+        onRegistrarChange={setRegistrarSelected}
         onSortDirectionChange={setSortDirection}
         onSortTypeChange={setSortType}
         onSearchChange={(s) => {
@@ -156,39 +180,53 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
           })
           .with([true, true, filteredSet?.length, P._], () => {
             return (
-              <InfiniteScrollContainer onIntersectingChange={() => null}>
-                <div>
-                  {filteredSet.map((entity) => {
-                    return (
-                      <TaggedNameItem
-                        isOwner={
-                          address === entity.owner && entity.owner && entity.owner !== zeroAddress
-                        }
-                        name={
-                          entity.company__name +
-                          ' (' +
-                          normalize(
-                            entity.company__name
-                              .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
-                              .replace(/ /g, '-') // Replace spaces with hyphens
-                              .replace(/-{2,}/g, '-') +
-                              '.' +
-                              entity.company__registrar +
-                              '.' +
-                              tld,
-                          ) +
-                          ')'
-                        }
-                        key={entity.id}
-                        mode={'view'}
-                        selected={false}
-                        disabled={false}
-                        onClick={handleClickName(entity)}
-                      />
-                    )
-                  })}
-                </div>
-              </InfiniteScrollContainer>
+              <>
+                <InfiniteScrollContainer
+                  onIntersectingChange={(isVisible) => {
+                    if (isVisible && !isLoadingNextPage && !finishedLoading) {
+                      setPageNumber(pageNumber + 1)
+                    }
+                  }}
+                  offset="150px"
+                >
+                  <div>
+                    {filteredSet.map((entity) => {
+                      return (
+                        <TaggedNameItem
+                          isOwner={
+                            address === entity.owner && entity.owner && entity.owner !== zeroAddress
+                          }
+                          name={
+                            entity.company__name +
+                            ' (' +
+                            normalize(
+                              entity.company__name
+                                .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
+                                .replace(/ /g, '-') // Replace spaces with hyphens
+                                .replace(/-{2,}/g, '-') +
+                                '.' +
+                                entity.company__registrar +
+                                '.' +
+                                tld,
+                            ) +
+                            ')'
+                          }
+                          key={entity.LEI}
+                          mode={'view'}
+                          selected={false}
+                          disabled={false}
+                          onClick={handleClickName(entity)}
+                        />
+                      )
+                    })}
+                  </div>
+                </InfiniteScrollContainer>
+                {isLoadingNextPage && !finishedLoading ? (
+                  <EmptyDetailContainer>
+                    <Spinner color="accent" />
+                  </EmptyDetailContainer>
+                ) : null}
+              </>
             )
           })
           .otherwise(() => `${subnameResults.length}`)}

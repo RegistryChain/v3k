@@ -96,10 +96,16 @@ export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }:
   }
 }
 
-export async function getEntitiesList({ registrar = 'public', nameSubstring = '', page = 0 }: any) {
+export async function getEntitiesList({
+  registrar = 'public',
+  nameSubstring = '',
+  sortType,
+  sortDirection,
+  page = 0,
+}: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}.json`,
+      `https://oyster-app-mn4sb.ondigitalocean.app/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
       {
         method: 'GET',
         headers: {

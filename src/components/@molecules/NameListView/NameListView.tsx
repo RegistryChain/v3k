@@ -215,21 +215,23 @@ export const NameListView = ({ address, selfAddress, setError, setLoading }: Nam
           .with([true, false, P.when((_nameCount) => _nameCount), P._], () => (
             <InfiniteScrollContainer onIntersectingChange={setIsIntersecting}>
               <div>
-                {names.filter(name => name.parentName === "publicregistry.eth").map((nameObj) => {
-                  const name: any = nameObj
-                  return (
-                  <TaggedNameItem
-                    key={name.id}
-                    {...name}
-                    mode={mode}
-                    selected={
-                      !!selectedNames?.find((selectedName) => selectedName.name === name.name!)
-                    }
-                    disabled={isNameDisabled(name)}
-                    onClick={handleClickName(name)}
-                  />
-                )
-})}
+                {names
+                  .filter((name) => name.parentName === 'publicregistry.eth')
+                  .map((nameObj) => {
+                    const name: any = nameObj
+                    return (
+                      <TaggedNameItem
+                        key={name.id}
+                        {...name}
+                        mode={mode}
+                        selected={
+                          !!selectedNames?.find((selectedName) => selectedName.name === name.name!)
+                        }
+                        disabled={isNameDisabled(name)}
+                        onClick={handleClickName(name)}
+                      />
+                    )
+                  })}
               </div>
               {isFetching && (
                 <EmptyDetailContainer>

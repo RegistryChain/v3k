@@ -305,7 +305,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
             sortDirection={sortDirection}
             searchQuery={searchInput}
             selectedCount={0}
-            onSortTypeChange={(type) => setSortType(type as SortType)}
+            onSortTypeChange={(type: any) => setSortType(type as SortType)}
             onSortDirectionChange={setSortDirection}
             onSearchChange={(search) => {
               setSearchInput(search)

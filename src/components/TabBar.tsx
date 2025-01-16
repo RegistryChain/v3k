@@ -2,6 +2,7 @@
 import { useRouter } from 'next/router'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import styled, { css } from 'styled-components'
+import { zeroAddress } from 'viem'
 import { useEnsAvatar } from 'wagmi'
 
 import { CrossSVG, LeftChevronSVG, mq, PersonSVG } from '@ensdomains/thorin'
@@ -247,20 +248,16 @@ export const TabBar = () => {
         <TabContainer $shrink={!!(address && ((isOpen && !hasPrimary) || !isOpen))}>
           <TabItems $isConnected={!!address}>
             <RouteItem route={getRoute('search')} />
-            <>
-              <RouteItem route={getRoute('names')} />
-              {globalThis?.localStorage?.getItem('ensFavourites') && (
-                <RouteItem route={legacyFavouritesRoute} />
-              )}
-              {address && (
-                <TabBarProfile
-                  address={address}
-                  isOpen={isOpen}
-                  setIsOpen={setIsOpen}
-                  name={primary.data?.name}
-                />
-              )}
-            </>
+            <RouteItem route={getRoute('names')} />
+            {globalThis?.localStorage?.getItem('ensFavourites') && (
+              <RouteItem route={legacyFavouritesRoute} />
+            )}
+            <TabBarProfile
+              address={address || zeroAddress}
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              name={primary.data?.name}
+            />
           </TabItems>
           {!address && <ConnectButton isTabBar />}
         </TabContainer>
