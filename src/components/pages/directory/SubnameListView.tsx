@@ -88,7 +88,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   }
 
   const [sortType, setSortType] = useState<any>('company__formation__date')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [registrar, setRegistrarSelected] = useState<string>('any')
 
   const [searchQuery, setSearchQuery] = useState<string>('')

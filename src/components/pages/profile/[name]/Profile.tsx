@@ -259,7 +259,9 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
         const memberManagerAddress = await multisig.read.entityMemberManager()
         setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(multisigAddress)
-      } catch (e) {}
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
