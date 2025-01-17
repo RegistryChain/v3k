@@ -67,23 +67,29 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   }, [])
 
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
+
   const handleClickName = (entity: any) => () => {
-    router.push(
-      '/entity/' +
+    let domain = null
+    try {
+      domain = normalize(
         entity.company__name
-          .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
+          .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
           .replace(/ /g, '-') // Replace spaces with hyphens
           .replace(/-{2,}/g, '-') +
-        '.' +
-        entity.company__registrar +
-        '.' +
-        tld,
-    )
+          '.' +
+          entity.company__registrar +
+          '.' +
+          tld,
+      )
+    } catch (err) {
+      domain = (entity.company__name + '.' + entity.company__registrar + '.' + tld).toLowerCase()
+    }
+    router.push('/entity/' + domain)
   }
 
-  const [sortType, setSortType] = useState<any>('name')
+  const [sortType, setSortType] = useState<any>('company__formation__date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const [registrar, setRegistrarSelected] = useState<string>('US-WY')
+  const [registrar, setRegistrarSelected] = useState<string>('any')
 
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchInput, setSearchInput] = useState(searchQuery)
@@ -154,7 +160,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
         sortTypeOptionValues={['company__formation__date', 'name']}
         sortDirection={sortDirection}
         registrar={registrar}
-        registrarOptionValues={['public', 'US-WY']}
+        registrarOptionValues={['any', 'public', 'US-WY', 'US-CA', 'US-DE']}
         searchQuery={searchInput}
         selectedCount={selectedNames.length}
         onModeChange={(m) => {
@@ -191,26 +197,33 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
                 >
                   <div>
                     {filteredSet.map((entity) => {
+                      let domain = null
+                      try {
+                        domain = normalize(
+                          entity.company__name
+                            .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
+                            .replace(/ /g, '-') // Replace spaces with hyphens
+                            .replace(/-{2,}/g, '-') +
+                            '.' +
+                            entity.company__registrar +
+                            '.' +
+                            tld,
+                        )
+                      } catch (err) {
+                        domain = (
+                          entity.company__name +
+                          '.' +
+                          entity.company__registrar +
+                          '.' +
+                          tld
+                        ).toLowerCase()
+                      }
                       return (
                         <TaggedNameItem
                           isOwner={
                             address === entity.owner && entity.owner && entity.owner !== zeroAddress
                           }
-                          name={
-                            entity.company__name +
-                            ' (' +
-                            normalize(
-                              entity.company__name
-                                .replace(/[()#"',.&\/]/g, '') // Remove unwanted characters
-                                .replace(/ /g, '-') // Replace spaces with hyphens
-                                .replace(/-{2,}/g, '-') +
-                                '.' +
-                                entity.company__registrar +
-                                '.' +
-                                tld,
-                            ) +
-                            ')'
-                          }
+                          name={entity.company__name + ' (' + domain + ')'}
                           key={entity.LEI}
                           mode={'view'}
                           selected={false}
