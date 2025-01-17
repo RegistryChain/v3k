@@ -283,6 +283,7 @@ export const RecordsSection = ({
                     }}
                   >
                     <Typography
+                      key={'typ1' + idx}
                       style={{ paddingRight: '10px', display: 'flex', flex: 1, color: 'grey' }}
                     >
                       {fields[field].label || field}{' '}
@@ -297,7 +298,7 @@ export const RecordsSection = ({
                         </div>
                       ) : null}
                     </Typography>
-                    <Typography style={{ overflow: 'hidden' }}>
+                    <Typography key={'typ2' + idx} style={{ overflow: 'hidden' }}>
                       {fields[field].oldValue && compareToOldValues ? (
                         <span
                           style={{

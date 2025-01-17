@@ -373,12 +373,12 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
           trailing: match(tab)
             .with('entity', () => (
               <>
-                {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? (
+                {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? null : (
                   <MessageContainer>
                     This entity has not deployed its Contract Account. This means it is not
                     currently active on RegistryChain.
                   </MessageContainer>
-                ) : null}
+                )}
                 <RecordsSection
                   fields={records}
                   compareToOldValues={false}

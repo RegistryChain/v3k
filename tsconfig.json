@@ -67,7 +67,8 @@
     "test/*.mts",
     "test/**/*.ts",
     "typings-custom/generated/*.d.ts",
-    "typings-custom/local-contracts.d.ts"
+    "typings-custom/local-contracts.d.ts",
+    "src/hooks/useCheckOwner.js"
   ],
   "exclude": [
     "**/*.ignore.ts",

@@ -50,8 +50,6 @@ const FooterContainer = styled.div(
   `,
 )
 
-const tld = '.registry'
-
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
@@ -117,7 +115,7 @@ export default function Page() {
 
   const getMultisigAddr = async () => {
     const registry: any = getContract({
-      address: contractAddresses.RegistryChain as Address,
+      address: contractAddresses.ENSRegistry as Address,
       abi: parseAbi(['function owner(bytes32) view returns (address)']),
       client: publicClient,
     })

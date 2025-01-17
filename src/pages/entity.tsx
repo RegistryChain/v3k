@@ -13,13 +13,16 @@ import {
   getContract,
   http,
   isAddress,
+  isAddressEqual,
   keccak256,
+  namehash,
   toHex,
   zeroAddress,
   zeroHash,
   type Hex,
 } from 'viem'
 import { sepolia } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
 import { generateRecordCallArray, packetToBytes } from '@ensdomains/ensjs/utils'
@@ -32,6 +35,7 @@ import EntityInfo from '@app/components/pages/entityCreation/EntityInfo'
 import Roles from '@app/components/pages/entityCreation/Roles'
 import { RecordsSection } from '@app/components/RecordsSection'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
+import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -51,7 +55,7 @@ const FooterContainer = styled.div(
   `,
 )
 
-const tld = '.registry'
+const tld = 'chaser.finance'
 
 export default function Page() {
   const { t } = useTranslation('common')
@@ -77,8 +81,6 @@ export default function Page() {
     () => entityTypesObj.find((x) => x.ELF === entityType),
     [entityType],
   )
-
-  const default_registry_domain = 'registry'
 
   const contractAddresses: any = contractAddressesObj
   const schema: any = schemaObj
@@ -287,10 +289,7 @@ export default function Page() {
       const jurisSubdomainString = code
 
       const entityNameToPass = name.toLowerCase().split(' ').join('-')
-      const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + default_registry_domain
-
-      const entityRegistrarAddress =
-        contractAddresses[code + tld] || contractAddresses['public.registry']
+      const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + tld
 
       try {
         // const deployer: any = getContract({
@@ -314,6 +313,61 @@ export default function Page() {
         //   [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
         //   '1000000',
         // )
+
+        const publicRegistrarContract: any = getContract({
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'string',
+                  name: '',
+                  type: 'string',
+                },
+                {
+                  internalType: 'address',
+                  name: '',
+                  type: 'address',
+                },
+              ],
+              name: 'registerEntity',
+              outputs: [],
+              stateMutability: 'nonpayable',
+              type: 'function',
+            },
+          ],
+          address: contractAddresses['public.' + tld],
+          client: wallet,
+        })
+
+        const entityPublicDomain = normalize(entityName + '.public.' + tld)
+        // If there is no owner to the domain, make the register. If there is an owner skip register
+        let currentEntityOwner = await checkOwner(publicClient, namehash(entityPublicDomain))
+        if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
+          const tx = await publicRegistrarContract.write.registerEntity([
+            normalize(entityName),
+            zeroAddress,
+          ])
+          const txReceipt = await publicClient?.waitForTransactionReceipt({
+            hash: tx,
+          })
+          if (txReceipt?.status === 'reverted') {
+            throw Error('Transaction failed - contract error')
+          } else {
+            currentEntityOwner = contractAddresses['public.' + tld]
+          }
+        } else {
+          console.log('Entity domain already registered? ', currentEntityOwner)
+        }
+
+        // Should check if EITHER public reg is the domain owner OR connect addr is owner and has approved
+        // If false, prevent the registration
+        if (
+          !isAddressEqual(currentEntityOwner, address as Address) &&
+          !isAddressEqual(currentEntityOwner, contractAddresses['public.' + tld])
+        ) {
+          throw Error('The user does not have permission to deploy contracts for this domain')
+        }
+
         const constitutionData = texts.map((x) =>
           encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
         )
@@ -336,7 +390,7 @@ export default function Page() {
         }
 
         const formationCallback: any = {
-          functionName: 'formEntity',
+          functionName: 'deployEntityContracts',
           abi: [
             {
               inputs: [
@@ -351,13 +405,13 @@ export default function Page() {
                   type: 'bytes',
                 },
               ],
-              name: 'formEntity',
+              name: 'deployEntityContracts',
               outputs: [],
               stateMutability: 'nonpayable',
               type: 'function',
             },
           ],
-          address: contractAddresses.EntityFactory,
+          address: contractAddresses['public.' + tld],
           args: [],
         }
         const registerChaserTx = await executeWriteToResolver(
@@ -371,11 +425,11 @@ export default function Page() {
         if (transactionRes?.status === 'reverted') {
           throw Error('Transaction failed - contract error')
         }
-        router.push('/entity/' + entityNameToPass + '.' + code + tld)
+        router.push('/entity/' + entityNameToPass + '.' + code + '.' + tld)
       } catch (err: any) {
         console.log('ERROR', err.details, 'n', err.message)
         if (err.message === 'Cannot convert undefined to a BigInt') {
-          router.push('/entity/' + entityNameToPass + '.' + code + tld)
+          router.push('/entity/' + entityNameToPass + '.' + code + '.' + tld)
           return
         }
         if (err.shortMessage === 'User rejected the request.') return

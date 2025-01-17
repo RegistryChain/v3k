@@ -84,7 +84,7 @@ export const ProfileSnippet = ({
           data-testid="text-heading"
           fontVariant="bodyBold"
         >
-          Status:{' '}
+          Entity Status:{' '}
           <span
             style={
               status === 'APPROVED' || status === 'ACTIVE'
