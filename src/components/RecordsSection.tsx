@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { isAddress } from 'viem'
+import { isAddress, namehash, zeroAddress } from 'viem'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
@@ -76,9 +76,10 @@ const SectionHeader = styled.div(
 const SectionTitleContainer = styled.div(
   ({ theme }) => css`
     display: flex;
+    width: 100%;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: ${theme.space['4']};
     flex-gap: ${theme.space['4']};
   `,
@@ -100,8 +101,12 @@ export const RecordsSection = ({
   fields,
   compareToOldValues,
   addressesObj,
+  domainName,
+  claimEntity,
 }: {
   fields: any
+  claimEntity: any
+  domainName: any
   addressesObj?: any
   compareToOldValues: Boolean
 }) => {
@@ -252,20 +257,41 @@ export const RecordsSection = ({
   // if (lei) categoryTexts.unshift(lei)
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
+    let headerSection = (
+      <SectionTitleContainer>
+        <SectionTitleContainer style={{ display: 'flex', gap: '1', justifyContent: 'flex-start' }}>
+          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+            {recordCategoryToTitle['company']}
+          </SectionTitle>
+          <SectionSubtitle data-testid="text-amount">
+            {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
+            {t('records.label', { ns: 'common' })}
+          </SectionSubtitle>
+        </SectionTitleContainer>
+        <div style={{ width: '200px' }}>
+          <Button onClick={() => claimEntity(namehash(domainName))}>CLAIM</Button>
+        </div>
+      </SectionTitleContainer>
+    )
+
+    const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
+    if ((isAddress(multisigAddress) && multisigAddress !== zeroAddress) || !claimEntity) {
+      headerSection = (
+        <SectionTitleContainer>
+          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+            {recordCategoryToTitle['company']}
+          </SectionTitle>
+          <SectionSubtitle data-testid="text-amount">
+            {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
+            {t('records.label', { ns: 'common' })}
+          </SectionSubtitle>
+        </SectionTitleContainer>
+      )
+    }
     sectionsDisplay = (
       <div key={'companydiv'} style={{ width: '100%' }}>
         <RecordSection key={'section1SubRecordscompany'}>
-          <SectionHeader>
-            <SectionTitleContainer>
-              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                {recordCategoryToTitle['company']}
-              </SectionTitle>
-              <SectionSubtitle data-testid="text-amount">
-                {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
-                {t('records.label', { ns: 'common' })}
-              </SectionSubtitle>
-            </SectionTitleContainer>
-          </SectionHeader>
+          <SectionHeader>{headerSection}</SectionHeader>
           {filteredCompanyData &&
             filteredCompanyData.map((field: any, idx: any) => {
               return (

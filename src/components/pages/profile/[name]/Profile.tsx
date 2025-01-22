@@ -6,8 +6,6 @@ import { match } from 'ts-pattern'
 import {
   Address,
   createPublicClient,
-  decodeAbiParameters,
-  encodeFunctionData,
   getContract,
   http,
   isAddress,
@@ -22,18 +20,10 @@ import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
-import { useConvertFlatResolverToFull } from '@app/hooks/useConvertFlatResolverToFull'
-import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
-import { useNameDetails } from '@app/hooks/useNameDetails'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
-import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import { useTextResolverReadBytes } from '@app/hooks/useTextResolverReadBytes'
-import { useTextResolverResultsDecoded } from '@app/hooks/useTextResolverResultsDecoded'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
-import { OG_IMAGE_URL } from '@app/utils/constants'
-import { infuraUrl } from '@app/utils/query/wagmi'
 import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 
 import contractAddresses from '../../../../constants/contractAddresses.json'
@@ -99,12 +89,6 @@ const TabButton = styled.button<{ $selected: boolean }>(
 const tabs = ['entity', 'constitution', 'actions', 'licenses', 'apps'] as const
 type Tab = (typeof tabs)[number]
 
-type Props = {
-  isSelf: boolean
-  isLoading: boolean
-  name: string
-}
-
 export const NameAvailableBanner = ({
   normalisedName,
   expiryDate,
@@ -134,12 +118,22 @@ export const NameAvailableBanner = ({
   )
 }
 
-const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, address }: any) => {
+const ProfileContent = ({
+  isSelf,
+  isLoading: parentIsLoading,
+  name,
+  router,
+  address,
+  claimEntity,
+  isClaiming,
+  records,
+  setRecords,
+  getRecords,
+}: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
-  const [records, setRecords] = useState<any>({})
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
 
@@ -213,30 +207,27 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
     } catch (e) {}
   }
 
-  const getRecords = async () => {
+  useEffect(() => {
     try {
       // if (resolver === 'textResolver') {
       //   const encodes = await useTextResolverReadBytes(namehash(name))
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
-      fields.partners = fields.partners.filter(
-        (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
-      )
-      setRecords(fields)
-      setRecordsRequestPending(false)
-      if (!status) {
-        if (fields.sourceActive?.setValue === true) {
-          setStatus('ACTIVE')
-        } else {
-          setStatus('INACTIVE')
+      if (records) {
+        setRecordsRequestPending(false)
+        if (!status) {
+          if (records.sourceActive?.setValue === true) {
+            setStatus('ACTIVE')
+          } else {
+            setStatus('INACTIVE')
+          }
         }
       }
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
-  }
+  }, [records, name])
 
   const getMultisig = async (multisig: any) => {
     return getContract({
@@ -331,133 +322,137 @@ const ProfileContent = ({ isSelf, isLoading: parentIsLoading, name, router, addr
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>
-      <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={name}>
-        {{
-          header: (
-            <>
-              <EntityViewTab
-                domainName={name}
-                multisigAddress={multisigAddress}
-                records={records}
-                status={status}
-              />
-              {breakpoints.xs && !breakpoints.sm ? (
-                <LegacyDropdown
-                  style={{ maxWidth: '50%', textAlign: 'left' }}
-                  inheritContentWidth={true}
-                  size={'medium'}
-                  label={tab}
-                  items={tabs.map((tabItem: any) => ({
-                    key: tabItem,
-                    label: tabItem,
-                    color: 'blue',
-                    onClick: () => setTab(tabItem),
-                  }))}
-                />
-              ) : (
-                <TabButtonContainer>
-                  {tabs.map((tabItem: any) => (
-                    <TabButton
-                      key={tabItem}
-                      data-testid={`${tabItem}-tab`}
-                      $selected={tabItem === tab}
-                      onClick={() => setTab(tabItem)}
-                    >
-                      <Typography fontVariant="extraLargeBold" color="inherit">
-                        {t(`tabs.${tabItem}.name`)}
-                      </Typography>
-                    </TabButton>
-                  ))}
-                </TabButtonContainer>
-              )}
-            </>
-          ),
-          trailing: match(tab)
-            .with('entity', () => (
+      {isClaiming ? null : (
+        <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={name}>
+          {{
+            header: (
               <>
-                {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? null : (
-                  <MessageContainer>
-                    This entity has not deployed its Contract Account. This means it is not
-                    currently active on RegistryChain.
-                  </MessageContainer>
+                <EntityViewTab
+                  domainName={name}
+                  multisigAddress={multisigAddress}
+                  records={records}
+                  status={status}
+                />
+                {breakpoints.xs && !breakpoints.sm ? (
+                  <LegacyDropdown
+                    style={{ maxWidth: '50%', textAlign: 'left' }}
+                    inheritContentWidth={true}
+                    size={'medium'}
+                    label={tab}
+                    items={tabs.map((tabItem: any) => ({
+                      key: tabItem,
+                      label: tabItem,
+                      color: 'blue',
+                      onClick: () => setTab(tabItem),
+                    }))}
+                  />
+                ) : (
+                  <TabButtonContainer>
+                    {tabs.map((tabItem: any) => (
+                      <TabButton
+                        key={tabItem}
+                        data-testid={`${tabItem}-tab`}
+                        $selected={tabItem === tab}
+                        onClick={() => setTab(tabItem)}
+                      >
+                        <Typography fontVariant="extraLargeBold" color="inherit">
+                          {t(`tabs.${tabItem}.name`)}
+                        </Typography>
+                      </TabButton>
+                    ))}
+                  </TabButtonContainer>
                 )}
-                <RecordsSection
-                  fields={records}
-                  compareToOldValues={false}
-                  addressesObj={[
-                    { key: 'Multisig Address', value: multisigAddress },
-                    { key: 'Member Manager Address', value: entityMemberManager },
-                  ]}
-                />
               </>
-            ))
-            .with('constitution', () => {
-              if (records && multisigAddress) {
-                return (
-                  <Constitution
+            ),
+            trailing: match(tab)
+              .with('entity', () => (
+                <>
+                  {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? null : (
+                    <MessageContainer>
+                      This entity has not deployed its Contract Account. This means it is not
+                      currently active on RegistryChain.
+                    </MessageContainer>
+                  )}
+                  <RecordsSection
+                    fields={records}
+                    compareToOldValues={false}
+                    claimEntity={claimEntity}
+                    domainName={name}
+                    addressesObj={[
+                      { key: 'Multisig Address', value: multisigAddress },
+                      { key: 'Member Manager Address', value: entityMemberManager },
+                    ]}
+                  />
+                </>
+              ))
+              .with('constitution', () => {
+                if (records && multisigAddress) {
+                  return (
+                    <Constitution
+                      breakpoints={breakpoints}
+                      formationData={records}
+                      multisigAddress={multisigAddress}
+                      model={records.company__selected__model}
+                      setModel={null}
+                      canDownload={true}
+                    />
+                  )
+                } else {
+                  return (
+                    <MessageContainer>
+                      Entity not found. Constitution is available for entities with drafted or
+                      submitted data.
+                    </MessageContainer>
+                  )
+                }
+              })
+              .with('actions', () => {
+                if (records && multisigAddress) {
+                  return (
+                    <ActionsTab
+                      refreshRecords={() => getRecords()}
+                      multisigAddress={multisigAddress}
+                      entityMemberManager={entityMemberManager}
+                      client={publicClient}
+                      name={name}
+                      checkEntityStatus={() => checkEntityStatus()}
+                    />
+                  )
+                } else {
+                  return (
+                    <MessageContainer>
+                      Entity not found. Actions are available for entities with drafted or submitted
+                      data.
+                    </MessageContainer>
+                  )
+                }
+              })
+              .with('apps', () => (
+                <>
+                  {demoMessage}
+                  <AppsTab
+                    registrarType={registrarType}
+                    name={normalise(name)}
+                    nameDetails={{}}
                     breakpoints={breakpoints}
-                    formationData={records}
-                    multisigAddress={multisigAddress}
-                    model={records.company__selected__model}
-                    setModel={null}
-                    canDownload={true}
                   />
-                )
-              } else {
-                return (
-                  <MessageContainer>
-                    Entity not found. Constitution is available for entities with drafted or
-                    submitted data.
-                  </MessageContainer>
-                )
-              }
-            })
-            .with('actions', () => {
-              if (records && multisigAddress) {
-                return (
-                  <ActionsTab
-                    refreshRecords={() => getRecords()}
-                    multisigAddress={multisigAddress}
-                    entityMemberManager={entityMemberManager}
-                    client={publicClient}
-                    name={name}
-                    checkEntityStatus={() => checkEntityStatus()}
+                </>
+              ))
+              .with('licenses', () => (
+                <>
+                  {demoMessage}
+                  <LicenseTab
+                    registrarType={registrarType}
+                    name={normalise(name)}
+                    nameDetails={{}}
+                    breakpoints={breakpoints}
                   />
-                )
-              } else {
-                return (
-                  <MessageContainer>
-                    Entity not found. Actions are available for entities with drafted or submitted
-                    data.
-                  </MessageContainer>
-                )
-              }
-            })
-            .with('apps', () => (
-              <>
-                {demoMessage}
-                <AppsTab
-                  registrarType={registrarType}
-                  name={normalise(name)}
-                  nameDetails={{}}
-                  breakpoints={breakpoints}
-                />
-              </>
-            ))
-            .with('licenses', () => (
-              <>
-                {demoMessage}
-                <LicenseTab
-                  registrarType={registrarType}
-                  name={normalise(name)}
-                  nameDetails={{}}
-                  breakpoints={breakpoints}
-                />
-              </>
-            ))
-            .exhaustive(),
-        }}
-      </Content>
+                </>
+              ))
+              .exhaustive(),
+          }}
+        </Content>
+      )}
     </>
   )
 }

@@ -539,6 +539,8 @@ export default function Page() {
   }
 
   if (registrationStep === 5) {
+    const entityPublicDomain = normalize(entityName + '.public.' + tld)
+    // If there is no owner to the domain, make the register. If there is an owner skip register
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
@@ -559,7 +561,12 @@ export default function Page() {
           }
         />
         <div>
-          <RecordsSection fields={schemaFields} compareToOldValues={false} />
+          <RecordsSection
+            fields={schemaFields}
+            domainName={entityPublicDomain}
+            compareToOldValues={false}
+            claimEntity={null}
+          />
         </div>
       </div>
     )

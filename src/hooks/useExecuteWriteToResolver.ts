@@ -15,6 +15,7 @@ import { simulateContract } from 'viem/actions'
 import * as chains from 'viem/chains'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
+  // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
   try {
     await simulateContract(wallet, calldata)
   } catch (err) {
@@ -82,7 +83,7 @@ export type CcipRequestParameters = {
 export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/getRecord/nodeHash=${nodeHash}.json`,
+      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getRecord/nodeHash=${nodeHash}.json`,
       {
         method: 'GET',
         headers: {
@@ -105,7 +106,7 @@ export async function getEntitiesList({
 }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
+      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
       {
         method: 'GET',
         headers: {
@@ -122,7 +123,7 @@ export async function getEntitiesList({
 export async function getTransactions({ nodeHash = zeroHash, address }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
+      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {

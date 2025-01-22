@@ -18,6 +18,7 @@ import {
   type Hex,
 } from 'viem'
 import { sepolia } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { useAccount, useClient } from 'wagmi'
 
 import { generateRecordCallArray, normalise } from '@ensdomains/ensjs/utils'
@@ -49,6 +50,8 @@ const FooterContainer = styled.div(
     margin: 0 auto;
   `,
 )
+
+const tld = 'chaser.finance'
 
 export default function Page() {
   const { t } = useTranslation('common')
@@ -557,6 +560,8 @@ export default function Page() {
   }
   let changedRecords: any = {}
   if (registrationStep === 5) {
+    const entityPublicDomain = normalize(entityName + '.public.' + tld)
+
     changedRecords = getChangedRecords(false)
     content = (
       <div>
@@ -579,7 +584,12 @@ export default function Page() {
         />
         {Object.keys(changedRecords)?.length > 0 ? (
           <div>
-            <RecordsSection fields={changedRecords} compareToOldValues={true} />
+            <RecordsSection
+              fields={changedRecords}
+              domainName={entityPublicDomain}
+              compareToOldValues={true}
+              claimEntity={null}
+            />
           </div>
         ) : null}
       </div>
