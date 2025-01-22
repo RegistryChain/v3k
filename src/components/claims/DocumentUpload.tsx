@@ -15,8 +15,8 @@ const ButtonWrapper = styled.div(
     font-weight: 700;
     border-width: 1px;
     border-style: solid;
-    background: hsl(216deg 100% 61%);
-    color: hsl(0deg 0% 100%);
+    background: #3888ff;
+    color: white;
     border-color: transparent;
     font-size: 1rem;
     line-height: 1.25rem;

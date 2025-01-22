@@ -214,7 +214,7 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      if (records) {
+      if (Object.keys(records)?.length > 0) {
         setRecordsRequestPending(false)
         if (!status) {
           if (records.sourceActive?.setValue === true) {
