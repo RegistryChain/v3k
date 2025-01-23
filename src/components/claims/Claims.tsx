@@ -16,7 +16,7 @@ import contractAddressesObj from '../../constants/contractAddresses.json'
 import l1abi from '../../constants/l1abi.json'
 import Constitution from '../pages/entityCreation/Constitution'
 import { RecordsSection } from '../RecordsSection'
-import DocumentUpload from './DocumentUpload'
+// import DocumentUpload from './DocumentUpload'
 import KYC from './KYC'
 
 const NameContainer = styled.div(({ theme }) => [
@@ -58,10 +58,9 @@ const contractAddresses: any = contractAddressesObj
 const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords }: any) => {
   const breakpoints = useBreakpoint()
   const [fields, setField] = useState({ name: '', address: '', DOB: '' })
-  const [businessDoc, setBusinessDoc] = useState<any>(null)
+  // const [businessDoc, setBusinessDoc] = useState<any>(null)
   const [step, setStep] = useState(0)
   const [wallet, setWallet] = useState(null)
-  console.log('RECOSOO', records)
   const publicClient = useMemo(
     () =>
       createPublicClient({
@@ -87,7 +86,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
   }, [address])
 
   useEffect(() => {
-    if (step === 2 && !records.company__selected__model.setValue) {
+    if (step === 1 && !records.company__selected__model.setValue) {
       setRecords({
         ...records,
         company__selected__model: {
@@ -96,7 +95,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         },
       })
     }
-    if (step === 1) {
+    if (step === 0) {
       setRecords({
         ...records,
         company__selected__model: {
@@ -141,7 +140,6 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
   }
 
   const advance = async () => {
-    await getRecords()
     if (step === 0) {
       try {
         const body = JSON.stringify({
@@ -163,47 +161,50 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
           },
         )
         if (!response.ok) {
-          throw new Error(`Failed to upload file: ${response.statusText}`)
+          throw new Error(`Failed to KYC: ${response.statusText}`)
         }
 
         const data = await response.json()
-        console.log('File uploaded successfully:', data)
-        setStep(step + 1)
+        if (data.success) {
+          setStep(step + 1)
+        } else {
+          alert('KYC did not match')
+        }
       } catch (err) {
         console.log('err', err)
       }
+      // } else if (step === 1) {
+      //   if (!businessDoc) {
+      //     alert('Please upload a document before submitting.')
+      //     return
+      //   }
+      //   try {
+      //     const formData = new FormData()
+      //     formData.append('document', businessDoc)
+
+      //     const response = await fetch(
+      //       `https://oyster-app-mn4sb.ondigitalocean.app/doc?operation=handleBusinessDoc&nodeHash=${namehash(
+      //         name,
+      //       )}`,
+      //       {
+      //         method: 'POST',
+      //         body: formData,
+      //       },
+      //     )
+
+      //     if (!response.ok) {
+      //       throw new Error(`Failed to upload file: ${response.statusText}`)
+      //     }
+
+      //     const data = await response.json()
+      //     console.log('File uploaded successfully:', data)
+      //     // Handle success (e.g., navigate to another page or show confirmation)
+      //     setStep(step + 1)
+      //   } catch (error) {
+      //     console.error('Error uploading file:', error)
+      //     alert('Failed to upload file. Please try again.')
+      //   }
     } else if (step === 1) {
-      if (!businessDoc) {
-        alert('Please upload a document before submitting.')
-        return
-      }
-      try {
-        const formData = new FormData()
-        formData.append('document', businessDoc)
-
-        const response = await fetch(
-          `https://oyster-app-mn4sb.ondigitalocean.app/doc?operation=handleBusinessDoc&nodeHash=${namehash(
-            name,
-          )}`,
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-
-        if (!response.ok) {
-          throw new Error(`Failed to upload file: ${response.statusText}`)
-        }
-
-        const data = await response.json()
-        console.log('File uploaded successfully:', data)
-        // Handle success (e.g., navigate to another page or show confirmation)
-        setStep(step + 1)
-      } catch (error) {
-        console.error('Error uploading file:', error)
-        alert('Failed to upload file. Please try again.')
-      }
-    } else if (step === 2) {
       // Start a ERC5559 sequence
       //Sign over name with the wallet
       try {
@@ -237,16 +238,15 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         <KYC fields={fields} setField={setField} />
       </>
     )
+    // } else if (step === 1) {
+    // content = (
+    //   <div>
+    //     <NameContainer>Upload Business Formation Documents</NameContainer>
+    //     <DocumentUpload setBusinessDoc={setBusinessDoc} />
+    //   </div>
+    // )
   } else if (step === 1) {
-    content = (
-      <div>
-        <NameContainer>Upload Business Formation Documents</NameContainer>
-        <DocumentUpload setBusinessDoc={setBusinessDoc} />
-      </div>
-    )
-  } else if (step === 2) {
     const entityPublicDomain = normalize(name + '.public.' + tld)
-
     content = (
       <div>
         <Typography fontVariant="headingThree" style={{ marginBottom: '12px' }}>
@@ -256,7 +256,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
           breakpoints={breakpoints}
           formationData={records}
           model={records.company__selected__model || 'Model 1'}
-          setModel={(modelId: any) =>
+          setModel={(modelId: any) => {
             setRecords({
               ...records,
               company__selected__model: {
@@ -264,7 +264,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
                 setValue: modelId,
               },
             })
-          }
+          }}
         />
         <div>
           <RecordsSection

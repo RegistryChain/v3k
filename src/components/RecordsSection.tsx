@@ -257,6 +257,7 @@ export const RecordsSection = ({
   // if (lei) categoryTexts.unshift(lei)
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
+    const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     let headerSection = (
       <SectionTitleContainer>
         <SectionTitleContainer style={{ display: 'flex', gap: '1', justifyContent: 'flex-start' }}>
@@ -269,12 +270,13 @@ export const RecordsSection = ({
           </SectionSubtitle>
         </SectionTitleContainer>
         <div style={{ width: '200px' }}>
-          <Button onClick={() => claimEntity(namehash(domainName))}>CLAIM</Button>
+          {isAddress(multisigAddress) ? null : (
+            <Button onClick={() => claimEntity(namehash(domainName))}>CLAIM</Button>
+          )}
         </div>
       </SectionTitleContainer>
     )
 
-    const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     if ((isAddress(multisigAddress) && multisigAddress !== zeroAddress) || !claimEntity) {
       headerSection = (
         <SectionTitleContainer>
