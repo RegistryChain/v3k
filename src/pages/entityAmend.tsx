@@ -149,7 +149,7 @@ export default function Page() {
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
 
-      const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
+      const fields = await getRecordData({ name })
 
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
       setSchemaFields({ ...fields, partners: fields.partners.slice(0, fields.partners.length - 1) })

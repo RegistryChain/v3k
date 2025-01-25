@@ -152,7 +152,7 @@ export const Header = () => {
     routesNoSearchWithFavourites = [...routesNoSearchWithFavourites, legacyFavouritesRoute]
   }
 
-  if (!isInitial && isConnected) {
+  if (!isInitial) {
     RouteItems = routesNoSearchWithFavourites.map((route) => (
       <RouteItem
         key={route.name}

@@ -6,6 +6,7 @@ import {
   encodeAbiParameters,
   getContract,
   Hex,
+  namehash,
   PrivateKeyAccount,
   RawContractError,
   WalletClient,
@@ -13,6 +14,8 @@ import {
 } from 'viem'
 import { simulateContract } from 'viem/actions'
 import * as chains from 'viem/chains'
+
+import { normalise } from '@ensdomains/ensjs/utils'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
   // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
@@ -80,7 +83,9 @@ export type CcipRequestParameters = {
   url: string
 }
 
-export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }: any) {
+export async function getRecordData({ name = '', needsSchema = true }: any) {
+  const nodeHash = namehash(normalise(name))
+  const registrar = name.split('.')[1]
   try {
     const res = await fetch(
       `https://oyster-app-mn4sb.ondigitalocean.app/direct/getRecord/nodeHash=${nodeHash}.json`,
@@ -91,8 +96,34 @@ export async function getRecordData({ nodeHash = zeroHash, needsSchema = true }:
         },
       },
     )
-    return await res.json()
+    const existingRecord = await res.json()
+    if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
+      return await importEntity({ filingID: '', name, registrar })
+    }
+    return existingRecord
   } catch (err) {
+    console.log('getRecordData err', err)
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
+}
+
+export async function importEntity({ filingID, name, registrar }: any) {
+  try {
+    const res = await fetch(
+      `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleImportEntity/filingID=${filingID}&name=${
+        name.split('.')[0]
+      }&registrar=${registrar}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    const importedRecord = await res.json()
+    return importedRecord
+  } catch (err) {
+    console.log('importEntity err', err)
     return Promise.resolve(new Response(null, { status: 204 }))
   }
 }

@@ -36,7 +36,7 @@ export default function Page() {
   }
 
   const getRecords = async () => {
-    const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
+    const fields = await getRecordData({ name })
     fields.partners = fields.partners.filter(
       (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
     )
