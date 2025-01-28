@@ -180,6 +180,15 @@ export const createDateAndValue = <TValue extends bigint | number>(value: TValue
   value,
 })
 
+export const normalizeLabel = (label: string) => {
+  if (!label) return ''
+  let labelLower = label.toLowerCase()
+  return labelLower
+    .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
+    .replace(/ /g, '-') // Replace spaces with hyphens
+    .replace(/-{2,}/g, '-')
+}
+
 /*
   Following types are based on this solution: https://stackoverflow.com/questions/53173203/typescript-recursive-function-composition/53175538#53175538
   Best to just move on and not try to understand it. (This is copilot's opintion!)

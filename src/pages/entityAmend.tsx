@@ -149,7 +149,7 @@ export default function Page() {
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
 
-      const fields = await getRecordData({ name })
+      const fields = await getRecordData({ domain: name })
 
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
       setSchemaFields({ ...fields, partners: fields.partners.slice(0, fields.partners.length - 1) })
@@ -560,7 +560,9 @@ export default function Page() {
   }
   let changedRecords: any = {}
   if (registrationStep === 5) {
-    const entityPublicDomain = normalize(entityName + '.public.' + tld)
+    const entityRegistrarDomain = normalize(
+      entityName + '.' + schemaFields?.company__registrar + '.' + tld,
+    )
 
     changedRecords = getChangedRecords(false)
     content = (
@@ -586,7 +588,7 @@ export default function Page() {
           <div>
             <RecordsSection
               fields={changedRecords}
-              domainName={entityPublicDomain}
+              domainName={entityRegistrarDomain}
               compareToOldValues={true}
               claimEntity={null}
             />

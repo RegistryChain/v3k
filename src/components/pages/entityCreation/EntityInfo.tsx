@@ -1,9 +1,10 @@
 'use-client'
 
-import { useEffect } from 'react'
 import styled, { css } from 'styled-components'
 
-import { Input, mq } from '@ensdomains/thorin'
+import { Checkbox, Input, mq, Typography } from '@ensdomains/thorin'
+
+import contractAddressesObj from '../../../constants/contractAddresses.json'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`
@@ -55,6 +56,51 @@ const EntityInfo = ({ data, fields, setField }: any) => {
     <>
       <NameContainer>{name}</NameContainer>
       {fields?.map((field: any) => {
+        if (field.key === 'company__arbitrator') {
+          return (
+            <div style={{ marginTop: '32px' }}>
+              <Typography
+                fontVariant="headingFour"
+                style={{
+                  color: '#9B9BA6',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  paddingLeft: '8px',
+                  marginBottom: '12px',
+                }}
+              >
+                Company Arbitrator
+              </Typography>
+              <div style={{ display: 'flex', paddingLeft: '8px' }}>
+                <Checkbox
+                  label="Kleros Arbitration"
+                  checked={field.setValue === contractAddressesObj.klerosLiquidAddress}
+                  onChange={(e) => setField(field.key, contractAddressesObj.klerosLiquidAddress)}
+                />
+                <Checkbox
+                  label="Other Arbitration Contract"
+                  onChange={() => setField(field.key, '')}
+                />
+                <Checkbox label="Arbitration Terms" onChange={() => setField(field.key, '')} />
+              </div>
+              <InputWrapper key={field.key + 'wrapper'}>
+                <Input
+                  size="large"
+                  value={field.setValue}
+                  label={''}
+                  error={false}
+                  placeholder={field.label}
+                  data-testid="record-input-input"
+                  validated={true}
+                  disabled={field.setValue === contractAddressesObj.klerosLiquidAddress}
+                  onChange={(e) => {
+                    setField(field.key, e.target.value)
+                  }}
+                />
+              </InputWrapper>
+            </div>
+          )
+        }
         return (
           <InputWrapper key={field.key + 'wrapper'}>
             <Input

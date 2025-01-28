@@ -83,9 +83,10 @@ export type CcipRequestParameters = {
   url: string
 }
 
-export async function getRecordData({ name = '', needsSchema = true }: any) {
-  const nodeHash = namehash(normalise(name))
-  const registrar = name.split('.')[1]
+export async function getRecordData({ domain = '', needsSchema = true }: any) {
+  const nodeHash = namehash(normalise(domain))
+  const registrar = domain.split('.')[1]
+  const name = domain.split('.')[0]
   try {
     const res = await fetch(
       `https://oyster-app-mn4sb.ondigitalocean.app/direct/getRecord/nodeHash=${nodeHash}.json`,
@@ -169,6 +170,7 @@ export async function getTransactions({ nodeHash = zeroHash, address }: any) {
 }
 
 export async function ccipRequest({ body, url }: CcipRequestParameters): Promise<Response> {
+  //http://localhost:2000/{sender}/{data}.json
   try {
     const res = await fetch(url.replace('/{sender}/{data}.json', ''), {
       body: JSON.stringify(body, (_, value) =>

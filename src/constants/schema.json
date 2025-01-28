@@ -25,5 +25,5 @@
   },
 
   "corpFields": ["company__address", "company__purpose"],
-  "additionalTermsFields": ["company__additional__terms"]
+  "additionalTermsFields": ["company__arbitrator", "company__additional__terms"]
 }

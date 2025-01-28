@@ -26,7 +26,7 @@ import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
 import { generateRecordCallArray, packetToBytes } from '@ensdomains/ensjs/utils'
-import { Button, Modal, Typography } from '@ensdomains/thorin'
+import { Button, Modal, Spinner, Typography } from '@ensdomains/thorin'
 
 import { ErrorModal } from '@app/components/ErrorModal'
 import AddPartners from '@app/components/pages/entityCreation/AddPartners'
@@ -40,6 +40,7 @@ import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWrit
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl, wagmiConfig } from '@app/utils/query/wagmi'
+import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
@@ -54,6 +55,15 @@ const FooterContainer = styled.div(
     margin: 0 auto;
   `,
 )
+const SpinnerContainer = styled.div<{ $showBorder?: boolean }>(
+  ({ theme, $showBorder }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: ${theme.space['15']};
+    ${$showBorder && `border-top: 1px solid ${theme.colors.border};`}
+  `,
+)
 
 const tld = 'chaser.finance'
 
@@ -66,6 +76,8 @@ export default function Page() {
 
   const entityName = router.query.name as string
   const entityType = router.query.type as string
+  const normalizedLabel = normalizeLabel(entityName)
+
   const isSelf = router.query.connected === 'true'
 
   const [registrationStep, setRegistrationStep] = useState<number>(1)
@@ -73,6 +85,7 @@ export default function Page() {
   const [wallet, setWallet] = useState<any>(null)
   const [schemaFields, setSchemaFields] = useState<any>({})
   const [emptyPartner, setEmptyPartner] = useState({})
+  const [recordLoaded, setRecordLoaded] = useState(false)
 
   const primary = usePrimaryName({ address: address as Hex })
   const name = isSelf && primary.data?.name ? primary.data.name : entityName
@@ -81,6 +94,12 @@ export default function Page() {
     () => entityTypesObj.find((x) => x.ELF === entityType),
     [entityType],
   )
+  const companyRegistrar = entityTypeObj?.countryJurisdictionCode || 'public'
+  const entityRegistrarDomain =
+    normalizedLabel && companyRegistrar
+      ? normalize(normalizedLabel + '.' + companyRegistrar + '.' + tld)
+      : ''
+  const entityPublicDomain = normalizedLabel ? normalize(normalizedLabel + '.public.' + tld) : ''
 
   const contractAddresses: any = contractAddressesObj
   const schema: any = schemaObj
@@ -95,7 +114,7 @@ export default function Page() {
   )
 
   const code = entityTypeObj?.countryJurisdictionCode
-    ? entityTypeObj.countryJurisdictionCode.split('-').join('.')
+    ? entityTypeObj?.countryJurisdictionCode?.split('-')?.join('.')
     : entityTypeObj?.countryCode
 
   useEffect(() => {
@@ -128,20 +147,30 @@ export default function Page() {
   const intakeType = 'company'
 
   const getSchemaFields = async () => {
-    const registrar = entityTypeObj?.formationJurisdiction
-      ? entityTypeObj?.formationJurisdiction + ' - ' + entityTypeObj.formationCountry
-      : entityTypeObj?.formationCountry
-    const fields = await getRecordData({})
-    setSchemaFields({
-      ...fields,
-      name: { ...fields.name, setValue: entityName },
-      company__name: { ...fields.company__name, setValue: entityName },
-      company__registrar: { ...fields.company__registrar, setValue: registrar },
-      company__type: { ...fields.company__type, setValue: entityTypeObj?.entityTypeName },
-      company__entity__code: { ...fields.company__entity__code, setValue: entityType },
-      company__selected__model: { ...fields.company__selected__model, setValue: 'Model 1' },
-    })
-    setEmptyPartner(fields.partners?.[0])
+    try {
+      const fields = await getRecordData({ domain: entityRegistrarDomain })
+      setSchemaFields({
+        ...fields,
+        partners:
+          fields.partners?.length > 1
+            ? fields.partners.slice(0, fields.partners.length - 1)
+            : fields.partners,
+        name: { ...fields.name, setValue: fields?.name?.setValue || entityName },
+        company__name: {
+          ...fields.company__name,
+          setValue: fields?.company__name?.setValue || entityName,
+        },
+        company__registrar: { ...fields.company__registrar, setValue: companyRegistrar },
+        company__type: { ...fields.company__type, setValue: entityTypeObj?.entityTypeName },
+        company__entity__code: { ...fields.company__entity__code, setValue: entityType },
+        company__selected__model: { ...fields.company__selected__model, setValue: 'Model 1' },
+      })
+      setEmptyPartner(fields.partners?.[fields.partners.length - 1])
+    } catch (err) {
+      console.log(err)
+    }
+
+    setRecordLoaded(true)
   }
 
   useEffect(() => {
@@ -149,6 +178,155 @@ export default function Page() {
       getSchemaFields()
     }
   }, [entityName, entityType])
+
+  const claimEntity = async () => {
+    const formationPrep: any = {
+      functionName: 'transfer',
+      args: [namehash(entityRegistrarDomain), address],
+      abi: l1abi,
+      address: contractAddresses['DatabaseResolver'],
+    }
+
+    const formationCallback: any = {
+      functionName: 'registerEntityClaim',
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: 'bytes',
+              name: 'responseBytes',
+              type: 'bytes',
+            },
+            {
+              internalType: 'bytes',
+              name: 'extraData',
+              type: 'bytes',
+            },
+          ],
+          name: 'registerEntityClaim',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ],
+      address: contractAddresses['us-wy.' + tld],
+      args: [],
+    }
+    const registerChaserTx = await executeWriteToResolver(wallet, formationPrep, formationCallback)
+    const transactionRes = await publicClient?.waitForTransactionReceipt({
+      hash: registerChaserTx,
+    })
+
+    return transactionRes
+  }
+
+  const registerEntity = async () => {
+    const texts: any[] = generateTexts(schemaFields)
+
+    const publicRegistrarContract: any = getContract({
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: 'string',
+              name: '',
+              type: 'string',
+            },
+            {
+              internalType: 'address',
+              name: '',
+              type: 'address',
+            },
+          ],
+          name: 'registerEntity',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ],
+      address: contractAddresses['public.' + tld],
+      client: wallet,
+    })
+
+    // If there is no owner to the domain, make the register. If there is an owner skip register
+    let currentEntityOwner = await checkOwner(publicClient, namehash(entityPublicDomain))
+    if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
+      const tx = await publicRegistrarContract.write.registerEntity([normalizedLabel, zeroAddress])
+      const txReceipt = await publicClient?.waitForTransactionReceipt({
+        hash: tx,
+      })
+      if (txReceipt?.status === 'reverted') {
+        throw Error('Transaction failed - contract error')
+      } else {
+        currentEntityOwner = contractAddresses['public.' + tld]
+      }
+    }
+
+    // Should check if EITHER public reg is the domain owner OR connect addr is owner and has approved
+    // If false, prevent the registration
+    if (
+      !isAddressEqual(currentEntityOwner, address as Address) &&
+      !isAddressEqual(currentEntityOwner, contractAddresses['public.' + tld])
+    ) {
+      throw Error('The user does not have permission to deploy contracts for this domain')
+    }
+
+    const constitutionData = texts.map((x) =>
+      encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+    )
+
+    const formationPrep: any = {
+      functionName: 'register',
+      args: [
+        toHex(packetToBytes(entityName)),
+        address,
+        0 /* duration */,
+        zeroHash /* secret */,
+        zeroAddress /* resolver */,
+        constitutionData /* data */,
+        false /* reverseRecord */,
+        0 /* fuses */,
+        zeroHash /* extraData */,
+      ],
+      abi: l1abi,
+      address: contractAddresses['DatabaseResolver'],
+    }
+
+    const formationCallback: any = {
+      functionName: 'deployEntityContracts',
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: 'bytes',
+              name: 'responseBytes',
+              type: 'bytes',
+            },
+            {
+              internalType: 'bytes',
+              name: 'extraData',
+              type: 'bytes',
+            },
+          ],
+          name: 'deployEntityContracts',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ],
+      address: contractAddresses['public.' + tld],
+      args: [],
+    }
+    const registerChaserTx = await executeWriteToResolver(wallet, formationPrep, formationCallback)
+    const transactionRes = await publicClient?.waitForTransactionReceipt({
+      hash: registerChaserTx,
+    })
+    if (transactionRes?.status === 'reverted') {
+      throw Error('Transaction failed - contract error')
+    }
+    router.push('/entity/' + normalizedLabel + '.' + code + '.' + tld)
+    return
+  }
 
   const validatePartners = (fieldsToValidate: string[]) => {
     let blockAdvance = false
@@ -284,152 +462,19 @@ export default function Page() {
     } else if (openConnectModal && !address) {
       await openConnectModal()
     } else {
-      const texts: any[] = generateTexts(schemaFields)
-
-      const jurisSubdomainString = code
-
-      const entityNameToPass = name.toLowerCase().split(' ').join('-')
-      const entityId = entityNameToPass + '.' + jurisSubdomainString + '.' + tld
-
       try {
-        // const deployer: any = getContract({
-        //   address: contractAddresses.EntityFactory as Address,
-        //   abi: parseAbi(['function formEntity(string,address,bytes[],bytes4[],bytes[]) external']),
-        //   client: wallet,
-        // })
-        // const generatedData = generateRecordCallArray({
-        //   texts,
-        //   namehash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx',
-        // })
-        // const constitutionData = generatedData.map(
-        //   (x) =>
-        //     '0x' + x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[1],
-        // )
-        // const methods = generatedData.map(
-        //   (x) => x.split('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx')[0],
-        // )
-        // const userDataBytes = await generateUserDataBytes(schemaFields.partners)
-        // const registerChaserTx = await deployer.write.formEntity(
-        //   [entityNameToPass, entityRegistrarAddress, constitutionData, methods, userDataBytes],
-        //   '1000000',
-        // )
-
-        const publicRegistrarContract: any = getContract({
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'string',
-                  name: '',
-                  type: 'string',
-                },
-                {
-                  internalType: 'address',
-                  name: '',
-                  type: 'address',
-                },
-              ],
-              name: 'registerEntity',
-              outputs: [],
-              stateMutability: 'nonpayable',
-              type: 'function',
-            },
-          ],
-          address: contractAddresses['public.' + tld],
-          client: wallet,
-        })
-
-        const entityPublicDomain = normalize(entityName + '.public.' + tld)
-        // If there is no owner to the domain, make the register. If there is an owner skip register
-        let currentEntityOwner = await checkOwner(publicClient, namehash(entityPublicDomain))
-        if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-          const tx = await publicRegistrarContract.write.registerEntity([
-            normalize(entityName),
-            zeroAddress,
-          ])
-          const txReceipt = await publicClient?.waitForTransactionReceipt({
-            hash: tx,
-          })
-          if (txReceipt?.status === 'reverted') {
-            throw Error('Transaction failed - contract error')
-          } else {
-            currentEntityOwner = contractAddresses['public.' + tld]
-          }
-        } else {
-          console.log('Entity domain already registered? ', currentEntityOwner)
+        if (schemaFields.sourcePageURL?.setValue) {
+          // If entity is from an import
+          await claimEntity()
+          router.push('/entity/' + normalizedLabel + '.' + code + '.' + tld)
+          return
         }
 
-        // Should check if EITHER public reg is the domain owner OR connect addr is owner and has approved
-        // If false, prevent the registration
-        if (
-          !isAddressEqual(currentEntityOwner, address as Address) &&
-          !isAddressEqual(currentEntityOwner, contractAddresses['public.' + tld])
-        ) {
-          throw Error('The user does not have permission to deploy contracts for this domain')
-        }
-
-        const constitutionData = texts.map((x) =>
-          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
-        )
-
-        const formationPrep: any = {
-          functionName: 'register',
-          args: [
-            toHex(packetToBytes(entityName)),
-            address,
-            0 /* duration */,
-            zeroHash /* secret */,
-            zeroAddress /* resolver */,
-            constitutionData /* data */,
-            false /* reverseRecord */,
-            0 /* fuses */,
-            zeroHash /* extraData */,
-          ],
-          abi: l1abi,
-          address: contractAddresses['DatabaseResolver'],
-        }
-
-        const formationCallback: any = {
-          functionName: 'deployEntityContracts',
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'bytes',
-                  name: 'responseBytes',
-                  type: 'bytes',
-                },
-                {
-                  internalType: 'bytes',
-                  name: 'extraData',
-                  type: 'bytes',
-                },
-              ],
-              name: 'deployEntityContracts',
-              outputs: [],
-              stateMutability: 'nonpayable',
-              type: 'function',
-            },
-          ],
-          address: contractAddresses['public.' + tld],
-          args: [],
-        }
-        const registerChaserTx = await executeWriteToResolver(
-          wallet,
-          formationPrep,
-          formationCallback,
-        )
-        const transactionRes = await publicClient?.waitForTransactionReceipt({
-          hash: registerChaserTx,
-        })
-        if (transactionRes?.status === 'reverted') {
-          throw Error('Transaction failed - contract error')
-        }
-        router.push('/entity/' + entityNameToPass + '.' + code + '.' + tld)
+        await registerEntity()
       } catch (err: any) {
         console.log('ERROR', err.details, 'n', err.message)
         if (err.message === 'Cannot convert undefined to a BigInt') {
-          router.push('/entity/' + entityNameToPass + '.' + code + '.' + tld)
+          router.push('/entity/' + normalizedLabel + '.' + code + '.' + tld)
           return
         }
         if (err.shortMessage === 'User rejected the request.') return
@@ -451,6 +496,14 @@ export default function Page() {
   }
 
   let content = null
+  let advanceLabel = t('action.next')
+  if (registrationStep === 5) {
+    if (schemaFields.sourcePageURL?.setValue) {
+      advanceLabel = 'Claim Entity'
+    } else {
+      advanceLabel = t('action.formEntity')
+    }
+  }
   let buttons = (
     <FooterContainer style={{ marginTop: '36px' }}>
       <Button
@@ -466,30 +519,37 @@ export default function Page() {
           advance()
         }}
       >
-        {registrationStep < 5 ? t('action.next') : t('action.formEntity')}
+        {advanceLabel}
       </Button>
     </FooterContainer>
   )
-
   if (registrationStep === 1) {
-    const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
-    content = (
-      <EntityInfo
-        data={{ name, registrarKey: code }}
-        step={registrationStep}
-        fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
-        setField={(key: string, value: any) =>
-          setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
-        }
-        publicClient={publicClient}
-      />
-    )
+    if (recordLoaded) {
+      const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
+      content = (
+        <EntityInfo
+          data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
+          step={registrationStep}
+          fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
+          setField={(key: string, value: any) =>
+            setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
+          }
+          publicClient={publicClient}
+        />
+      )
+    } else {
+      content = (
+        <SpinnerContainer>
+          <Spinner size="large" color="accent" />
+        </SpinnerContainer>
+      )
+    }
   }
 
   if (registrationStep === 2) {
     content = (
       <AddPartners
-        data={{ name, registrarKey: code }}
+        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
@@ -507,7 +567,7 @@ export default function Page() {
   if (registrationStep === 3) {
     content = (
       <Roles
-        data={{ name, registrarKey: code }}
+        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         intakeType={intakeType}
@@ -527,7 +587,7 @@ export default function Page() {
     )
     content = (
       <EntityInfo
-        data={{ name, registrarKey: code }}
+        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
         fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
         setField={(key: string, value: any) =>
           setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
@@ -539,12 +599,11 @@ export default function Page() {
   }
 
   if (registrationStep === 5) {
-    const entityPublicDomain = normalize(entityName + '.public.' + tld)
     // If there is no owner to the domain, make the register. If there is an owner skip register
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
-          {name}
+          {schemaFields?.company__name?.setValue || name}
         </Typography>
         <Constitution
           breakpoints={breakpoints}
@@ -563,7 +622,7 @@ export default function Page() {
         <div>
           <RecordsSection
             fields={schemaFields}
-            domainName={entityPublicDomain}
+            domainName={''}
             compareToOldValues={false}
             claimEntity={null}
           />

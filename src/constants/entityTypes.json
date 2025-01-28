@@ -5,7 +5,7 @@
     "formationCountry": "public",
     "countryCode": "public",
     "formationJurisdiction": "",
-    "countryJurisdictionCode": "",
+    "countryJurisdictionCode": "public",
     "entityTypeName": "partnership",
     "language": "English",
     "languageCode": "en",
