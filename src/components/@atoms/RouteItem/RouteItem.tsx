@@ -23,8 +23,8 @@ const LinkWrapper = styled.a<{
     justify-content: center;
     gap: ${theme.space['1.5']};
     cursor: pointer;
-
-    color: ${theme.colors.greyPrimary};
+    
+    color: #333 !important;
     transition: all 0.15s ease-in-out;
 
     ${!$asText

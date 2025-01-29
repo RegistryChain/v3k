@@ -9,6 +9,11 @@ import DownDirectionSVG from '@app/assets/SortAscending.svg'
 import UpDirectionSVG from '@app/assets/SortDescending.svg'
 import { CheckButton } from '@app/components/@atoms/CheckButton/CheckButton'
 
+
+const SearchInput = styled(Input)`
+  min-width: 200px;
+`
+
 const TableHeader = styled.div<{
   $desktopGap?: 'small' | 'medium'
 }>(
@@ -62,6 +67,7 @@ const TableHeaderLeftControlsContainer = styled.div<{
     display: flex;
     gap: ${theme.space['2']};
     align-items: center;
+    flex-direction: row;
     ${$isFullWidth &&
     css`
       flex: 1;
@@ -80,12 +86,18 @@ const TableHeaderTrailing = styled.div<{
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: ${theme.space['2']};
     ${mq.sm.min(css`
       flex: ${$isDesktopFlexibleWidth ? '2' : `0 0 ${theme.space['72']}`};
-      width: ${theme.space['48']};
     `)}
   `,
 )
+
+const Label = styled.span`
+  font-size: 0.9rem;
+  white-space: nowrap;
+  color: #333;
+  `
 
 const DirectionButton = styled.button<{ $active: boolean }>(
   ({ theme, $active }) => css`
@@ -180,46 +192,17 @@ export const NameTableHeader = ({
     <TableHeader $desktopGap={selectable ? 'small' : 'medium'}>
       <TableHeaderLeading>
         <TableHeaderLeadingLeft $isFullWidth={!selectable}>
-          {selectable && (
-            <CheckButton
-              active={mode === 'select'}
-              onChange={(active) => onModeChange?.(active ? 'select' : 'view')}
-            />
-          )}
           {inSelectMode ? (
             <div>{t('unit.selected', { count: selectedCount })}</div>
           ) : (
             <TableHeaderLeftControlsContainer $isFullWidth={!selectable}>
-              <Select
-                value={sortType}
-                size="small"
-                label="Sort by"
-                hideLabel
-                placeholder={sortType}
-                onChange={(e) => {
-                  onSortTypeChange?.(e.target.value)
-                }}
-                options={sortTypeOptions}
-                id="sort-by"
-              />
-              <DirectionButton
-                $active={sortDirection === 'asc'}
-                onClick={() => onSortDirectionChange?.('asc')}
-              >
-                <DownDirectionSVG />
-              </DirectionButton>
-              <DirectionButton
-                $active={sortDirection === 'desc'}
-                onClick={() => onSortDirectionChange?.('desc')}
-              >
-                <UpDirectionSVG />
-              </DirectionButton>
             </TableHeaderLeftControlsContainer>
           )}
         </TableHeaderLeadingLeft>
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>
       </TableHeaderLeading>
       <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
+        <Label>Sort by registrar type</Label>
         {registrar ? (
           <Select
             value={registrar}
@@ -234,7 +217,7 @@ export const NameTableHeader = ({
             id="sort-by"
           />
         ) : null}
-        <Input
+        <SearchInput
           data-testid="name-table-header-search"
           size="small"
           label="search"

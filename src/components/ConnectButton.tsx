@@ -1,5 +1,5 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { Key, ReactNode } from 'react'
+import { Key, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
@@ -25,6 +25,7 @@ import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 import { shortenAddress } from '@app/utils/utils'
+import { MoonIcon, SunIcon } from './@atoms/Icons'
 
 import BaseLink from './@atoms/BaseLink'
 
@@ -55,7 +56,7 @@ const StyledButtonWrapper = styled.div<{ $isTabBar?: boolean; $large?: boolean }
             /* border-radius: ${theme.radii['2xLarge']}; */
           }
           ${$large &&
-          css`
+        css`
             width: 100%;
             & button {
               border-radius: ${theme.radii.large};
@@ -126,6 +127,7 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
 }
 
 const HeaderProfile = ({ address }: { address: Address }) => {
+  const [isDarkMode, setDarkMode] = useState(true);
   const { t } = useTranslation('common')
 
   const { data: primary } = usePrimaryName({ address })
@@ -143,6 +145,16 @@ const HeaderProfile = ({ address }: { address: Address }) => {
   const { copy, copied } = useCopied(300)
   const hasPendingTransactions = useHasPendingTransactions()
 
+
+  const toggleDarkMode = () => {
+    setDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  };
+
   return (
     <Profile
       address={address}
@@ -151,21 +163,21 @@ const HeaderProfile = ({ address }: { address: Address }) => {
         [
           ...(primary?.name
             ? [
-                {
-                  label: t('wallet.myProfile'),
-                  wrapper: (children: ReactNode, key: Key) => {
-                    console.log(children)
-                    return (
-                      <BaseLink href="/my/profile" key={key}>
-                        {children}
-                      </BaseLink>
-                    )
-                  },
-                  as: 'a' as 'a',
-                  color: 'text',
-                  icon: <PersonSVG />,
+              {
+                label: t('wallet.myProfile'),
+                wrapper: (children: ReactNode, key: Key) => {
+                  console.log(children)
+                  return (
+                    <BaseLink href="/my/profile" key={key}>
+                      {children}
+                    </BaseLink>
+                  )
                 },
-              ]
+                as: 'a' as 'a',
+                color: 'text',
+                icon: <PersonSVG />,
+              },
+            ]
             : []),
           {
             label: t('navigation.settings'),
@@ -179,7 +191,17 @@ const HeaderProfile = ({ address }: { address: Address }) => {
             icon: <CogSVG />,
             showIndicator: hasPendingTransactions,
           },
+          // TODO: Add back when dark mode is implemented
+          // {
+          //   label: isDarkMode ? t('navigation.lightMode') : t('navigation.darkMode'),
+          //   color: 'text',
+          //   onClick: () => {
+          //     toggleDarkMode();
+          //   },
+          //   icon: isDarkMode ? <SunIcon /> : <MoonIcon />
+          // },
           <SectionDivider key="divider" />,
+
           {
             label: shortenAddress(address),
             color: 'text',

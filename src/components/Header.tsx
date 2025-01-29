@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { ReactNode, useCallback, useEffect, useRef } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import useTransition, { TransitionState } from 'react-transition-state'
 import styled, { css, useTheme } from 'styled-components'
 import { useAccount } from 'wagmi'
@@ -17,9 +17,10 @@ import { HeaderConnect } from './ConnectButton'
 
 const HeaderWrapper = styled.header(
   ({ theme }) => css`
-    height: ${theme.space['12']};
+    --padding-size: ${theme.space['4']};
+    padding: var(--padding-size);
     overflow: hidden; /* Ensure hidden content doesn't cause layout shifts */
-
+    background-color: var(--color-gray-200);
     ${mq.sm.max(css`
       display: none;
     `)}

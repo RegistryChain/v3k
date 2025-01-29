@@ -116,7 +116,7 @@ export async function getEntitiesList({
     )
     return await res.json()
   } catch (err) {
-    return Promise.resolve(new Response(null, { status: 204 }))
+    throw new Error('Failed to fetch entities list')
   }
 }
 
