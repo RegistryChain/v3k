@@ -1,13 +1,16 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { isAddress, namehash, zeroAddress } from 'viem'
+import { normalize } from 'viem/ens'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
 import { AddressRecord, Profile, TextRecord } from '@app/types'
+import { normalizeLabel } from '@app/utils/utils'
 
 import { ExclamationSymbol } from './ExclamationSymbol'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
@@ -96,6 +99,7 @@ const SectionSubtitle = styled(Typography)(
     color: ${theme.colors.textTertiary};
   `,
 )
+const tld = 'chaser.finance'
 
 export const RecordsSection = ({
   fields,
@@ -111,6 +115,7 @@ export const RecordsSection = ({
   compareToOldValues: Boolean
 }) => {
   const { t } = useTranslation('profile')
+  const router = useRouter()
 
   const filteredCompanyData = useMemo(
     () => Object.keys(fields)?.filter((field) => field.includes('company')),
@@ -153,7 +158,7 @@ export const RecordsSection = ({
                       <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
                         {addressObj.key}
                       </Typography>
-                      {isAddress(addressObj.value) ? (
+                      {isAddress(addressObj.value) && addressObj.value !== zeroAddress ? (
                         <Link
                           target={'_blank'}
                           href={'https://sepolia.etherscan.io/address/' + addressObj.value}
@@ -162,7 +167,7 @@ export const RecordsSection = ({
                         </Link>
                       ) : (
                         <Typography>
-                          <u>{addressObj.value}</u>
+                          <u>{addressObj.value === zeroAddress ? '' : addressObj.value}</u>
                         </Typography>
                       )}
                     </div>
@@ -185,7 +190,7 @@ export const RecordsSection = ({
             <SectionHeader>
               <SectionTitleContainer>
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                  Partners
+                  Parents
                 </SectionTitle>
               </SectionTitleContainer>
             </SectionHeader>
@@ -195,9 +200,20 @@ export const RecordsSection = ({
                   <RecordSection key={'section1SubSubPartner' + idx}>
                     <SectionHeader>
                       <SectionTitleContainer>
-                        <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                          Partner {idx + 1}
-                        </SectionTitle>
+                        {partner?.domain?.setValue ? (
+                          <SectionTitle
+                            style={{ cursor: 'pointer' }}
+                            data-testid="text-heading"
+                            fontVariant="bodyBold"
+                            onClick={() => router.push('/entity/' + partner.domain.setValue)}
+                          >
+                            <u>{partner.name.setValue}</u>
+                          </SectionTitle>
+                        ) : (
+                          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                            {partner.name.setValue}
+                          </SectionTitle>
+                        )}
                       </SectionTitleContainer>
                     </SectionHeader>
                     {Object.keys(partner).map((key, idx) => {
@@ -248,6 +264,77 @@ export const RecordsSection = ({
       </RecordSection>
     )
   }
+
+  let childrenSection = null
+  if (fields.children?.length > 0) {
+    childrenSection = (
+      <RecordSection key={'section1Partner'}>
+        <div style={{ width: '100%' }}>
+          <RecordSection key={'section1SubPartner'}>
+            <SectionHeader>
+              <SectionTitleContainer>
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  Child Entities
+                </SectionTitle>
+              </SectionTitleContainer>
+            </SectionHeader>
+            <div style={{ width: '100%', paddingLeft: '40px' }}>
+              {fields.children.map((record: any, idx: number) => {
+                const domain = normalize(
+                  normalizeLabel(record?.company__name?.setValue) +
+                    '.' +
+                    record?.company__registrar?.setValue +
+                    '.' +
+                    tld,
+                )
+                return (
+                  <RecordSection key={'section1SubSubPartner' + idx}>
+                    <SectionHeader>
+                      <SectionTitleContainer style={{ cursor: 'pointer' }}>
+                        <SectionTitle
+                          data-testid="text-heading"
+                          fontVariant="bodyBold"
+                          onClick={() => router.push('/entity/' + domain)}
+                        >
+                          <u>{record.company__name.setValue}</u>
+                        </SectionTitle>
+                      </SectionTitleContainer>
+                    </SectionHeader>
+                    {Object.keys(record).map((key, idx) => {
+                      return (
+                        <div
+                          key={'embeddedDiv' + idx}
+                          style={{
+                            display: 'flex',
+                            width: '100%',
+                            padding: '0.625rem 0.75rem',
+                            background: 'hsl(0 0% 96%)',
+                            border: '1px solid hsl(0 0% 91%)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
+                            {record[key].label}
+                          </Typography>
+                          <Typography>
+                            {Array.isArray(record[key].setValue)
+                              ? record[key].setValue.join(', ')
+                              : record[key].setValue}
+                          </Typography>
+                        </div>
+                      )
+                    })}
+                  </RecordSection>
+                )
+              })}
+            </div>
+          </RecordSection>
+        </div>
+      </RecordSection>
+    )
+  }
+
   // const categoryTexts =
   //   filteredCompanyData?.filter((text) => text.key.split('__')[0] === 'company') || []
   // const domain = filteredCompanyData?.find((x) => x.key === 'domain')
@@ -257,6 +344,7 @@ export const RecordsSection = ({
   // if (lei) categoryTexts.unshift(lei)
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
+    const ownerAddress = addressesObj?.find((x: any) => x.key === 'Owner Address')?.value
     const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     let headerSection = (
       <SectionTitleContainer>
@@ -270,7 +358,7 @@ export const RecordsSection = ({
           </SectionSubtitle>
         </SectionTitleContainer>
         <div style={{ width: '200px' }}>
-          {isAddress(multisigAddress) ? null : (
+          {isAddress(ownerAddress) && ownerAddress !== zeroAddress ? null : (
             <Button onClick={() => claimEntity(namehash(domainName))}>CLAIM</Button>
           )}
         </div>
@@ -356,6 +444,7 @@ export const RecordsSection = ({
           <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
           {addressSection}
           {partnerSection}
+          {childrenSection}
         </AllRecords>
       </TabWrapper>
     </>

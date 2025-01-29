@@ -235,8 +235,7 @@ const Claims = ({
         if (transactionRes?.status === 'reverted') {
           throw Error('Transaction failed - contract error')
         }
-        router.push('/entity/' + domain)
-        return
+        return () => window.location.reload()
       } catch (err: any) {
         console.log('ERROR', err.details, err)
         if (err.message === 'Cannot convert undefined to a BigInt') {
@@ -267,7 +266,7 @@ const Claims = ({
     content = (
       <>
         <NameContainer>{domain}</NameContainer>
-        <KYC fields={fields} setField={setField} />
+        <KYC records={records} fields={fields} setField={setField} />
       </>
     )
     // } else if (step === 1) {

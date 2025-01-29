@@ -133,6 +133,7 @@ const ProfileContent = ({
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
+  const [owner, setOwner] = useState('')
   const [status, setStatus] = useState('')
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
@@ -243,14 +244,20 @@ const ProfileContent = ({
 
   const getMultisigAddr = async (registry: any) => {
     if (domain) {
+      let ownerAddress = zeroAddress
       try {
-        const multisigAddress = await registry.read.owner([namehash(normalise(domain))])
-        const multisig = await getMultisig(multisigAddress)
-        const memberManagerAddress = await multisig.read.entityMemberManager()
-        setEntityMemberManager(memberManagerAddress)
-        setMultisigAddress(multisigAddress)
+        ownerAddress = await registry.read.owner([namehash(normalise(domain))])
+        setOwner(ownerAddress)
       } catch (e) {
         console.log(e)
+      }
+      try {
+        const multisig = await getMultisig(ownerAddress)
+        const memberManagerAddress = await multisig.read.entityMemberManager()
+        setEntityMemberManager(memberManagerAddress)
+        setMultisigAddress(ownerAddress)
+      } catch (err) {
+        console.log(err)
       }
     }
   }
@@ -366,7 +373,7 @@ const ProfileContent = ({
             trailing: match(tab)
               .with('entity', () => (
                 <>
-                  {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? null : (
+                  {isAddress(owner) && owner !== zeroAddress ? null : (
                     <MessageContainer>
                       This entity has not deployed its Contract Account. This means it is not
                       currently active on RegistryChain.
@@ -378,6 +385,7 @@ const ProfileContent = ({
                     claimEntity={claimEntity}
                     domainName={domain}
                     addressesObj={[
+                      { key: 'Owner Address', value: owner },
                       { key: 'Multisig Address', value: multisigAddress },
                       { key: 'Member Manager Address', value: entityMemberManager },
                     ]}
@@ -385,12 +393,12 @@ const ProfileContent = ({
                 </>
               ))
               .with('constitution', () => {
-                if (records && multisigAddress) {
+                if (records && zeroAddress !== owner && isAddress(owner)) {
                   return (
                     <Constitution
                       breakpoints={breakpoints}
                       formationData={records}
-                      multisigAddress={multisigAddress}
+                      multisigAddress={multisigAddress || zeroAddress}
                       model={records.company__selected__model}
                       setModel={null}
                       canDownload={true}
@@ -406,10 +414,12 @@ const ProfileContent = ({
                 }
               })
               .with('actions', () => {
-                if (records && multisigAddress) {
+                if (records && zeroAddress !== owner && isAddress(owner)) {
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
+                      registrar={records?.company__registrar?.setValue || 'public'}
+                      owner={owner}
                       multisigAddress={multisigAddress}
                       entityMemberManager={entityMemberManager}
                       client={publicClient}

@@ -561,7 +561,7 @@ export default function Page() {
   let changedRecords: any = {}
   if (registrationStep === 5) {
     const entityRegistrarDomain = normalize(
-      entityName + '.' + schemaFields?.company__registrar + '.' + tld,
+      entityName + '.' + schemaFields?.company__registrar?.setValue + '.' + tld,
     )
 
     changedRecords = getChangedRecords(false)

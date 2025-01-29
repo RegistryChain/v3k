@@ -74,8 +74,8 @@ const EntityInfo = ({ data, fields, setField }: any) => {
               <div style={{ display: 'flex', paddingLeft: '8px' }}>
                 <Checkbox
                   label="Kleros Arbitration"
-                  checked={field.setValue === contractAddressesObj.klerosLiquidAddress}
-                  onChange={(e) => setField(field.key, contractAddressesObj.klerosLiquidAddress)}
+                  checked={field.setValue === 'Kleros General Court V2'}
+                  onChange={(e) => setField(field.key, 'Kleros General Court V2')}
                 />
                 <Checkbox
                   label="Other Arbitration Contract"
@@ -92,7 +92,7 @@ const EntityInfo = ({ data, fields, setField }: any) => {
                   placeholder={field.label}
                   data-testid="record-input-input"
                   validated={true}
-                  disabled={field.setValue === contractAddressesObj.klerosLiquidAddress}
+                  disabled={field.setValue === 'Kleros General Court V2'}
                   onChange={(e) => {
                     setField(field.key, e.target.value)
                   }}

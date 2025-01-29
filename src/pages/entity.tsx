@@ -15,6 +15,7 @@ import {
   isAddress,
   isAddressEqual,
   keccak256,
+  labelhash,
   namehash,
   toHex,
   zeroAddress,
@@ -228,9 +229,9 @@ export default function Page() {
         {
           inputs: [
             {
-              internalType: 'string',
+              internalType: 'bytes32',
               name: '',
-              type: 'string',
+              type: 'bytes32',
             },
             {
               internalType: 'address',
@@ -251,7 +252,10 @@ export default function Page() {
     // If there is no owner to the domain, make the register. If there is an owner skip register
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityPublicDomain))
     if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-      const tx = await publicRegistrarContract.write.registerEntity([normalizedLabel, zeroAddress])
+      const tx = await publicRegistrarContract.write.registerEntity([
+        labelhash(normalizedLabel),
+        zeroAddress,
+      ])
       const txReceipt = await publicClient?.waitForTransactionReceipt({
         hash: tx,
       })
