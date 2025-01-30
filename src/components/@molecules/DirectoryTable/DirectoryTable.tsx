@@ -6,14 +6,16 @@ import { createPublicClient, http, zeroAddress, type Address } from 'viem'
 
 import DownDirectionSVG from '@app/assets/SortAscending.svg'
 import UpDirectionSVG from '@app/assets/SortDescending.svg'
-import { CheckButton } from '@app/components/@atoms/CheckButton/CheckButton'
+import { RxAvatar } from "react-icons/rx";
 import { useRouterWithHistory } from "@app/hooks/useRouterWithHistory"
-import { Entity } from "@app/types/directory"
+import { Entity, Partner } from "@app/types/directory"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@app/components/ui/table"
 import { Spinner } from "@ensdomains/thorin"
-import { EllipsisContainer, DirectionButton, Status, EmptyDetailContainer, Container, TableContainer } from "./DirectoryTable.styles"
+import * as Styles from "./DirectoryTable.styles"
 import { Button } from "@app/components/ui/button"
 import { match, P } from "ts-pattern"
+
+const { ButtonContainer, EllipsisContainer, DirectionButton, Status, EmptyDetailContainer, Container, TableContainer } = Styles;
 
 const itemsPerPage = 25;
 
@@ -40,9 +42,11 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
   const tld = 'chaser.finance'
   const { address } = useAccount()
 
-  const isOwner = (entity: any) => address === entity.owner && entity.owner && entity.owner !== zeroAddress
+  const isOwner = (entity: any) => entity.partners?.some((partner: Partner) => partner.wallet__address === address)
 
-  const handleClickRow = (entity: any) => () => {
+  const handleClickRow = (entity: Entity) => {
+    console.log('entity', entity)
+    debugger
     let domain = null
     try {
       domain = normalize(
@@ -62,6 +66,11 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
   }
 
   const columns: IColumn<Entity>[] = [
+    {
+      label: 'Owner',
+      key: 'partners',
+      render: (row: Entity) => isOwner(row) && <RxAvatar /> || '',
+    },
     {
       label: 'Company Name',
       key: 'company__name',
@@ -168,7 +177,6 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
                 >
                   {columns.map((column, colIndex) => (
                     <TableCell key={colIndex} className={column.className}>
-                      {isOwner(row) && <CheckButton />}
                       {column.render ? column.render(row) : row[column.key]}
                     </TableCell>
                   ))}
@@ -177,7 +185,7 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
             )}
         </TableBody>
       </Table>
-      <div className="flex justify-between items-center mt-4 border-0">
+      <ButtonContainer>
         <Button
           disabled={page === 0}
           onClick={handlePrevPage}
@@ -191,7 +199,7 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
         >
           Next
         </Button>
-      </div>
-    </TableContainer>
+      </ButtonContainer>
+    </TableContainer >
   )
 }

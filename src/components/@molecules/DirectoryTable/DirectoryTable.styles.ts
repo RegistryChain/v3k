@@ -66,3 +66,10 @@ export const Container = styled.div`
   align-items: center;
   gap: 0.2rem;
   `
+
+export const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  `

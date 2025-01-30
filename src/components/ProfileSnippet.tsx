@@ -16,11 +16,6 @@ const Container = styled.div<{}>(
     gap: 6px;
     flex-gap: ${theme.space['4']};
     margin-bottom: 12px;
-
-    ${mq.sm.min(css`
-      padding: ${theme.space['6']};
-      padding-top: ${theme.space['6']};
-    `)}
   `,
 )
 
@@ -80,7 +75,6 @@ export const ProfileSnippet = ({
     statusSection = (
       <SectionTitleContainer>
         <SectionTitle
-          style={{ paddingLeft: '8px' }}
           data-testid="text-heading"
           fontVariant="bodyBold"
         >
@@ -117,7 +111,6 @@ export const ProfileSnippet = ({
             {name}
           </NameRecord>
           <SectionTitle
-            style={{ paddingLeft: '8px', display: 'block' }}
             data-testid="text-heading"
             fontVariant="bodyBold"
           >

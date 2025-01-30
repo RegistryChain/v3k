@@ -23,6 +23,9 @@ const babelIncludeRegexes = [
  * */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
+  },
   compiler: {
     styledComponents: true,
   },
@@ -188,9 +191,9 @@ const nextConfig = {
   },
   ...(process.env.NEXT_PUBLIC_IPFS
     ? {
-        trailingSlash: true,
-        assetPrefix: './',
-      }
+      trailingSlash: true,
+      assetPrefix: './',
+    }
     : {}),
 }
 

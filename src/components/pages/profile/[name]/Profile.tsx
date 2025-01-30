@@ -34,6 +34,7 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import LicenseTab from './tabs/LicenseTab'
+import { Collapsible } from "@chakra-ui/react"
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -50,9 +51,6 @@ const MessageContainer = styled.div(
 
 const TabButtonContainer = styled.div(
   ({ theme }) => css`
-    margin-left: -${theme.radii.extraLarge};
-    margin-right: -${theme.radii.extraLarge};
-    padding: 0 calc(${theme.radii.extraLarge} * 2);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -79,6 +77,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
     font-size: ${theme.fontSizes.extraLarge};
     transition: all 0.15s ease-in-out;
     cursor: pointer;
+    border-bottom: 1px solid ${$selected ? theme.colors.accent : 'transparent'};
 
     &:hover {
       color: ${$selected ? theme.colors.accentBright : theme.colors.text};
@@ -204,7 +203,7 @@ const ProfileContent = ({
         ...prev,
         status: { ...prev.status, setValue: status },
       }))
-    } catch (e) {}
+    } catch (e) { }
   }
 
   useEffect(() => {
@@ -268,7 +267,7 @@ const ProfileContent = ({
     parentIsLoading
       ? true
       : // if is self, user must be connected
-        (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
+      (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
   )
 
   const suffixIndex = domain?.split('.')?.length - 1

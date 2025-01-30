@@ -23,6 +23,7 @@ import { SyncProvider } from '@app/utils/SyncProvider/SyncProvider'
 import i18n from '../i18n'
 
 import '../styles.css'
+import { Provider } from '@app/components/ui/provider'
 
 const rainbowKitTheme: Theme = {
   ...lightTheme({
@@ -136,25 +137,27 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryProviders>
-        <RainbowKitProvider theme={rainbowKitTheme}>
-          <TransactionStoreProvider>
-            <ThemeProvider theme={thorinLightTheme}>
-              <BreakpointProvider queries={breakpoints}>
-                <GlobalStyle />
-                <ThorinGlobalStyles />
-                <SyncProvider>
-                  <TransactionFlowProvider>
-                    <SyncDroppedTransaction>
-                      <Notifications />
-                      {/* <TestnetWarning /> */}
-                      <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                    </SyncDroppedTransaction>
-                  </TransactionFlowProvider>
-                </SyncProvider>
-              </BreakpointProvider>
-            </ThemeProvider>
-          </TransactionStoreProvider>
-        </RainbowKitProvider>
+        <Provider>
+          <RainbowKitProvider theme={rainbowKitTheme}>
+            <TransactionStoreProvider>
+              <ThemeProvider theme={thorinLightTheme}>
+                <BreakpointProvider queries={breakpoints}>
+                  <GlobalStyle />
+                  <ThorinGlobalStyles />
+                  <SyncProvider>
+                    <TransactionFlowProvider>
+                      <SyncDroppedTransaction>
+                        <Notifications />
+                        {/* <TestnetWarning /> */}
+                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                      </SyncDroppedTransaction>
+                    </TransactionFlowProvider>
+                  </SyncProvider>
+                </BreakpointProvider>
+              </ThemeProvider>
+            </TransactionStoreProvider>
+          </RainbowKitProvider>
+        </Provider>
       </QueryProviders>
     </I18nextProvider>
   )

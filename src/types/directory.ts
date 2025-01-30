@@ -7,9 +7,14 @@ export interface Entity {
   description: string
   id: string
   location: string
-  partners: string[]
+  partners: Partner[]
   company__type: string
   address: string
   LEI: string
   company__registrar: string
+}
+
+export interface Partner {
+  wallet__address: string
+  name: string
 }

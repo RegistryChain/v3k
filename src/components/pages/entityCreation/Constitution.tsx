@@ -283,49 +283,43 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.company__type || 'N/A'} is ${
-            profileData?.company__name || 'N/A'
+          `The name of the ${profileData?.company__type || 'N/A'} is ${profileData?.company__name || 'N/A'
           }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${
-            profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
       {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
-          `The purpose of this ${
-            profileData?.company__type || 'N/A'
+          `The purpose of this ${profileData?.company__type || 'N/A'
           } is to engage in the following activities: ${profileData?.company__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
-          `Principal Office: The principal office of the ${
-            profileData?.company__type || 'N/A'
+          `Principal Office: The principal office of the ${profileData?.company__type || 'N/A'
           } is located at ${profileData?.company__address || 'N/A'}`,
         ],
       },
       {
         header: 'Members',
         content: (profileData: any, userData: any) => [
-          `The initial member(s) of this ${
-            profileData?.company__type || 'N/A'
+          `The initial member(s) of this ${profileData?.company__type || 'N/A'
           } are (as Name, ID, Role)`,
           userData?.map((user: any, idx: any) => {
             const roles = [...user.roles]
             if (user.shares > 0) {
               roles.push('shareholder')
             }
-            return `${user.name} (ID: ${user.wallet__address})${
-              roles.length > 0 ? ' - ' : ''
-            }${roles.join(', ')}`
+            return `${user.name} (ID: ${user.wallet__address})${roles.length > 0 ? ' - ' : ''
+              }${roles.join(', ')}`
           }),
         ],
       },
@@ -364,9 +358,8 @@ const constitutionModel: any = {
             `Initial Contributions: The initial capital contributions of the members are as follows:`,
             userData?.map((user: any) => {
               const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
+              return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'
+                }`
             }),
           ]
         },
@@ -380,10 +373,8 @@ const constitutionModel: any = {
       {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
-          `The members of the ${
-            profileData?.company__type || 'N/A'
-          } are not personally liable for the acts or debts of the  ${
-            profileData?.company__type || 'N/A'
+          `The members of the ${profileData?.company__type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${profileData?.company__type || 'N/A'
           }. The ${profileData?.company__type || 'N/A'} shall indemnify its members and managers.`,
         ],
       },
@@ -416,7 +407,7 @@ const constitutionModel: any = {
           if (byAddress) {
             return [
               'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
-                profileData.company__arbitrator,
+              profileData.company__arbitrator,
             ]
           }
           return [profileData.company__arbitrator]
@@ -435,40 +426,35 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.company__type || 'N/A'} is ${
-            profileData?.company__name || 'N/A'
+          `The name of the ${profileData?.company__type || 'N/A'} is ${profileData?.company__name || 'N/A'
           }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${
-            profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.company__type || 'N/A'}’s activities begin on ${profileData?.company__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
       {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
-          `The purpose of this ${
-            profileData?.company__type || 'N/A'
+          `The purpose of this ${profileData?.company__type || 'N/A'
           } is to engage in the following activities: ${profileData?.company__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
-          `Main Office: The main office of the ${
-            profileData?.company__type || 'N/A'
+          `Main Office: The main office of the ${profileData?.company__type || 'N/A'
           } is located at ${profileData?.company__address || 'N/A'}`,
         ],
       },
       {
         header: 'Quotaholder',
         content: (profileData: any, userData: any) => [
-          `The initial quotaholders of this ${
-            profileData?.company__type || 'N/A'
+          `The initial quotaholders of this ${profileData?.company__type || 'N/A'
           } are (as Name, ID, Role)`,
 
           userData?.map((user: any) => {
@@ -476,9 +462,8 @@ const constitutionModel: any = {
             if (user.shares > 0) {
               roles.push('quotaholder')
             }
-            return `${user.name} (ID: ${user.wallet__address})${
-              roles.length > 0 ? ' - ' : ''
-            }${roles.join(', ')}`
+            return `${user.name} (ID: ${user.wallet__address})${roles.length > 0 ? ' - ' : ''
+              }${roles.join(', ')}`
           }),
         ],
       },
@@ -517,9 +502,8 @@ const constitutionModel: any = {
 
             userData?.map((user: any) => {
               const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
+              return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'
+                }`
             }),
           ]
         },
@@ -533,12 +517,9 @@ const constitutionModel: any = {
       {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
-          `The quotaholders of the ${
-            profileData?.company__type || 'N/A'
-          } are not personally liable for the acts or debts of the  ${
-            profileData?.company__type || 'N/A'
-          }. The ${
-            profileData?.company__type || 'N/A'
+          `The quotaholders of the ${profileData?.company__type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${profileData?.company__type || 'N/A'
+          }. The ${profileData?.company__type || 'N/A'
           } shall indemnify its quotaholders and administrators.`,
         ],
       },
@@ -571,7 +552,7 @@ const constitutionModel: any = {
           if (byAddress) {
             return [
               'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
-                profileData.company__arbitrator,
+              profileData.company__arbitrator,
             ]
           }
           return [profileData.company__arbitrator]
@@ -612,15 +593,15 @@ const Constitution = ({
       companyLevelData[field] = formationData[field].setValue
     })
 
-  const userData = formationData.partners
-    .filter((partner: any) => !!partner.name.setValue)
-    .map((partner: any) => {
-      const returnObj: any = {}
-      Object.keys(partner).forEach((field) => {
-        returnObj[field] = partner[field].setValue
+  const userData = formationData && formationData.partners && formationData.partners.length > 0 &&
+    formationData.partners.filter((partner: any) => !!partner.name.setValue)
+      .map((partner: any) => {
+        const returnObj: any = {}
+        Object.keys(partner).forEach((field) => {
+          returnObj[field] = partner[field].setValue
+        })
+        return returnObj
       })
-      return returnObj
-    })
   // Object.keys(formationData).forEach((field: any) => {
   //   try {
   //     if (field !== 'partners'){

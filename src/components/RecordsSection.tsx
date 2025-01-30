@@ -14,6 +14,11 @@ import { normalizeLabel } from '@app/utils/utils'
 
 import { ExclamationSymbol } from './ExclamationSymbol'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
+import { Collapsible } from '@chakra-ui/react'
+import { FaChevronDown } from "react-icons/fa";
+import CompanyInfo from './CompanyInfo'
+import { CompanyAddresses } from './CompanyAddresses'
+import { CompanyPartners } from './CompanyPartners'
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`
@@ -46,9 +51,7 @@ const AllRecords = styled.div(
     align-items: stretch;
     justify-content: flex-start;
     gap: ${theme.space['3']};
-    padding: ${theme.space['4.5']};
     ${mq.sm.min(css`
-      padding: ${theme.space['6']};
       gap: ${theme.space['6']};
     `)}
   `,
@@ -91,6 +94,9 @@ const SectionTitleContainer = styled.div(
 const SectionTitle = styled(Typography)(
   ({ theme }) => css`
     color: black;
+    display: flex;
+    align-items: center;
+    gap: ${theme.space['2']};
   `,
 )
 
@@ -129,139 +135,14 @@ export const RecordsSection = ({
   let addressSection = null
   if (addressesObj) {
     addressSection = (
-      <RecordSection key={'section1Address'}>
-        <div style={{ width: '100%' }}>
-          <RecordSection key={'section1SubAddr'}>
-            <SectionHeader>
-              <SectionTitleContainer>
-                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                  Addresses
-                </SectionTitle>
-              </SectionTitleContainer>
-            </SectionHeader>
-            <div style={{ width: '100%', paddingLeft: '40px' }}>
-              <RecordSection key={'section1SubSubadd'}>
-                {addressesObj.map((addressObj: any, idx: any) => {
-                  return (
-                    <div
-                      key={'embeddedDivAdd' + idx}
-                      style={{
-                        display: 'flex',
-                        width: '100%',
-                        padding: '0.625rem 0.75rem',
-                        background: 'hsl(0 0% 96%)',
-                        border: '1px solid hsl(0 0% 91%)',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                        {addressObj.key}
-                      </Typography>
-                      {isAddress(addressObj.value) && addressObj.value !== zeroAddress ? (
-                        <Link
-                          target={'_blank'}
-                          href={'https://sepolia.etherscan.io/address/' + addressObj.value}
-                        >
-                          <u>{addressObj.value}</u>
-                        </Link>
-                      ) : (
-                        <Typography>
-                          <u>{addressObj.value === zeroAddress ? '' : addressObj.value}</u>
-                        </Typography>
-                      )}
-                    </div>
-                  )
-                })}
-              </RecordSection>
-            </div>
-          </RecordSection>
-        </div>
-      </RecordSection>
+      <CompanyAddresses addressesObj={addressesObj} />
     )
   }
 
   let partnerSection = null
   if (fields.partners?.length > 0) {
     partnerSection = (
-      <RecordSection key={'section1Partner'}>
-        <div style={{ width: '100%' }}>
-          <RecordSection key={'section1SubPartner'}>
-            <SectionHeader>
-              <SectionTitleContainer>
-                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                  Parents
-                </SectionTitle>
-              </SectionTitleContainer>
-            </SectionHeader>
-            <div style={{ width: '100%', paddingLeft: '40px' }}>
-              {fields.partners.map((partner: any, idx: number) => {
-                return (
-                  <RecordSection key={'section1SubSubPartner' + idx}>
-                    <SectionHeader>
-                      <SectionTitleContainer>
-                        {partner?.domain?.setValue ? (
-                          <SectionTitle
-                            style={{ cursor: 'pointer' }}
-                            data-testid="text-heading"
-                            fontVariant="bodyBold"
-                            onClick={() => router.push('/entity/' + partner.domain.setValue)}
-                          >
-                            <u>{partner.name.setValue}</u>
-                          </SectionTitle>
-                        ) : (
-                          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                            {partner.name.setValue}
-                          </SectionTitle>
-                        )}
-                      </SectionTitleContainer>
-                    </SectionHeader>
-                    {Object.keys(partner).map((key, idx) => {
-                      return (
-                        <div
-                          key={'embeddedDiv' + idx}
-                          style={{
-                            display: 'flex',
-                            width: '100%',
-                            padding: '0.625rem 0.75rem',
-                            background: 'hsl(0 0% 96%)',
-                            border: '1px solid hsl(0 0% 91%)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {partner[key]?.label || key}
-                          </Typography>
-                          <Typography>
-                            {' '}
-                            {partner[key].oldValue && compareToOldValues ? (
-                              <span
-                                style={{
-                                  overflow: 'hidden',
-                                  color: 'red',
-                                  textDecorationLine: 'line-through',
-                                }}
-                              >
-                                {Array.isArray(partner[key].oldValue)
-                                  ? partner[key].oldValue.join(', ')
-                                  : partner[key].oldValue}
-                              </span>
-                            ) : null}{' '}
-                            {Array.isArray(partner[key].setValue)
-                              ? partner[key].setValue.join(', ')
-                              : partner[key].setValue}
-                          </Typography>
-                        </div>
-                      )
-                    })}
-                  </RecordSection>
-                )
-              })}
-            </div>
-          </RecordSection>
-        </div>
-      </RecordSection>
+      <CompanyPartners partners={fields.partners} compareToOldValues={compareToOldValues} />
     )
   }
 
@@ -271,21 +152,14 @@ export const RecordsSection = ({
       <RecordSection key={'section1Partner'}>
         <div style={{ width: '100%' }}>
           <RecordSection key={'section1SubPartner'}>
-            <SectionHeader>
-              <SectionTitleContainer>
-                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                  Child Entities
-                </SectionTitle>
-              </SectionTitleContainer>
-            </SectionHeader>
             <div style={{ width: '100%', paddingLeft: '40px' }}>
               {fields.children.map((record: any, idx: number) => {
                 const domain = normalize(
                   normalizeLabel(record?.company__name?.setValue) +
-                    '.' +
-                    record?.company__registrar?.setValue +
-                    '.' +
-                    tld,
+                  '.' +
+                  record?.company__registrar?.setValue +
+                  '.' +
+                  tld,
                 )
                 return (
                   <RecordSection key={'section1SubSubPartner' + idx}>
@@ -349,9 +223,6 @@ export const RecordsSection = ({
     let headerSection = (
       <SectionTitleContainer>
         <SectionTitleContainer style={{ display: 'flex', gap: '1', justifyContent: 'flex-start' }}>
-          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-            {recordCategoryToTitle['company']}
-          </SectionTitle>
           <SectionSubtitle data-testid="text-amount">
             {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
             {t('records.label', { ns: 'common' })}
@@ -382,56 +253,11 @@ export const RecordsSection = ({
       <div key={'companydiv'} style={{ width: '100%' }}>
         <RecordSection key={'section1SubRecordscompany'}>
           <SectionHeader>{headerSection}</SectionHeader>
-          {filteredCompanyData &&
-            filteredCompanyData.map((field: any, idx: any) => {
-              return (
-                <>
-                  <div
-                    key={'catTextEmbedded' + idx}
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      padding: '0.625rem 0.75rem',
-                      background: 'hsl(0 0% 96%)',
-                      border: '1px solid hsl(0 0% 91%)',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Typography
-                      key={'typ1' + idx}
-                      style={{ paddingRight: '10px', display: 'flex', flex: 1, color: 'grey' }}
-                    >
-                      {fields[field].label || field}{' '}
-                      {fields?.contradictoryFields?.setValue?.includes(field) ? (
-                        <div style={{ marginLeft: '4px', alignItems: 'center' }}>
-                          <ExclamationSymbol
-                            tooltipText={
-                              fields[field].label +
-                              ' is not matching on jurisdictional registrar source'
-                            }
-                          />
-                        </div>
-                      ) : null}
-                    </Typography>
-                    <Typography key={'typ2' + idx} style={{ overflow: 'hidden' }}>
-                      {fields[field].oldValue && compareToOldValues ? (
-                        <span
-                          style={{
-                            overflow: 'hidden',
-                            color: 'red',
-                            textDecorationLine: 'line-through',
-                          }}
-                        >
-                          {fields[field].oldValue}
-                        </span>
-                      ) : null}{' '}
-                      {fields[field].setValue + ''}
-                    </Typography>
-                  </div>
-                </>
-              )
-            })}
+          <CompanyInfo
+            filteredCompanyData={filteredCompanyData}
+            fields={fields}
+            compareToOldValues={compareToOldValues}
+          />
         </RecordSection>
       </div>
     )
@@ -441,10 +267,52 @@ export const RecordsSection = ({
     <>
       <TabWrapper data-testid="records-tab">
         <AllRecords>
-          <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
-          {addressSection}
-          {partnerSection}
-          {childrenSection}
+
+          <Collapsible.Root>
+            <Collapsible.Trigger>
+              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                Company Details <FaChevronDown />
+              </SectionTitle>
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
+            </Collapsible.Content>
+          </Collapsible.Root>
+
+          <Collapsible.Root>
+            <Collapsible.Trigger>
+              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                Addresses <FaChevronDown />
+              </SectionTitle>
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              {addressSection}
+            </Collapsible.Content>
+          </Collapsible.Root>
+
+          <Collapsible.Root>
+            <Collapsible.Trigger>
+              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                Partners <FaChevronDown />
+              </SectionTitle>
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              {partnerSection}
+            </Collapsible.Content>
+          </Collapsible.Root>
+
+          {childrenSection && (
+            <Collapsible.Root>
+              <Collapsible.Trigger>
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  Child Entities <FaChevronDown />
+                </SectionTitle>
+              </Collapsible.Trigger>
+              <Collapsible.Content>
+                {childrenSection}
+              </Collapsible.Content>
+            </Collapsible.Root>
+          )}
         </AllRecords>
       </TabWrapper>
     </>
