@@ -268,7 +268,7 @@ export const RecordsSection = ({
       <TabWrapper data-testid="records-tab">
         <AllRecords>
 
-          <Collapsible.Root>
+          <Collapsible.Root defaultOpen>
             <Collapsible.Trigger>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Company Details <FaChevronDown />
@@ -279,7 +279,7 @@ export const RecordsSection = ({
             </Collapsible.Content>
           </Collapsible.Root>
 
-          <Collapsible.Root>
+          <Collapsible.Root defaultOpen>
             <Collapsible.Trigger>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Addresses <FaChevronDown />
@@ -290,7 +290,7 @@ export const RecordsSection = ({
             </Collapsible.Content>
           </Collapsible.Root>
 
-          <Collapsible.Root>
+          <Collapsible.Root defaultOpen>
             <Collapsible.Trigger>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Partners <FaChevronDown />
@@ -302,7 +302,7 @@ export const RecordsSection = ({
           </Collapsible.Root>
 
           {childrenSection && (
-            <Collapsible.Root>
+            <Collapsible.Root defaultOpen>
               <Collapsible.Trigger>
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                   Child Entities <FaChevronDown />

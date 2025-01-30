@@ -52,9 +52,8 @@ const CompanyAddresses = ({ addressesObj }: any) => {
                 <AddressLink href={`https://sepolia.etherscan.io/address/${addressObj.value}`} target="_blank">
                   {addressObj.value}
                 </AddressLink>
-              ) : (
-                addressObj.value === zeroAddress ? '' : addressObj.value
-              )}
+              ) : addressObj.value
+              }
             </AddressCell>
           </AddressRow>
         ))}

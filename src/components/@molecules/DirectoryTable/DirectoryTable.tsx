@@ -45,8 +45,6 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
   const isOwner = (entity: any) => entity.partners?.some((partner: Partner) => partner.wallet__address === address)
 
   const handleClickRow = (entity: Entity) => {
-    console.log('entity', entity)
-    debugger
     let domain = null
     try {
       domain = normalize(
