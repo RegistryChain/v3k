@@ -46,7 +46,7 @@ const methodsNames: any = {
 
 const contractAddressesObj: any = contractAddresses
 
-const tld = 'chaser.finance'
+const tld = 'registrychain.com'
 
 const ActionsTab = ({
   refreshRecords,

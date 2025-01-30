@@ -1,15 +1,14 @@
 {
-  "ENSRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-  "Definitions": "0x4d9c6313cad0acc6dadb820d42d08b1da7feebe0",
-  "EntityFactory": "0xcc8b30b4c2a7dffa87aeef283bb80686eb288f00",
-  "PublicResolver": "0xa6590f797808ac69549b9758d3b183c27fe588fd",
-  "MultisigState": "0xf709fc8bf7b574713a1d5a36fbf35d440221a683",
-  "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
-  "public.registry": "0x2cd125531431d74399cc1b2402c7bc9c8fdb68eb",
-  "LEI": "0x86c850f9d9634dc891070fa04bcf5b1c1622d34c",
-  "DatabaseResolver": "0x8acfa8800490e258f589c2419a3920b8b16015b3",
-  "chaser.finance": "0x7cbe5e15feaca518fc9aae04bff57fddf0a6914e",
-  "public.chaser.finance": "0x0e9737cb8f35a7c26e1709287d809527561dd7b6",
   "klerosLiquidAddress": "0x90992fb4E15ce0C59aEFfb376460Fda4Ee19C879",
-  "us-wy.chaser.finance": "0x84b4d1dbc5144c3e3baf9ccb86b075a593962a31"
+  "ENSRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+  "Definitions": "0xb03bff4e7ff03ed7d6560430c112ddb93b0326d6",
+  "EntityFactory": "0x8db13b25fe13e3f35eda508695703f0a119accb4",
+  "PublicResolver": "0xa6590f797808ac69549b9758d3b183c27fe588fd",
+  "MultisigState": "0xf90004afcceba49c31d3870a943a2091058251ff",
+  "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
+  "LEI": "0x7ff666701307b1153fc2bd41946f60418881de4e",
+  "DatabaseResolver": "0x58248449caac373a83dc7018314eef1b3cb8960b",
+  "registrychain.com": "0x578ec0c5508346983878f50a1e4b61bc6b540386",
+  "public.registrychain.com": "0xa1bf0fb2b25ed4d1217c9fe25d936c371fb16939",
+  "us-wy.registrychain.com": "0xb0a332279f8f6c046cebcf07b0b32b4d37c51dc4"
 }

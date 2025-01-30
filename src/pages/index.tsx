@@ -104,7 +104,7 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const tld = '.chaser.finance'
+const tld = '.registrychain.com'
 
 export default function Page() {
   const { t } = useTranslation('common')

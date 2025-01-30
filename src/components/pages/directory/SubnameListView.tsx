@@ -59,7 +59,7 @@ type SubnameListViewProps = {}
 export const SubnameListView = ({}: SubnameListViewProps) => {
   const router = useRouterWithHistory()
   const { address } = useAccount()
-  const tld = 'chaser.finance'
+  const tld = 'registrychain.com'
 
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
