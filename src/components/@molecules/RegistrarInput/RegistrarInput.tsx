@@ -335,6 +335,7 @@ export const RegistrarInput = ({
   entityTypes,
   value,
   setValue,
+  permittedJurisdictions,
 }: any) => {
   const router = useRouterWithHistory()
   const queryClient = useQueryClient()
@@ -399,27 +400,33 @@ export const RegistrarInput = ({
     const validCountries: any[] = []
     const inputUpper = inputVal.toUpperCase()
 
-    if (inputUpper?.length > 0)
+    if (inputUpper?.length > 0) {
+      const publicJuris: any = uniqueCountries.find((x) => x.countryJurisdictionCode === 'public')
+      if (publicJuris) {
+        validCountries.push(publicJuris)
+      }
       for (let i = 0; i < uniqueCountries.length; i++) {
         const uJuris = uniqueCountries[i]?.formationJurisdiction
           ? uniqueCountries[i]?.formationJurisdiction + ' ' + uniqueCountries[i].formationCountry
           : uniqueCountries[i].formationCountry
         const countryUppercase = uJuris.toUpperCase()
         if (validCountries.length >= 5) break
+        const inValidCountries = validCountries.find((x) => {
+          const xJuris = x?.formationJurisdiction
+            ? x?.formationJurisdiction + ' ' + x.formationCountry
+            : x.formationCountry
+          return xJuris.toUpperCase() === countryUppercase
+        })
         if (
-          ((countryUppercase.includes(inputUpper) && inputUpper !== value.toUpperCase()) ||
-            countryUppercase === 'PUBLIC') &&
-          !validCountries.find((x) => {
-            const xJuris = x?.formationJurisdiction
-              ? x?.formationJurisdiction + ' ' + x.formationCountry
-              : x.formationCountry
-            return xJuris.toUpperCase() === countryUppercase
-          })
+          countryUppercase.includes(inputUpper) &&
+          inputUpper !== value.toUpperCase() &&
+          !inValidCountries
         ) {
           validCountries.push(uniqueCountries[i])
         }
       }
-    setCountries(validCountries)
+      setCountries(validCountries)
+    }
   }, [inputVal])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -520,9 +527,17 @@ export const RegistrarInput = ({
                 <div
                   style={{
                     ...style,
-                    // cursor: x.countryCode !== 'public' ? 'not-allowed' : 'pointer',
-                    backgroundColor: x.countryCode !== 'public' ? '#ebe5e5' : 'white',
-                    color: x.countryCode !== 'public' ? 'rgb(41 116 229)' : '#3888FF',
+                    // cursor: !permittedJurisdictions.includes(x.countryJurisdictionCode?.toLowerCase()) ? 'not-allowed' : 'pointer',
+                    backgroundColor: !permittedJurisdictions.includes(
+                      x.countryJurisdictionCode?.toLowerCase(),
+                    )
+                      ? '#ebe5e5'
+                      : 'white',
+                    color: !permittedJurisdictions.includes(
+                      x.countryJurisdictionCode?.toLowerCase(),
+                    )
+                      ? 'rgb(41 116 229)'
+                      : '#3888FF',
                     paddingBottom: idx === countries.length - 1 ? '8px' : '0px',
                     borderBottomLeftRadius: idx === countries.length - 1 ? '8px' : '0px',
                     borderBottomRightRadius: idx === countries.length - 1 ? '8px' : '0px',
@@ -533,7 +548,7 @@ export const RegistrarInput = ({
                   }}
                   onClick={() => {
                     const code = x.countryJurisdictionCode
-                      ? x.countryJurisdictionCode.split('-').join('.')
+                      ? x.countryJurisdictionCode
                       : x.countryCode
                     // if (code !== 'public') return null
                     setValue(code)

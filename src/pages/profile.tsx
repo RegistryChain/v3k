@@ -3,21 +3,22 @@ import { useEffect, useState } from 'react'
 import { namehash } from 'viem'
 import { useAccount } from 'wagmi'
 
-import { normalise } from '@ensdomains/ensjs/utils'
-
 import Claims from '@app/components/claims/Claims'
+import { ErrorModal } from '@app/components/ErrorModal'
 import ProfileContent from '@app/components/pages/profile/[name]/Profile'
 import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useInitial } from '@app/hooks/useInitial'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 export default function Page() {
   const router = useRouterWithHistory()
-  const name = router.query.name as string
+  const domain = router.query.name as string
   const isSelf = router.query.connected === 'true'
   const [isClaiming, setIsClaiming] = useState('')
   const [records, setRecords] = useState<any>({})
-
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const breakpoints = useBreakpoint()
   const { openConnectModal } = useConnectModal()
 
   const initial = useInitial()
@@ -36,11 +37,13 @@ export default function Page() {
   }
 
   const getRecords = async () => {
-    const fields = await getRecordData({ nodeHash: namehash(normalise(name)) })
-    fields.partners = fields.partners.filter(
-      (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
-    )
-    setRecords(fields)
+    const fields = await getRecordData({ domain })
+    if (fields) {
+      fields.partners = fields.partners?.filter(
+        (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
+      )
+      setRecords(fields)
+    }
   }
 
   useEffect(() => {
@@ -53,9 +56,11 @@ export default function Page() {
   if (isClaiming) {
     claimModal = (
       <Claims
-        name={name}
+        domain={domain}
         address={address}
         setIsClaiming={setIsClaiming}
+        setErrorMessage={setErrorMessage}
+        breakpoints={breakpoints}
         records={records}
         setRecords={setRecords}
         getRecords={getRecords}
@@ -66,11 +71,16 @@ export default function Page() {
   return (
     <>
       {claimModal}
+      <ErrorModal
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        breakpoints={breakpoints}
+      />
       <ProfileContent
         {...{
           isSelf,
           isLoading,
-          name,
+          domain,
           router,
           address,
           claimEntity,

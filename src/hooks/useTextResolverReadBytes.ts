@@ -68,6 +68,7 @@ export const useTextResolverReadBytes = async (nodeHash: Hex) => {
     'company__formation__date',
     'company__lockup__days',
     'company__additional__terms',
+    // 'company__arbitrator',
     'company__selected__model',
   ]
 

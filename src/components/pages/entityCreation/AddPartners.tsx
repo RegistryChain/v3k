@@ -59,7 +59,7 @@ const AddPartners = ({
   const { address } = useAccount()
 
   useEffect(() => {
-    const firstPartnerWallet = partners[0].wallet__address.setValue
+    const firstPartnerWallet = partners[0]?.wallet__address?.setValue
     if (!firstPartnerWallet || !isAddress(firstPartnerWallet)) {
       const updatedPartners = [...partners]
       const updatedPartner = {

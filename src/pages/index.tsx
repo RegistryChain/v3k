@@ -104,7 +104,7 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const tld = '.registry'
+const tld = '.chaser.finance'
 
 export default function Page() {
   const { t } = useTranslation('common')
@@ -154,6 +154,8 @@ export default function Page() {
     }
   }
 
+  const permittedJurisdictions = ['public', 'us-wy']
+
   let nameAvailableElement = null
   if (entityName.length >= 2 && entityJurisdiction.length > 0) {
     nameAvailableElement = nameAvailable ? (
@@ -172,9 +174,7 @@ export default function Page() {
     setEntityType({})
     setEntityTypesAvailable(
       entityTypesObj.filter((obj) => {
-        const code = obj.countryJurisdictionCode
-          ? obj.countryJurisdictionCode.split('-').join('.')
-          : obj.countryCode
+        const code = obj.countryJurisdictionCode ? obj.countryJurisdictionCode : obj.countryCode
         return code === entityJurisdiction
       }),
     )
@@ -247,6 +247,7 @@ export default function Page() {
             setValue={(regKey: string) => {
               setEntityJurisdiction(regKey)
             }}
+            permittedJurisdictions={permittedJurisdictions}
           />
           <div
             key={'div1en'}
@@ -277,7 +278,7 @@ export default function Page() {
             shape="square"
             size="small"
             disabled={
-              entityJurisdiction !== 'public' ||
+              !permittedJurisdictions.includes(entityJurisdiction?.toLowerCase()) ||
               entityName.length < 2 ||
               entityJurisdiction.length === 0 ||
               !entityType

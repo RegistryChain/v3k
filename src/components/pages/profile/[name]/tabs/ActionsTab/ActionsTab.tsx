@@ -4,22 +4,29 @@ import {
   createWalletClient,
   custom,
   decodeAbiParameters,
+  encodeAbiParameters,
   encodeFunctionData,
   getContract,
+  isAddress,
   parseAbi,
+  toHex,
   zeroAddress,
+  zeroHash,
 } from 'viem'
 import { sepolia } from 'viem/chains'
+import { packetToBytes } from 'viem/ens'
 import { useAccount, useConnect } from 'wagmi'
 
 import { namehash, normalise } from '@ensdomains/ensjs/utils'
+import { Button } from '@ensdomains/thorin'
 
 import { ErrorModal } from '@app/components/ErrorModal'
 import { roles } from '@app/constants/members'
-import { getTransactions } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getTransactions } from '@app/hooks/useExecuteWriteToResolver'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
+import l1abi from '../../../../../../constants/l1abi.json'
 import ActionsConfirmation from './ActionsConfirmation'
 import ActionsExecuted from './ActionsExecuted'
 import ActionsExecution from './ActionsExecution'
@@ -37,10 +44,16 @@ const methodsNames: any = {
   '0x208dd1ff': 'revokeRole',
 }
 
+const contractAddressesObj: any = contractAddresses
+
+const tld = 'chaser.finance'
+
 const ActionsTab = ({
   refreshRecords,
   multisigAddress,
+  registrar,
   entityMemberManager,
+  owner,
   client,
   name,
   checkEntityStatus,
@@ -78,6 +91,125 @@ const ActionsTab = ({
     }
 
     return { name, data }
+  }
+
+  const deployMultisig = async () => {
+    try {
+      const formationPrep: any = {
+        functionName: 'register',
+        args: [
+          toHex(packetToBytes(name.split('.')[0])),
+          owner,
+          0 /* duration */,
+          zeroHash /* secret */,
+          zeroAddress /* resolver */,
+          [
+            encodeAbiParameters(
+              [{ type: 'string' }, { type: 'string' }],
+              ['nodeHash', namehash(normalise(name))],
+            ),
+          ] /* data */,
+          false /* reverseRecord */,
+          0 /* fuses */,
+          zeroHash /* extraData */,
+        ],
+        abi: l1abi,
+        address: contractAddressesObj['DatabaseResolver'],
+      }
+      const domain: any = registrar?.toLowerCase() + '.' + tld
+      const registrarAddress: any =
+        contractAddressesObj[domain] || contractAddressesObj['public.' + tld]
+
+      const formationCallback: any = {
+        functionName: 'deployEntityContracts',
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'bytes',
+                name: 'responseBytes',
+                type: 'bytes',
+              },
+              {
+                internalType: 'bytes',
+                name: 'extraData',
+                type: 'bytes',
+              },
+            ],
+            name: 'deployEntityContracts',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ],
+        address: registrarAddress,
+        args: [],
+      }
+
+      if (owner === address) {
+        const registrarContract: any = getContract({
+          abi: [
+            {
+              inputs: [{ type: 'address' }, { type: 'address' }],
+              name: 'isApprovedForAll',
+              outputs: [{ type: 'bool' }],
+              type: 'function',
+              stateMutability: 'view',
+            },
+            {
+              inputs: [
+                {
+                  internalType: 'address',
+                  name: '',
+                  type: 'address',
+                },
+                {
+                  internalType: 'bool',
+                  name: '',
+                  type: 'bool',
+                },
+              ],
+              name: 'setApprovalForAll',
+              outputs: [],
+              stateMutability: 'nonpayable',
+              type: 'function',
+            },
+          ],
+          address: contractAddressesObj.ENSRegistry,
+          client: wallet,
+        })
+
+        const registrarApproved = await registrarContract.read.isApprovedForAll([
+          address,
+          registrarAddress,
+        ])
+        console.log('approved', registrarApproved)
+        if (!registrarApproved) {
+          const approvalTx = await registrarContract.write.setApprovalForAll([
+            registrarAddress,
+            true,
+          ])
+          const approvalRes = await client?.waitForTransactionReceipt({
+            hash: approvalTx,
+          })
+        }
+      }
+
+      const registerChaserTx = await executeWriteToResolver(
+        wallet,
+        formationPrep,
+        formationCallback,
+      )
+      const transactionRes = await client?.waitForTransactionReceipt({
+        hash: registerChaserTx,
+      })
+      if (transactionRes?.status === 'reverted') {
+        throw Error('Transaction failed - contract error')
+      }
+      return () => window.location.reload()
+    } catch (err: any) {
+      setErrorMessage(err.message)
+    }
   }
 
   const decodeMulticallDatabytes = (databytes: any) => {
@@ -157,8 +289,20 @@ const ActionsTab = ({
     [txs],
   )
 
+  if (
+    isAddress(owner) &&
+    owner === address &&
+    (!isAddress(multisigAddress) || multisigAddress === zeroAddress)
+  ) {
+    return (
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
+      </div>
+    )
+  }
+
   let amendmentsTrigger = null
-  if (address !== zeroAddress) {
+  if (address === owner || (owner === multisigAddress && txsExecuted?.length >= 1)) {
     amendmentsTrigger = (
       <ActionsProposal
         setErrorMessage={setErrorMessage}

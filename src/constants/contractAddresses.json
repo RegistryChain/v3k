@@ -9,5 +9,7 @@
   "LEI": "0x86c850f9d9634dc891070fa04bcf5b1c1622d34c",
   "DatabaseResolver": "0x8acfa8800490e258f589c2419a3920b8b16015b3",
   "chaser.finance": "0x7cbe5e15feaca518fc9aae04bff57fddf0a6914e",
-  "public.chaser.finance": "0x0e9737cb8f35a7c26e1709287d809527561dd7b6"
+  "public.chaser.finance": "0x0e9737cb8f35a7c26e1709287d809527561dd7b6",
+  "klerosLiquidAddress": "0x90992fb4E15ce0C59aEFfb376460Fda4Ee19C879",
+  "us-wy.chaser.finance": "0x84b4d1dbc5144c3e3baf9ccb86b075a593962a31"
 }

@@ -6,11 +6,13 @@ import { createPublicClient, createWalletClient, custom, http, namehash } from '
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 
+import { normalise } from '@ensdomains/ensjs/utils'
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
 import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
-import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
+import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddressesObj from '../../constants/contractAddresses.json'
 import l1abi from '../../constants/l1abi.json'
@@ -55,10 +57,20 @@ const FooterContainer = styled.div(
 const tld = 'chaser.finance'
 const contractAddresses: any = contractAddressesObj
 
-const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords }: any) => {
-  const breakpoints = useBreakpoint()
+const Claims = ({
+  domain,
+  address,
+  breakpoints,
+  errorMessage,
+  setErrorMessage,
+  setIsClaiming,
+  records,
+  setRecords,
+  getRecords,
+}: any) => {
   const [fields, setField] = useState({ name: '', address: '', DOB: '' })
   // const [businessDoc, setBusinessDoc] = useState<any>(null)
+  const router = useRouterWithHistory()
   const [step, setStep] = useState(0)
   const [wallet, setWallet] = useState(null)
   const publicClient = useMemo(
@@ -108,11 +120,15 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
 
   const formationPrep: any = {
     functionName: 'transfer',
-    args: [namehash(name), address],
+    args: [namehash(normalize(domain)), address],
     abi: l1abi,
     address: contractAddresses['DatabaseResolver'],
   }
-
+  let registrarAddress = contractAddresses['public.' + tld]
+  if (records.company__registrar?.setValue) {
+    registrarAddress =
+      contractAddresses[records.company__registrar?.setValue?.toLowerCase() + '.' + tld]
+  }
   const formationCallback: any = {
     functionName: 'registerEntityClaim',
     abi: [
@@ -135,7 +151,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         type: 'function',
       },
     ],
-    address: contractAddresses['public.' + tld],
+    address: registrarAddress,
     args: [],
   }
 
@@ -150,7 +166,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         })
         const response = await fetch(
           `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleKYCIntake/nodeHash=${namehash(
-            name,
+            normalise(domain),
           )}.json`,
           {
             body,
@@ -183,7 +199,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
       //     formData.append('document', businessDoc)
 
       //     const response = await fetch(
-      //       `https://oyster-app-mn4sb.ondigitalocean.app/doc?operation=handleBusinessDoc&nodeHash=${namehash(
+      //       `http://localhost:2000/doc?operation=handleBusinessDoc&nodeHash=${namehash(
       //         name,
       //       )}`,
       //       {
@@ -216,8 +232,23 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         const transactionRes = await publicClient?.waitForTransactionReceipt({
           hash: registerChaserTx,
         })
-      } catch (err) {
-        console.log('error:', err)
+        if (transactionRes?.status === 'reverted') {
+          throw Error('Transaction failed - contract error')
+        }
+        return () => window.location.reload()
+      } catch (err: any) {
+        console.log('ERROR', err.details, err)
+        if (err.message === 'Cannot convert undefined to a BigInt') {
+          router.push('/entity/' + domain)
+          return
+        }
+        if (err.shortMessage === 'User rejected the request.') return
+        let errMsg = err?.details
+        if (!errMsg) errMsg = err?.shortMessage
+        if (!errMsg) errMsg = err.message
+
+        setErrorMessage(errMsg)
+        return
       }
     }
   }
@@ -234,8 +265,8 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
   if (step === 0) {
     content = (
       <>
-        <NameContainer>{name}</NameContainer>
-        <KYC fields={fields} setField={setField} />
+        <NameContainer>{domain}</NameContainer>
+        <KYC records={records} fields={fields} setField={setField} />
       </>
     )
     // } else if (step === 1) {
@@ -246,7 +277,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
     //   </div>
     // )
   } else if (step === 1) {
-    const entityPublicDomain = normalize(name + '.public.' + tld)
+    const entityRegistrarDomain = normalize(domain)
     content = (
       <div>
         <Typography fontVariant="headingThree" style={{ marginBottom: '12px' }}>
@@ -269,7 +300,7 @@ const Claims = ({ name, address, setIsClaiming, records, setRecords, getRecords 
         <div>
           <RecordsSection
             fields={records}
-            domainName={entityPublicDomain}
+            domainName={entityRegistrarDomain}
             compareToOldValues={false}
             claimEntity={null}
           />

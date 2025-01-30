@@ -8,11 +8,14 @@ import {
   View,
 } from '@react-pdf/renderer'
 import React, { useMemo, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { Button } from '@ensdomains/thorin'
 
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import WatermarkedWrapper from '@app/components/WatermarkedWrapper'
+
+import contractAddressesObj from '../../../constants/contractAddresses.json'
 
 // Create styles
 const styles: any = {
@@ -391,6 +394,35 @@ const constitutionModel: any = {
         ],
       },
       {
+        header: 'Dispute Resolution',
+        content: (profileData: any, userData: any) => {
+          const byAddress = isAddress(profileData.company__arbitrator)
+          const byKleros =
+            profileData.company__arbitrator === contractAddressesObj['klerosLiquidAddress'] ||
+            profileData.company__arbitrator?.toUpperCase()?.includes('KLEROS')
+          if (byKleros) {
+            return [
+              'Any dispute arising out of or in connection with the formation, operation, interpretation, performance, or termination of this Agreement, including but not limited to issues regarding its validity or breach, shall be submitted to Kleros, a decentralized dispute resolution platform, for non-binding mediation or advisory resolution.',
+              'The Parties agree that disputes shall be resolved in accordance with the Dispute Policy in force at the time of the dispute, which governs the criteria for dispute resolution by Kleros jurors. The specific Kleros court designated to address the dispute shall be General Court V2, and the arbitration process shall adhere to that court’s specifications regarding the number of jurors and timelines.',
+              'The Parties designate Coopérative Kleros as the neutral third party responsible for:',
+              'Receiving claims, responses, and evidence from both Parties;',
+              'Reviewing and adapting claims to present them as binary options for consideration by Kleros jurors; and',
+              'Notifying the Parties about the resolution determined by Kleros jurors.',
+              'The resolution of disputes by Kleros jurors will be non-binding, and the jurors will select the most reasonable option based on the evidence and arguments provided. The Parties agree to consider the outcome in good faith as a mechanism to resolve the dispute amicably.',
+              'Should the Parties fail to reach an agreement after consulting Kleros, the dispute must be resolved in the agreed forum and in accordance with the applicable law as set forth in this Agreement.',
+              'The Parties acknowledge that Coopérative Kleros has agreed to subsidize the juror fees associated with the use of Kleros during the term of this Agreement. However, if this subsidy ceases prior to the submission of a dispute, the Parties agree to equally share the cost of juror fees required for the use of Kleros. ',
+            ]
+          }
+          if (byAddress) {
+            return [
+              'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
+                profileData.company__arbitrator,
+            ]
+          }
+          return [profileData.company__arbitrator]
+        },
+      },
+      {
         header: 'Additional Terms',
         content: (profileData: any, userData: any) => [`${profileData.company__additional__terms}`],
       },
@@ -515,6 +547,35 @@ const constitutionModel: any = {
         content: (profileData: any, userData: any) => [
           `Distributions of cash, profit or other assets shall be made to quotaholders in proportion to their ownership interests, at such times as determined by the quotaholders.`,
         ],
+      },
+      {
+        header: 'Dispute Resolution',
+        content: (profileData: any, userData: any) => {
+          const byAddress = isAddress(profileData.company__arbitrator)
+          const byKleros =
+            profileData.company__arbitrator === contractAddressesObj['klerosLiquidAddress'] ||
+            profileData.company__arbitrator?.toUpperCase()?.includes('KLEROS')
+          if (byKleros) {
+            return [
+              'Any dispute arising out of or in connection with the formation, operation, interpretation, performance, or termination of this Agreement, including but not limited to issues regarding its validity or breach, shall be submitted to Kleros, a decentralized dispute resolution platform, for non-binding mediation or advisory resolution.',
+              'The Parties agree that disputes shall be resolved in accordance with the Dispute Policy in force at the time of the dispute, which governs the criteria for dispute resolution by Kleros jurors. The specific Kleros court designated to address the dispute shall be General Court V2, and the arbitration process shall adhere to that court’s specifications regarding the number of jurors and timelines.',
+              'The Parties designate Coopérative Kleros as the neutral third party responsible for:',
+              'Receiving claims, responses, and evidence from both Parties;',
+              'Reviewing and adapting claims to present them as binary options for consideration by Kleros jurors; and',
+              'Notifying the Parties about the resolution determined by Kleros jurors.',
+              'The resolution of disputes by Kleros jurors will be non-binding, and the jurors will select the most reasonable option based on the evidence and arguments provided. The Parties agree to consider the outcome in good faith as a mechanism to resolve the dispute amicably.',
+              'Should the Parties fail to reach an agreement after consulting Kleros, the dispute must be resolved in the agreed forum and in accordance with the applicable law as set forth in this Agreement.',
+              'The Parties acknowledge that Coopérative Kleros has agreed to subsidize the juror fees associated with the use of Kleros during the term of this Agreement. However, if this subsidy ceases prior to the submission of a dispute, the Parties agree to equally share the cost of juror fees required for the use of Kleros. ',
+            ]
+          }
+          if (byAddress) {
+            return [
+              'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
+                profileData.company__arbitrator,
+            ]
+          }
+          return [profileData.company__arbitrator]
+        },
       },
       {
         header: 'Additional Terms',

@@ -121,7 +121,7 @@ export const NameAvailableBanner = ({
 const ProfileContent = ({
   isSelf,
   isLoading: parentIsLoading,
-  name,
+  domain,
   router,
   address,
   claimEntity,
@@ -133,12 +133,12 @@ const ProfileContent = ({
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
+  const [owner, setOwner] = useState('')
   const [status, setStatus] = useState('')
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
 
   const registrars: any = registrarsObj
-  let nameToQuery = name
 
   const publicClient = useMemo(
     () =>
@@ -153,10 +153,10 @@ const ProfileContent = ({
   )
 
   useEffect(() => {
-    if (isSelf && name) {
-      router.replace(`/profile/${name}`)
+    if (isSelf && domain) {
+      router.replace(`/profile/${domain}`)
     }
-  }, [isSelf, name])
+  }, [isSelf, domain])
 
   useEffect(() => {
     const registry: any = getContract({
@@ -165,14 +165,14 @@ const ProfileContent = ({
       client: publicClient,
     })
     getMultisigAddr(registry)
-  }, [publicClient, name])
+  }, [publicClient, domain])
 
   useEffect(() => {
-    if (name) {
+    if (domain) {
       setRecordsRequestPending(true)
       getRecords()
     }
-  }, [name])
+  }, [domain])
 
   useEffect(() => {
     if (multisigAddress) {
@@ -227,7 +227,7 @@ const ProfileContent = ({
     } catch (err) {
       console.log('AXIOS CATCH ERROR', err)
     }
-  }, [records, name])
+  }, [records, domain])
 
   const getMultisig = async (multisig: any) => {
     return getContract({
@@ -243,15 +243,21 @@ const ProfileContent = ({
   }
 
   const getMultisigAddr = async (registry: any) => {
-    if (name) {
+    if (domain) {
+      let ownerAddress = zeroAddress
       try {
-        const multisigAddress = await registry.read.owner([namehash(normalise(name))])
-        const multisig = await getMultisig(multisigAddress)
-        const memberManagerAddress = await multisig.read.entityMemberManager()
-        setEntityMemberManager(memberManagerAddress)
-        setMultisigAddress(multisigAddress)
+        ownerAddress = await registry.read.owner([namehash(normalise(domain))])
+        setOwner(ownerAddress)
       } catch (e) {
         console.log(e)
+      }
+      try {
+        const multisig = await getMultisig(ownerAddress)
+        const memberManagerAddress = await multisig.read.entityMemberManager()
+        setEntityMemberManager(memberManagerAddress)
+        setMultisigAddress(ownerAddress)
+      } catch (err) {
+        console.log(err)
       }
     }
   }
@@ -262,11 +268,11 @@ const ProfileContent = ({
     parentIsLoading
       ? true
       : // if is self, user must be connected
-        (isSelf ? address : true) && typeof name === 'string' && name.length > 0,
+        (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
   )
 
-  const suffixIndex = name?.split('.')?.length - 1
-  const registrarKey = name?.split('.')?.slice(1, suffixIndex)?.join('.')
+  const suffixIndex = domain?.split('.')?.length - 1
+  const registrarKey = domain?.split('.')?.slice(1, suffixIndex)?.join('.')
 
   const registrarType = registrars[registrarKey || '']?.type
 
@@ -287,22 +293,22 @@ const ProfileContent = ({
       <>
         <Head>
           <title>{records?.company__name?.setValue}</title>
-          <meta name="description" content={name + ' RegistryChain'} />
-          <meta property="og:title" content={name} />
-          <meta property="og:description" content={name + ' RegistryChain'} />
-          <meta property="twitter:title" content={name} />
-          <meta property="twitter:description" content={name + ' RegistryChain'} />
+          <meta name="description" content={domain + ' RegistryChain'} />
+          <meta property="og:title" content={domain} />
+          <meta property="og:description" content={domain + ' RegistryChain'} />
+          <meta property="twitter:title" content={domain} />
+          <meta property="twitter:description" content={domain + ' RegistryChain'} />
         </Head>
         <Typography fontVariant="extraLargeBold" color="inherit">
-          Entity {name} is not registered on RegistryChain
+          Entity {domain} is not registered on RegistryChain
         </Typography>
       </>
     )
   }
 
   let title = 'RegistryChain'
-  if (name) {
-    title = name + ' on RegistryChain'
+  if (domain) {
+    title = domain + ' on RegistryChain'
   }
 
   let nameRecord = title
@@ -318,17 +324,17 @@ const ProfileContent = ({
         <title>{title}</title>
         <meta name="description" content={title} />
         <meta property="og:title" content={title} />
-        <meta property="og:description" content={name} />
+        <meta property="og:description" content={domain} />
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>
       {isClaiming ? null : (
-        <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={name}>
+        <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={domain}>
           {{
             header: (
               <>
                 <EntityViewTab
-                  domainName={name}
+                  domainName={domain}
                   multisigAddress={multisigAddress}
                   records={records}
                   status={status}
@@ -367,7 +373,7 @@ const ProfileContent = ({
             trailing: match(tab)
               .with('entity', () => (
                 <>
-                  {isAddress(multisigAddress) && multisigAddress !== zeroAddress ? null : (
+                  {isAddress(owner) && owner !== zeroAddress ? null : (
                     <MessageContainer>
                       This entity has not deployed its Contract Account. This means it is not
                       currently active on RegistryChain.
@@ -377,8 +383,9 @@ const ProfileContent = ({
                     fields={records}
                     compareToOldValues={false}
                     claimEntity={claimEntity}
-                    domainName={name}
+                    domainName={domain}
                     addressesObj={[
+                      { key: 'Owner Address', value: owner },
                       { key: 'Multisig Address', value: multisigAddress },
                       { key: 'Member Manager Address', value: entityMemberManager },
                     ]}
@@ -386,12 +393,12 @@ const ProfileContent = ({
                 </>
               ))
               .with('constitution', () => {
-                if (records && multisigAddress) {
+                if (records && zeroAddress !== owner && isAddress(owner)) {
                   return (
                     <Constitution
                       breakpoints={breakpoints}
                       formationData={records}
-                      multisigAddress={multisigAddress}
+                      multisigAddress={multisigAddress || zeroAddress}
                       model={records.company__selected__model}
                       setModel={null}
                       canDownload={true}
@@ -407,14 +414,16 @@ const ProfileContent = ({
                 }
               })
               .with('actions', () => {
-                if (records && multisigAddress) {
+                if (records && zeroAddress !== owner && isAddress(owner)) {
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
+                      registrar={records?.company__registrar?.setValue || 'public'}
+                      owner={owner}
                       multisigAddress={multisigAddress}
                       entityMemberManager={entityMemberManager}
                       client={publicClient}
-                      name={name}
+                      name={domain}
                       checkEntityStatus={() => checkEntityStatus()}
                     />
                   )
@@ -432,7 +441,7 @@ const ProfileContent = ({
                   {demoMessage}
                   <AppsTab
                     registrarType={registrarType}
-                    name={normalise(name)}
+                    name={normalise(domain)}
                     nameDetails={{}}
                     breakpoints={breakpoints}
                   />
@@ -443,7 +452,7 @@ const ProfileContent = ({
                   {demoMessage}
                   <LicenseTab
                     registrarType={registrarType}
-                    name={normalise(name)}
+                    name={normalise(domain)}
                     nameDetails={{}}
                     breakpoints={breakpoints}
                   />
