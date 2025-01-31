@@ -26,7 +26,6 @@ const HeadingItems = styled.div(
   ({ theme }) => css`
     grid-column: span 1;
     width: 100%;
-    max-width: ${theme.space['192']};
     padding: 0 ${theme.radii.extraLarge};
 
     display: grid;

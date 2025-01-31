@@ -1,5 +1,4 @@
 import { lightTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-
 import '@rainbow-me/rainbowkit/styles.css'
 
 import { NextPage } from 'next'
@@ -24,6 +23,7 @@ import { SyncProvider } from '@app/utils/SyncProvider/SyncProvider'
 import i18n from '../i18n'
 
 import '../styles.css'
+import { Provider } from '@app/components/ui/provider'
 
 const rainbowKitTheme: Theme = {
   ...lightTheme({
@@ -72,10 +72,6 @@ const GlobalStyle = createGlobalStyle`
       "Droid Sans",
       "Helvetica Neue",
       sans-serif;
-  }
-
-  body {
-    background: radial-gradient(50% 50% at 50% 50%, rgba(82, 152, 255, 0.062) 0%, rgba(255, 255, 255, 0) 100%), #F7F7F7;
   }
 
   body, .min-safe {
@@ -141,25 +137,27 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryProviders>
-        <RainbowKitProvider theme={rainbowKitTheme}>
-          <TransactionStoreProvider>
-            <ThemeProvider theme={thorinLightTheme}>
-              <BreakpointProvider queries={breakpoints}>
-                <GlobalStyle />
-                <ThorinGlobalStyles />
-                <SyncProvider>
-                  <TransactionFlowProvider>
-                    <SyncDroppedTransaction>
-                      <Notifications />
-                      {/* <TestnetWarning /> */}
-                      <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                    </SyncDroppedTransaction>
-                  </TransactionFlowProvider>
-                </SyncProvider>
-              </BreakpointProvider>
-            </ThemeProvider>
-          </TransactionStoreProvider>
-        </RainbowKitProvider>
+        <Provider>
+          <RainbowKitProvider theme={rainbowKitTheme}>
+            <TransactionStoreProvider>
+              <ThemeProvider theme={thorinLightTheme}>
+                <BreakpointProvider queries={breakpoints}>
+                  <GlobalStyle />
+                  <ThorinGlobalStyles />
+                  <SyncProvider>
+                    <TransactionFlowProvider>
+                      <SyncDroppedTransaction>
+                        <Notifications />
+                        {/* <TestnetWarning /> */}
+                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                      </SyncDroppedTransaction>
+                    </TransactionFlowProvider>
+                  </SyncProvider>
+                </BreakpointProvider>
+              </ThemeProvider>
+            </TransactionStoreProvider>
+          </RainbowKitProvider>
+        </Provider>
       </QueryProviders>
     </I18nextProvider>
   )

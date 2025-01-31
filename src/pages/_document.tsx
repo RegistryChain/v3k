@@ -72,7 +72,7 @@ export default class MyDocument extends Document {
 
   render() {
     return (
-      <Html>
+      <Html suppressHydrationWarning>
         <Head>
           {process.env.NODE_ENV === 'production' && (
             <meta

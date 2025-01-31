@@ -184,7 +184,7 @@ const Claims = ({
         if (data.success) {
           setStep(step + 1)
         } else {
-          alert('KYC did not match')
+          console.error('KYC did not match')
         }
       } catch (err) {
         console.log('err', err)

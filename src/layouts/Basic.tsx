@@ -14,8 +14,6 @@ import { Navigation } from './Navigation'
 
 const Container = styled.div(
   ({ theme }) => css`
-    --padding-size: ${theme.space['4']};
-    padding: var(--padding-size);
     display: flex;
     flex-gap: ${theme.space['4']};
     gap: ${theme.space['4']};
@@ -37,7 +35,8 @@ const Container = styled.div(
 
 const ContentWrapper = styled.div(
   ({ theme }) => css`
-    max-width: ${theme.space['192']};
+    max-width: 85vw;
+    margin: 0 auto;
     width: 100%;
     align-self: center;
     flex-grow: 1;

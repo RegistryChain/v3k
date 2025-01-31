@@ -1,6 +1,4 @@
 import { fireEvent, render, screen } from '@app/test-utils'
-
-import { fireEvent } from '@testing-library/react'
 import { InputHTMLAttributes, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 

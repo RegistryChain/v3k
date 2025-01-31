@@ -64,7 +64,8 @@
     "yrs_other": "{{count}} yrs",
     "gas": "{{value}} gas",
     "selected": "{{count}} selected",
-    "perPage": "{{count}} per page"
+    "perPage": "{{count}} per page",
+    "sort_by": "Sort by"
   },
   "navigation": {
     "home": "Home",
@@ -84,7 +85,9 @@
     "currency": "Currency",
     "ipfsApp": "IPFS ENS App",
     "feedback": "Feedback",
-    "syncMessage": "Syncing with the network. Changes from your transaction may not be visible yet."
+    "syncMessage": "Syncing with the network. Changes from your transaction may not be visible yet.",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "wallet": {
     "myProfile": "Profile",

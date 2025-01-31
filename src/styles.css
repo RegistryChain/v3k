@@ -1,1 +1,86 @@
 @import url('/fonts/fonts.css');
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+:root {
+  background-color: #181818;
+  color: rgba(255, 255, 255, 0.87);
+  color-scheme: light dark;
+  font-family: "Raleway", sans-serif;
+  font-synthesis: none;
+  font-weight: 400;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+
+/* Default (Light) Theme */
+:root {
+  --color-primary: #3490dc;
+  --primary-dark: #042352;
+  --color-primary-light: #224E8F;
+  --color-secondary: #ffed4a;
+  --color-background: #ffffff;
+  --color-text: #333333;
+  --color-accent: #5EDCD4;
+  --color-accent-light: rgba(94, 220, 212, 0.5);
+  --color-gray-100: #ECEFF1;
+  --color-gray-200: #CFD8DC;
+  --color-gray-300: #B0BEC5;
+  --color-gray-400: #90A4AE;
+  --color-gray-500: #78909C;
+  --color-gray-600: #607D8B;
+  --color-gray-700: #546E7A;
+  --color-gray-800: #455A64;
+  --color-gray-900: #37474F;
+  --color-gray-1000: #263238;
+  --color-gray-1100: #1C262B;
+}
+
+/* Dark Theme */
+.dark {
+  --color-background: #222222;
+  --color-primary: #186BE8;
+  --color-primary-dark: #042352;
+  --primary-dark: #042352;
+  --color-primary-light: #224E8F;
+  --color-accent: #5EDCD4;
+  --color-accent-light: rgba(94, 220, 212, 0.5)
+  --color-gray-100: #DBE4E7;
+  --color-gray-200: #CDD8DA;
+  --color-gray-300: #B5CACE;
+  --color-gray-400: #93AFB6;
+  --color-gray-500: #76979E;
+  --color-gray-600: #5C7D85;
+  --color-gray-700: #5B7075;
+  --color-gray-800: #536468;
+  --color-gray-900: #445356;
+  --color-gray-1000: #384345;
+  --color-gray-1100: #313839;
+
+  --color-warning: #D7AE20;
+  --color-success: #3DBB59;
+  --color-danger: #D65025;
+  --color-info: #1BAAB4;
+
+  --color-text: #93AFB6;
+
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: #f8f8f8;
+    color: #181818;
+  }
+}
+
+/* TODO: fix to use theme colors  */
+
+html, body {
+  background-color: white;
+  color: #333;
+}

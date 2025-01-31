@@ -1,36 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { match, P } from 'ts-pattern'
-import { createPublicClient, http, zeroAddress, type Address } from 'viem'
+import { http } from 'viem'
 import { sepolia } from 'viem/chains'
-import { normalize } from 'viem/ens'
-import { useAccount } from 'wagmi'
+
 
 import { createEnsPublicClient } from '@ensdomains/ensjs'
-import { getSubnames, Name } from '@ensdomains/ensjs/subgraph'
-import { Button, Spinner } from '@ensdomains/thorin'
-
-import { InfiniteScrollContainer } from '@app/components/@atoms/InfiniteScrollContainer/InfiniteScrollContainer'
-import { TaggedNameItem } from '@app/components/@atoms/NameDetailItem/TaggedNameItem'
+import { Name } from '@ensdomains/ensjs/subgraph'
 import {
   NameTableHeader,
   SortDirection,
-  SortType,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
-import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
-import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
-
-const EmptyDetailContainer = styled.div(
-  ({ theme }) => css`
-    padding: ${theme.space['4']};
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  `,
-)
+import { DirectoryTable } from '@app/components/@molecules/DirectoryTable/DirectoryTable'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -44,48 +27,8 @@ const TabWrapperWithButtons = styled(TabWrapper)(
   `,
 )
 
-const Footer = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: ${theme.space['8']};
-    border-top: 1px solid ${theme.colors.border};
-  `,
-)
-
-type SubnameListViewProps = {}
-
-export const SubnameListView = ({}: SubnameListViewProps) => {
-  const router = useRouterWithHistory()
-  const { address } = useAccount()
-  const tld = 'registrychain.com'
-
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
+export const SubnameListView = () => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
-
-  const handleClickName = (entity: any) => () => {
-    let domain = null
-    try {
-      domain = normalize(
-        entity.company__name
-          .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
-          .replace(/ /g, '-') // Replace spaces with hyphens
-          .replace(/-{2,}/g, '-') +
-          '.' +
-          entity.company__registrar +
-          '.' +
-          tld,
-      )
-    } catch (err) {
-      domain = (entity.company__name + '.' + entity.company__registrar + '.' + tld).toLowerCase()
-    }
-    router.push('/entity/' + domain)
-  }
 
   const [sortType, setSortType] = useState<any>('company__formation__date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -98,7 +41,6 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
   const [finishedLoading, setFinishedLoading] = useState(false)
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
-  const [subnameResLoaded, setSubnameResLoaded] = useState<Boolean>(false)
 
   const client: any = useMemo(
     () =>
@@ -109,7 +51,8 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
     [],
   )
 
-  const getSubs = async (currentRes: any[], page: number = pageNumber) => {
+  const getSubs = async (page: number = pageNumber, resetResults = false) => {
+    setIsLoadingNextPage(true);
     try {
       const results = await getEntitiesList({
         registrar,
@@ -117,32 +60,32 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
         page,
         sortDirection,
         sortType,
-      })
+      });
 
-      setSubnameResults([...currentRes, ...results])
-      setIsLoadingNextPage(false)
+      setSubnameResults(prevResults => (resetResults ? results : [...prevResults, ...results]));
       if (results.length !== 25) {
-        setFinishedLoading(true)
+        setFinishedLoading(true);
+
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
+    } finally {
+      setIsLoadingNextPage(false);
     }
-    setSubnameResLoaded(true)
-  }
+  };
 
   useEffect(() => {
-    setIsLoadingNextPage(true)
     if (pageNumber !== 0) {
-      getSubs(subnameResults, pageNumber)
+      getSubs(pageNumber);
     }
-  }, [pageNumber])
+  }, [pageNumber]);
 
   useEffect(() => {
-    setPageNumber(0)
-    getSubs([], 0)
-  }, [client, searchInput, registrar, sortType, sortDirection])
+    setPageNumber(0);
+    getSubs(0, true);
+  }, [client, searchInput, registrar, sortType, sortDirection]);
 
-  const filteredSet = subnameResults.map((name) => {
+  const filteredSet = useMemo(() => subnameResults.map((name) => {
     const labelName = name.name.split(name.parentName).join('').split('.').join('.')
     const domainId = labelName.split('-').pop().split('.').join('')
     const commonName = labelName
@@ -150,7 +93,7 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
       .slice(0, labelName.split('-').length - 1)
       .join(' ')
     return { ...name, labelName, commonName, domainId }
-  })
+  }), [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar])
 
   return (
     <TabWrapperWithButtons>
@@ -172,79 +115,16 @@ export const SubnameListView = ({}: SubnameListViewProps) => {
         onSearchChange={(s) => {
           setSearchInput(s)
         }}
-      ></NameTableHeader>
-      <div data-testid="names-list">
-        {match([isMounted, subnameResLoaded, filteredSet?.length, searchQuery])
-          .with([false, P._, P._, P._], () => null)
-          .with([true, false, 0, P._], () => (
-            <EmptyDetailContainer>
-              <Spinner color="accent" />
-            </EmptyDetailContainer>
-          ))
-          .with([true, true, 0, P._], () => {
-            return <EmptyDetailContainer>No entities found.</EmptyDetailContainer>
-          })
-          .with([true, true, filteredSet?.length, P._], () => {
-            return (
-              <>
-                <InfiniteScrollContainer
-                  onIntersectingChange={(isVisible) => {
-                    if (isVisible && !isLoadingNextPage && !finishedLoading) {
-                      setPageNumber(pageNumber + 1)
-                    }
-                  }}
-                  offset="150px"
-                >
-                  <div>
-                    {filteredSet.map((entity) => {
-                      let domain = null
-                      try {
-                        domain = normalize(
-                          entity.company__name
-                            .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
-                            .replace(/ /g, '-') // Replace spaces with hyphens
-                            .replace(/-{2,}/g, '-') +
-                            '.' +
-                            entity.company__registrar +
-                            '.' +
-                            tld,
-                        )
-                      } catch (err) {
-                        domain = (
-                          entity.company__name +
-                          '.' +
-                          entity.company__registrar +
-                          '.' +
-                          tld
-                        ).toLowerCase()
-                      }
-                      return (
-                        <TaggedNameItem
-                          isOwner={
-                            address === entity.owner && entity.owner && entity.owner !== zeroAddress
-                          }
-                          name={entity.company__name + ' (' + domain + ')'}
-                          key={entity.LEI}
-                          mode={'view'}
-                          selected={false}
-                          disabled={false}
-                          onClick={handleClickName(entity)}
-                        />
-                      )
-                    })}
-                  </div>
-                </InfiniteScrollContainer>
-                {isLoadingNextPage && !finishedLoading ? (
-                  <EmptyDetailContainer>
-                    <Spinner color="accent" />
-                  </EmptyDetailContainer>
-                ) : null}
-              </>
-            )
-          })
-          .otherwise(() => `${subnameResults.length}`)}
-      </div>
-      <Footer />
+      />
+      <DirectoryTable
+        sortDirection={sortDirection}
+        onSortDirectionChange={setSortDirection}
+        data={filteredSet}
+        isLoadingNextPage={isLoadingNextPage}
+        fetchData={getSubs}
+        page={pageNumber}
+        setPage={setPageNumber}
+      />
     </TabWrapperWithButtons>
   )
 }
