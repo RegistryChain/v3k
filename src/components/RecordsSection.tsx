@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,10 +8,8 @@ import { normalize } from 'viem/ens'
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
-import { AddressRecord, Profile, TextRecord } from '@app/types'
 import { normalizeLabel } from '@app/utils/utils'
 
-import { ExclamationSymbol } from './ExclamationSymbol'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
 import { Collapsible } from '@chakra-ui/react'
 import { FaChevronDown } from "react-icons/fa";

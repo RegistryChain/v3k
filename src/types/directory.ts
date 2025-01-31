@@ -15,6 +15,11 @@ export interface Entity {
 }
 
 export interface Partner {
-  wallet__address: string
-  name: string
+  wallet__address: string;
+  name: string;
+  [key: string]: {
+    label?: string;
+    oldValue?: string | string[];
+    setValue?: string | string[];
+  } | string | undefined;
 }

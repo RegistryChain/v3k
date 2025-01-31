@@ -1,3 +1,4 @@
+import { Partner } from '@app/types/directory';
 import { useRouter } from 'next/router';
 import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, PromiseLikeOfReactNode, Key } from 'react';
 import { ReactI18NextChild } from 'react-i18next';
@@ -13,8 +14,7 @@ const PartnerContainer = styled.div`
 const PartnerTable = styled.div`
   display: table;
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px;
+  border-collapse: collapse;
 `;
 
 const PartnerRow = styled.div<{ isHeader?: boolean }>`
@@ -26,50 +26,66 @@ const PartnerRow = styled.div<{ isHeader?: boolean }>`
 const PartnerCell = styled.div<{ isHeader?: boolean }>`
   display: table-cell;
   padding: 12px 16px;
-  border-bottom: 1px solid #ddd;
+  border: 1px solid #ddd;
   text-align: left;
   font-size: 14px;
   vertical-align: middle;
   color: ${(props) => (props.isHeader ? '#333' : '#555')};
   font-weight: ${(props) => (props.isHeader ? 'bold' : 'normal')};
-  background: ${(props) => (props.isHeader ? '#f5f5f5' : 'white')};
 `;
 
+const PartnerLink = styled.a`
+  text-decoration: underline;
+  color: #007bff;
+  &:hover {
+    color: #0056b3;
+  }
+`;
 
-const CompanyPartners = ({ partners, compareToOldValues }: any) => {
-  const router = useRouter();
-
+const CompanyPartners = ({ partners, compareToOldValues }: { partners: Partner[], compareToOldValues: any }) => {
   return (
     <PartnerContainer>
       <PartnerTable>
-        {partners.map((partner: {
-          [x: string]: {
-            [x: string]: any; setValue: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | Iterable<ReactI18NextChild> | null | undefined;
-          }; domain?: any; name?: any;
-        }, idx: Key | null | undefined) => (
-          Object.keys(partner).map((key, subIdx) => (
-            <PartnerRow key={subIdx}>
-              <PartnerCell isHeader>{partner[key]?.label || key}</PartnerCell>
-              <PartnerCell>
-                {partner[key].oldValue && compareToOldValues ? (
-                  <span style={{ color: 'red', textDecoration: 'line-through' }}>
-                    {Array.isArray(partner[key].oldValue)
-                      ? partner[key].oldValue.join(', ')
-                      : partner[key].oldValue}
-                  </span>
-                ) : null}{' '}
-                {Array.isArray(partner[key].setValue)
-                  ? partner[key].setValue.join(', ')
-                  : partner[key].setValue}
-              </PartnerCell>
-            </PartnerRow>
-          ))
+        {partners.map((partner, idx) => (
+          Object.keys(partner).map((key, subIdx) => {
+            const partnerValue = partner[key] as {
+              label?: string;
+              oldValue?: string | string[];
+              setValue?: string | string[];
+            } | string | undefined;
+
+            const isHeader = partnerValue && typeof partnerValue !== 'string' ? partnerValue.label || key : key;
+            const oldValue = partnerValue && typeof partnerValue !== 'string' && partnerValue.oldValue && compareToOldValues ? (
+              <span style={{ color: 'red', textDecoration: 'line-through' }}>
+                {Array.isArray(partnerValue.oldValue)
+                  ? partnerValue.oldValue.join(', ')
+                  : partnerValue.oldValue}
+              </span>
+            ) : null;
+
+            let setValue = '';
+            if (partnerValue && typeof partnerValue !== 'string') {
+              if (Array.isArray(partnerValue.setValue)) {
+                setValue = partnerValue.setValue.join(', ');
+              } else {
+                setValue = partnerValue.setValue ?? '';
+              }
+            }
+
+            return (
+              <PartnerRow key={subIdx}>
+                <PartnerCell isHeader>{isHeader}</PartnerCell>
+                <PartnerCell>
+                  {oldValue}{' '}
+                  {setValue}
+                </PartnerCell>
+              </PartnerRow>
+            );
+          })
         ))}
       </PartnerTable>
     </PartnerContainer>
   );
 };
 
-export {
-  CompanyPartners
-};
+export { CompanyPartners };
