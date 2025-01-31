@@ -51,7 +51,7 @@ const FooterContainer = styled.div(
   `,
 )
 
-const tld = 'chaser.finance'
+const tld = 'registrychain.com'
 
 export default function Page() {
   const { t } = useTranslation('common')
