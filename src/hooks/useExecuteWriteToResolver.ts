@@ -172,15 +172,21 @@ export async function getTransactions({ nodeHash = zeroHash, address }: any) {
 export async function ccipRequest({ body, url }: CcipRequestParameters): Promise<Response> {
   //http://localhost:2000/{sender}/{data}.json
   try {
-    const res = await fetch(url.replace('/{sender}/{data}.json', ''), {
-      body: JSON.stringify(body, (_, value) =>
-        typeof value === 'bigint' ? value.toString() : value,
+    const res = await fetch(
+      'https://oyster-app-mn4sb.ondigitalocean.app/{sender}/{data}.json'.replace(
+        '/{sender}/{data}.json',
+        '',
       ),
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      {
+        body: JSON.stringify(body, (_, value) =>
+          typeof value === 'bigint' ? value.toString() : value,
+        ),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    })
+    )
 
     return res
   } catch (err) {

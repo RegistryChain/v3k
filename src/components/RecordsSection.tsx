@@ -1,6 +1,8 @@
+import { Collapsible } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FaChevronDown } from 'react-icons/fa'
 import styled, { css } from 'styled-components'
 import { isAddress, namehash, zeroAddress } from 'viem'
 import { normalize } from 'viem/ens'
@@ -10,12 +12,10 @@ import { Button, mq, Typography } from '@ensdomains/thorin'
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
 import { normalizeLabel } from '@app/utils/utils'
 
-import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
-import { Collapsible } from '@chakra-ui/react'
-import { FaChevronDown } from "react-icons/fa";
-import CompanyInfo from './CompanyInfo'
 import { CompanyAddresses } from './CompanyAddresses'
+import CompanyInfo from './CompanyInfo'
 import { CompanyPartners } from './CompanyPartners'
+import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`
@@ -120,6 +120,8 @@ export const RecordsSection = ({
   const { t } = useTranslation('profile')
   const router = useRouter()
 
+  console.log(fields)
+
   const filteredCompanyData = useMemo(
     () => Object.keys(fields)?.filter((field) => field.includes('company')),
     [fields],
@@ -131,9 +133,7 @@ export const RecordsSection = ({
 
   let addressSection = null
   if (addressesObj) {
-    addressSection = (
-      <CompanyAddresses addressesObj={addressesObj} />
-    )
+    addressSection = <CompanyAddresses addressesObj={addressesObj} />
   }
 
   let partnerSection = null
@@ -153,10 +153,10 @@ export const RecordsSection = ({
               {fields.children.map((record: any, idx: number) => {
                 const domain = normalize(
                   normalizeLabel(record?.company__name?.setValue) +
-                  '.' +
-                  record?.company__registrar?.setValue +
-                  '.' +
-                  tld,
+                    '.' +
+                    record?.company__registrar?.setValue +
+                    '.' +
+                    tld,
                 )
                 return (
                   <RecordSection key={'section1SubSubPartner' + idx}>
@@ -165,7 +165,7 @@ export const RecordsSection = ({
                         <SectionTitle
                           data-testid="text-heading"
                           fontVariant="bodyBold"
-                          onClick={() => router.push('/entity/' + domain)}
+                          onClick={() => (window.location.href = '/entity/' + domain)}
                         >
                           <u>{record.company__name.setValue}</u>
                         </SectionTitle>
@@ -206,13 +206,6 @@ export const RecordsSection = ({
     )
   }
 
-  // const categoryTexts =
-  //   filteredCompanyData?.filter((text) => text.key.split('__')[0] === 'company') || []
-  // const domain = filteredCompanyData?.find((x) => x.key === 'domain')
-  // const lei = filteredCompanyData?.find((x) => x.key === 'LEI')
-
-  // if (domain) categoryTexts.unshift(domain)
-  // if (lei) categoryTexts.unshift(lei)
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
     const ownerAddress = addressesObj?.find((x: any) => x.key === 'Owner Address')?.value
@@ -264,7 +257,6 @@ export const RecordsSection = ({
     <>
       <TabWrapper data-testid="records-tab">
         <AllRecords>
-
           <Collapsible.Root defaultOpen>
             <Collapsible.Trigger>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
@@ -282,9 +274,7 @@ export const RecordsSection = ({
                 Addresses <FaChevronDown />
               </SectionTitle>
             </Collapsible.Trigger>
-            <Collapsible.Content>
-              {addressSection}
-            </Collapsible.Content>
+            <Collapsible.Content>{addressSection}</Collapsible.Content>
           </Collapsible.Root>
 
           <Collapsible.Root defaultOpen>
@@ -293,9 +283,7 @@ export const RecordsSection = ({
                 Partners <FaChevronDown />
               </SectionTitle>
             </Collapsible.Trigger>
-            <Collapsible.Content>
-              {partnerSection}
-            </Collapsible.Content>
+            <Collapsible.Content>{partnerSection}</Collapsible.Content>
           </Collapsible.Root>
 
           {childrenSection && (
@@ -305,11 +293,20 @@ export const RecordsSection = ({
                   Child Entities <FaChevronDown />
                 </SectionTitle>
               </Collapsible.Trigger>
-              <Collapsible.Content>
-                {childrenSection}
-              </Collapsible.Content>
+              <Collapsible.Content>{childrenSection}</Collapsible.Content>
             </Collapsible.Root>
           )}
+
+          {/* {changeLogSection && (
+            <Collapsible.Root defaultOpen>
+              <Collapsible.Trigger>
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  Entity Changes <FaChevronDown />
+                </SectionTitle>
+              </Collapsible.Trigger>
+              <Collapsible.Content>{changeLogSection}</Collapsible.Content>
+            </Collapsible.Root>
+          )} */}
         </AllRecords>
       </TabWrapper>
     </>

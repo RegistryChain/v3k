@@ -3,9 +3,10 @@ import styled, { css } from 'styled-components'
 import { http } from 'viem'
 import { sepolia } from 'viem/chains'
 
-
 import { createEnsPublicClient } from '@ensdomains/ensjs'
 import { Name } from '@ensdomains/ensjs/subgraph'
+
+import { DirectoryTable } from '@app/components/@molecules/DirectoryTable/DirectoryTable'
 import {
   NameTableHeader,
   SortDirection,
@@ -13,7 +14,8 @@ import {
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { infuraUrl } from '@app/utils/query/wagmi'
-import { DirectoryTable } from '@app/components/@molecules/DirectoryTable/DirectoryTable'
+
+import entityTypesObj from '../../../constants/entityTypes.json'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -42,6 +44,15 @@ export const SubnameListView = () => {
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
 
+  const jurisList = useMemo(() => {
+    // const list = {}
+    // entityTypesObj.forEach((x) => {
+    //   list[x.countryJurisdictionCode] = true
+    // })
+    // return Object.keys(list)
+    return ['any', 'public', 'US-WY', 'US-CA', 'US-DE', 'BR', 'FR', 'CN']
+  }, [entityTypesObj])
+
   const client: any = useMemo(
     () =>
       createEnsPublicClient({
@@ -52,7 +63,7 @@ export const SubnameListView = () => {
   )
 
   const getSubs = async (page: number = pageNumber, resetResults = false) => {
-    setIsLoadingNextPage(true);
+    setIsLoadingNextPage(true)
     try {
       const results = await getEntitiesList({
         registrar,
@@ -60,40 +71,48 @@ export const SubnameListView = () => {
         page,
         sortDirection,
         sortType,
-      });
+      })
 
-      setSubnameResults(prevResults => (resetResults ? results : [...prevResults, ...results]));
+      setSubnameResults((prevResults) => (resetResults ? results : [...prevResults, ...results]))
       if (results.length !== 25) {
-        setFinishedLoading(true);
-
+        setFinishedLoading(true)
       }
     } catch (err) {
-      console.log(err);
+      console.log(err)
     } finally {
-      setIsLoadingNextPage(false);
+      setIsLoadingNextPage(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (pageNumber !== 0) {
-      getSubs(pageNumber);
+      getSubs(pageNumber)
     }
-  }, [pageNumber]);
+  }, [pageNumber])
 
+  // Debounce effect: Wait 1 second after typing stops before calling API
   useEffect(() => {
-    setPageNumber(0);
-    getSubs(0, true);
-  }, [client, searchInput, registrar, sortType, sortDirection]);
+    const delayDebounceFn = setTimeout(() => {
+      setPageNumber(0)
+      getSubs(0, true)
+    }, 1000) // 1000ms = 1 second
 
-  const filteredSet = useMemo(() => subnameResults.map((name) => {
-    const labelName = name.name.split(name.parentName).join('').split('.').join('.')
-    const domainId = labelName.split('-').pop().split('.').join('')
-    const commonName = labelName
-      .split('-')
-      .slice(0, labelName.split('-').length - 1)
-      .join(' ')
-    return { ...name, labelName, commonName, domainId }
-  }), [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar])
+    return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
+  }, [searchInput, registrar, sortType, sortDirection])
+
+  const filteredSet = useMemo(
+    () =>
+      subnameResults.map((name) => {
+        const labelName = name.name.split(name.parentName).join('').split('.').join('.')
+        const domainId = labelName.split('-').pop().split('.').join('')
+        const commonName = labelName
+          .split('-')
+          .slice(0, labelName.split('-').length - 1)
+          .join(' ')
+        return { ...name, labelName, commonName, domainId }
+      }),
+    [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
+  )
 
   return (
     <TabWrapperWithButtons>
@@ -103,7 +122,7 @@ export const SubnameListView = () => {
         sortTypeOptionValues={['company__formation__date', 'name']}
         sortDirection={sortDirection}
         registrar={registrar}
-        registrarOptionValues={['any', 'public', 'US-WY', 'US-CA', 'US-DE']}
+        registrarOptionValues={jurisList}
         searchQuery={searchInput}
         selectedCount={selectedNames.length}
         onModeChange={(m) => {
