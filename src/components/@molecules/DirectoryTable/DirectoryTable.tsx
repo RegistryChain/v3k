@@ -1,23 +1,39 @@
-import { useState } from "react"
-
+import { useState } from 'react'
+import { RxAvatar } from 'react-icons/rx'
+import { match, P } from 'ts-pattern'
+import { createPublicClient, http, zeroAddress, type Address } from 'viem'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
-import { createPublicClient, http, zeroAddress, type Address } from 'viem'
+
+import { Spinner } from '@ensdomains/thorin'
 
 import DownDirectionSVG from '@app/assets/SortAscending.svg'
 import UpDirectionSVG from '@app/assets/SortDescending.svg'
-import { RxAvatar } from "react-icons/rx";
-import { useRouterWithHistory } from "@app/hooks/useRouterWithHistory"
-import { Entity, Partner } from "@app/types/directory"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@app/components/ui/table"
-import { Spinner } from "@ensdomains/thorin"
-import * as Styles from "./DirectoryTable.styles"
-import { Button } from "@app/components/ui/button"
-import { match, P } from "ts-pattern"
+import { Button } from '@app/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@app/components/ui/table'
+import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { Entity, Partner } from '@app/types/directory'
 
-const { ButtonContainer, EllipsisContainer, DirectionButton, Status, EmptyDetailContainer, Container, TableContainer } = Styles;
+import * as Styles from './DirectoryTable.styles'
 
-const itemsPerPage = 25;
+const {
+  ButtonContainer,
+  EllipsisContainer,
+  DirectionButton,
+  Status,
+  EmptyDetailContainer,
+  Container,
+  TableContainer,
+} = Styles
+
+const itemsPerPage = 25
 
 export interface IColumn<T> {
   label: string
@@ -37,12 +53,21 @@ interface DirectoryTableProps {
   setPage: React.Dispatch<React.SetStateAction<number>>
 }
 
-export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirection, onSortDirectionChange, page, setPage }: DirectoryTableProps) => {
+export const DirectoryTable = ({
+  data,
+  isLoadingNextPage,
+  fetchData,
+  sortDirection,
+  onSortDirectionChange,
+  page,
+  setPage,
+}: DirectoryTableProps) => {
   const router = useRouterWithHistory()
-  const tld = 'chaser.finance'
+  const tld = 'registrychain.com'
   const { address } = useAccount()
 
-  const isOwner = (entity: any) => entity.partners?.some((partner: Partner) => partner.wallet__address === address)
+  const isOwner = (entity: any) =>
+    entity.partners?.some((partner: Partner) => partner.wallet__address === address)
 
   const handleClickRow = (entity: Entity) => {
     let domain = null
@@ -52,10 +77,10 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
           .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
           .replace(/ /g, '-') // Replace spaces with hyphens
           .replace(/-{2,}/g, '-') +
-        '.' +
-        entity.company__registrar +
-        '.' +
-        tld,
+          '.' +
+          entity.company__registrar +
+          '.' +
+          tld,
       )
     } catch (err) {
       domain = (entity.company__name + '.' + entity.company__registrar + '.' + tld).toLowerCase()
@@ -67,7 +92,7 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
     {
       label: 'Owner',
       key: 'partners',
-      render: (row: Entity) => isOwner(row) && <RxAvatar /> || '',
+      render: (row: Entity) => (isOwner(row) && <RxAvatar />) || '',
     },
     {
       label: 'Company Name',
@@ -80,22 +105,22 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
         >
           {sortDirection === 'asc' ? <UpDirectionSVG /> : <DownDirectionSVG />}
         </DirectionButton>
-      )
+      ),
     },
     {
       label: 'Company Type',
       key: 'company__type',
-      render: (row) => <EllipsisContainer>{row.company__type}</EllipsisContainer>
+      render: (row) => <EllipsisContainer>{row.company__type}</EllipsisContainer>,
     },
     {
       label: 'Address',
       key: 'company__address',
-      render: (row) => <EllipsisContainer>{row.company__address}</EllipsisContainer>
+      render: (row) => <EllipsisContainer>{row.company__address}</EllipsisContainer>,
     },
     {
       label: 'Registrar',
       key: 'company__registrar',
-      render: (row) => row.company__registrar
+      render: (row) => row.company__registrar,
     },
     // {
     //   label: 'LEI',
@@ -109,28 +134,30 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
         <Status $color={row.company__status__GLEIF.toLowerCase() === 'active' ? 'green' : ''}>
           {row.company__status__GLEIF !== 'NULL' ? row.company__status__GLEIF : 'Unknown'}
         </Status>
-      )
+      ),
     },
     {
       label: 'Creation Date',
       key: 'company__formation__date',
-      render: (row) => row.company__formation__date ? new Date(row.company__formation__date).toLocaleDateString() : ''
+      render: (row) =>
+        row.company__formation__date
+          ? new Date(row.company__formation__date).toLocaleDateString()
+          : '',
     },
   ]
 
-  const paginatedData = data.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
-
+  const paginatedData = data.slice(page * itemsPerPage, (page + 1) * itemsPerPage)
 
   const handleNextPage = async () => {
-    setPage((prevPage: number) => prevPage + 1);
-    await fetchData(page + 1);
-  };
+    setPage((prevPage: number) => prevPage + 1)
+    await fetchData(page + 1)
+  }
 
   const handlePrevPage = async () => {
-    if (page === 0) return;
-    setPage((prevPage: number) => prevPage - 1);
-    await fetchData(page - 1);
-  };
+    if (page === 0) return
+    setPage((prevPage: number) => prevPage - 1)
+    await fetchData(page - 1)
+  }
 
   return (
     <TableContainer>
@@ -148,7 +175,6 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
           </TableRow>
         </TableHeader>
         <TableBody>
-
           {match([isLoadingNextPage, paginatedData?.length ?? 0])
             .with([true, P._], () => (
               <TableRow>
@@ -171,7 +197,7 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
                 <TableRow
                   key={row.id}
                   onClick={() => handleClickRow(row)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: 'pointer' }}
                 >
                   {columns.map((column, colIndex) => (
                     <TableCell key={colIndex} className={column.className}>
@@ -179,25 +205,19 @@ export const DirectoryTable = ({ data, isLoadingNextPage, fetchData, sortDirecti
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
+              )),
             )}
         </TableBody>
       </Table>
       <ButtonContainer>
-        <Button
-          disabled={page === 0}
-          onClick={handlePrevPage}
-        >
+        <Button disabled={page === 0} onClick={handlePrevPage}>
           Previous
         </Button>
         <span>Page {page + 1}</span>
-        <Button
-          disabled={isLoadingNextPage}
-          onClick={handleNextPage}
-        >
+        <Button disabled={isLoadingNextPage} onClick={handleNextPage}>
           Next
         </Button>
       </ButtonContainer>
-    </TableContainer >
+    </TableContainer>
   )
 }
