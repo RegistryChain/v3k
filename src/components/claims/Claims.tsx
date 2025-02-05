@@ -98,11 +98,11 @@ const Claims = ({
   }, [address])
 
   useEffect(() => {
-    if (step === 1 && !records.company__selected__model.setValue) {
+    if (step === 1 && !records.entity__selected__model.setValue) {
       setRecords({
         ...records,
-        company__selected__model: {
-          ...records.company__selected__model,
+        entity__selected__model: {
+          ...records.entity__selected__model,
           setValue: 'Model 1',
         },
       })
@@ -110,9 +110,9 @@ const Claims = ({
     if (step === 0) {
       setRecords({
         ...records,
-        company__selected__model: {
-          ...records.company__selected__model,
-          setValue: records.company__selected__model.oldValue,
+        entity__selected__model: {
+          ...records.entity__selected__model,
+          setValue: records.entity__selected__model.oldValue,
         },
       })
     }
@@ -125,9 +125,9 @@ const Claims = ({
     address: contractAddresses['DatabaseResolver'],
   }
   let registrarAddress = contractAddresses['public.' + tld]
-  if (records.company__registrar?.setValue) {
+  if (records.entity__registrar?.setValue) {
     registrarAddress =
-      contractAddresses[records.company__registrar?.setValue?.toLowerCase() + '.' + tld]
+      contractAddresses[records.entity__registrar?.setValue?.toLowerCase() + '.' + tld]
   }
   const formationCallback: any = {
     functionName: 'registerEntityClaim',
@@ -165,7 +165,7 @@ const Claims = ({
           },
         })
         const response = await fetch(
-          `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleKYCIntake/nodeHash=${namehash(
+          `http://localhost:2000/direct/handleKYCIntake/nodeHash=${namehash(
             normalise(domain),
           )}.json`,
           {
@@ -286,12 +286,12 @@ const Claims = ({
         <Constitution
           breakpoints={breakpoints}
           formationData={records}
-          model={records.company__selected__model || 'Model 1'}
+          model={records.entity__selected__model || 'Model 1'}
           setModel={(modelId: any) => {
             setRecords({
               ...records,
-              company__selected__model: {
-                ...records.company__selected__model,
+              entity__selected__model: {
+                ...records.entity__selected__model,
                 setValue: modelId,
               },
             })

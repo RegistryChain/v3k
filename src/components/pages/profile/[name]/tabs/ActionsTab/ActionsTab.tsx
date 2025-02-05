@@ -183,7 +183,6 @@ const ActionsTab = ({
           address,
           registrarAddress,
         ])
-        console.log('approved', registrarApproved)
         if (!registrarApproved) {
           const approvalTx = await registrarContract.write.setApprovalForAll([
             registrarAddress,

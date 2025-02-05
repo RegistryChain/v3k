@@ -1,7 +1,6 @@
 import contractAddressesObj from '../constants/contractAddresses.json'
 
 export const checkOwner = async (client, nodeHash) => {
-  console.log(nodeHash, typeof nodeHash)
   const readData = {
     functionName: 'owner',
     address: contractAddressesObj.ENSRegistry,

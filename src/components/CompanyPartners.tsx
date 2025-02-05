@@ -65,7 +65,6 @@ const CompanyPartners = ({
     <PartnerContainer>
       <PartnerTable>
         {partners.map((partner, idx) => {
-          console.log(partner)
           let domain = partner?.domain?.setValue || ''
 
           return Object.keys(partner).map((key, subIdx) => {

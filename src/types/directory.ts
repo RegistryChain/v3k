@@ -1,25 +1,27 @@
 export interface Entity {
-  company__address: string
-  company__entity__code: string
-  company__formation__date: string
-  company__name: string
-  company__status__GLEIF: string
+  entity__address: string
+  entity__code: string
+  entity__formation__date: string
+  entity__name: string
   description: string
   id: string
   location: string
   partners: Partner[]
-  company__type: string
+  entity__type: string
   address: string
   LEI: string
-  company__registrar: string
+  entity__registrar: string
 }
 
 export interface Partner {
-  wallet__address: string;
-  name: string;
-  [key: string]: {
-    label?: string;
-    oldValue?: string | string[];
-    setValue?: string | string[];
-  } | string | undefined;
+  wallet__address: string
+  name: string
+  [key: string]:
+    | {
+        label?: string
+        oldValue?: string | string[]
+        setValue?: string | string[]
+      }
+    | string
+    | undefined
 }

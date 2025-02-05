@@ -81,6 +81,7 @@ export default function Page() {
 
   const isSelf = router.query.connected === 'true'
 
+  const [project, setProject] = useState('REGISTRYCHAIN')
   const [registrationStep, setRegistrationStep] = useState<number>(1)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
@@ -103,7 +104,8 @@ export default function Page() {
   const entityPublicDomain = normalizedLabel ? normalize(normalizedLabel + '.public.' + tld) : ''
 
   const contractAddresses: any = contractAddressesObj
-  const schema: any = schemaObj
+  let schema: any = schemaObj
+  schema = schema[project].schema
 
   const publicClient = useMemo(
     () =>
@@ -139,13 +141,13 @@ export default function Page() {
     const y = new Date().getFullYear()
     setSchemaFields((prevState: any) => ({
       ...prevState,
-      company__formation__date: {
-        ...prevState.company__formation__date,
+      entity__formation__date: {
+        ...prevState.entity__formation__date,
         setValue: y + '-' + m + '-' + d,
       },
     }))
   }, [registrationStep])
-  const intakeType = 'company'
+  const intakeType = 'entity'
 
   const getSchemaFields = async () => {
     try {
@@ -157,14 +159,14 @@ export default function Page() {
             ? fields.partners.slice(0, fields.partners.length - 1)
             : fields.partners,
         name: { ...fields.name, setValue: fields?.name?.setValue || entityName },
-        company__name: {
-          ...fields.company__name,
-          setValue: fields?.company__name?.setValue || entityName,
+        entity__name: {
+          ...fields.entity__name,
+          setValue: fields?.entity__name?.setValue || entityName,
         },
-        company__registrar: { ...fields.company__registrar, setValue: companyRegistrar },
-        company__type: { ...fields.company__type, setValue: entityTypeObj?.entityTypeName },
-        company__entity__code: { ...fields.company__entity__code, setValue: entityType },
-        company__selected__model: { ...fields.company__selected__model, setValue: 'Model 1' },
+        entity__registrar: { ...fields.entity__registrar, setValue: companyRegistrar },
+        entity__type: { ...fields.entity__type, setValue: entityTypeObj?.entityTypeName },
+        entity__code: { ...fields.entity__code, setValue: entityType },
+        entity__selected__model: { ...fields.entity__selected__model, setValue: 'Model 1' },
       })
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
     } catch (err) {
@@ -189,7 +191,7 @@ export default function Page() {
     }
 
     const formationCallback: any = {
-      functionName: 'registerEntityClaim',
+      functionName: 'registerEntityWithOffchain',
       abi: [
         {
           inputs: [
@@ -204,13 +206,13 @@ export default function Page() {
               type: 'bytes',
             },
           ],
-          name: 'registerEntityClaim',
+          name: 'registerEntityWithOffchain',
           outputs: [],
           stateMutability: 'nonpayable',
           type: 'function',
         },
       ],
-      address: contractAddresses['us-wy.' + tld],
+      address: contractAddresses[(companyRegistrar || 'public') + '.' + tld],
       args: [],
     }
     const registerChaserTx = await executeWriteToResolver(wallet, formationPrep, formationCallback)
@@ -223,8 +225,7 @@ export default function Page() {
 
   const registerEntity = async () => {
     const texts: any[] = generateTexts(schemaFields)
-
-    const publicRegistrarContract: any = getContract({
+    const registrarContract: any = getContract({
       abi: [
         {
           inputs: [
@@ -245,24 +246,21 @@ export default function Page() {
           type: 'function',
         },
       ],
-      address: contractAddresses['public.' + tld],
+      address: contractAddresses[(companyRegistrar || 'public') + '.' + tld],
       client: wallet,
     })
 
     // If there is no owner to the domain, make the register. If there is an owner skip register
-    let currentEntityOwner = await checkOwner(publicClient, namehash(entityPublicDomain))
+    let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
     if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-      const tx = await publicRegistrarContract.write.registerEntity([
-        labelhash(normalizedLabel),
-        zeroAddress,
-      ])
+      const tx = await registrarContract.write.registerEntity([labelhash(normalizedLabel), address])
       const txReceipt = await publicClient?.waitForTransactionReceipt({
         hash: tx,
       })
       if (txReceipt?.status === 'reverted') {
         throw Error('Transaction failed - contract error')
       } else {
-        currentEntityOwner = contractAddresses['public.' + tld]
+        currentEntityOwner = contractAddresses[(companyRegistrar || 'public') + '.' + tld]
       }
     }
 
@@ -270,7 +268,10 @@ export default function Page() {
     // If false, prevent the registration
     if (
       !isAddressEqual(currentEntityOwner, address as Address) &&
-      !isAddressEqual(currentEntityOwner, contractAddresses['public.' + tld])
+      !isAddressEqual(
+        currentEntityOwner,
+        contractAddresses[(companyRegistrar || 'public') + '.' + tld],
+      )
     ) {
       throw Error('The user does not have permission to deploy contracts for this domain')
     }
@@ -318,7 +319,7 @@ export default function Page() {
           type: 'function',
         },
       ],
-      address: contractAddresses['public.' + tld],
+      address: contractAddresses[(companyRegistrar || 'public') + '.' + tld],
       args: [],
     }
     const registerChaserTx = await executeWriteToResolver(wallet, formationPrep, formationCallback)
@@ -333,6 +334,7 @@ export default function Page() {
   }
 
   const validatePartners = (fieldsToValidate: string[]) => {
+    if (project === 'REGISTRYCHAIN') return false
     let blockAdvance = false
     const cumulativePartnerVals: any = {}
     schemaFields.partners.forEach((partner: any) => {
@@ -532,7 +534,7 @@ export default function Page() {
       const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
       content = (
         <EntityInfo
-          data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
+          data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
           step={registrationStep}
           fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
           setField={(key: string, value: any) =>
@@ -553,7 +555,7 @@ export default function Page() {
   if (registrationStep === 2) {
     content = (
       <AddPartners
-        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
+        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
@@ -571,7 +573,7 @@ export default function Page() {
   if (registrationStep === 3) {
     content = (
       <Roles
-        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
+        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         intakeType={intakeType}
@@ -591,7 +593,7 @@ export default function Page() {
     )
     content = (
       <EntityInfo
-        data={{ name: schemaFields?.company__name?.setValue || name, registrarKey: code }}
+        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
         fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
         setField={(key: string, value: any) =>
           setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
@@ -607,17 +609,17 @@ export default function Page() {
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
-          {schemaFields?.company__name?.setValue || name}
+          {schemaFields?.entity__name?.setValue || name}
         </Typography>
         <Constitution
           breakpoints={breakpoints}
           formationData={schemaFields}
-          model={schemaFields.company__selected__model}
+          model={schemaFields.entity__selected__model}
           setModel={(modelId: string) =>
             setSchemaFields({
               ...schemaFields,
-              company__selected__model: {
-                ...schemaFields.company__selected__model,
+              entity__selected__model: {
+                ...schemaFields.entity__selected__model,
                 setValue: modelId,
               },
             })

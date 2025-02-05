@@ -9,7 +9,6 @@ import DownDirectionSVG from '@app/assets/SortAscending.svg'
 import UpDirectionSVG from '@app/assets/SortDescending.svg'
 import { CheckButton } from '@app/components/@atoms/CheckButton/CheckButton'
 
-
 const SearchInput = styled(Input)`
   min-width: 200px;
 `
@@ -97,7 +96,7 @@ const Label = styled.span`
   font-size: 0.9rem;
   white-space: nowrap;
   color: #333;
-  `
+`
 
 const DirectionButton = styled.button<{ $active: boolean }>(
   ({ theme, $active }) => css`
@@ -174,7 +173,7 @@ export const NameTableHeader = ({
 
   const inSelectMode = selectable && mode === 'select'
 
-  const fieldToLabelMap: any = { company__formation__date: 'Formation Date', name: 'name' }
+  const fieldToLabelMap: any = { entity__formation__date: 'Formation Date', name: 'name' }
   const sortTypeOptions = sortTypeOptionValues.map((value) => ({
     label: fieldToLabelMap[value],
     value,
@@ -195,8 +194,9 @@ export const NameTableHeader = ({
           {inSelectMode ? (
             <div>{t('unit.selected', { count: selectedCount })}</div>
           ) : (
-            <TableHeaderLeftControlsContainer $isFullWidth={!selectable}>
-            </TableHeaderLeftControlsContainer>
+            <TableHeaderLeftControlsContainer
+              $isFullWidth={!selectable}
+            ></TableHeaderLeftControlsContainer>
           )}
         </TableHeaderLeadingLeft>
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>

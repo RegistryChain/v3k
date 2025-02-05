@@ -88,15 +88,12 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
   const registrar = domain.split('.')[1]
   const name = domain.split('.')[0]
   try {
-    const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getRecord/nodeHash=${nodeHash}.json`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    const res = await fetch(`http://localhost:2000/direct/getRecord/nodeHash=${nodeHash}.json`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+    })
     const existingRecord = await res.json()
     if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
       return await importEntity({ filingID: '', name, registrar })
@@ -111,7 +108,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
 export async function importEntity({ filingID, name, registrar }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleImportEntity/filingID=${filingID}&name=${
+      `http://localhost:2000/direct/handleImportEntity/filingID=${filingID}&name=${
         name.split('.')[0]
       }&registrar=${registrar}.json`,
       {
@@ -138,7 +135,7 @@ export async function getEntitiesList({
 }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
+      `http://localhost:2000/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
       {
         method: 'GET',
         headers: {
@@ -155,7 +152,7 @@ export async function getEntitiesList({
 export async function getTransactions({ nodeHash = zeroHash, address }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
+      `http://localhost:2000/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {
@@ -173,10 +170,7 @@ export async function ccipRequest({ body, url }: CcipRequestParameters): Promise
   //http://localhost:2000/{sender}/{data}.json
   try {
     const res = await fetch(
-      'https://oyster-app-mn4sb.ondigitalocean.app/{sender}/{data}.json'.replace(
-        '/{sender}/{data}.json',
-        '',
-      ),
+      'http://localhost:2000/{sender}/{data}.json'.replace('/{sender}/{data}.json', ''),
       {
         body: JSON.stringify(body, (_, value) =>
           typeof value === 'bigint' ? value.toString() : value,

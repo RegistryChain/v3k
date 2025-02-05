@@ -19,6 +19,25 @@
     "reason": "To be used for all entities in RegistryChain. Completely open, permissionless formation of entities"
   },
   {
+    "ELF": "0002",
+    "registrarName": "AI Agent Registrar",
+    "formationCountry": "ai",
+    "countryCode": "ai",
+    "formationJurisdiction": "",
+    "countryJurisdictionCode": "ai",
+    "entityTypeName": "AI Collaboration",
+    "language": "English",
+    "languageCode": "en",
+    "entityTypeName2": "",
+    "localAbbreviation": "ai",
+    "abbreviation": "",
+    "entryDate": "2017-11-30",
+    "ELFStatus": "ACTV",
+    "modification": "",
+    "modificationDate": "2023-09-28",
+    "reason": "To be used for all entities in RegistryChain. Completely open, permissionless formation of entities"
+  },
+  {
     "ELF": "CDOV",
     "formationCountry": "Antigua and Barbuda",
     "countryCode": "AG",

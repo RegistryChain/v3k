@@ -10,5 +10,6 @@
   "DatabaseResolver": "0x58248449caac373a83dc7018314eef1b3cb8960b",
   "registrychain.com": "0x578ec0c5508346983878f50a1e4b61bc6b540386",
   "public.registrychain.com": "0xa1bf0fb2b25ed4d1217c9fe25d936c371fb16939",
-  "us-wy.registrychain.com": "0xb0a332279f8f6c046cebcf07b0b32b4d37c51dc4"
+  "us-wy.registrychain.com": "0xb0a332279f8f6c046cebcf07b0b32b4d37c51dc4",
+  "ai.registrychain.com": "0xed15b0becbef2d5c2d450253925c8988d36f6e63"
 }

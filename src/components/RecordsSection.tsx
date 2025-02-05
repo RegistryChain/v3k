@@ -1,6 +1,6 @@
 import { Collapsible } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaChevronDown } from 'react-icons/fa'
 import styled, { css } from 'styled-components'
@@ -120,16 +120,12 @@ export const RecordsSection = ({
   const { t } = useTranslation('profile')
   const router = useRouter()
 
-  console.log(fields)
+  const [project, setProject] = useState('REGISTRYCHAIN')
 
   const filteredCompanyData = useMemo(
-    () => Object.keys(fields)?.filter((field) => field.includes('company')),
+    () => Object.keys(fields)?.filter((field) => field.includes('entity')),
     [fields],
   )
-  const recordCategoryToTitle: any = {
-    company: 'Company Details',
-    civil: 'Civil Details',
-  }
 
   let addressSection = null
   if (addressesObj) {
@@ -152,9 +148,9 @@ export const RecordsSection = ({
             <div style={{ width: '100%', paddingLeft: '40px' }}>
               {fields.children.map((record: any, idx: number) => {
                 const domain = normalize(
-                  normalizeLabel(record?.company__name?.setValue) +
+                  normalizeLabel(record?.entity__name?.setValue) +
                     '.' +
-                    record?.company__registrar?.setValue +
+                    record?.entity__registrar?.setValue +
                     '.' +
                     tld,
                 )
@@ -167,7 +163,7 @@ export const RecordsSection = ({
                           fontVariant="bodyBold"
                           onClick={() => (window.location.href = '/entity/' + domain)}
                         >
-                          <u>{record.company__name.setValue}</u>
+                          <u>{record.entity__name.setValue}</u>
                         </SectionTitle>
                       </SectionTitleContainer>
                     </SectionHeader>
@@ -230,7 +226,7 @@ export const RecordsSection = ({
       headerSection = (
         <SectionTitleContainer>
           <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-            {recordCategoryToTitle['company']}
+            {'Entity Details'}
           </SectionTitle>
           <SectionSubtitle data-testid="text-amount">
             {filteredCompanyData ? filteredCompanyData?.length : 0}{' '}
@@ -260,7 +256,7 @@ export const RecordsSection = ({
           <Collapsible.Root defaultOpen>
             <Collapsible.Trigger>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                Company Details <FaChevronDown />
+                Entity Details <FaChevronDown />
               </SectionTitle>
             </Collapsible.Trigger>
             <Collapsible.Content>

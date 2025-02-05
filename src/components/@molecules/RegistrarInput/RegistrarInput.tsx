@@ -340,10 +340,10 @@ export const RegistrarInput = ({
   const router = useRouterWithHistory()
   const queryClient = useQueryClient()
   const breakpoints = useBreakpoint()
-
   const { address } = useAccount()
   const chainId: any = useChainId()
 
+  const [project, setProject] = useState('REGISTRYCHAIN')
   const [inputVal, setInputVal] = useState('')
 
   const [state, toggle] = useTransition({
@@ -378,7 +378,13 @@ export const RegistrarInput = ({
 
   const uniqueCountries = useMemo(() => {
     const uniques: any[] = []
-    entityTypes.forEach((x: any) => {
+    const filteredEntityTypes = entityTypes.filter((x: any) => {
+      if (project === 'REGISTRYCHAIN') {
+        return x.formationCountry === 'ai'
+      }
+      return true
+    })
+    filteredEntityTypes.forEach((x: any) => {
       if (
         !uniques.find((u: any) => {
           const uJuris = u?.formationJurisdiction
@@ -523,21 +529,18 @@ export const RegistrarInput = ({
               const xJuris = x?.formationJurisdiction
                 ? x.formationJurisdiction + ' - ' + x.formationCountry
                 : x.formationCountry
+
+              const permittedJurisCondition =
+                !permittedJurisdictions.includes(x.countryJurisdictionCode?.toLowerCase()) &&
+                permittedJurisdictions.length !== 0
+
               return (
                 <div
                   style={{
                     ...style,
                     // cursor: !permittedJurisdictions.includes(x.countryJurisdictionCode?.toLowerCase()) ? 'not-allowed' : 'pointer',
-                    backgroundColor: !permittedJurisdictions.includes(
-                      x.countryJurisdictionCode?.toLowerCase(),
-                    )
-                      ? '#ebe5e5'
-                      : 'white',
-                    color: !permittedJurisdictions.includes(
-                      x.countryJurisdictionCode?.toLowerCase(),
-                    )
-                      ? 'rgb(41 116 229)'
-                      : '#3888FF',
+                    backgroundColor: permittedJurisCondition ? '#ebe5e5' : 'white',
+                    color: permittedJurisCondition ? 'rgb(41 116 229)' : '#3888FF',
                     paddingBottom: idx === countries.length - 1 ? '8px' : '0px',
                     borderBottomLeftRadius: idx === countries.length - 1 ? '8px' : '0px',
                     borderBottomRightRadius: idx === countries.length - 1 ? '8px' : '0px',

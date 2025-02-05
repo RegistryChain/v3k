@@ -28,6 +28,7 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 import contractAddresses from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
+import schemaObj from '../constants/schema.json'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -104,11 +105,11 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const tld = '.registrychain.com'
-
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
+  const [project, setProject] = useState('REGISTRYCHAIN')
+  const tld = '.registrychain.com'
 
   const publicClient = createPublicClient({
     chain: sepolia,
@@ -120,6 +121,8 @@ export default function Page() {
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
+  let schema: any = schemaObj
+  const projectConfigs: any = schema[project]
 
   useEffect(() => {
     if (entityName.length >= 2 && entityJurisdiction.length > 0) {
@@ -153,8 +156,6 @@ export default function Page() {
       })
     }
   }
-
-  const permittedJurisdictions = ['public', 'us-wy']
 
   let nameAvailableElement = null
   if (entityName.length >= 2 && entityJurisdiction.length > 0) {
@@ -209,7 +210,7 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>RegistryChain</title>
+        <title>REGISTRYCHAIN</title>
       </Head>
       <StyledLeadingHeading>
         <LogoAndLanguage>
@@ -220,13 +221,10 @@ export default function Page() {
       <FaucetBanner />
       <Container>
         <Stack>
-          <GradientTitle>{t('title')}</GradientTitle>
+          <GradientTitle>{projectConfigs?.title}</GradientTitle>
           <SubtitleWrapper>
             <Typography fontVariant="large" color="grey">
-              {t('description')}
-            </Typography>
-            <Typography style={{ marginTop: '12px' }} fontVariant="small" color="grey">
-              (Only the Public jurisdiction is available for entity formation at this time)
+              {projectConfigs?.description}
             </Typography>
           </SubtitleWrapper>
           <EntityInput
@@ -247,7 +245,7 @@ export default function Page() {
             setValue={(regKey: string) => {
               setEntityJurisdiction(regKey)
             }}
-            permittedJurisdictions={permittedJurisdictions}
+            permittedJurisdictions={projectConfigs?.permittedJurisdictions}
           />
           <div
             key={'div1en'}
@@ -277,14 +275,6 @@ export default function Page() {
             style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
             shape="square"
             size="small"
-            disabled={
-              !permittedJurisdictions.includes(entityJurisdiction?.toLowerCase()) ||
-              entityName.length < 2 ||
-              entityJurisdiction.length === 0 ||
-              !entityType
-                ? true
-                : false
-            }
             onClick={() => advance()}
           >
             {t('action.formEntity')}

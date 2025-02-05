@@ -34,7 +34,6 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import AppsTab from './tabs/AppsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import LicenseTab from './tabs/LicenseTab'
-import { Collapsible } from "@chakra-ui/react"
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -203,7 +202,7 @@ const ProfileContent = ({
         ...prev,
         status: { ...prev.status, setValue: status },
       }))
-    } catch (e) { }
+    } catch (e) {}
   }
 
   useEffect(() => {
@@ -267,7 +266,7 @@ const ProfileContent = ({
     parentIsLoading
       ? true
       : // if is self, user must be connected
-      (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
+        (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
   )
 
   const suffixIndex = domain?.split('.')?.length - 1
@@ -291,7 +290,7 @@ const ProfileContent = ({
     return (
       <>
         <Head>
-          <title>{records?.company__name?.setValue}</title>
+          <title>{records?.entity__name?.setValue}</title>
           <meta name="description" content={domain + ' RegistryChain'} />
           <meta property="og:title" content={domain} />
           <meta property="og:description" content={domain + ' RegistryChain'} />
@@ -312,7 +311,7 @@ const ProfileContent = ({
 
   let nameRecord = title
   if (Object.keys(records)?.length > 0) {
-    nameRecord = records?.company__name?.setValue
+    nameRecord = records?.entity__name?.setValue
     if (nameRecord) {
       title = nameRecord + ' on RegistryChain'
     }
@@ -398,7 +397,7 @@ const ProfileContent = ({
                       breakpoints={breakpoints}
                       formationData={records}
                       multisigAddress={multisigAddress || zeroAddress}
-                      model={records.company__selected__model}
+                      model={records.entity__selected__model}
                       setModel={null}
                       canDownload={true}
                     />
@@ -417,7 +416,7 @@ const ProfileContent = ({
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
-                      registrar={records?.company__registrar?.setValue || 'public'}
+                      registrar={records?.entity__registrar?.setValue || 'public'}
                       owner={owner}
                       multisigAddress={multisigAddress}
                       entityMemberManager={entityMemberManager}

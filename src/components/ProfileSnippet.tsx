@@ -74,10 +74,7 @@ export const ProfileSnippet = ({
   if (status) {
     statusSection = (
       <SectionTitleContainer>
-        <SectionTitle
-          data-testid="text-heading"
-          fontVariant="bodyBold"
-        >
+        <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
           Entity Status:{' '}
           <span
             style={
@@ -89,7 +86,7 @@ export const ProfileSnippet = ({
             {status}
           </span>
         </SectionTitle>
-        {records.company__registrar?.oldValue !== 'public' &&
+        {records.entity__registrar?.oldValue !== 'public' &&
         records.sourceActive &&
         records.sourceActive?.setValue === false ? (
           <ExclamationSymbol
@@ -110,10 +107,7 @@ export const ProfileSnippet = ({
           <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
             {name}
           </NameRecord>
-          <SectionTitle
-            data-testid="text-heading"
-            fontVariant="bodyBold"
-          >
+          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
             <Typography>
               <i>{normalize(domainName)}</i>
             </Typography>

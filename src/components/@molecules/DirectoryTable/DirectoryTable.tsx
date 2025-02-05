@@ -73,17 +73,17 @@ export const DirectoryTable = ({
     let domain = null
     try {
       domain = normalize(
-        entity.company__name
+        entity.entity__name
           .replace(/[()#@%!*?:"'+,.&\/]/g, '') // Remove unwanted characters
           .replace(/ /g, '-') // Replace spaces with hyphens
           .replace(/-{2,}/g, '-') +
           '.' +
-          entity.company__registrar +
+          entity.entity__registrar +
           '.' +
           tld,
       )
     } catch (err) {
-      domain = (entity.company__name + '.' + entity.company__registrar + '.' + tld).toLowerCase()
+      domain = (entity.entity__name + '.' + entity.entity__registrar + '.' + tld).toLowerCase()
     }
     router.push('/entity/' + domain)
   }
@@ -96,8 +96,8 @@ export const DirectoryTable = ({
     },
     {
       label: 'Company Name',
-      key: 'company__name',
-      render: (row: Entity) => <EllipsisContainer>{row.company__name}</EllipsisContainer>,
+      key: 'entity__name',
+      render: (row: Entity) => <EllipsisContainer>{row.entity__name}</EllipsisContainer>,
       actions: () => (
         <DirectionButton
           $active={sortDirection === 'asc'}
@@ -109,18 +109,18 @@ export const DirectoryTable = ({
     },
     {
       label: 'Company Type',
-      key: 'company__type',
-      render: (row) => <EllipsisContainer>{row.company__type}</EllipsisContainer>,
+      key: 'entity__type',
+      render: (row) => <EllipsisContainer>{row.entity__type}</EllipsisContainer>,
     },
     {
       label: 'Address',
-      key: 'company__address',
-      render: (row) => <EllipsisContainer>{row.company__address}</EllipsisContainer>,
+      key: 'entity__address',
+      render: (row) => <EllipsisContainer>{row.entity__address}</EllipsisContainer>,
     },
     {
       label: 'Registrar',
-      key: 'company__registrar',
-      render: (row) => row.company__registrar,
+      key: 'entity__registrar',
+      render: (row) => row.entity__registrar,
     },
     // {
     //   label: 'LEI',
@@ -128,20 +128,11 @@ export const DirectoryTable = ({
     //   render: (row) => row.LEI
     // },
     {
-      label: 'Status',
-      key: 'company__status__GLEIF',
-      render: (row) => (
-        <Status $color={row.company__status__GLEIF.toLowerCase() === 'active' ? 'green' : ''}>
-          {row.company__status__GLEIF !== 'NULL' ? row.company__status__GLEIF : 'Unknown'}
-        </Status>
-      ),
-    },
-    {
       label: 'Creation Date',
-      key: 'company__formation__date',
+      key: 'entity__formation__date',
       render: (row) =>
-        row.company__formation__date
-          ? new Date(row.company__formation__date).toLocaleDateString()
+        row.entity__formation__date
+          ? new Date(row.entity__formation__date).toLocaleDateString()
           : '',
     },
   ]

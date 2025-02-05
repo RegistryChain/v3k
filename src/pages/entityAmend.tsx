@@ -63,6 +63,7 @@ export default function Page() {
   const isSelf = router.query.connected === 'true'
   const breakpoints = useBreakpoint()
 
+  const [project, setProject] = useState('REGISTRYCHAIN')
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [registrationStep, setRegistrationStep] = useState<number>(1)
@@ -81,7 +82,8 @@ export default function Page() {
   )
 
   const contractAddresses: any = contractAddressesObj
-  const schema: any = schemaObj
+  let schema: any = schemaObj
+  schema = schema[project].schema
 
   const publicClient = useMemo(
     () =>
@@ -114,7 +116,7 @@ export default function Page() {
     }
   }, [address])
 
-  const intakeType = 'company'
+  const intakeType = 'entity'
 
   const getMultisigAddr = async () => {
     const registry: any = getContract({
@@ -561,7 +563,7 @@ export default function Page() {
   let changedRecords: any = {}
   if (registrationStep === 5) {
     const entityRegistrarDomain = normalize(
-      entityName + '.' + schemaFields?.company__registrar?.setValue + '.' + tld,
+      entityName + '.' + schemaFields?.entity__registrar?.setValue + '.' + tld,
     )
 
     changedRecords = getChangedRecords(false)
@@ -573,12 +575,12 @@ export default function Page() {
         <Constitution
           breakpoints={breakpoints}
           formationData={schemaFields}
-          model={schemaFields.company__selected__model}
+          model={schemaFields.entity__selected__model}
           setModel={(modelId: string) =>
             setSchemaFields({
               ...schemaFields,
-              company__selected__model: {
-                ...schemaFields.company__selected__model,
+              entity__selected__model: {
+                ...schemaFields.entity__selected__model,
                 setValue: modelId,
               },
             })

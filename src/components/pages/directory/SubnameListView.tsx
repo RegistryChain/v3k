@@ -32,7 +32,7 @@ const TabWrapperWithButtons = styled(TabWrapper)(
 export const SubnameListView = () => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
 
-  const [sortType, setSortType] = useState<any>('company__formation__date')
+  const [sortType, setSortType] = useState<any>('entity__formation__date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [registrar, setRegistrarSelected] = useState<string>('any')
 
@@ -102,14 +102,14 @@ export const SubnameListView = () => {
 
   const filteredSet = useMemo(
     () =>
-      subnameResults.map((name) => {
-        const labelName = name.name.split(name.parentName).join('').split('.').join('.')
+      subnameResults.map((record) => {
+        const labelName = record.name.split(record.parentName).join('').split('.').join('.')
         const domainId = labelName.split('-').pop().split('.').join('')
         const commonName = labelName
           .split('-')
           .slice(0, labelName.split('-').length - 1)
           .join(' ')
-        return { ...name, labelName, commonName, domainId }
+        return { ...record, labelName, commonName, domainId }
       }),
     [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
   )
@@ -119,7 +119,7 @@ export const SubnameListView = () => {
       <NameTableHeader
         mode={'view'}
         sortType={sortType}
-        sortTypeOptionValues={['company__formation__date', 'name']}
+        sortTypeOptionValues={['entity__formation__date', 'name']}
         sortDirection={sortDirection}
         registrar={registrar}
         registrarOptionValues={jurisList}

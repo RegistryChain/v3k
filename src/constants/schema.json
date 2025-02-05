@@ -1,29 +1,51 @@
 {
-  "partnerTypes": {
-    "standard": {
-      "company": ["individual", "entity"],
-      "civil": ["individual"]
-    },
-    "public": [],
-    "DL": [],
-    "WY": [],
-    "BVI": [],
-    "CIV": [],
-    "AR": []
-  },
-  "roles": {
-    "standard": {
-      "company": ["manager", "signer"],
-      "civil": ["manager", "spender", "signer"]
-    },
-    "public": [],
-    "US.DE": [],
-    "WY": [],
-    "BVI": [],
-    "CIV": [],
-    "AR": []
-  },
+  "REGISTRYCHAIN": {
+    "permittedJurisdictions": ["public", "us-wy"],
+    "title": "Your Entitys Universal Registration",
+    "description": "Streamline your partnerships with RegistryChain's blockchain native entity lifecycle platform. Select your jurisdiction and get started.",
+    "schema": {
+      "partnerTypes": {
+        "standard": {
+          "entity": ["individual", "entity"]
+        }
+      },
+      "roles": {
+        "standard": {
+          "entity": ["manager", "signer"]
+        }
+      },
 
-  "corpFields": ["company__address", "company__purpose"],
-  "additionalTermsFields": ["company__arbitrator", "company__additional__terms"]
+      "corpFields": ["entity__address", "entity__purpose"],
+      "additionalTermsFields": ["entity__arbitrator", "entity__additional__terms"]
+    }
+  },
+  "V3K": {
+    "permittedJurisdictions": [],
+    "description": "DESCRIPTION FOR AI AGENT LAUNCHPAD",
+    "title": "V3K",
+    "schema": {
+      "partnerTypes": {
+        "standard": {
+          "entity": ["individual", "entity"]
+        }
+      },
+      "roles": {
+        "standard": {
+          "entity": ["manager", "signer"]
+        }
+      },
+
+      "corpFields": [
+        "entity__token__address",
+        "entity__twitter",
+        "entity__telegram",
+        "entity__purpose"
+      ],
+      "additionalTermsFields": [
+        "entity__description",
+        "entity__arbitrator",
+        "entity__additional__terms"
+      ]
+    }
+  }
 }

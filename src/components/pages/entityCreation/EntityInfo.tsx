@@ -56,7 +56,7 @@ const EntityInfo = ({ data, fields, setField }: any) => {
     <>
       <NameContainer>{name}</NameContainer>
       {fields?.map((field: any) => {
-        if (field.key === 'company__arbitrator') {
+        if (field.key === 'entity__arbitrator') {
           return (
             <div style={{ marginTop: '32px' }}>
               <Typography
@@ -69,7 +69,7 @@ const EntityInfo = ({ data, fields, setField }: any) => {
                   marginBottom: '12px',
                 }}
               >
-                Company Arbitrator
+                Entity Arbitrator
               </Typography>
               <div style={{ display: 'flex', paddingLeft: '8px' }}>
                 <Checkbox

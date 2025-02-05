@@ -3,8 +3,6 @@ import styled, { css } from 'styled-components'
 
 import { ProfileSnippet } from '@app/components/ProfileSnippet'
 
-import contractAddresses from '../../../../../constants/contractAddresses.json'
-
 const DetailsWrapper = styled.div(
   ({ theme }) => css`
     display: flex;
@@ -19,7 +17,7 @@ const DetailsWrapper = styled.div(
 const EntityViewTab = ({ domainName, multisigAddress, records, status }: any) => {
   const { t } = useTranslation('profile')
 
-  const nameRecord = records?.company__name?.setValue
+  const nameRecord = records?.entity__name?.setValue
 
   return (
     <DetailsWrapper>
