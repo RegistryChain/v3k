@@ -165,7 +165,7 @@ const Claims = ({
           },
         })
         const response = await fetch(
-          `http://localhost:2000/direct/handleKYCIntake/nodeHash=${namehash(
+          `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleKYCIntake/nodeHash=${namehash(
             normalise(domain),
           )}.json`,
           {
@@ -199,7 +199,7 @@ const Claims = ({
       //     formData.append('document', businessDoc)
 
       //     const response = await fetch(
-      //       `http://localhost:2000/doc?operation=handleBusinessDoc&nodeHash=${namehash(
+      //       `https://oyster-app-mn4sb.ondigitalocean.app/doc?operation=handleBusinessDoc&nodeHash=${namehash(
       //         name,
       //       )}`,
       //       {
