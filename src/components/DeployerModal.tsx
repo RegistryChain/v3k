@@ -149,7 +149,7 @@ const AdvancedHeader = styled.div<any>`
 // PopupModal component
 const DeployerModal = ({ isOpen, onClose }: any) => {
   const contractAddresses: any = contractAddressesObj
-  const tld = 'registrychain.com'
+  const tld = 'entity.id'
   const modalRef = useRef(null)
   const { address } = useAccount()
   const router = useRouterWithHistory()

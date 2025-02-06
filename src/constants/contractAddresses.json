@@ -2,14 +2,11 @@
   "klerosLiquidAddress": "0x90992fb4E15ce0C59aEFfb376460Fda4Ee19C879",
   "ENSRegistry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
   "Definitions": "0xb03bff4e7ff03ed7d6560430c112ddb93b0326d6",
-  "EntityFactory": "0x8db13b25fe13e3f35eda508695703f0a119accb4",
+  "EntityFactory": "0x5144e32aa737634a3f9d9e4d849c1910d06d2533",
   "PublicResolver": "0xa6590f797808ac69549b9758d3b183c27fe588fd",
-  "MultisigState": "0xf90004afcceba49c31d3870a943a2091058251ff",
+  "MultisigState": "0x715f9b45755bc1f2072d56d618308f1bea46cb45",
   "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
   "LEI": "0x7ff666701307b1153fc2bd41946f60418881de4e",
-  "DatabaseResolver": "0x58248449caac373a83dc7018314eef1b3cb8960b",
-  "registrychain.com": "0x578ec0c5508346983878f50a1e4b61bc6b540386",
-  "public.registrychain.com": "0xa1bf0fb2b25ed4d1217c9fe25d936c371fb16939",
-  "us-wy.registrychain.com": "0xb0a332279f8f6c046cebcf07b0b32b4d37c51dc4",
-  "ai.registrychain.com": "0xed15b0becbef2d5c2d450253925c8988d36f6e63"
+  "DatabaseResolver": "0xa0c8c90ebd655415cdfedfe098d75f954bfd4429",
+  "entity.id": "0x81bc88a55ad663762242c1016b1914b66726909b"
 }

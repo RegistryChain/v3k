@@ -52,7 +52,7 @@ const PartnerLink = styled.a`
     color: #0056b3;
   }
 `
-const tld = 'registrychain.com'
+const tld = 'entity.id'
 
 const CompanyPartners = ({
   partners,

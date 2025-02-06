@@ -14,7 +14,7 @@ import {
 import { normalise } from '@ensdomains/ensjs/utils'
 
 const ENS_SUBGRAPH_API_KEY = '9ad5cff64d93ed2c33d1a57b3ec03ea9'
-const baseURL = 'https://zygote.registrychain.com'
+const baseURL = 'https://zygote.entity.id'
 const graphAPI = `https://gateway-arbitrum.network.thegraph.com/api/${ENS_SUBGRAPH_API_KEY}/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH`
 
 const queryAll = gql`

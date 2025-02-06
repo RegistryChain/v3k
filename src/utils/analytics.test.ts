@@ -36,7 +36,7 @@ describe('analytics', () => {
 
       Object.defineProperty(window, 'location', {
         value: {
-          host: `alpha.registrychain.com`,
+          host: `alpha.entity.id`,
         },
         writable: true,
       })

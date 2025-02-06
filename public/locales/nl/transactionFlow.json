@@ -35,7 +35,7 @@
           },
           "url": {
             "label": "Website",
-            "placeholder": "https://registrychain.com"
+            "placeholder": "https://entity.id"
           },
           "location": {
             "label": "Location",

@@ -63,7 +63,7 @@ export const DirectoryTable = ({
   setPage,
 }: DirectoryTableProps) => {
   const router = useRouterWithHistory()
-  const tld = 'registrychain.com'
+  const tld = 'entity.id'
   const { address } = useAccount()
 
   const isOwner = (entity: any) =>

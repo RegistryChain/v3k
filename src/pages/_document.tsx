@@ -124,7 +124,7 @@ export default class MyDocument extends Document {
 
           <script
             defer
-            data-domain="zygote.registrychain.com"
+            data-domain="entity.id"
             src="https://plausible.io/js/script.outbound-links.js"
           />
         </Head>

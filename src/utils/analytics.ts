@@ -6,7 +6,7 @@ declare global {
 
 function isProduction() {
   if (typeof window !== 'undefined') {
-    return !!window.location.host.match('registrychain.com')
+    return !!window.location.host.match('entity.id')
   }
 }
 

@@ -102,7 +102,7 @@ const SectionSubtitle = styled(Typography)(
     color: ${theme.colors.textTertiary};
   `,
 )
-const tld = 'registrychain.com'
+const tld = 'entity.id'
 
 export const RecordsSection = ({
   fields,

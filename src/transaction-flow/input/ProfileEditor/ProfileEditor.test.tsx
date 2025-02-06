@@ -23,11 +23,11 @@ const mockProfileData = {
     texts: [
       {
         key: 'email',
-        value: 'test@registrychain.com',
+        value: 'test@entity.id',
       },
       {
         key: 'url',
-        value: 'https://registrychain.com',
+        value: 'https://entity.id',
       },
       {
         key: 'avatar',

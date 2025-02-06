@@ -97,7 +97,7 @@ const ContentBox = ({ index, rowHeight, imageUrl, text1, text2, text3, isPlaceho
   const router = useRouterWithHistory()
   return (
     <Box
-      onClick={() => router.push('/agent/' + text1 + '.ai.registrychain.com')}
+      onClick={() => router.push('/agent/' + text1 + '.ai.entity.id')}
       isPlaceholder={isPlaceholder}
     >
       {!isPlaceholder && (

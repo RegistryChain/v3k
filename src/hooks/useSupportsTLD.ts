@@ -10,7 +10,7 @@ export const useSupportsTLD = (name = '') => {
       tld === 'eth' ||
       tld === '[root]' ||
       tld === 'registry' ||
-      tld === 'registrychain.com' ||
+      tld === 'entity.id' ||
       isDnsSecEnabled,
     ...query,
   }

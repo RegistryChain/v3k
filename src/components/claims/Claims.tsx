@@ -54,7 +54,7 @@ const FooterContainer = styled.div(
   `,
 )
 
-const tld = 'registrychain.com'
+const tld = 'entity.id'
 const contractAddresses: any = contractAddressesObj
 
 const Claims = ({

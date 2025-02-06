@@ -36,7 +36,7 @@
           },
           "url": {
             "label": "网站",
-            "placeholder": "https://registrychain.com"
+            "placeholder": "https://entity.id"
           },
           "location": {
             "label": "位置",

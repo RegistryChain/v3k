@@ -66,7 +66,7 @@ const SpinnerContainer = styled.div<{ $showBorder?: boolean }>(
   `,
 )
 
-const tld = 'registrychain.com'
+const tld = 'entity.id'
 
 export default function Page() {
   const { t } = useTranslation('common')
