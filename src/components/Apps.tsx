@@ -137,7 +137,7 @@ const BoxGrid = ({ rowHeight = 120, boxes }: any) => {
               key={boxIndex}
               index={rowIndex * 3 + boxIndex + 1}
               rowHeight={rowHeight}
-              imageUrl={box.entity__image}
+              imageUrl={box.avatar}
               text1={box.name}
               text2={box.entity__description}
               text3={(Math.random() * 5).toFixed(2) + '★'}

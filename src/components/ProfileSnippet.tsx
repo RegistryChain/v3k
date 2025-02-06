@@ -113,7 +113,7 @@ export const ProfileSnippet = ({
       ) : (
         <>
           <div style={{ display: 'flex' }}>
-            <Image src={records.entity__image.setValue} alt="e" height={88} />
+            <Image src={records.avatar.setValue} alt="e" height={88} />
             <div>
               <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
                 {name}

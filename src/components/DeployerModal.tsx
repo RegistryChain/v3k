@@ -352,6 +352,7 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
         router.push('/agent/' + name + '.ai.' + tld)
       } catch (err) {
         console.log(err)
+        router.push('/agent/' + name + '.ai.' + tld)
       }
     } else if (actionStep === 2) {
       // deploy token

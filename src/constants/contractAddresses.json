@@ -8,5 +8,7 @@
   "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
   "LEI": "0x7ff666701307b1153fc2bd41946f60418881de4e",
   "DatabaseResolver": "0xa0c8c90ebd655415cdfedfe098d75f954bfd4429",
-  "entity.id": "0x81bc88a55ad663762242c1016b1914b66726909b"
+  "ClaimableSafeFactory": "0xb9aa02e1bc9af74e42fe6a50e80e1d268007c88a",
+  "entity.id": "0x81bc88a55ad663762242c1016b1914b66726909b",
+  "ai.entity.id": "0x5ab83d7cf5e0f245fce2226f68f3959a78e067ad"
 }
