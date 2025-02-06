@@ -36,6 +36,14 @@ const SectionTitle = styled(Typography)(
   `,
 )
 
+const Image = styled.img`
+  width: ${({ height }) => height}px;
+  height: ${({ height }) => height}px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 16px;
+`
+
 const NameRecord = styled(Typography)(
   ({ theme }) => css`
     color: black;
@@ -104,15 +112,20 @@ export const ProfileSnippet = ({
         entityUnavailable
       ) : (
         <>
-          <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
-            {name}
-          </NameRecord>
-          <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-            <Typography>
-              <i>{normalize(domainName)}</i>
-            </Typography>
-          </SectionTitle>
-          {statusSection}
+          <div style={{ display: 'flex' }}>
+            <Image src={records.entity__image.setValue} alt="e" height={88} />
+            <div>
+              <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
+                {name}
+              </NameRecord>
+              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                <Typography>
+                  <i>{normalize(domainName)}</i>
+                </Typography>
+              </SectionTitle>
+              {/* {statusSection} */}
+            </div>
+          </div>
         </>
       )}
     </Container>

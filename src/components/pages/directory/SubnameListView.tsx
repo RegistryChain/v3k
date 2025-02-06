@@ -34,7 +34,7 @@ export const SubnameListView = () => {
 
   const [sortType, setSortType] = useState<any>('entity__formation__date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [registrar, setRegistrarSelected] = useState<string>('any')
+  const [registrar, setRegistrarSelected] = useState<string>('AI')
 
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchInput, setSearchInput] = useState(searchQuery)
@@ -50,7 +50,7 @@ export const SubnameListView = () => {
     //   list[x.countryJurisdictionCode] = true
     // })
     // return Object.keys(list)
-    return ['any', 'public', 'US-WY', 'US-CA', 'US-DE', 'BR', 'FR', 'CN']
+    return ['AI']
   }, [entityTypesObj])
 
   const client: any = useMemo(

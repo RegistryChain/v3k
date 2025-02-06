@@ -304,16 +304,16 @@ const ProfileContent = ({
     )
   }
 
-  let title = 'RegistryChain'
+  let title = 'V3K'
   if (domain) {
-    title = domain + ' on RegistryChain'
+    title = domain + ' on V3K'
   }
 
   let nameRecord = title
   if (Object.keys(records)?.length > 0) {
     nameRecord = records?.entity__name?.setValue
     if (nameRecord) {
-      title = nameRecord + ' on RegistryChain'
+      title = nameRecord + ' on V3K'
     }
   }
   return (

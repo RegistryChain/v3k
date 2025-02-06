@@ -57,6 +57,13 @@ const nextConfig = {
         source: '/:address(0x[a-fA-F0-9]{40}$)',
         destination: '/address?address=:address',
       },
+      {source: '/agent/:name',
+      destination: '/profile?name=:name',
+    },
+    {
+      source: '/agent/amend/:name',
+      destination: '/agentAmend?name=:name',
+    },
       {
         source: '/entity/:name',
         destination: '/profile?name=:name',
