@@ -151,7 +151,7 @@ const BoxGrid = ({ rowHeight = 120, boxes }: any) => {
 }
 
 // Example usage
-export const Apps = () => {
+const Apps = () => {
   const [agents, setAgents] = useState([])
 
   const getAgents = async () => {
