@@ -57,7 +57,7 @@ export const routes: RouteItemObj[] = [
     name: 'names',
     href: '/directory',
     label: 'navigation.names',
-    disabled: false,
+    disabled: true,
     connected: true,
     icon: {
       inactive: DotGridSVG,

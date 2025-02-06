@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import useTransition, { TransitionState } from 'react-transition-state'
 import styled, { css, useTheme } from 'styled-components'
 import { useAccount } from 'wagmi'
@@ -8,6 +8,7 @@ import { mq } from '@ensdomains/thorin'
 
 import { useRecentTransactions } from '@app/hooks/transactions/useRecentTransactions'
 import { useInitial } from '@app/hooks/useInitial'
+import { ModalContext } from '@app/layouts/Basic'
 import { legacyFavouritesRoute, routes } from '@app/routes'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
@@ -133,6 +134,8 @@ export const Header = () => {
   const breakpoints = useBreakpoint()
   const transactions = useRecentTransactions()
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')
+  const { setIsModalOpen } = useContext<any>(ModalContext)
+
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const routeContainerRef = useRef<HTMLDivElement>(null)
   const [state, toggle] = useTransition({
@@ -191,8 +194,11 @@ export const Header = () => {
   return (
     <HeaderWrapper id="header">
       <NavContainer>
-        <div style={{ fontSize: '42px', cursor: 'pointer' }} onClick={() => router.push('/')}>
-          ❍ RegistryChain
+        <div
+          style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer' }}
+          onClick={() => router.push('/')}
+        >
+          V3K <span style={{ fontSize: '36px', fontWeight: '400' }}>AGENT APP STORE</span>
         </div>
         <div style={{ flexGrow: 1 }} />
 
@@ -203,6 +209,12 @@ export const Header = () => {
             $state={breakpoints.lg ? 'entered' : state}
           >
             {RouteItems}
+            <div
+              style={{ fontWeight: '700', cursor: 'pointer' }}
+              onClick={() => setIsModalOpen(true)}
+            >
+              <span>Create Agent</span>
+            </div>
           </RouteContainer>
         </RouteWrapper>
         <Hamburger />

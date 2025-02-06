@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import {
@@ -20,12 +20,13 @@ import FaucetBanner from '@app/components/@molecules/FaucetBanner'
 import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
+import Apps from '@app/components/Apps'
 import { LeadingHeading } from '@app/components/LeadingHeading'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { ModalContext } from '@app/layouts/Basic'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 import contractAddresses from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
 import schemaObj from '../constants/schema.json'
@@ -108,14 +109,15 @@ const StyledLeadingHeading = styled(LeadingHeading)(
 export default function Page() {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
-  const [project, setProject] = useState('REGISTRYCHAIN')
-  const tld = '.registrychain.com'
+  const [project, setProject] = useState('V3K')
+  const tld = '.entity.id'
 
   const publicClient = createPublicClient({
     chain: sepolia,
     transport: http(infuraUrl('sepolia')),
   })
   const breakpoints = useBreakpoint()
+  const { setIsModalOpen } = useContext<any>(ModalContext)
 
   const [entityName, setEntityName] = useState<string>('')
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
@@ -145,16 +147,6 @@ export default function Page() {
     //     setNameAvailable(false)
     //   }
     // }
-  }
-
-  const advance = () => {
-    //Either register name or move to entity information form
-    if (entityName && entityJurisdiction && entityType?.entityTypeName) {
-      router.push('/entity', {
-        name: entityName,
-        type: entityType.ELF,
-      })
-    }
   }
 
   let nameAvailableElement = null
@@ -210,15 +202,9 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>REGISTRYCHAIN</title>
+        <title>V3K</title>
       </Head>
-      <StyledLeadingHeading>
-        <LogoAndLanguage>
-          <StyledENS as={RegistryChainLogoFull} />
-        </LogoAndLanguage>
-        <Hamburger />
-      </StyledLeadingHeading>
-      <FaucetBanner />
+
       <Container>
         <Stack>
           <GradientTitle>{projectConfigs?.title}</GradientTitle>
@@ -227,57 +213,15 @@ export default function Page() {
               {projectConfigs?.description}
             </Typography>
           </SubtitleWrapper>
-          <EntityInput
-            field={'Name'}
-            value={entityName}
-            setValue={(x: string) => {
-              const regex = /^[a-zA-Z0-9\s-]+$/
-              const valid = regex.test(x)
-              if (valid || x === '') {
-                setEntityName(x)
-              }
-            }}
-          />
-          <RegistrarInput
-            entityTypes={entityTypesObj}
-            field={'Jurisdiction'}
-            value={entityJurisdiction}
-            setValue={(regKey: string) => {
-              setEntityJurisdiction(regKey)
-            }}
-            permittedJurisdictions={projectConfigs?.permittedJurisdictions}
-          />
-          <div
-            key={'div1en'}
-            style={{
-              width: '100%',
-              textAlign: 'left',
-              padding: breakpoints.xs && !breakpoints.sm ? '0' : '0 48px',
-            }}
-          >
-            {entityTypeSelection}
-          </div>
-          {breakpoints.sm ? (
-            <div
-              key={'div2en'}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                paddingLeft: '48px',
-                paddingRight: '48px',
-                height: '40px',
-              }}
-            ></div>
-          ) : null}
-          {/* {nameAvailableElement} */}
-          {/* </div> */}
+
+          <Apps />
           <Button
             style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
             shape="square"
             size="small"
-            onClick={() => advance()}
+            onClick={() => setIsModalOpen(true)}
           >
-            {t('action.formEntity')}
+            Create Agent
           </Button>
         </Stack>
       </Container>

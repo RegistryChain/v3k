@@ -3,9 +3,10 @@ import { useErrorBoundary, withErrorBoundary } from 'react-use-error-boundary'
 import styled, { css } from 'styled-components'
 import { useAccount, useSwitchChain } from 'wagmi'
 
-import { mq } from '@ensdomains/thorin'
+import { mq, Typography } from '@ensdomains/thorin'
 
 import ErrorScreen from '@app/components/@atoms/ErrorScreen'
+import DeployerModal from '@app/components/DeployerModal'
 import { getSupportedChainById } from '@app/constants/chains'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
@@ -49,6 +50,8 @@ const ContentWrapper = styled.div(
 
 const BottomPlaceholder = styled.div(
   ({ theme }) => css`
+    background-color: #cdd8da;
+    padding: 10px 5px;
     height: ${theme.space['14']};
     ${mq.sm.min(css`
       height: ${theme.space['12']};
@@ -74,6 +77,8 @@ const shouldSwitchChain = ({
   !isPending &&
   !isError &&
   !getSupportedChainById(chainId)
+
+export const ModalContext: any = createContext(undefined)
 
 export const Basic = withErrorBoundary(({ children }: { children: React.ReactNode }) => {
   const { chainId, connector, isConnected } = useAccount()
@@ -105,17 +110,32 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       router.push('/unsupportedNetwork')
     }
   }, [isConnected, chainId, router])
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     // <LayoutContext.Provider value={{ testMode }}>
+    <ModalContext.Provider value={{ isModalOpen, setIsModalOpen }}>
+      <Container className="min-safe">
+        <Navigation />
+        <ContentWrapper>
+          <DeployerModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
-    <Container className="min-safe">
-      <Navigation />
-      <ContentWrapper>
-        {error ? <ErrorScreen errorType="application-error" /> : children}
-      </ContentWrapper>
-      <BottomPlaceholder />
-    </Container>
-    // </LayoutContext.Provider>
+          {error ? <ErrorScreen errorType="application-error" /> : children}
+        </ContentWrapper>
+        <BottomPlaceholder>
+          <Typography
+            style={{
+              textAlign: 'right',
+              fontWeight: '700',
+              color: 'rgb(115 111 111)',
+              fontSize: '16px',
+              fontStyle: 'italic',
+            }}
+          >
+            Powered by RegistryChain Universal Entity.ID
+          </Typography>
+        </BottomPlaceholder>
+      </Container>
+    </ModalContext.Provider>
   )
 })

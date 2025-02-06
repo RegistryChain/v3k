@@ -281,7 +281,7 @@ export const Content = ({
 
   if (!children.leading && singleColumnContent) LeadingComponent = null
 
-  const fullTitle = `${title} - RegistryChain`
+  const fullTitle = `${title} - V3K`
 
   if (!router.isReady) return null
   return (
