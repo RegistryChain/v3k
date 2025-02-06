@@ -35,6 +35,7 @@
   ],
   "rules": {
     "no-empty": "off",
+    "import/no-cycle": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
     "react/self-closing-comp": "off",
