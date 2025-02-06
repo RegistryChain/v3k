@@ -56,8 +56,8 @@ export const routes: RouteItemObj[] = [
   {
     name: 'names',
     href: '/directory',
-    label: 'navigation.names',
-    disabled: true,
+    label: 'Browse AI Agents',
+    disabled: false,
     connected: true,
     icon: {
       inactive: DotGridSVG,
