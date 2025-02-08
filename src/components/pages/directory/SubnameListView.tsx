@@ -138,8 +138,6 @@ export const SubnameListView = () => {
       />
 
       <TilesView
-        sortDirection={sortDirection}
-        onSortDirectionChange={setSortDirection}
         data={filteredSet}
         isLoadingNextPage={isLoadingNextPage}
         fetchData={getSubs}
