@@ -16,6 +16,7 @@ import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import entityTypesObj from '../../../constants/entityTypes.json'
+import { TilesView } from '@app/components/TilesView/TilesView'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -135,7 +136,8 @@ export const SubnameListView = () => {
           setSearchInput(s)
         }}
       />
-      <DirectoryTable
+
+      <TilesView
         sortDirection={sortDirection}
         onSortDirectionChange={setSortDirection}
         data={filteredSet}
