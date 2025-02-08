@@ -1,8 +1,117 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { Address, createPublicClient, createWalletClient, custom, getContract, http } from 'viem'
+import { sepolia } from 'viem/chains'
+import { useAccount } from 'wagmi'
+
+import { Button } from '@ensdomains/thorin'
 
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
+import { infuraUrl } from '@app/utils/query/wagmi'
+import { normalizeLabel } from '@app/utils/utils'
+
+import contractAddressesObj from '../constants/contractAddresses.json'
+import StarRating from './StarRating'
+
+const RepTokenABI = [
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'target',
+        type: 'address',
+      },
+    ],
+    name: 'getSenderRatingsListForTarget',
+    outputs: [
+      {
+        internalType: 'address[]',
+        name: '',
+        type: 'address[]',
+      },
+      {
+        internalType: 'uint256[]',
+        name: '',
+        type: 'uint256[]',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'value',
+        type: 'uint256',
+      },
+    ],
+    name: 'transfer',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+      },
+    ],
+    name: 'balanceOf',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+]
+
+const BasicABI = [
+  {
+    inputs: [],
+    name: 'mintFromFaucet',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    name: 'faucetMinted',
+    inputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+]
 
 // Breakpoints for responsive design
 const breakpoints = {
@@ -87,27 +196,38 @@ const Category = styled.div`
   margin-bottom: 4px;
 `
 
-const Rating = styled.div`
+const Location = styled.div`
   font-size: 12px;
   color: #888;
 `
 
 // Box component
-const ContentBox = ({ index, rowHeight, imageUrl, text1, text2, text3, isPlaceholder }: any) => {
+const ContentBox = ({
+  onRate,
+  index,
+  rowHeight,
+  imageUrl,
+  agentName,
+  agentDesc,
+  text3,
+  location,
+  isPlaceholder,
+}: any) => {
   const router = useRouterWithHistory()
   return (
     <Box
-      onClick={() => router.push('/agent/' + text1 + '.ai.entity.id')}
+      onClick={() => router.push('/agent/' + normalizeLabel(agentName) + '.ai.entity.id')}
       isPlaceholder={isPlaceholder}
     >
       {!isPlaceholder && (
         <>
+          <div></div>
           <Image src={imageUrl} height={rowHeight - 32} alt="Placeholder" />{' '}
-          {/* Adjust height for padding */}
           <TextContainer>
-            <Title>{text1}</Title>
-            <Category>{text2}</Category>
-            <Rating>{text3}</Rating>
+            <Title>{agentName}</Title>
+            <Category>{agentDesc}</Category>
+            <Location>{location}</Location>
+            <StarRating rating={text3} onRate={onRate} />{' '}
           </TextContainer>
         </>
       )}
@@ -116,7 +236,7 @@ const ContentBox = ({ index, rowHeight, imageUrl, text1, text2, text3, isPlaceho
 }
 
 // Main component
-const BoxGrid = ({ rowHeight = 120, boxes }: any) => {
+const BoxGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
   // Calculate the number of rows needed
   const rows = []
   for (let i = 0; i < boxes.length; i += 3) {
@@ -132,18 +252,24 @@ const BoxGrid = ({ rowHeight = 120, boxes }: any) => {
     <Container>
       {rows.map((row, rowIndex) => (
         <Row key={rowIndex}>
-          {row.map((box: any, boxIndex: any) => (
-            <ContentBox
-              key={boxIndex}
-              index={rowIndex * 3 + boxIndex + 1}
-              rowHeight={rowHeight}
-              imageUrl={box.avatar}
-              text1={box.name}
-              text2={box.entity__description}
-              text3={(Math.random() * 5).toFixed(2) + '★'}
-              isPlaceholder={box.isPlaceholder}
-            />
-          ))}
+          {row.map((box: any, boxIndex: any) => {
+            return (
+              <ContentBox
+                key={boxIndex}
+                onRate={(x: any) => onRate(box.address, x + 1)}
+                index={rowIndex * 3 + boxIndex + 1}
+                rowHeight={rowHeight}
+                imageUrl={box.avatar}
+                agentName={box.name}
+                agentDesc={
+                  box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')
+                }
+                location={box.location}
+                text3={box.rating}
+                isPlaceholder={box.isPlaceholder}
+              />
+            )
+          })}
         </Row>
       ))}
     </Container>
@@ -153,6 +279,99 @@ const BoxGrid = ({ rowHeight = 120, boxes }: any) => {
 // Example usage
 const Apps = () => {
   const [agents, setAgents] = useState([])
+  const { address } = useAccount()
+
+  const [wallet, setWallet] = useState<any>(null)
+
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.ethereum && !wallet) {
+      const newWallet = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum, {
+          retryCount: 0,
+        }),
+        account: address,
+      })
+      setWallet(newWallet)
+    } else {
+      console.error('Ethereum object not found on window')
+    }
+  }, [address])
+
+  const sendStars = async (to: any, amount: any) => {
+    try {
+      const contract: any = getContract({
+        address: contractAddressesObj.starToken as Address,
+        abi: RepTokenABI,
+        client: wallet,
+      })
+
+      const bal = await contract.read.balanceOf([address])
+      console.log('user balance', address, bal)
+      if (bal === 0n) {
+        await mintOrimmoTokens()
+      }
+
+      const tx = await contract.write.transfer([to, amount * 10 ** 18])
+      await publicClient?.waitForTransactionReceipt({
+        hash: tx,
+      })
+    } catch (err) {
+      console.log('error sending stars', err)
+    }
+    return
+  }
+
+  const repTokenBalance = async (addressesToCheck: any[]) => {
+    const contract = {
+      address: contractAddressesObj.starToken,
+      abi: RepTokenABI,
+    }
+
+    const results = await publicClient.multicall({
+      contracts: addressesToCheck.map((x) => ({
+        ...contract,
+        functionName: 'getSenderRatingsListForTarget',
+        args: [x],
+      })) as any[],
+    })
+    const addressToRate: any = {}
+    results.forEach((x: any, idx: any) => {
+      let ratingScore = 0
+      x?.result?.[1]?.forEach((rating: any) => (ratingScore += Number(rating)))
+      ratingScore /= x?.result?.[1]?.length
+      addressToRate[addressesToCheck[idx]] = ratingScore / 1000000000000000000 || 0
+    })
+    return addressToRate
+  }
+
+  const mintOrimmoTokens = async () => {
+    if (address && wallet) {
+      try {
+        const orimmoController: any = getContract({
+          abi: BasicABI,
+          address: contractAddressesObj.orimmoController as Address,
+          client: wallet,
+        })
+
+        const tx = await orimmoController.write.mintFromFaucet([])
+        const txReceipt = await publicClient?.waitForTransactionReceipt({
+          hash: tx,
+        })
+      } catch (err) {
+        console.log('mint err', err)
+      }
+    }
+  }
 
   const getAgents = async () => {
     const entities = await getEntitiesList({
@@ -163,7 +382,10 @@ const Apps = () => {
       sortType: 'entity__formation__date',
     })
 
-    setAgents(entities)
+    const ratings = await repTokenBalance(entities.map((x: any) => x.address))
+
+    const agentsToSet = entities.map((x: any) => ({ ...x, rating: ratings[x.address] }))
+    setAgents(agentsToSet)
   }
 
   useEffect(() => {
@@ -172,7 +394,11 @@ const Apps = () => {
     } catch (err) {}
   }, [])
 
-  return <BoxGrid boxes={agents} />
+  return (
+    <div>
+      <BoxGrid boxes={agents} onRate={(addr: Address, val: any) => sendStars(addr, val)} />
+    </div>
+  )
 }
 
 export default Apps

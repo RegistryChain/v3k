@@ -120,7 +120,9 @@ export const ProfileSnippet = ({
               </NameRecord>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 <Typography>
-                  <i>{normalize(domainName)}</i>
+                  <a href={'https://app.ens.domains/' + domainName}>
+                    <i>{normalize(domainName)}</i>
+                  </a>
                 </Typography>
               </SectionTitle>
               {/* {statusSection} */}
