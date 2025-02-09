@@ -263,14 +263,14 @@ export const ProfileSnippet = ({
     return
   }
 
-  const repTokenBalance = async (addressToCheck) => {
+  const repTokenBalance = async (addressToCheck: any) => {
     const contract = getContract({
-      address: contractAddressesObj.starToken,
+      address: contractAddressesObj.starToken as any,
       abi: RepTokenABI,
       client: publicClient,
     })
 
-    const result = await contract.read.getSenderRatingsListForTarget([addressToCheck])
+    const result: any = await contract.read.getSenderRatingsListForTarget([addressToCheck])
     let ratingScore = 0
     result?.[1]?.forEach((rating: any) => (ratingScore += Number(rating)))
     ratingScore /= result?.[1]?.length
