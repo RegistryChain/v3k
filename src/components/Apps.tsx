@@ -15,6 +15,7 @@ import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import StarRating from './StarRating'
+import SubgraphResults from './SubgraphQuery'
 
 const RepTokenABI = [
   {
@@ -321,6 +322,7 @@ const Apps = () => {
   const { address } = useAccount()
 
   const [wallet, setWallet] = useState<any>(null)
+  const [subgraphResults, setSubgraphResults] = useState<any>(null)
 
   const publicClient = useMemo(
     () =>
@@ -370,10 +372,11 @@ const Apps = () => {
     return
   }
 
-  const repTokenBalance = async (addressesToCheck: any[]) => {
+  const repTokenBalance = async (addressesToCheck: any[], res: any) => {
     const contract = {
       address: contractAddressesObj.starToken,
       abi: RepTokenABI,
+      args: [res],
     }
 
     const results = await publicClient.multicall({
@@ -421,7 +424,10 @@ const Apps = () => {
       sortType: 'creationDate',
     })
 
-    const ratings = await repTokenBalance(entities.map((x: any) => x.address))
+    const ratings = await repTokenBalance(
+      entities.map((x: any) => x.address),
+      subgraphResults,
+    )
 
     const agentsToSet = entities.map((x: any) => ({ ...x, rating: ratings[x.address] }))
     setAgents(agentsToSet)
@@ -434,9 +440,15 @@ const Apps = () => {
   }, [])
 
   return (
-    <div>
-      <BoxGrid boxes={agents} onRate={(addr: Address, val: any) => sendStars(addr, val)} />
-    </div>
+    <>
+      <SubgraphResults
+        tokenAddress={agents.map((x: any) => x.address)}
+        onResults={setSubgraphResults}
+      />
+      <div>
+        <BoxGrid boxes={agents} onRate={(addr: Address, val: any) => sendStars(addr, val)} />
+      </div>
+    </>
   )
 }
 

@@ -29,6 +29,7 @@ import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
+import SubgraphResults from '../../../SubgraphQuery'
 import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import PluginsTab from './tabs/PluginsTab'
@@ -132,6 +133,8 @@ const ProfileContent = ({
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [owner, setOwner] = useState('')
   const [status, setStatus] = useState('')
+  const [subgraphResults, setSubgraphResults] = useState<any>([])
+
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
 
@@ -325,6 +328,10 @@ const ProfileContent = ({
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={title} />
       </Head>
+      {/* <SubgraphResults
+        tokenAddresses={[records.address, records.entity__token__address]}
+        onResults={() => setSubgraphResults([...subgraphResults])}
+      /> */}
       {isClaiming ? null : (
         <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={domain}>
           {{
@@ -333,7 +340,7 @@ const ProfileContent = ({
                 <EntityViewTab
                   domainName={domain}
                   multisigAddress={multisigAddress}
-                  records={records}
+                  records={{ ...records, subgraph: subgraphResults }}
                   status={status}
                 />
                 {breakpoints.xs && !breakpoints.sm ? (
