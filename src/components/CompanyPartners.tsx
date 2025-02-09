@@ -107,7 +107,10 @@ const CompanyPartners = ({
               return (
                 <PartnerRow
                   key={subIdx}
-                  onClick={() => (window.location.href = '/entity/' + domain)}
+                  onClick={() => {
+                    if (!domain.includes('.ai.')) return 'https://entity.id/entity/' + domain
+                    return (window.location.href = '/agent/' + domain)
+                  }}
                 >
                   <PartnerCell isHeader>{isHeader}</PartnerCell>
                   <PartnerCell>
