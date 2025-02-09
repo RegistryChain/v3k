@@ -209,15 +209,15 @@ export default function Page() {
 
       <Container>
         <Stack>
-          {/* <GradientTitle>{projectConfigs?.title}</GradientTitle> */}
+          <GradientTitle>Trending Apps</GradientTitle>
 
-          <div style={{ marginTop: '8px' }}>
+          {/* <div style={{ marginTop: '8px' }}>
             <Image alt="" width={220} height={220} src={v3kLogo} />
-          </div>
+          </div> */}
           <SubtitleWrapper>
-            <Typography fontVariant="large" style={{ color: '#333' }}>
-              {projectConfigs?.description}
-            </Typography>
+            {/* <Typography fontVariant="large" style={{ color: '#333', fontSize: '32px' }}>
+              Trending Apps
+            </Typography> */}
           </SubtitleWrapper>
 
           <Apps />

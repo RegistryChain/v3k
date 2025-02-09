@@ -418,7 +418,7 @@ const Apps = () => {
       nameSubstring: '',
       page: 0,
       sortDirection: 'desc',
-      sortType: 'entity__formation__date',
+      sortType: 'creationDate',
     })
 
     const ratings = await repTokenBalance(entities.map((x: any) => x.address))
