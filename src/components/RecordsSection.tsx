@@ -138,65 +138,9 @@ export const RecordsSection = ({
   }
 
   let childrenSection = null
-  if (fields.children?.length > 0) {
+  if (fields.partners?.length > 0) {
     childrenSection = (
-      <RecordSection key={'section1Partner'}>
-        <div style={{ width: '100%' }}>
-          <RecordSection key={'section1SubPartner'}>
-            <div style={{ width: '100%', paddingLeft: '40px' }}>
-              {fields.children.map((record: any, idx: number) => {
-                const domain = normalize(
-                  normalizeLabel(record?.entity__name?.setValue) +
-                    '.' +
-                    record?.entity__registrar?.setValue +
-                    '.' +
-                    tld,
-                )
-                return (
-                  <RecordSection key={'section1SubSubPartner' + idx}>
-                    <SectionHeader>
-                      <SectionTitleContainer style={{ cursor: 'pointer' }}>
-                        <SectionTitle
-                          data-testid="text-heading"
-                          fontVariant="bodyBold"
-                          onClick={() => (window.location.href = '/entity/' + domain)}
-                        >
-                          <u>{record.entity__name.setValue}</u>
-                        </SectionTitle>
-                      </SectionTitleContainer>
-                    </SectionHeader>
-                    {Object.keys(record).map((key, idx) => {
-                      return (
-                        <div
-                          key={'embeddedDiv' + idx}
-                          style={{
-                            display: 'flex',
-                            width: '100%',
-                            padding: '0.625rem 0.75rem',
-                            background: 'hsl(0 0% 96%)',
-                            border: '1px solid hsl(0 0% 91%)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <Typography style={{ display: 'flex', flex: 1, color: 'grey' }}>
-                            {record[key].label}
-                          </Typography>
-                          <Typography>
-                            {Array.isArray(record[key].setValue)
-                              ? record[key].setValue.join(', ')
-                              : record[key].setValue}
-                          </Typography>
-                        </div>
-                      )
-                    })}
-                  </RecordSection>
-                )
-              })}
-            </div>
-          </RecordSection>
-        </div>
-      </RecordSection>
+      <CompanyPartners partners={fields.children} compareToOldValues={compareToOldValues} />
     )
   }
 
