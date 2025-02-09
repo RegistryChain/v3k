@@ -380,7 +380,7 @@ const ProfileContent = ({
                         key: 'Agent Claimable contract',
                         value: records?.address?.setValue || zeroAddress,
                       },
-                      { key: 'Owner Address', value: owner },
+                      { key: 'Owner Address', value: "0xB6223657534e1acCDdfbE002bc6Ac63E68b57506" }, // TODO: change placeholder address
                       {
                         key: 'Token Address',
                         value: records?.entity__token__address?.setValue || zeroAddress,

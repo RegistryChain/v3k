@@ -1,6 +1,6 @@
 import { createClient, type FallbackTransport, type HttpTransport, type Transport } from 'viem'
 import { createConfig, createStorage, fallback, http } from 'wagmi'
-import { goerli, holesky, localhost, mainnet, sepolia } from 'wagmi/chains'
+import { base, goerli, holesky, localhost, mainnet, sepolia } from 'wagmi/chains'
 
 import { ccipRequest } from '@ensdomains/ensjs/utils'
 
@@ -86,6 +86,7 @@ const chains = [
   goerliWithEns,
   sepoliaWithEns,
   holeskyWithEns,
+  base
 ] as const
 
 const transports: any = {
@@ -100,6 +101,7 @@ const transports: any = {
   [mainnet.id]: initialiseTransports('mainnet', [infuraUrl, cloudflareUrl, tenderlyUrl]),
   [sepolia.id]: initialiseTransports('sepolia', [infuraUrl, cloudflareUrl, tenderlyUrl]),
   [goerli.id]: initialiseTransports('goerli', [infuraUrl, cloudflareUrl, tenderlyUrl]),
+  [base.id]: initialiseTransports('base', [(url) => base.rpcUrls.default.http[0]]),
   [holesky.id]: initialiseTransports('holesky', [tenderlyUrl]),
 } as const
 

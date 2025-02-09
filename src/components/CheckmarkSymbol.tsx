@@ -1,12 +1,12 @@
 import { Tooltip } from '@ensdomains/thorin'
 
-export const CheckmarkSymbol = ({ tooltipText }: any) => {
+export const CheckmarkSymbol = ({ tooltipText, address }: any) => {
   return (
     <Tooltip content={tooltipText}>
       <div
         style={{
           cursor: 'pointer',
-          display: 'inline-flex',
+          display: 'inline-block',
           alignItems: 'center',
           justifyContent: 'center',
           width: '1.2em',
@@ -22,7 +22,9 @@ export const CheckmarkSymbol = ({ tooltipText }: any) => {
           marginRight: '0.5em',
         }}
       >
+        <a href={`https://base.easscan.org/address/${address}`}>
         ✔
+        </a>
       </div>
     </Tooltip>
   )
