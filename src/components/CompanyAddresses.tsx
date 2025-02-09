@@ -2,6 +2,7 @@ import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, PromiseLik
 import { ReactI18NextChild } from "react-i18next";
 import styled from "styled-components";
 import { zeroAddress } from 'viem'
+import { Attestation } from "./Attestation";
 
 const AddressContainer = styled.div`
   width: 100%;
@@ -50,7 +51,8 @@ const CompanyAddresses = ({ addressesObj }: any) => {
             <AddressCell>
               {addressObj.value && addressObj.value !== zeroAddress ? (
                 <AddressLink href={`https://sepolia.etherscan.io/address/${addressObj.value}`} target="_blank">
-                  {addressObj.value}
+                  {addressObj.value} {' '}
+                  <Attestation userAddress={addressObj.value}></Attestation>
                 </AddressLink>
               ) : addressObj.value
               }
