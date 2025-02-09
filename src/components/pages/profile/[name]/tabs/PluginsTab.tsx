@@ -18,21 +18,19 @@ const AppsContainer = styled(CacheableComponent)(
   `,
 )
 
-const AppsTab = ({ registrarType = 'company', breakpoints }: any) => {
+const PluginsTab = ({ registrarType = 'company', breakpoints }: any) => {
   const apps: { [x: string]: any } = {
     company: {
-      payment__processing: [
+      pricing: [
         {
           jurisdiction: 'USA',
-          org: 'Stripe',
-          serviceName: 'Connect',
-          logo: 'https://www.svgrepo.com/show/331592/stripe-v2.svg',
+          serviceName: 'Subscription Model',
+          logo: '',
         },
         {
           jurisdiction: 'USA',
-          org: 'Square',
-          serviceName: 'Square Online',
-          logo: 'https://cdn-icons-png.flaticon.com/512/39/39003.png',
+          serviceName: 'Purchase Model',
+          logo: '',
         },
       ],
       vault__management: [
@@ -88,4 +86,4 @@ const AppsTab = ({ registrarType = 'company', breakpoints }: any) => {
   return <AppsContainer>{appComps}</AppsContainer>
 }
 
-export default AppsTab
+export default PluginsTab

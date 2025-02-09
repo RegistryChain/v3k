@@ -1,11 +1,21 @@
 import Image from 'next/image'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
-import { Button, mq, Tag, Toggle, Typography } from '@ensdomains/thorin'
+import {
+  Button,
+  Input,
+  MagnifyingGlassSimpleSVG,
+  mq,
+  Tag,
+  Toggle,
+  Typography,
+} from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
 import RecordItem from '@app/components/RecordItem'
+import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 
 import { TabWrapper } from '../../TabWrapper'
 
@@ -70,54 +80,124 @@ const ItemsContainer = styled(CacheableComponent)(
 
 const AppComponent = ({ appData, category, breakpoints }: any) => {
   const { t } = useTranslation('profile')
-
+  const [counterPartyAvatar, setCounterPartyAvatar] = useState('')
   return (
-    <Container>
-      <HeaderContainer>
-        <Typography fontVariant="headingFour">
-          {category
-            .split('__')
-            .map((x: any) => x[0].toUpperCase() + x.slice(1))
-            .join(' ')}
-        </Typography>
-      </HeaderContainer>
-      {appData.map((x: any, idx: number) => {
-        return (
-          <ItemsContainer key={x.serviceName + idx}>
-            <div style={{ display: 'flex', width: '100%' }}>
-              {x.logo ? (
-                <Image style={{ marginRight: '12px' }} alt="" width="48" height="48" src={x.logo} />
-              ) : (
-                <div
-                  style={{
-                    marginRight: '12px',
-                    width: '48px',
-                    height: '48px',
-                  }}
-                ></div>
-              )}
-              <RecordItem
-                itemKey={x.jurisdiction}
-                value={[x.org, x.serviceName].join(' - ')}
-                type="text"
+    <>
+      <Container>
+        <HeaderContainer>
+          <Typography fontVariant="headingFour">Agent Permissions</Typography>
+        </HeaderContainer>
+        <ItemsContainer>
+          <div style={{ display: 'flex', width: '100%' }}>
+            {counterPartyAvatar ? (
+              <Image
+                style={{ marginRight: '12px' }}
+                alt=""
+                width="48"
+                height="48"
+                src={counterPartyAvatar}
               />
-            </div>
-            <div
-              style={{
-                height: '3rem',
-                width: breakpoints.xs && !breakpoints.sm ? '100%' : '80px',
-                alignContent: 'center',
-                cursor: 'not-allowed',
+            ) : (
+              <div
+                style={{
+                  marginRight: '12px',
+                  width: '48px',
+                  height: '48px',
+                }}
+              ></div>
+            )}
+            <Input
+              style={{ flex: 3 }}
+              data-testid="name-table-header-search"
+              size="medium"
+              label="search"
+              hideLabel
+              onChange={async (x) => {
+                if (x.target.value.includes('.entity.id')) {
+                  const counterParty = await getRecordData({ domain: x.target.value })
+                  console.log(counterParty)
+                  if (counterParty?.avatar?.setValue) {
+                    setCounterPartyAvatar(counterParty.avatar.setValue)
+                  }
+                } else {
+                  setCounterPartyAvatar('')
+                }
               }}
+              icon={<MagnifyingGlassSimpleSVG />}
+              placeholder={'Entity ID'}
+            />
+          </div>
+          <div
+            style={{
+              height: '3rem',
+              width: breakpoints.xs && !breakpoints.sm ? '100%' : '260px',
+              alignContent: 'center',
+              cursor: 'not-allowed',
+            }}
+          >
+            <Button
+              style={{ cursor: 'not-allowed' }}
+              disabled={!counterPartyAvatar}
+              onClick={() => null}
             >
-              <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
-                {t('actions.order')}
-              </Button>
-            </div>
-          </ItemsContainer>
-        )
-      })}
-    </Container>
+              Permit Interaction
+            </Button>
+          </div>
+        </ItemsContainer>
+      </Container>
+      <Container>
+        <HeaderContainer>
+          <Typography fontVariant="headingFour">
+            {category
+              .split('__')
+              .map((x: any) => x[0].toUpperCase() + x.slice(1))
+              .join(' ')}
+          </Typography>
+        </HeaderContainer>
+        {appData.map((x: any, idx: number) => {
+          return (
+            <ItemsContainer key={x.serviceName + idx}>
+              <div style={{ display: 'flex', width: '100%' }}>
+                {x.logo ? (
+                  <Image
+                    style={{ marginRight: '12px' }}
+                    alt=""
+                    width="48"
+                    height="48"
+                    src={x.logo}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      marginRight: '12px',
+                      width: '48px',
+                      height: '48px',
+                    }}
+                  ></div>
+                )}
+                <RecordItem
+                  itemKey={x.jurisdiction}
+                  value={x.org ? [x.org, x.serviceName].join(' - ') : x.serviceName}
+                  type="text"
+                />
+              </div>
+              <div
+                style={{
+                  height: '3rem',
+                  width: breakpoints.xs && !breakpoints.sm ? '100%' : '80px',
+                  alignContent: 'center',
+                  cursor: 'not-allowed',
+                }}
+              >
+                <Button style={{ cursor: 'not-allowed' }} disabled onClick={() => null}>
+                  {t('actions.order')}
+                </Button>
+              </div>
+            </ItemsContainer>
+          )
+        })}
+      </Container>{' '}
+    </>
   )
 }
 

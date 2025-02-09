@@ -29,11 +29,10 @@ import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
 import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import { RecordsSection } from '../../../RecordsSection'
-import Constitution from '../../entityCreation/Constitution'
 import ActionsTab from './tabs/ActionsTab/ActionsTab'
-import AppsTab from './tabs/AppsTab'
 import EntityViewTab from './tabs/EntityViewTab'
-import LicenseTab from './tabs/LicenseTab'
+import PluginsTab from './tabs/PluginsTab'
+import RegulatoryTab from './tabs/Regulatory'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -84,7 +83,7 @@ const TabButton = styled.button<{ $selected: boolean }>(
   `,
 )
 
-const tabs = ['entity', 'constitution', 'actions', 'licenses', 'apps'] as const
+const tabs = ['entity', 'actions', 'regulatory', 'plugins'] as const
 type Tab = (typeof tabs)[number]
 
 export const NameAvailableBanner = ({
@@ -371,48 +370,27 @@ const ProfileContent = ({
             trailing: match(tab)
               .with('entity', () => (
                 <>
-                  {isAddress(owner) && owner !== zeroAddress ? null : (
-                    <MessageContainer>
-                      This entity has not deployed its Contract Account. This means it is not
-                      currently active on RegistryChain.
-                    </MessageContainer>
-                  )}
                   <RecordsSection
                     fields={records}
                     compareToOldValues={false}
                     claimEntity={claimEntity}
                     domainName={domain}
                     addressesObj={[
+                      {
+                        key: 'Agent Claimable contract',
+                        value: records?.address?.setValue || zeroAddress,
+                      },
                       { key: 'Owner Address', value: owner },
-                      { key: 'Multisig Address', value: multisigAddress },
-                      { key: 'Member Manager Address', value: entityMemberManager },
+                      {
+                        key: 'Token Address',
+                        value: records?.entity__token__address?.setValue || zeroAddress,
+                      },
                     ]}
                   />
                 </>
               ))
-              .with('constitution', () => {
-                if (records && zeroAddress !== owner && isAddress(owner)) {
-                  return (
-                    <Constitution
-                      breakpoints={breakpoints}
-                      formationData={records}
-                      multisigAddress={multisigAddress || zeroAddress}
-                      model={records.entity__selected__model}
-                      setModel={null}
-                      canDownload={true}
-                    />
-                  )
-                } else {
-                  return (
-                    <MessageContainer>
-                      Entity not found. Constitution is available for entities with drafted or
-                      submitted data.
-                    </MessageContainer>
-                  )
-                }
-              })
               .with('actions', () => {
-                if (records && zeroAddress !== owner && isAddress(owner)) {
+                if (records) {
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
@@ -434,10 +412,9 @@ const ProfileContent = ({
                   )
                 }
               })
-              .with('apps', () => (
+              .with('plugins', () => (
                 <>
-                  {demoMessage}
-                  <AppsTab
+                  <PluginsTab
                     registrarType={registrarType}
                     name={normalise(domain)}
                     nameDetails={{}}
@@ -445,10 +422,9 @@ const ProfileContent = ({
                   />
                 </>
               ))
-              .with('licenses', () => (
+              .with('regulatory', () => (
                 <>
-                  {demoMessage}
-                  <LicenseTab
+                  <RegulatoryTab
                     registrarType={registrarType}
                     name={normalise(domain)}
                     nameDetails={{}}

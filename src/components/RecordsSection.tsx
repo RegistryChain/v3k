@@ -120,8 +120,6 @@ export const RecordsSection = ({
   const { t } = useTranslation('profile')
   const router = useRouter()
 
-  const [project, setProject] = useState('REGISTRYCHAIN')
-
   const filteredCompanyData = useMemo(
     () => Object.keys(fields)?.filter((field) => field.includes('entity')),
     [fields],

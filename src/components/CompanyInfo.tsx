@@ -49,7 +49,8 @@ const CompanyInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
     <CompanyContainer>
       <StyledTable>
         {filteredCompanyData?.map((field: string, idx: Key | null | undefined) => {
-          const key = fields[field].label || field
+          let key = fields[field].label || field
+          key = key.split('Entity ').join('Agent ')
 
           const differenceCondition =
             fields.jurisdictionalSource?.setValue?.[field]?.toUpperCase() !==

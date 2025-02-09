@@ -288,17 +288,17 @@ const ActionsTab = ({
     [txs],
   )
 
-  if (
-    isAddress(owner) &&
-    owner === address &&
-    (!isAddress(multisigAddress) || multisigAddress === zeroAddress)
-  ) {
-    return (
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
-      </div>
-    )
-  }
+  // if (
+  //   isAddress(owner) &&
+  //   owner === address &&
+  //   (!isAddress(multisigAddress) || multisigAddress === zeroAddress)
+  // ) {
+  //   return (
+  //     <div style={{ width: '50%', margin: '16px 0' }}>
+  //       <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
+  //     </div>
+  //   )
+  // }
 
   let amendmentsTrigger = null
   if (address === owner || (owner === multisigAddress && txsExecuted?.length >= 1)) {
@@ -352,10 +352,19 @@ const ActionsTab = ({
         setErrorMessage={setErrorMessage}
         breakpoints={breakpoints}
       />
-      {amendmentsTrigger}
-      {txToConfirm}
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
+      </div>
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button>KYC verification</Button>
+      </div>
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button>Make Amendment</Button>
+      </div>
+      {/* {amendmentsTrigger} */}
+      {/* {txToConfirm}
       {txToExecute}
-      {txHistory}
+      {txHistory} */}
     </div>
   )
 }

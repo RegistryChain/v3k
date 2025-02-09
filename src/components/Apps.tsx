@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { FaStar } from 'react-icons/fa'
 import styled from 'styled-components'
 import { Address, createPublicClient, createWalletClient, custom, getContract, http } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -209,7 +210,7 @@ const ContentBox = ({
   imageUrl,
   agentName,
   agentDesc,
-  text3,
+  rating,
   location,
   isPlaceholder,
 }: any) => {
@@ -227,7 +228,18 @@ const ContentBox = ({
             <Title>{agentName}</Title>
             <Category>{agentDesc}</Category>
             <Location>{location}</Location>
-            <StarRating rating={text3} onRate={onRate} />{' '}
+            <div style={{ display: 'flex' }}>
+              <FaStar
+                key={index}
+                style={{
+                  fontSize: '17px',
+                  margin: '0 2px',
+                  color: 'rgb(231, 215, 71)',
+                  transition: 'color 0.2s ease, transform 0.2s ease',
+                }}
+              />
+              <span style={{ fontSize: '15px' }}>{rating.toFixed(2)}</span>
+            </div>
           </TextContainer>
         </>
       )}
@@ -265,7 +277,7 @@ const BoxGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
                   box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')
                 }
                 location={box.location}
-                text3={box.rating}
+                rating={box.rating}
                 isPlaceholder={box.isPlaceholder}
               />
             )

@@ -259,14 +259,14 @@
     "constitution": {
       "name": "Constitution"
     },
-    "licenses": {
-      "name": "Licenses"
+    "regulatory": {
+      "name": "Regulatory"
     },
     "actions": {
       "name": "Actions"
     },
-    "apps": {
-      "name": "Apps"
+    "plugins": {
+      "name": "Plugins"
     },
     "metadata": {
       "name": "Metadata",

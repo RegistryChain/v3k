@@ -378,12 +378,7 @@ export const RegistrarInput = ({
 
   const uniqueCountries = useMemo(() => {
     const uniques: any[] = []
-    const filteredEntityTypes = entityTypes.filter((x: any) => {
-      if (project === 'REGISTRYCHAIN') {
-        return x.formationCountry === 'ai'
-      }
-      return true
-    })
+    const filteredEntityTypes = entityTypes
     filteredEntityTypes.forEach((x: any) => {
       if (
         !uniques.find((u: any) => {
@@ -492,6 +487,7 @@ export const RegistrarInput = ({
       ))}
     </SearchResultsContainer>
   )
+  console.log(countries, 'coco  ', uniqueCountries)
 
   return (
     <Container data-testid="search-input-desktop" $size={size}>

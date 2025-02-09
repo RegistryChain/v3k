@@ -67,48 +67,55 @@ const CompanyPartners = ({
         {partners.map((partner, idx) => {
           let domain = partner?.domain?.setValue || ''
 
-          return Object.keys(partner).map((key, subIdx) => {
-            const partnerValue = partner[key] as
-              | {
-                  label?: string
-                  oldValue?: string | string[]
-                  setValue?: string | string[]
-                }
-              | string
-              | undefined
-
-            const isHeader =
-              partnerValue && typeof partnerValue !== 'string' ? partnerValue.label || key : key
-            const oldValue =
-              partnerValue &&
-              typeof partnerValue !== 'string' &&
-              partnerValue.oldValue &&
-              compareToOldValues ? (
-                <span style={{ color: 'red', textDecoration: 'line-through' }}>
-                  {Array.isArray(partnerValue.oldValue)
-                    ? partnerValue.oldValue.join(', ')
-                    : partnerValue.oldValue}
-                </span>
-              ) : null
-
-            let setValue = ''
-            if (partnerValue && typeof partnerValue !== 'string') {
-              if (Array.isArray(partnerValue.setValue)) {
-                setValue = partnerValue.setValue.join(', ')
-              } else {
-                setValue = partnerValue.setValue ?? ''
-              }
-            }
-
-            return (
-              <PartnerRow key={subIdx} onClick={() => (window.location.href = '/entity/' + domain)}>
-                <PartnerCell isHeader>{isHeader}</PartnerCell>
-                <PartnerCell>
-                  {oldValue} {setValue}
-                </PartnerCell>
-              </PartnerRow>
+          return Object.keys(partner)
+            .filter(
+              (key) => !['DOB', 'physical__address', 'lockup', 'shares', 'roles'].includes(key),
             )
-          })
+            .map((key, subIdx) => {
+              const partnerValue = partner[key] as
+                | {
+                    label?: string
+                    oldValue?: string | string[]
+                    setValue?: string | string[]
+                  }
+                | string
+                | undefined
+
+              const isHeader =
+                partnerValue && typeof partnerValue !== 'string' ? partnerValue.label || key : key
+              const oldValue =
+                partnerValue &&
+                typeof partnerValue !== 'string' &&
+                partnerValue.oldValue &&
+                compareToOldValues ? (
+                  <span style={{ color: 'red', textDecoration: 'line-through' }}>
+                    {Array.isArray(partnerValue.oldValue)
+                      ? partnerValue.oldValue.join(', ')
+                      : partnerValue.oldValue}
+                  </span>
+                ) : null
+
+              let setValue = ''
+              if (partnerValue && typeof partnerValue !== 'string') {
+                if (Array.isArray(partnerValue.setValue)) {
+                  setValue = partnerValue.setValue.join(', ')
+                } else {
+                  setValue = partnerValue.setValue ?? ''
+                }
+              }
+
+              return (
+                <PartnerRow
+                  key={subIdx}
+                  onClick={() => (window.location.href = '/entity/' + domain)}
+                >
+                  <PartnerCell isHeader>{isHeader}</PartnerCell>
+                  <PartnerCell>
+                    {oldValue} {setValue}
+                  </PartnerCell>
+                </PartnerRow>
+              )
+            })
         })}
       </PartnerTable>
     </PartnerContainer>

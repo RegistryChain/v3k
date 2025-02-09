@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FaStar } from 'react-icons/fa'
 
 export default function StarRating({ rating, onRate }: any) {
   const [hoverIndex, setHoverIndex] = useState<any>(null)
   const [selectedIndex, setSelectedIndex] = useState<any>(rating - 1)
+
+  useEffect(() => {
+    setSelectedIndex(rating - 1)
+  }, [rating])
 
   const handleClick = (index: Number, event: any) => {
     event.stopPropagation()
@@ -27,19 +31,22 @@ export default function StarRating({ rating, onRate }: any) {
       }}
       onClick={(event) => event.stopPropagation()}
     >
-      {[0, 1, 2, 3, 4].map((index) => (
-        <FaStar
-          key={index}
-          style={{
-            fontSize: '25px',
-            margin: '0 2px',
-            color: index <= (hoverIndex !== null ? hoverIndex : selectedIndex) ? 'yellow' : 'gray',
-            transition: 'color 0.2s ease, transform 0.2s ease',
-          }}
-          onMouseEnter={() => setHoverIndex(index)}
-          onClick={(event) => handleClick(index, event)}
-        />
-      ))}
+      {[0, 1, 2, 3, 4].map((index) => {
+        return (
+          <FaStar
+            key={index}
+            style={{
+              fontSize: '25px',
+              margin: '0 2px',
+              color:
+                index <= (hoverIndex !== null ? hoverIndex : selectedIndex) ? 'yellow' : 'gray',
+              transition: 'color 0.2s ease, transform 0.2s ease',
+            }}
+            onMouseEnter={() => setHoverIndex(index)}
+            onClick={(event) => handleClick(index, event)}
+          />
+        )
+      })}
     </div>
   )
 }
