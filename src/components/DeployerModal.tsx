@@ -25,6 +25,7 @@ import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
+import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
@@ -155,12 +156,18 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
   const router = useRouterWithHistory()
 
   const [isExpanded, setIsExpanded] = useState(false)
+  const [parentIsExpanded, setParentIsExpanded] = useState(false)
 
   // State for input fields
   const [name, setName] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [category, setCategory] = useState('')
   const [platform, setPlatform] = useState('')
+  const [purpose, setPurpose] = useState('')
+  const [github, setGithub] = useState('')
+  const [endpoint, setEndpoint] = useState('')
+  const [parentEntityId, setParentEntityId] = useState('')
+  const [parentName, setParentName] = useState('')
   const [description, setDescription] = useState('')
   const [twitterHandle, setTwitterHandle] = useState('')
   const [tokenAddress, setTokenAddress] = useState('')
@@ -203,160 +210,172 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
   const advance = async () => {
     const entityRegistrarDomain = name + '.ai.' + tld
 
-    if (actionStep === 0) {
-      try {
-        console.log(entityRegistrarDomain)
-        let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
-        //register name
-        const registrarContract: any = getContract({
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'bytes32',
-                  name: '',
-                  type: 'bytes32',
-                },
-                {
-                  internalType: 'address',
-                  name: '',
-                  type: 'address',
-                },
-              ],
-              name: 'registerEntity',
-              outputs: [],
-              stateMutability: 'nonpayable',
-              type: 'function',
-            },
-          ],
-          address: contractAddresses['ai.' + tld],
-          client: wallet,
+    try {
+      console.log(entityRegistrarDomain)
+      let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
+      //register name
+      const registrarContract: any = getContract({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'bytes32',
+                name: '',
+                type: 'bytes32',
+              },
+              {
+                internalType: 'address',
+                name: '',
+                type: 'address',
+              },
+            ],
+            name: 'registerEntity',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ],
+        address: contractAddresses['ai.' + tld],
+        client: wallet,
+      })
+
+      // If there is no owner to the domain, make the register. If there is an owner skip register
+      console.log(currentEntityOwner)
+      if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
+        const tx = await registrarContract.write.registerEntity([
+          labelhash(normalize(name)),
+          address,
+        ])
+        const txReceipt = await publicClient?.waitForTransactionReceipt({
+          hash: tx,
         })
-
-        // If there is no owner to the domain, make the register. If there is an owner skip register
-        console.log(currentEntityOwner)
-        if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-          const tx = await registrarContract.write.registerEntity([
-            labelhash(normalize(name)),
-            address,
-          ])
-          const txReceipt = await publicClient?.waitForTransactionReceipt({
-            hash: tx,
-          })
-          if (txReceipt?.status === 'reverted') {
-            throw Error('Transaction failed - contract error')
-          } else {
-            currentEntityOwner = contractAddresses['ai.' + tld]
-          }
-        }
-        setActionStep(1)
-      } catch (err) {
-        console.log(err, 'error in registering entity name')
-      }
-    } else if (actionStep === 1) {
-      // send signature  and data to resolver
-      // Should check if EITHER public reg is the domain owner OR connect addr is owner and has approved
-      // If false, prevent the registration
-      try {
-        let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
-        const texts: any[] = [
-          { key: 'entity__name', value: name },
-          { key: 'entity__image', value: imageUrl },
-          { key: 'entity__type', value: category },
-          { key: 'entity__registrar', value: 'AI' },
-          { key: 'entity__code', value: '0002' },
-        ]
-
-        if (isExpanded) {
-          if (platform) {
-            texts.push({ key: 'entity__platform', value: platform })
-          }
-          if (description) {
-            texts.push({ key: 'entity__description', value: description })
-          }
-          if (twitterHandle) {
-            texts.push({ key: 'entity__twitter', value: twitterHandle })
-          }
-          if (tokenAddress) {
-            texts.push({ key: 'entity__token__address', value: tokenAddress })
-          }
-          if (telegramHandle) {
-            texts.push({ key: 'entity__telegram', value: telegramHandle })
-          }
-        }
-
-        if (
-          !isAddressEqual(currentEntityOwner, address as Address) &&
-          !isAddressEqual(currentEntityOwner, contractAddresses['ai.' + tld])
-        ) {
-          throw Error('The user does not have permission to deploy contracts for this domain')
-        }
-
-        const constitutionData = texts.map((x) =>
-          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
-        )
-
-        const formationPrep: any = {
-          functionName: 'register',
-          args: [
-            toHex(packetToBytes(name)),
-            address,
-            0 /* duration */,
-            zeroHash /* secret */,
-            zeroAddress /* resolver */,
-            constitutionData /* data */,
-            false /* reverseRecord */,
-            0 /* fuses */,
-            zeroHash /* extraData */,
-          ],
-          abi: l1abi,
-          address: contractAddresses['DatabaseResolver'],
-        }
-
-        const formationCallback: any = {
-          functionName: 'deployEntityContracts',
-          abi: [
-            {
-              inputs: [
-                {
-                  internalType: 'bytes',
-                  name: 'responseBytes',
-                  type: 'bytes',
-                },
-                {
-                  internalType: 'bytes',
-                  name: 'extraData',
-                  type: 'bytes',
-                },
-              ],
-              name: 'deployEntityContracts',
-              outputs: [],
-              stateMutability: 'nonpayable',
-              type: 'function',
-            },
-          ],
-          address: contractAddresses['ai.' + tld],
-          args: [],
-        }
-        const registerChaserTx = await executeWriteToResolver(
-          wallet,
-          formationPrep,
-          formationCallback,
-        )
-        const transactionRes = await publicClient?.waitForTransactionReceipt({
-          hash: registerChaserTx,
-        })
-        if (transactionRes?.status === 'reverted') {
+        if (txReceipt?.status === 'reverted') {
           throw Error('Transaction failed - contract error')
+        } else {
+          currentEntityOwner = contractAddresses['ai.' + tld]
         }
-        router.push('/agent/' + name + '.ai.' + tld)
-      } catch (err) {
-        console.log(err)
-        router.push('/agent/' + name + '.ai.' + tld)
       }
-    } else if (actionStep === 2) {
-      // deploy token
+    } catch (err) {
+      console.log(err, 'error in registering entity name')
     }
+    // send signature  and data to resolver
+    // Should check if EITHER public reg is the domain owner OR connect addr is owner and has approved
+    // If false, prevent the registration
+    try {
+      let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
+      const texts: any[] = [
+        { key: 'entity__name', value: name },
+        { key: 'entity__image', value: imageUrl },
+        { key: 'entity__type', value: category },
+        { key: 'entity__registrar', value: 'AI' },
+        { key: 'entity__code', value: '0002' },
+      ]
+
+      if (isExpanded) {
+        if (platform) {
+          texts.push({ key: 'entity__platform', value: platform })
+        }
+        if (description) {
+          texts.push({ key: 'entity__description', value: description })
+        }
+        if (twitterHandle) {
+          texts.push({ key: 'entity__twitter', value: twitterHandle })
+        }
+        if (tokenAddress) {
+          texts.push({ key: 'entity__token__address', value: tokenAddress })
+        }
+        if (telegramHandle) {
+          texts.push({ key: 'entity__telegram', value: telegramHandle })
+        }
+        if (purpose) {
+          texts.push({ key: 'entity__purpose', value: purpose })
+        }
+        if (github) {
+          texts.push({ key: 'entity__github', value: github })
+        }
+        if (endpoint) {
+          texts.push({ key: 'entity__endpoint', value: endpoint })
+        }
+        if (parentEntityId) {
+          texts.push({
+            key: 'partner__[0]__domain',
+            value: normalizeLabel(parentEntityId)?.toLowerCase(),
+          })
+        }
+        if (parentName) {
+          texts.push({ key: 'partner__[0]__name', value: parentName })
+        }
+      }
+
+      if (
+        !isAddressEqual(currentEntityOwner, address as Address) &&
+        !isAddressEqual(currentEntityOwner, contractAddresses['ai.' + tld])
+      ) {
+        throw Error('The user does not have permission to deploy contracts for this domain')
+      }
+
+      const constitutionData = texts.map((x) =>
+        encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+      )
+
+      const formationPrep: any = {
+        functionName: 'register',
+        args: [
+          toHex(packetToBytes(name)),
+          address,
+          0 /* duration */,
+          zeroHash /* secret */,
+          zeroAddress /* resolver */,
+          constitutionData /* data */,
+          false /* reverseRecord */,
+          0 /* fuses */,
+          zeroHash /* extraData */,
+        ],
+        abi: l1abi,
+        address: contractAddresses['DatabaseResolver'],
+      }
+
+      const formationCallback: any = {
+        functionName: 'deployEntityContracts',
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: 'bytes',
+                name: 'responseBytes',
+                type: 'bytes',
+              },
+              {
+                internalType: 'bytes',
+                name: 'extraData',
+                type: 'bytes',
+              },
+            ],
+            name: 'deployEntityContracts',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ],
+        address: contractAddresses['ai.' + tld],
+        args: [],
+      }
+      const registerChaserTx = await executeWriteToResolver(
+        wallet,
+        formationPrep,
+        formationCallback,
+      )
+      const transactionRes = await publicClient?.waitForTransactionReceipt({
+        hash: registerChaserTx,
+      })
+      if (transactionRes?.status === 'reverted') {
+        throw Error('Transaction failed - contract error')
+      }
+    } catch (err) {
+      console.log(err)
+    }
+    router.push('/agent/' + name + '.ai.' + tld)
+    onClose()
   }
 
   // Attach event listener when the modal is open
@@ -448,17 +467,90 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
                   onChange={(e) => setPlatform(e.target.value)}
                 />
               </InputGroup>
-
               <InputGroup>
-                <Label>Description</Label>
+                <Label>Purpose</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter Agent Purpose"
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label style={{ display: 'flex' }}>
+                  OpenAI Function Call
+                  <img
+                    alt="cxt"
+                    width="24px"
+                    style={{ marginLeft: '10px' }}
+                    src="https://www.datocms-assets.com/86369/1719366108-covalent_logomark_green.svg"
+                  />
+                </Label>
                 <TextArea
-                  placeholder="Enter description"
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Enter Covalent Agent SDK Compatible Function"
+                  style={{
+                    backgroundColor: 'black',
+                    color: 'green',
+                    fontFamily: 'Courier New, Courier, monospace',
+                    fontSize: '16px',
+                    border: 'none',
+                    outline: 'none',
+                    padding: '10px',
+                    width: '68%',
+                    resize: 'none',
+                    boxShadow: 'inset 0 0 5px rgba(0, 255, 0, 0.5)',
+                    caretColor: 'green',
+                  }}
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label style={{ display: 'flex' }}>
+                  Claude Tool
+                  <img
+                    alt="cxt"
+                    width="24px"
+                    style={{ marginLeft: '10px' }}
+                    src="https://www.datocms-assets.com/86369/1719366108-covalent_logomark_green.svg"
+                  />
+                </Label>
+                <TextArea
+                  rows={3}
+                  placeholder="> Enter Covalent Agent SDK Tool"
+                  style={{
+                    backgroundColor: 'black',
+                    color: 'green',
+                    fontFamily: 'Courier New, Courier, monospace',
+                    fontSize: '16px',
+                    border: 'none',
+                    outline: 'none',
+                    padding: '10px',
+                    width: '68%',
+                    resize: 'none',
+                    boxShadow: 'inset 0 0 5px rgba(0, 255, 0, 0.5)',
+                    caretColor: 'green',
+                  }}
                 />
               </InputGroup>
 
+              <InputGroup>
+                <Label>Github</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter Agent Github"
+                  value={github}
+                  onChange={(e) => setGithub(e.target.value)}
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>Endpoint</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter Agent Interaction Endpoint"
+                  value={endpoint}
+                  onChange={(e) => setEndpoint(e.target.value)}
+                />
+              </InputGroup>
               <InputGroup>
                 <Label>Twitter Handle</Label>
                 <Input
@@ -478,6 +570,47 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
                   onChange={(e) => setTelegramHandle(e.target.value)}
                 />
               </InputGroup>
+              <InputGroup>
+                <Label>Description</Label>
+                <TextArea
+                  placeholder="Enter description"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </InputGroup>
+
+              {/* Advanced Configuration Section */}
+              <AdvancedSection>
+                <AdvancedHeader
+                  isExpanded={parentIsExpanded}
+                  onClick={() => setParentIsExpanded(!parentIsExpanded)}
+                >
+                  Add Developer {parentIsExpanded ? '▲' : '▼'}
+                </AdvancedHeader>
+                {parentIsExpanded && (
+                  <>
+                    <InputGroup>
+                      <Label>Name</Label>
+                      <Input
+                        type="text"
+                        placeholder="Enter Developer Name"
+                        value={parentName}
+                        onChange={(e) => setParentName(e.target.value)}
+                      />
+                    </InputGroup>
+                    <InputGroup>
+                      <Label>Entity ID</Label>
+                      <Input
+                        type="text"
+                        placeholder="Enter an entity.id domain"
+                        value={parentEntityId}
+                        onChange={(e) => setParentEntityId(e.target.value)}
+                      />
+                    </InputGroup>
+                  </>
+                )}
+              </AdvancedSection>
             </>
           )}
         </AdvancedSection>
