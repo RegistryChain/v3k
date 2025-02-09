@@ -1,3 +1,4 @@
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import {
@@ -157,6 +158,7 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [parentIsExpanded, setParentIsExpanded] = useState(false)
+  const { openConnectModal } = useConnectModal()
 
   // State for input fields
   const [name, setName] = useState('')
@@ -211,6 +213,10 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
     const entityRegistrarDomain = name + '.ai.' + tld
 
     try {
+      if (openConnectModal && !address) {
+        await openConnectModal()
+        return
+      }
       console.log(entityRegistrarDomain)
       let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
       //register name
@@ -240,7 +246,6 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
       })
 
       // If there is no owner to the domain, make the register. If there is an owner skip register
-      console.log(currentEntityOwner)
       if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
         const tx = await registrarContract.write.registerEntity([
           labelhash(normalize(name)),
@@ -265,7 +270,7 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
       let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
       const texts: any[] = [
         { key: 'entity__name', value: name },
-        { key: 'entity__image', value: imageUrl },
+        { key: 'avatar', value: imageUrl },
         { key: 'entity__type', value: category },
         { key: 'entity__registrar', value: 'AI' },
         { key: 'entity__code', value: '0002' },
@@ -273,10 +278,10 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
 
       if (isExpanded) {
         if (platform) {
-          texts.push({ key: 'entity__platform', value: platform })
+          texts.push({ key: 'location', value: platform })
         }
         if (description) {
-          texts.push({ key: 'entity__description', value: description })
+          texts.push({ key: 'description', value: description })
         }
         if (twitterHandle) {
           texts.push({ key: 'entity__twitter', value: twitterHandle })
@@ -297,9 +302,11 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
           texts.push({ key: 'entity__endpoint', value: endpoint })
         }
         if (parentEntityId) {
+          const label = normalizeLabel(parentEntityId.split('.')[0])
+          const domain = label + '.' + parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
           texts.push({
             key: 'partner__[0]__domain',
-            value: normalizeLabel(parentEntityId)?.toLowerCase(),
+            value: domain,
           })
         }
         if (parentName) {
@@ -371,11 +378,11 @@ const DeployerModal = ({ isOpen, onClose }: any) => {
       if (transactionRes?.status === 'reverted') {
         throw Error('Transaction failed - contract error')
       }
+      router.push('/agent/' + name + '.ai.' + tld)
+      onClose()
     } catch (err) {
       console.log(err)
     }
-    router.push('/agent/' + name + '.ai.' + tld)
-    onClose()
   }
 
   // Attach event listener when the modal is open

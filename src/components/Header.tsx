@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import useTransition, { TransitionState } from 'react-transition-state'
@@ -12,6 +13,7 @@ import { ModalContext } from '@app/layouts/Basic'
 import { legacyFavouritesRoute, routes } from '@app/routes'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
+import v3kLogo from '../assets/v3k_logo.png'
 import { RouteItem } from './@atoms/RouteItem/RouteItem'
 import Hamburger from './@molecules/Hamburger/Hamburger'
 import { HeaderConnect } from './ConnectButton'
@@ -21,7 +23,11 @@ const HeaderWrapper = styled.header(
     --padding-size: ${theme.space['4']};
     padding: var(--padding-size);
     overflow: hidden; /* Ensure hidden content doesn't cause layout shifts */
-    background-color: var(--color-gray-200);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
     ${mq.sm.max(css`
       display: none;
     `)}
@@ -195,10 +201,13 @@ export const Header = () => {
     <HeaderWrapper id="header">
       <NavContainer>
         <div
-          style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer' }}
+          style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer', display: 'flex' }}
           onClick={() => router.push('/')}
         >
-          V3K <span style={{ fontSize: '36px', fontWeight: '400' }}>AGENT APP STORE</span>
+          <Image alt="" width={70} height={70} src={v3kLogo} />
+          <span style={{ fontSize: '36px', fontWeight: '400', marginTop: '10px' }}>
+            AGENT STORE
+          </span>
         </div>
         <div style={{ flexGrow: 1 }} />
 
