@@ -21,7 +21,11 @@ const HeaderWrapper = styled.header(
     --padding-size: ${theme.space['4']};
     padding: var(--padding-size);
     overflow: hidden; /* Ensure hidden content doesn't cause layout shifts */
-    background-color: var(--color-gray-200);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
     ${mq.sm.max(css`
       display: none;
     `)}
@@ -198,7 +202,7 @@ export const Header = () => {
           style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer' }}
           onClick={() => router.push('/')}
         >
-          V3K <span style={{ fontSize: '36px', fontWeight: '400' }}>AGENT APP STORE</span>
+          V3K <span style={{ fontSize: '36px', fontWeight: '400', color: '#333' }}>AGENT APP STORE</span>
         </div>
         <div style={{ flexGrow: 1 }} />
 

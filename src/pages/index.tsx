@@ -209,7 +209,7 @@ export default function Page() {
         <Stack>
           <GradientTitle>{projectConfigs?.title}</GradientTitle>
           <SubtitleWrapper>
-            <Typography fontVariant="large" color="grey">
+            <Typography fontVariant="large" style={{ color: '#333' }}>
               {projectConfigs?.description}
             </Typography>
           </SubtitleWrapper>

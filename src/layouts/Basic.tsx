@@ -50,7 +50,6 @@ const ContentWrapper = styled.div(
 
 const BottomPlaceholder = styled.div(
   ({ theme }) => css`
-    background-color: #cdd8da;
     padding: 10px 5px;
     height: ${theme.space['14']};
     ${mq.sm.min(css`
