@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi'
 
 import { Button } from '@ensdomains/thorin'
 
+import AppPlaceholderImage from '@app/assets/app-2.svg'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { infuraUrl } from '@app/utils/query/wagmi'
@@ -14,6 +15,7 @@ import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddressesObj from '../constants/contractAddresses.json'
 import StarRating from './StarRating'
+import SubgraphResults from './SubgraphQuery'
 
 const RepTokenABI = [
   {
@@ -118,7 +120,6 @@ const BasicABI = [
 const breakpoints = {
   xs: '@media (max-width: 576px)', // Mobile breakpoint
 }
-
 // Styled components
 const Container = styled.div`
   display: flex;
@@ -153,6 +154,11 @@ const Box = styled.div<any>`
 
   ${breakpoints.xs} {
     flex: 1 1 100%; // 1 box per row on mobile
+  }
+
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: ${({ isPlaceholder }: any) => (isPlaceholder ? 'transparent' : '#f8f8f8')};
   }
 `
 
@@ -202,6 +208,16 @@ const Location = styled.div`
   color: #888;
 `
 
+const ImgContainer = styled.div<{ height: number }>`
+  width: ${({ height }) => height}px;
+  height: ${({ height }) => height}px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #666;
+`
+
 // Box component
 const ContentBox = ({
   onRate,
@@ -215,6 +231,8 @@ const ContentBox = ({
   isPlaceholder,
 }: any) => {
   const router = useRouterWithHistory()
+  const [imgSrcValid, setImgSrcValid] = useState(true)
+
   return (
     <Box
       onClick={() => router.push('/agent/' + normalizeLabel(agentName) + '.ai.entity.id')}
@@ -222,8 +240,18 @@ const ContentBox = ({
     >
       {!isPlaceholder && (
         <>
-          <div></div>
-          <Image src={imageUrl} height={rowHeight - 32} alt="Placeholder" />{' '}
+          {imgSrcValid ? (
+            <Image
+              src={imageUrl}
+              height={rowHeight - 32}
+              alt="Placeholder"
+              onError={() => setImgSrcValid(false)}
+            />
+          ) : (
+            <ImgContainer height={rowHeight - 32}>
+              <AppPlaceholderImage />
+            </ImgContainer>
+          )}
           <TextContainer>
             <Title>{agentName}</Title>
             <Category>{agentDesc}</Category>
@@ -294,6 +322,7 @@ const Apps = () => {
   const { address } = useAccount()
 
   const [wallet, setWallet] = useState<any>(null)
+  const [subgraphResults, setSubgraphResults] = useState<any>(null)
 
   const publicClient = useMemo(
     () =>
@@ -343,10 +372,11 @@ const Apps = () => {
     return
   }
 
-  const repTokenBalance = async (addressesToCheck: any[]) => {
+  const repTokenBalance = async (addressesToCheck: any[], res: any) => {
     const contract = {
       address: contractAddressesObj.starToken,
       abi: RepTokenABI,
+      args: [res],
     }
 
     const results = await publicClient.multicall({
@@ -391,10 +421,13 @@ const Apps = () => {
       nameSubstring: '',
       page: 0,
       sortDirection: 'desc',
-      sortType: 'entity__formation__date',
+      sortType: 'creationDate',
     })
 
-    const ratings = await repTokenBalance(entities.map((x: any) => x.address))
+    const ratings = await repTokenBalance(
+      entities.map((x: any) => x.address),
+      subgraphResults,
+    )
 
     const agentsToSet = entities.map((x: any) => ({ ...x, rating: ratings[x.address] }))
     setAgents(agentsToSet)
@@ -407,9 +440,15 @@ const Apps = () => {
   }, [])
 
   return (
-    <div>
-      <BoxGrid boxes={agents} onRate={(addr: Address, val: any) => sendStars(addr, val)} />
-    </div>
+    <>
+      <SubgraphResults
+        tokenAddress={agents.map((x: any) => x.address)}
+        onResults={setSubgraphResults}
+      />
+      <div>
+        <BoxGrid boxes={agents} onRate={(addr: Address, val: any) => sendStars(addr, val)} />
+      </div>
+    </>
   )
 }
 

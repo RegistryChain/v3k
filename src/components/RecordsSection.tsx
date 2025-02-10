@@ -138,7 +138,7 @@ export const RecordsSection = ({
   }
 
   let childrenSection = null
-  if (fields.partners?.length > 0) {
+  if (fields.children?.length > 0) {
     childrenSection = (
       <CompanyPartners partners={fields.children} compareToOldValues={compareToOldValues} />
     )

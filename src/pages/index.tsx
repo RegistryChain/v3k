@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
@@ -27,6 +28,7 @@ import { ModalContext } from '@app/layouts/Basic'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
+import v3kLogo from '../assets/v3k_logo.png'
 import contractAddresses from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
 import schemaObj from '../constants/schema.json'
@@ -207,11 +209,15 @@ export default function Page() {
 
       <Container>
         <Stack>
-          <GradientTitle>{projectConfigs?.title}</GradientTitle>
+          <GradientTitle>Trending Apps</GradientTitle>
+
+          {/* <div style={{ marginTop: '8px' }}>
+            <Image alt="" width={220} height={220} src={v3kLogo} />
+          </div> */}
           <SubtitleWrapper>
-            <Typography fontVariant="large" color="grey">
-              {projectConfigs?.description}
-            </Typography>
+            {/* <Typography fontVariant="large" style={{ color: '#333', fontSize: '32px' }}>
+              Trending Apps
+            </Typography> */}
           </SubtitleWrapper>
 
           <Apps />
