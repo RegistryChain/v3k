@@ -1,12 +1,16 @@
 import type { TFunction } from 'react-i18next'
-import { toBytes, type Address } from 'viem'
+import { encodeAbiParameters, encodePacked, keccak256, toBytes, type Address } from 'viem'
 
 import { Eth2ldName } from '@ensdomains/ensjs/dist/types/types'
 import { GetPriceReturnType } from '@ensdomains/ensjs/public'
 import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
+import { contracts } from '../constants/bytecode'
+import contractAddresses from '../constants/contractAddresses.json'
 import { CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE } from './constants'
 import { ONE_DAY, ONE_YEAR } from './time'
+
+const contractAddressesObj: any = contractAddresses
 
 export * from './time'
 
@@ -188,6 +192,50 @@ export const normalizeLabel = (label: string) => {
     .replace(/ /g, '-') // Replace spaces with hyphens
     .replace(/-{2,}/g, '-')
     .replace(/[^a-zA-Z0-9\s-.]/g, '')
+}
+
+export const generateSafeSalt = (labelHash: any, registrar: any) => {
+  // Use encodeAbiParameters to match Solidity's abi.encode behavior
+  const encodedData = encodeAbiParameters(
+    [
+      { type: 'bytes32', name: 'labelHash' },
+      { type: 'address', name: 'registrar' },
+    ],
+    [labelHash, registrar],
+  )
+
+  // Hash the encoded data
+  return keccak256(encodedData)
+}
+
+// Function to compute the contract address
+export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar: any) => {
+  // Step 1: Compute the creation bytecode with constructor args
+  const encodedAddress = encodeAbiParameters(
+    [{ type: 'address', name: 'approvedEntityClaimer' }],
+    [claimingUser],
+  )
+
+  // Concatenate the bytecode and the encoded address
+  const bytecode = encodePacked(['bytes', 'bytes'], [contracts.claimableSafe, encodedAddress])
+
+  // Step 2: Compute the salt
+  const salt = keccak256(
+    encodeAbiParameters(
+      [{ type: 'bytes32' }, { type: 'address' }],
+      [generateSafeSalt(labelHash, registrar), claimingUser],
+    ),
+  )
+
+  // Step 3: Compute the final contract address using CREATE2 formula
+  const hash = keccak256(
+    encodePacked(
+      ['bytes1', 'address', 'bytes32', 'bytes32'],
+      ['0xff', contractAddressesObj.ClaimableSafeFactory, salt, keccak256(bytecode)],
+    ),
+  )
+
+  return `0x${hash.slice(-40)}`
 }
 
 /*

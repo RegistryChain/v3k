@@ -8,6 +8,7 @@ import {
   encodeFunctionData,
   getContract,
   isAddress,
+  labelhash,
   parseAbi,
   toHex,
   zeroAddress,
@@ -20,10 +21,13 @@ import { useAccount, useConnect } from 'wagmi'
 import { namehash, normalise } from '@ensdomains/ensjs/utils'
 import { Button } from '@ensdomains/thorin'
 
+import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { roles } from '@app/constants/members'
 import { executeWriteToResolver, getTransactions } from '@app/hooks/useExecuteWriteToResolver'
+import useTokenBalances from '@app/hooks/useTokenBalances'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { generateSafeAddress, generateSafeSalt, normalizeLabel } from '@app/utils/utils'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
 import l1abi from '../../../../../../constants/l1abi.json'
@@ -62,6 +66,17 @@ const ActionsTab = ({
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
   const { address, isConnected } = useAccount()
+  const label = name.split('.')[0]
+
+  const labelHashToUse = labelhash(normalizeLabel(label))
+  const generatedSafe = useMemo(() => {
+    if (address && name) {
+      return generateSafeAddress(address, labelHashToUse, contractAddressesObj['ai.' + tld])
+    } else {
+      return zeroAddress
+    }
+  }, [address, name])
+  const { balances, loading, error } = useTokenBalances(generatedSafe)
   const breakpoints = useBreakpoint()
 
   const [txs, setTxs]: any[] = useState([])
@@ -98,7 +113,7 @@ const ActionsTab = ({
       const formationPrep: any = {
         functionName: 'register',
         args: [
-          toHex(packetToBytes(name.split('.')[0])),
+          toHex(packetToBytes(label)),
           owner,
           0 /* duration */,
           zeroHash /* secret */,
@@ -251,6 +266,75 @@ const ActionsTab = ({
     return reformedData.filter((x) => x)
   }
 
+  const claimPregeneratedSafe = async () => {
+    try {
+      if (address) {
+        // -Construct the salt with the labelhash, generate the address with the connected account
+        const labelHashToUse = labelhash(normalizeLabel(label))
+        const generatedSafe: any = generateSafeAddress(
+          address,
+          labelHashToUse,
+          contractAddressesObj['ai.' + tld],
+        )
+
+        // Attempt to call to the safe at the pregenerated address. If not deployed yet, proceed
+        const bc = await client.getBytecode({ address: generatedSafe })
+        if (bc && bc !== '0x') {
+          console.log(bc, generatedSafe)
+          throw new Error('This safe has already been claimed')
+        }
+
+        const deployerContract: any = getContract({
+          abi: [
+            {
+              inputs: [{ internalType: 'bytes32', name: 'saltInput', type: 'bytes32' }],
+              name: 'deployClaimableSafe',
+              outputs: [{ internalType: 'address', name: '', type: 'address' }],
+              stateMutability: 'nonpayable',
+              type: 'function',
+            },
+          ],
+          address: contractAddressesObj.ClaimableSafeFactory,
+          client: wallet,
+        })
+
+        const tx = await deployerContract.write.deployClaimableSafe([
+          generateSafeSalt(labelHashToUse, contractAddressesObj['ai.' + tld]),
+        ])
+      }
+    } catch (err: any) {
+      console.log(err.message)
+      setErrorMessage(err.message)
+    }
+  }
+
+  const withdrawFromSafe = async (tokenAddress: any, balance: any, decimals: any) => {
+    try {
+      const tokenContract: any = getContract({
+        abi: [
+          {
+            inputs: [
+              { internalType: 'address', name: 'tokenAddress', type: 'address' },
+              { internalType: 'uint256', name: 'value', type: 'uint256' },
+            ],
+            name: 'withdrawERC20',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ],
+        address: generatedSafe as any,
+        client: wallet,
+      })
+
+      const tx = await tokenContract.write.withdrawERC20([tokenAddress, balance * 10 ** decimals])
+      console.log('Transaction Hash:', tx)
+      return tx
+    } catch (err: any) {
+      setErrorMessage(err.message)
+    }
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const newWallet = createWalletClient({
@@ -353,6 +437,27 @@ const ActionsTab = ({
         breakpoints={breakpoints}
       />
       <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
+      </div>
+      {balances.length > 0 ? (
+        <div style={{ width: '50%', margin: '16px 0' }}>
+          <LegacyDropdown
+            style={{ maxWidth: '100%', textAlign: 'left' }}
+            inheritContentWidth={true}
+            size={'medium'}
+            label={'Withdraw tokens from safe'}
+            items={balances.map((x: any, idx: any) => ({
+              key: x.tokenAddress,
+              label: x.balance + ' ' + x.tokenSymbol,
+              color: 'blue',
+              onClick: () => withdrawFromSafe(x.tokenAddress, x.balance, x.decimals),
+              value: x.tokenAddress,
+            }))}
+          />
+        </div>
+      ) : null}
+
+      <div style={{ width: '50%', margin: '16px 0' }}>
         <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
       </div>
       <div style={{ width: '50%', margin: '16px 0' }}>
@@ -361,10 +466,6 @@ const ActionsTab = ({
       <div style={{ width: '50%', margin: '16px 0' }}>
         <Button>Make Amendment</Button>
       </div>
-      {/* {amendmentsTrigger} */}
-      {/* {txToConfirm}
-      {txToExecute}
-      {txHistory} */}
     </div>
   )
 }

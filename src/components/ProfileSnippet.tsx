@@ -215,7 +215,6 @@ export const ProfileSnippet = ({
 
   const getRating = async () => {
     const rate = await repTokenBalance(records.address.setValue)
-    console.log('RATE', rate)
     setRating(rate)
   }
 

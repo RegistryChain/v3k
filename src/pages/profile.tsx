@@ -1,23 +1,33 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useEffect, useState } from 'react'
-import { namehash } from 'viem'
+import { useEffect, useMemo, useState } from 'react'
+import { createPublicClient, createWalletClient, custom, http, namehash } from 'viem'
+import { sepolia } from 'viem/chains'
+import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
-import Claims from '@app/components/claims/Claims'
 import { ErrorModal } from '@app/components/ErrorModal'
 import ProfileContent from '@app/components/pages/profile/[name]/Profile'
-import { getRecordData } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useInitial } from '@app/hooks/useInitial'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { infuraUrl } from '@app/utils/query/wagmi'
+
+import contractAddresses from '../constants/contractAddresses.json'
+import l1abi from '../constants/l1abi.json'
+
+const contractAddressesObj: any = contractAddresses
 
 export default function Page() {
   const router = useRouterWithHistory()
   const domain = router.query.name as string
   const isSelf = router.query.connected === 'true'
-  const [isClaiming, setIsClaiming] = useState('')
+  const tld = '.entity.id'
   const [records, setRecords] = useState<any>({})
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [wallet, setWallet] = useState<any>(null)
+  const [owner, setOwner] = useState('')
+
   const breakpoints = useBreakpoint()
   const { openConnectModal } = useConnectModal()
 
@@ -25,10 +35,63 @@ export default function Page() {
 
   const { address, isConnected } = useAccount()
 
-  const claimEntity = async (nodeHash: any) => {
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
+  const claimEntity = async () => {
     await openConnect()
-    if (address) {
-      setIsClaiming(nodeHash)
+    try {
+      if (address && owner !== address) {
+        const formationPrep: any = {
+          functionName: 'transfer',
+          args: [namehash(normalize(records?.domain?.setValue || domain)), address],
+          abi: l1abi,
+          address: contractAddressesObj['DatabaseResolver'],
+        }
+        let registrarAddress = contractAddressesObj['ai' + tld]
+        const formationCallback: any = {
+          functionName: 'registerEntityWithOffchain',
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: 'bytes',
+                  name: 'responseBytes',
+                  type: 'bytes',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'extraData',
+                  type: 'bytes',
+                },
+              ],
+              name: 'registerEntityWithOffchain',
+              outputs: [],
+              stateMutability: 'nonpayable',
+              type: 'function',
+            },
+          ],
+          address: registrarAddress,
+          args: [],
+        }
+
+        const registerChaserTx = await executeWriteToResolver(
+          wallet,
+          formationPrep,
+          formationCallback,
+        )
+        const transactionRes = await publicClient?.waitForTransactionReceipt({
+          hash: registerChaserTx,
+        })
+      }
+    } catch (err: any) {
+      console.log(err.message)
+      setErrorMessage(err.message)
     }
   }
 
@@ -47,30 +110,28 @@ export default function Page() {
   }
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.ethereum && !wallet) {
+      const newWallet = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum, {
+          retryCount: 0,
+        }),
+        account: address,
+      })
+      setWallet(newWallet)
+    } else {
+      console.error('Ethereum object not found on window')
+    }
+  }, [address])
+
+  useEffect(() => {
     openConnect()
   }, [isConnected])
 
   const isLoading = initial || !router.isReady
 
-  let claimModal = null
-  if (isClaiming) {
-    claimModal = (
-      <Claims
-        domain={domain}
-        address={address}
-        setIsClaiming={setIsClaiming}
-        setErrorMessage={setErrorMessage}
-        breakpoints={breakpoints}
-        records={records}
-        setRecords={setRecords}
-        getRecords={getRecords}
-      />
-    )
-  }
-
   return (
     <>
-      {claimModal}
       <ErrorModal
         errorMessage={errorMessage}
         setErrorMessage={setErrorMessage}
@@ -83,8 +144,9 @@ export default function Page() {
           domain,
           router,
           address,
+          owner,
+          setOwner,
           claimEntity,
-          isClaiming,
           records,
           setRecords,
           getRecords,

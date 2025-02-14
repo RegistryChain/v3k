@@ -6,6 +6,7 @@ import { FaChevronDown } from 'react-icons/fa'
 import styled, { css } from 'styled-components'
 import { isAddress, namehash, zeroAddress } from 'viem'
 import { normalize } from 'viem/ens'
+import { useAccount } from 'wagmi'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
@@ -109,16 +110,19 @@ export const RecordsSection = ({
   compareToOldValues,
   addressesObj,
   domainName,
+  owner,
   claimEntity,
 }: {
   fields: any
   claimEntity: any
   domainName: any
   addressesObj?: any
+  owner?: any
   compareToOldValues: Boolean
 }) => {
   const { t } = useTranslation('profile')
   const router = useRouter()
+  const { address, isConnected } = useAccount()
 
   const filteredCompanyData = useMemo(
     () => Object.keys(fields)?.filter((field) => field.includes('entity')),
@@ -146,7 +150,11 @@ export const RecordsSection = ({
 
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
-    const ownerAddress = addressesObj?.find((x: any) => x.key === 'Owner Address')?.value
+    const ownerAddress =
+      owner ||
+      addressesObj?.find(
+        (x: any) => x.key === 'Owner Address' || x.key === 'Owner On-Chain Address',
+      )?.value
     const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     let headerSection = (
       <SectionTitleContainer>
@@ -157,9 +165,7 @@ export const RecordsSection = ({
           </SectionSubtitle>
         </SectionTitleContainer>
         <div style={{ width: '200px' }}>
-          {isAddress(ownerAddress) && ownerAddress !== zeroAddress ? null : (
-            <Button onClick={() => claimEntity(namehash(domainName))}>CLAIM</Button>
-          )}
+          {ownerAddress === address ? null : <Button onClick={() => claimEntity()}>CLAIM</Button>}
         </div>
       </SectionTitleContainer>
     )

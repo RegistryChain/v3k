@@ -34,35 +34,9 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
         })
         if (res.status === 200) {
           const resBytes = await res.text()
-          const dec = decodeAbiParameters(
-            [{ type: 'bytes' }, { type: 'uint64' }, { type: 'bytes' }],
-            resBytes,
-          )
-          const req = encodeAbiParameters(
-            [{ type: 'bytes' }, { type: 'address' }],
-            [message.callData, wallet.account.address],
-          )
-          const callbackContract: any = getContract({
-            client: wallet,
-            args: [...callbackData.args, resBytes, req],
-            ...callbackData,
-          })
-          const tx = await callbackContract.write[callbackData.functionName]([
-            ...callbackData.args,
-            resBytes,
-            req,
-          ])
-          return tx.hash
 
-          // const multisigAddr = await checkOwner(decodedData[1])
-          // console.log('MULTISIG', multisigAddr)
-
-          // await initializeFirstUser(multisigAddr)
-
-          // DIFFERENCES WHEN MULTICALL
-          // Multicall calldata is equal
-          // The decode probably wont work in execute transaction, as it is expecting to decode (b32, b32), not [(b32, b32), (b32, b32)]
-          // The value passed to the function must be equal to the one signed over in gateway
+          if (!callbackData) return resBytes
+          return await resolverCallback(wallet, message, resBytes, callbackData)
         }
         return '0x'
       }
@@ -70,6 +44,29 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
         console.error('error registering domain: ', { err })
     }
   }
+}
+
+export async function resolverCallback(
+  wallet: any,
+  message: any,
+  resBytes: any,
+  callbackData: any,
+) {
+  const req = encodeAbiParameters(
+    [{ type: 'bytes' }, { type: 'address' }],
+    [message.callData, wallet.account.address],
+  )
+  const callbackContract: any = getContract({
+    client: wallet,
+    args: [...callbackData.args, resBytes, req],
+    ...callbackData,
+  })
+  const tx = await callbackContract.write[callbackData.functionName]([
+    ...callbackData.args,
+    resBytes,
+    req,
+  ])
+  return tx.hash
 }
 
 export function getRevertErrorData(err: unknown) {

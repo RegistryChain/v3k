@@ -122,6 +122,8 @@ const ProfileContent = ({
   domain,
   router,
   address,
+  owner,
+  setOwner,
   claimEntity,
   isClaiming,
   records,
@@ -131,7 +133,6 @@ const ProfileContent = ({
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
   const [entityMemberManager, setEntityMemberManager] = useState('')
-  const [owner, setOwner] = useState('')
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
 
@@ -332,7 +333,7 @@ const ProfileContent = ({
         tokenAddresses={[records.address, records.entity__token__address]}
         onResults={() => setSubgraphResults([...subgraphResults])}
       /> */}
-      {isClaiming ? null : (
+      {
         <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={domain}>
           {{
             header: (
@@ -382,12 +383,13 @@ const ProfileContent = ({
                     compareToOldValues={false}
                     claimEntity={claimEntity}
                     domainName={domain}
+                    owner={owner}
                     addressesObj={[
                       {
                         key: 'Agent Claimable contract',
                         value: records?.address?.setValue || zeroAddress,
                       },
-                      { key: 'Owner Address', value: owner },
+                      { key: 'Owner On-Chain Address', value: owner }, // TODO: change placeholder address
                       {
                         key: 'Token Address',
                         value: records?.entity__token__address?.setValue || zeroAddress,
@@ -442,7 +444,7 @@ const ProfileContent = ({
               .exhaustive(),
           }}
         </Content>
-      )}
+      }
     </>
   )
 }
