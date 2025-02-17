@@ -7,7 +7,7 @@
   "MultisigState": "0x715f9b45755bc1f2072d56d618308f1bea46cb45",
   "EntityRegistrar": "0x49c078e105318d9f3e58322e53591a8c0c51fed7",
   "LEI": "0x7ff666701307b1153fc2bd41946f60418881de4e",
-  "DatabaseResolver": "0xa0c8c90ebd655415cdfedfe098d75f954bfd4429",
+  "DatabaseResolver": "0x8c6ab6c2e78d7d2b2a6204e95d8a8874a95348a4",
   "ClaimableSafeFactory": "0xc0146c9359e5344765f12a2ade8aaf319e4192d5",
   "entity.id": "0x81bc88a55ad663762242c1016b1914b66726909b",
   "ai.entity.id": "0x5ab83d7cf5e0f245fce2226f68f3959a78e067ad",

@@ -26,9 +26,13 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
     switch (data?.errorName) {
       case 'StorageHandledByOffChainDatabase': {
         const [domain, url, message] = data.args as any[]
+        let urlToUse: string = url
+        if (process.env.NEXT_PUBLIC_RESOLVER_URL) {
+          urlToUse = process.env.NEXT_PUBLIC_RESOLVER_URL
+        }
         const res: any = await handleDBStorage({
           domain,
-          url,
+          url: urlToUse,
           message,
           wallet,
         })
@@ -86,7 +90,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
   const name = domain.split('.')[0]
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getRecord/nodeHash=${nodeHash}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
       {
         method: 'GET',
         headers: {
@@ -108,9 +112,10 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
 export async function importEntity({ filingID, name, registrar }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleImportEntity/filingID=${filingID}&name=${
-        name.split('.')[0]
-      }&registrar=${registrar}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL +
+        `/direct/handleImportEntity/filingID=${filingID}&name=${
+          name.split('.')[0]
+        }&registrar=${registrar}.json`,
       {
         method: 'GET',
         headers: {
@@ -135,7 +140,8 @@ export async function getEntitiesList({
 }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL +
+        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
       {
         method: 'GET',
         headers: {
@@ -152,7 +158,8 @@ export async function getEntitiesList({
 export async function getTransactions({ nodeHash = zeroHash, address }: any) {
   try {
     const res = await fetch(
-      `https://oyster-app-mn4sb.ondigitalocean.app/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL +
+        `/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {
@@ -167,7 +174,6 @@ export async function getTransactions({ nodeHash = zeroHash, address }: any) {
 }
 
 export async function ccipRequest({ body, url }: CcipRequestParameters): Promise<Response> {
-  //http://localhost:2000/{sender}/{data}.json
   try {
     const res = await fetch(url.replace('/{sender}/{data}.json', ''), {
       body: JSON.stringify(body, (_, value) =>

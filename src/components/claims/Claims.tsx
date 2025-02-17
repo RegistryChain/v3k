@@ -165,9 +165,8 @@ const Claims = ({
           },
         })
         const response = await fetch(
-          `https://oyster-app-mn4sb.ondigitalocean.app/direct/handleKYCIntake/nodeHash=${namehash(
-            normalise(domain),
-          )}.json`,
+          process.env.NEXT_PUBLIC_RESOLVER_URL +
+            `/direct/handleKYCIntake/nodeHash=${namehash(normalise(domain))}.json`,
           {
             body,
             method: 'POST',
@@ -199,7 +198,7 @@ const Claims = ({
       //     formData.append('document', businessDoc)
 
       //     const response = await fetch(
-      //       `https://oyster-app-mn4sb.ondigitalocean.app/doc?operation=handleBusinessDoc&nodeHash=${namehash(
+      //       process.env.NEXT_PUBLIC_RESOLVER_URL + `/doc?operation=handleBusinessDoc&nodeHash=${namehash(
       //         name,
       //       )}`,
       //       {
