@@ -6,7 +6,6 @@ import { GetOwnerReturnType, GetWrapperDataReturnType } from '@ensdomains/ensjs/
 import { Button, Typography } from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
-import { NFTWithPlaceholder } from '@app/components/NFTWithPlaceholder'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { shortenAddress } from '@app/utils/utils'
@@ -209,7 +208,6 @@ export const NameSnippet = ({
 }) => {
   return (
     <Container>
-      <NFTWithPlaceholder name={name} style={{ width: '270px', height: '270px' }} />
       <NameDetailSnippet
         isCached={isCached}
         name={name}

@@ -3,35 +3,21 @@ import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import {
-  Address,
-  createPublicClient,
-  getContract,
-  http,
-  namehash,
-  parseAbi,
-  zeroAddress,
-} from 'viem'
+import { Address, createPublicClient, getContract, http } from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
 
-import { EntityInput } from '@app/components/@molecules/EntityInput/EntityInput'
-import FaucetBanner from '@app/components/@molecules/FaucetBanner'
-import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
-import Apps from '@app/components/Apps'
 import { LeadingHeading } from '@app/components/LeadingHeading'
+import LandingPage from '@app/components/pages/landingPage/LandingPage'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { ModalContext } from '@app/layouts/Basic'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import v3kLogo from '../assets/v3k_logo.png'
-import contractAddresses from '../constants/contractAddresses.json'
 import entityTypesObj from '../constants/entityTypes.json'
-import schemaObj from '../constants/schema.json'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -125,31 +111,6 @@ export default function Page() {
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
-  let schema: any = schemaObj
-  const projectConfigs: any = schema[project]
-
-  useEffect(() => {
-    if (entityName.length >= 2 && entityJurisdiction.length > 0) {
-      entityIsAvailable(entityJurisdiction + tld, entityName)
-    }
-  }, [entityName, entityJurisdiction])
-
-  const entityIsAvailable = async (entityJurisdiction: string, entityName: string) => {
-    // const client: any = publicClient
-    // const registry: any = await getContract({
-    //   client,
-    //   abi: parseAbi(['function owner(bytes32 node) view returns (address)']),
-    //   address: contractAddresses.RegistryChain as Address,
-    // })
-    // if (entityName) {
-    //   const owner = await registry.read.owner([namehash(entityName + '.' + entityJurisdiction)])
-    //   if (owner === zeroAddress) {
-    //     setNameAvailable(true)
-    //   } else {
-    //     setNameAvailable(false)
-    //   }
-    // }
-  }
 
   let nameAvailableElement = null
   if (entityName.length >= 2 && entityJurisdiction.length > 0) {
@@ -211,16 +172,9 @@ export default function Page() {
         <Stack>
           <GradientTitle>Trending Apps</GradientTitle>
 
-          {/* <div style={{ marginTop: '8px' }}>
-            <Image alt="" width={220} height={220} src={v3kLogo} />
-          </div> */}
-          <SubtitleWrapper>
-            {/* <Typography fontVariant="large" style={{ color: '#333', fontSize: '32px' }}>
-              Trending Apps
-            </Typography> */}
-          </SubtitleWrapper>
+          <SubtitleWrapper />
 
-          <Apps />
+          <LandingPage />
           <Button
             style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
             shape="square"

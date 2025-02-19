@@ -1,12 +1,27 @@
 import type { TFunction } from 'react-i18next'
-import { encodeAbiParameters, encodePacked, keccak256, toBytes, type Address } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  encodeAbiParameters,
+  encodePacked,
+  getContract,
+  http,
+  keccak256,
+  toBytes,
+  type Address,
+} from 'viem'
+import { sepolia } from 'viem/chains'
 
 import { Eth2ldName } from '@ensdomains/ensjs/dist/types/types'
 import { GetPriceReturnType } from '@ensdomains/ensjs/public'
 import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
+import { infuraUrl } from '@app/utils/query/wagmi'
+
 import { contracts } from '../constants/bytecode'
 import contractAddresses from '../constants/contractAddresses.json'
+import l1abi from '../constants/l1abi.json'
 import { CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE } from './constants'
 import { ONE_DAY, ONE_YEAR } from './time'
 
@@ -236,6 +251,35 @@ export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar
   )
 
   return `0x${hash.slice(-40)}`
+}
+
+export const getPublicClient = () => {
+  return createPublicClient({
+    chain: sepolia,
+    transport: http(infuraUrl('sepolia')),
+  })
+}
+
+export const getWalletClient = (address: Address) => {
+  if (typeof window !== 'undefined' && window.ethereum) {
+    return createWalletClient({
+      chain: sepolia,
+      transport: custom(window.ethereum, { retryCount: 0 }),
+      account: address,
+    })
+  }
+  throw new Error('Ethereum object not found on window')
+}
+
+export const getContractInstance = (
+  wallet: any,
+  contractName: keyof typeof contractAddressesObj,
+) => {
+  return getContract({
+    address: contractAddressesObj[contractName] as Address,
+    abi: l1abi,
+    client: wallet,
+  })
 }
 
 /*

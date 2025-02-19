@@ -4,7 +4,6 @@ import styled, { css } from 'styled-components'
 import { useAccount } from 'wagmi'
 
 import { DevSection } from '@app/components/pages/profile/settings/DevSection'
-import { PrimarySection } from '@app/components/pages/profile/settings/PrimarySection'
 import { TransactionSection } from '@app/components/pages/profile/settings/TransactionSection/TransactionSection'
 import { useSubgraphMeta } from '@app/hooks/ensjs/subgraph/useSubgraphMeta'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
@@ -41,7 +40,6 @@ export default function Page() {
       {{
         trailing: (
           <OtherWrapper>
-            <PrimarySection />
             <TransactionSection />
             {IS_DEV_ENVIRONMENT && <DevSection />}
           </OtherWrapper>

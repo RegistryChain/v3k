@@ -7,7 +7,6 @@ import { GetOwnerReturnType, GetWrapperDataReturnType } from '@ensdomains/ensjs/
 import { mq, Tag, Typography } from '@ensdomains/thorin'
 
 import { CacheableComponent } from '@app/components/@atoms/CacheableComponent'
-import { NFTWithPlaceholder } from '@app/components/NFTWithPlaceholder'
 import { Outlink } from '@app/components/Outlink'
 import RecordItem from '@app/components/RecordItem'
 import { useChainName } from '@app/hooks/chain/useChainName'
@@ -102,18 +101,6 @@ const ItemsContainer = styled(CacheableComponent)(
   `,
 )
 
-const NftBox = styled(NFTWithPlaceholder)(
-  ({ theme }) => css`
-    max-width: 100%;
-    aspect-ratio: 1;
-
-    ${mq.sm.min(css`
-      max-width: ${theme.space['36']};
-      max-height: ${theme.space['36']};
-    `)}
-  `,
-)
-
 const getFuseStateFromWrapperData = (wrapperData?: GetWrapperDataReturnType): NameWrapperState =>
   match(wrapperData)
     .with(P.nullish, () => 'unwrapped' as const)
@@ -159,7 +146,6 @@ const Token = ({ name, isWrapped, canBeWrapped, ownerData, wrapperData, profile 
             <RecordItem itemKey={t('tabs.metadata.token.hex')} value={hex} type="text" />
             <RecordItem itemKey={t('tabs.metadata.token.decimal')} value={tokenId} type="text" />
           </IdsContainer>
-          <NftBox id="nft" name={name} />
         </ItemsContainer>
       )}
       <ItemsContainer>

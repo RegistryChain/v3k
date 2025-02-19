@@ -1,18 +1,4 @@
-import { useRouter } from 'next/router'
-import {
-  JSXElementConstructor,
-  Key,
-  PromiseLikeOfReactNode,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-} from 'react'
-import { ReactI18NextChild } from 'react-i18next'
 import styled from 'styled-components'
-import { normalize } from 'viem/ens'
-
-import { Partner } from '@app/types/directory'
-import { normalizeLabel } from '@app/utils/utils'
 
 const PartnerContainer = styled.div`
   width: 100%;

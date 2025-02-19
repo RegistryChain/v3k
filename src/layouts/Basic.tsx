@@ -6,7 +6,7 @@ import { useAccount, useSwitchChain } from 'wagmi'
 import { mq, Typography } from '@ensdomains/thorin'
 
 import ErrorScreen from '@app/components/@atoms/ErrorScreen'
-import DeployerModal from '@app/components/DeployerModal'
+import AgentModal from '@app/components/pages/agentModal/AgentModal'
 import { getSupportedChainById } from '@app/constants/chains'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
@@ -117,7 +117,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       <Container className="min-safe">
         <Navigation />
         <ContentWrapper>
-          <DeployerModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+          <AgentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
