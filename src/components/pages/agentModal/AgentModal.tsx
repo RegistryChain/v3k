@@ -80,8 +80,11 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
       if (txReceipt?.status === 'reverted') {
         throw Error('Transaction failed - contract error')
+      } else {
+        owner = contractAddresses['ai.' + tld]
       }
     }
+    return owner
   }
 
   // Attach event listener when the modal is open
@@ -114,6 +117,13 @@ const AgentModal = ({ isOpen, onClose }: any) => {
       { key: 'entity__registrar', value: 'AI' },
       { key: 'entity__code', value: '0002' },
     ]
+    let stateCopy = { ...formState }
+
+    if (formState.parentEntityId) {
+      const label = normalizeLabel(formState.parentEntityId.split('.')[0])
+      stateCopy.parentEntityId =
+        label + '.' + stateCopy.parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
+    }
 
     return isExpanded
       ? [
@@ -125,13 +135,12 @@ const AgentModal = ({ isOpen, onClose }: any) => {
       : baseRecords
   }
 
-  const submitEntityData = async (entityDomain: string) => {
+  const submitEntityData = async (entityDomain: string, currentEntityOwner: Address) => {
     const texts = createTextRecords()
-    const owner = await checkOwner(publicClient, namehash(entityDomain))
 
     if (
-      !isAddressEqual(owner, address as Address) &&
-      !isAddressEqual(owner, contractAddresses[`ai.${tld}`])
+      !isAddressEqual(currentEntityOwner, address as Address) &&
+      !isAddressEqual(currentEntityOwner, contractAddresses[`ai.${tld}`])
     ) {
       throw Error('Permission denied for domain registration')
     }
@@ -147,14 +156,13 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const handleRegistration = async () => {
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
 
+    let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
     try {
       if (openConnectModal && !address) return openConnectModal()
 
-      let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
-
       // If there is no owner to the domain, make the register
       if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-        await registerEntity(entityRegistrarDomain)
+        currentEntityOwner = await registerEntity(entityRegistrarDomain)
       }
     } catch (err) {
       console.log(err, 'error in registering entity name')
@@ -162,7 +170,7 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     }
 
     try {
-      await submitEntityData(entityRegistrarDomain)
+      await submitEntityData(entityRegistrarDomain, currentEntityOwner)
     } catch (err) {
       console.log(err, 'error in submitting agent data')
       return
