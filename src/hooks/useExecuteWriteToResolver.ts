@@ -137,11 +137,20 @@ export async function getEntitiesList({
   sortType,
   sortDirection,
   page = 0,
+  limit = 25,
+  params = {},
 }: any) {
   try {
+    let paramsQuery = ''
+    if (params) {
+      if (Object.keys(params)?.length > 0) {
+        const fields = Object.keys(params)
+        paramsQuery = '&' + fields.map((x) => x + '=' + params[x]).join('&')
+      }
+    }
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}.json`,
+        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
       {
         method: 'GET',
         headers: {

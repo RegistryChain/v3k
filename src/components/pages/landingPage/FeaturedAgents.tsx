@@ -1,7 +1,10 @@
-// pages/LandingPage.tsx
+// pages/FeaturedAgents.tsx
 import { useEffect, useMemo, useState } from 'react'
+import styled, { css } from 'styled-components'
 import { Address } from 'viem'
 import { useAccount } from 'wagmi'
+
+import { mq } from '@ensdomains/thorin'
 
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
 import SubgraphResults from '@app/components/SubgraphQuery'
@@ -11,7 +14,36 @@ import { getContractInstance, getPublicClient, getWalletClient } from '@app/util
 import contractAddressesObj from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 
-const LandingPage = () => {
+const GradientTitle = styled.h1(
+  ({ theme }) => css`
+    font-size: ${theme.fontSizes.headingTwo};
+    text-align: center;
+    font-weight: 800;
+    background-image: ${theme.colors.gradients.accent};
+    background-repeat: no-repeat;
+    background-size: 110%;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0;
+
+    ${mq.sm.min(css`
+      font-size: ${theme.fontSizes.headingOne};
+    `)}
+  `,
+)
+
+const SubtitleWrapper = styled.div(
+  ({ theme }) => css`
+    max-width: calc(${theme.space['72']} * 2 - ${theme.space['4']});
+    line-height: 150%;
+    text-align: center;
+    margin-bottom: ${theme.space['3']};
+  `,
+)
+
+const FeaturedAgents = () => {
   const [agents, setAgents] = useState([])
   const { address } = useAccount()
   const [wallet, setWallet] = useState<any>(null)
@@ -85,12 +117,15 @@ const LandingPage = () => {
   // Data fetching
   const getAgents = async () => {
     try {
+      // We only want agents with an imageURL, a name, a twitter
       const entities = await getEntitiesList({
         registrar: 'AI',
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',
         sortType: 'creationDate',
+        limit: 6,
+        params: { avatar: 'https', featured: 'true' },
       })
 
       const ratings = await repTokenBalance(
@@ -116,6 +151,10 @@ const LandingPage = () => {
 
   return (
     <>
+      <GradientTitle>Featured Agents</GradientTitle>
+
+      <SubtitleWrapper />
+
       <SubgraphResults
         tokenAddress={agents.map((x: any) => x.address)}
         onResults={setSubgraphResults}
@@ -125,4 +164,4 @@ const LandingPage = () => {
   )
 }
 
-export default LandingPage
+export default FeaturedAgents

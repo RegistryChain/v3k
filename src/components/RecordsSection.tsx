@@ -150,11 +150,11 @@ export const RecordsSection = ({
 
   let sectionsDisplay = null
   if (filteredCompanyData?.length > 0) {
-    const ownerAddress =
-      owner ||
-      addressesObj?.find(
-        (x: any) => x.key === 'Owner Address' || x.key === 'Owner On-Chain Address',
-      )?.value
+    // const ownerAddress =
+    //   owner ||
+    //   addressesObj?.find(
+    //     (x: any) => x.key === 'Owner Address' || x.key === 'Owner On-Chain Address',
+    //   )?.value
     const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     let headerSection = (
       <SectionTitleContainer>
@@ -164,9 +164,9 @@ export const RecordsSection = ({
             {t('records.label', { ns: 'common' })}
           </SectionSubtitle>
         </SectionTitleContainer>
-        <div style={{ width: '200px' }}>
+        {/* <div style={{ width: '200px' }}>
           {ownerAddress === address ? null : <Button onClick={() => claimEntity()}>CLAIM</Button>}
-        </div>
+        </div> */}
       </SectionTitleContainer>
     )
 

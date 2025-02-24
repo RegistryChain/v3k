@@ -140,7 +140,8 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
     if (
       !isAddressEqual(currentEntityOwner, address as Address) &&
-      !isAddressEqual(currentEntityOwner, contractAddresses[`ai.${tld}`])
+      !isAddressEqual(currentEntityOwner, contractAddresses[`ai.${tld}`]) &&
+      !isAddressEqual(currentEntityOwner, zeroAddress as Address) //IN CASES OF OFFCHAIN REGISTRATION, THE ON CHAIN OWNER IS 0x0. THE GATEWAY THEN CHECKS IF 'OWNED' OFFCHAIN
     ) {
       throw Error('Permission denied for domain registration')
     }
@@ -161,9 +162,9 @@ const AgentModal = ({ isOpen, onClose }: any) => {
       if (openConnectModal && !address) return openConnectModal()
 
       // If there is no owner to the domain, make the register
-      if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
-        currentEntityOwner = await registerEntity(entityRegistrarDomain)
-      }
+      // if (!currentEntityOwner || currentEntityOwner === zeroAddress) {
+      //   currentEntityOwner = await registerEntity(entityRegistrarDomain)
+      // }
     } catch (err) {
       console.log(err, 'error in registering entity name')
       return

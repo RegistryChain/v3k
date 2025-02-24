@@ -11,7 +11,8 @@ import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
-import LandingPage from '@app/components/pages/landingPage/LandingPage'
+import FeaturedAgents from '@app/components/pages/landingPage/FeaturedAgents'
+import TrendingAgents from '@app/components/pages/landingPage/TrendingAgents'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { ModalContext } from '@app/layouts/Basic'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -170,11 +171,8 @@ export default function Page() {
 
       <Container>
         <Stack>
-          <GradientTitle>Trending Apps</GradientTitle>
-
-          <SubtitleWrapper />
-
-          <LandingPage />
+          <FeaturedAgents />
+          <TrendingAgents />
           <Button
             style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
             shape="square"
