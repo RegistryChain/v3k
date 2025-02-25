@@ -125,7 +125,7 @@ const TrendingAgents = () => {
         sortDirection: 'desc',
         sortType: 'creationDate',
         limit: 18,
-        params: { avatar: 'https' },
+        params: { avatar: 'https', featured: 'false' },
       })
 
       const ratings = await repTokenBalance(
