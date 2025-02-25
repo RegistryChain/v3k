@@ -219,10 +219,10 @@ export const Header = () => {
           >
             {RouteItems}
             <div
-              style={{ fontWeight: '700', cursor: 'pointer' }}
+              style={{ fontWeight: '700', cursor: 'pointer', minWidth: '120px' }}
               onClick={() => setIsModalOpen(true)}
             >
-              <span>Create Agent</span>
+              Create Agent
             </div>
           </RouteContainer>
         </RouteWrapper>

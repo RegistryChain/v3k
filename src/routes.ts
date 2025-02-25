@@ -56,7 +56,7 @@ export const routes: RouteItemObj[] = [
   {
     name: 'names',
     href: '/directory',
-    label: 'Browse AI Agents',
+    label: 'Browse Agents',
     disabled: false,
     connected: true,
     icon: {

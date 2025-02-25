@@ -109,7 +109,8 @@ export const SubnameListView = () => {
           .split('-')
           .slice(0, labelName.split('-').length - 1)
           .join(' ')
-        return { ...record, labelName, commonName, domainId }
+
+        return { ...record, labelName, commonName, domainId, isPlaceHolder: false }
       }),
     [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
   )

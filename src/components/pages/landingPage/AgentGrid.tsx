@@ -24,6 +24,7 @@ export const AgentGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
               rowHeight={rowHeight}
               imageUrl={box.avatar}
               agentName={box.name}
+              agentDomain={box.domain}
               agentDesc={
                 box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')
               }

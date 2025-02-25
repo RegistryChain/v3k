@@ -23,6 +23,7 @@ export const AgentBox = ({
   imageUrl,
   agentName,
   agentDesc,
+  agentDomain,
   rating,
   location,
   isPlaceholder,
@@ -31,10 +32,7 @@ export const AgentBox = ({
   const [imgSrcValid, setImgSrcValid] = useState(true)
 
   return (
-    <Box
-      onClick={() => router.push('/agent/' + normalizeLabel(agentName) + '.ai.entity.id')}
-      isPlaceholder={isPlaceholder}
-    >
+    <Box onClick={() => router.push('/agent/' + agentDomain)} isPlaceholder={isPlaceholder}>
       {!isPlaceholder && (
         <>
           {imgSrcValid ? (
@@ -54,16 +52,20 @@ export const AgentBox = ({
             <Category>{agentDesc}</Category>
             <Location>{location}</Location>
             <div style={{ display: 'flex' }}>
-              <FaStar
-                key={index}
-                style={{
-                  fontSize: '17px',
-                  margin: '0 2px',
-                  color: 'rgb(231, 215, 71)',
-                  transition: 'color 0.2s ease, transform 0.2s ease',
-                }}
-              />
-              <span style={{ fontSize: '15px' }}>{rating.toFixed(2)}</span>
+              {rating ? (
+                <>
+                  <FaStar
+                    key={index}
+                    style={{
+                      fontSize: '17px',
+                      margin: '0 2px',
+                      color: 'rgb(231, 215, 71)',
+                      transition: 'color 0.2s ease, transform 0.2s ease',
+                    }}
+                  />
+                  <span style={{ fontSize: '15px' }}>{rating?.toFixed(2)}</span>
+                </>
+              ) : null}
             </div>
           </TextContainer>
         </>
