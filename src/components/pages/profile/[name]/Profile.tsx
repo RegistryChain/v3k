@@ -215,6 +215,14 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
+      if (
+        isAddress(records?.owner?.setValue) &&
+        records?.owner?.setValue !== zeroAddress &&
+        (!owner || owner === zeroAddress)
+      ) {
+        setOwner(records.owner?.setValue)
+      }
+
       if (Object.keys(records)?.length > 0) {
         setRecordsRequestPending(false)
         if (!status) {
@@ -386,10 +394,10 @@ const ProfileContent = ({
                     owner={owner}
                     addressesObj={[
                       {
-                        key: 'Agent Claimable contract',
+                        key: 'Agent Treasury',
                         value: records?.address?.setValue || zeroAddress,
                       },
-                      { key: 'Owner On-Chain Address', value: owner }, // TODO: change placeholder address
+                      { key: 'Owner Address', value: owner }, // TODO: change placeholder address
                       {
                         key: 'Token Address',
                         value: records?.entity__token__address?.setValue || zeroAddress,

@@ -121,13 +121,14 @@ export const RecordsSection = ({
   compareToOldValues: Boolean
 }) => {
   const { t } = useTranslation('profile')
-  const router = useRouter()
-  const { address, isConnected } = useAccount()
 
-  const filteredCompanyData = useMemo(
-    () => Object.keys(fields)?.filter((field) => field.includes('entity')),
-    [fields],
-  )
+  const filteredCompanyData = useMemo(() => {
+    const allowedFields = ['description', 'avatar', 'location', 'purpose', 'url', 'domain']
+    return Object.keys(fields)?.filter(
+      (field) =>
+        (field.includes('entity') || allowedFields.includes(field)) && fields[field]?.setValue,
+    )
+  }, [fields])
 
   let addressSection = null
   if (addressesObj) {
@@ -153,7 +154,7 @@ export const RecordsSection = ({
     // const ownerAddress =
     //   owner ||
     //   addressesObj?.find(
-    //     (x: any) => x.key === 'Owner Address' || x.key === 'Owner On-Chain Address',
+    //     (x: any) => x.key === 'Owner Address' || x.key === 'Owner Address',
     //   )?.value
     const multisigAddress = addressesObj?.find((x: any) => x.key === 'Multisig Address')?.value
     let headerSection = (

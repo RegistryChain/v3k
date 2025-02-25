@@ -41,11 +41,7 @@
         "entity__telegram",
         "entity__purpose"
       ],
-      "additionalTermsFields": [
-        "entity__description",
-        "entity__arbitrator",
-        "entity__additional__terms"
-      ]
+      "additionalTermsFields": ["description", "entity__arbitrator", "entity__additional__terms"]
     }
   }
 }
