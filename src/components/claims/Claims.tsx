@@ -301,7 +301,6 @@ const Claims = ({
             fields={records}
             domainName={entityRegistrarDomain}
             compareToOldValues={false}
-            claimEntity={null}
           />
         </div>
       </div>

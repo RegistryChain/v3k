@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react'
 import {
   Address,
   BaseError,
@@ -233,6 +234,59 @@ export async function handleDBStorage({
     url,
   })
   return requestResponse
+}
+
+export function useRecordData({ domain = '' }) {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const nodeHash = namehash(normalise(domain))
+
+  const fetchRecordData = useCallback(async () => {
+    if (!domain) return
+
+    setLoading(true)
+    setError(null)
+
+    const registrar = domain.split('.')[1]
+    const name = domain.split('.')[0]
+
+    try {
+      const res = await fetch(
+        process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
+
+      const existingRecord = await res.json()
+
+      if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
+        const newRecord = await importEntity({ filingID: '', name, registrar })
+        setData(newRecord)
+      } else {
+        setData(existingRecord)
+      }
+    } catch (err: any) {
+      console.error('getRecordData error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [domain])
+
+  useEffect(() => {
+    if (domain) {
+      fetchRecordData()
+    }
+  }, [domain])
+
+  return { data, loading, error, refetch: fetchRecordData }
 }
 
 export function getChain(chainId: number): chains.Chain | undefined {

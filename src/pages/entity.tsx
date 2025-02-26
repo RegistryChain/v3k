@@ -215,12 +215,18 @@ export default function Page() {
       address: contractAddresses[(companyRegistrar || 'public') + '.' + tld],
       args: [],
     }
-    const registerChaserTx = await executeWriteToResolver(wallet, formationPrep, formationCallback)
-    const transactionRes = await publicClient?.waitForTransactionReceipt({
-      hash: registerChaserTx,
-    })
+    try {
+      const registerChaserTx = await executeWriteToResolver(
+        wallet,
+        formationPrep,
+        formationCallback,
+      )
+      const transactionRes = await publicClient?.waitForTransactionReceipt({
+        hash: registerChaserTx,
+      })
 
-    return transactionRes
+      return transactionRes
+    } catch (err) {}
   }
 
   const registerEntity = async () => {
@@ -626,12 +632,7 @@ export default function Page() {
           }
         />
         <div>
-          <RecordsSection
-            fields={schemaFields}
-            domainName={''}
-            compareToOldValues={false}
-            claimEntity={null}
-          />
+          <RecordsSection fields={schemaFields} domainName={''} compareToOldValues={false} />
         </div>
       </div>
     )

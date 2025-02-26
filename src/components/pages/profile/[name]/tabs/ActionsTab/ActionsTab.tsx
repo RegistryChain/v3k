@@ -57,6 +57,9 @@ const ActionsTab = ({
   multisigAddress,
   registrar,
   entityMemberManager,
+  onChainOwner,
+  claimEntity,
+  partners,
   owner,
   client,
   name,
@@ -384,6 +387,19 @@ const ActionsTab = ({
   //   )
   // }
 
+  let claimOnChainElement = null
+  // if on chain owner is zeroAddress but record.owner || partner.walletAddress is equal to account
+  const hasOwnerOnchain = isAddress(onChainOwner) && onChainOwner !== zeroAddress
+  const isOwnerOperatorOffchain =
+    owner === address || partners?.map((x: any) => x?.wallet__address?.setValue)?.includes(address)
+  if (!hasOwnerOnchain && isOwnerOperatorOffchain) {
+    claimOnChainElement = (
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button onClick={() => claimEntity(namehash(name))}>Claim On-Chain</Button>
+      </div>
+    )
+  }
+
   let amendmentsTrigger = null
   if (address === owner || (owner === multisigAddress && txsExecuted?.length >= 1)) {
     amendmentsTrigger = (
@@ -436,6 +452,7 @@ const ActionsTab = ({
         setErrorMessage={setErrorMessage}
         breakpoints={breakpoints}
       />
+      {claimOnChainElement}
       <div style={{ width: '50%', margin: '16px 0' }}>
         <Button onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
       </div>

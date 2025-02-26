@@ -111,10 +111,8 @@ export const RecordsSection = ({
   addressesObj,
   domainName,
   owner,
-  claimEntity,
 }: {
   fields: any
-  claimEntity: any
   domainName: any
   addressesObj?: any
   owner?: any
@@ -165,13 +163,10 @@ export const RecordsSection = ({
             {t('records.label', { ns: 'common' })}
           </SectionSubtitle>
         </SectionTitleContainer>
-        {/* <div style={{ width: '200px' }}>
-          {ownerAddress === address ? null : <Button onClick={() => claimEntity()}>CLAIM</Button>}
-        </div> */}
       </SectionTitleContainer>
     )
 
-    if ((isAddress(multisigAddress) && multisigAddress !== zeroAddress) || !claimEntity) {
+    if (isAddress(multisigAddress) && multisigAddress !== zeroAddress) {
       headerSection = (
         <SectionTitleContainer>
           <SectionTitle data-testid="text-heading" fontVariant="bodyBold">

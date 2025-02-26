@@ -1,3 +1,4 @@
+import { Container } from '@chakra-ui/react'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -16,7 +17,7 @@ import {
 import { sepolia } from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
-import { Banner, CheckCircleSVG, Typography } from '@ensdomains/thorin'
+import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
@@ -119,6 +120,7 @@ export const NameAvailableBanner = ({
 const ProfileContent = ({
   isSelf,
   isLoading: parentIsLoading,
+  loadingRecords,
   domain,
   router,
   address,
@@ -135,6 +137,7 @@ const ProfileContent = ({
   const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
+  const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
 
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
@@ -256,6 +259,7 @@ const ProfileContent = ({
       let ownerAddress = zeroAddress
       try {
         ownerAddress = await registry.read.owner([namehash(normalise(domain))])
+        setOnChainOwner(ownerAddress)
         setOwner(ownerAddress)
       } catch (e) {
         console.log(e)
@@ -384,34 +388,45 @@ const ProfileContent = ({
               </>
             ),
             trailing: match(tab)
-              .with('entity', () => (
-                <>
-                  <RecordsSection
-                    fields={records}
-                    compareToOldValues={false}
-                    claimEntity={claimEntity}
-                    domainName={domain}
-                    owner={owner}
-                    addressesObj={[
-                      {
-                        key: 'Agent Treasury',
-                        value: records?.address?.setValue || zeroAddress,
-                      },
-                      { key: 'Owner Address', value: owner }, // TODO: change placeholder address
-                      {
-                        key: 'Token Address',
-                        value: records?.entity__token__address?.setValue || zeroAddress,
-                      },
-                    ]}
-                  />
-                </>
-              ))
+              .with('entity', () => {
+                if (loadingRecords)
+                  return (
+                    <Container>
+                      <Spinner color="accent" size="medium" />
+                    </Container>
+                  )
+
+                return (
+                  <>
+                    <RecordsSection
+                      fields={records}
+                      compareToOldValues={false}
+                      domainName={domain}
+                      owner={owner}
+                      addressesObj={[
+                        {
+                          key: 'Agent Treasury',
+                          value: records?.address?.setValue || zeroAddress,
+                        },
+                        { key: 'Owner Address', value: owner }, // TODO: change placeholder address
+                        {
+                          key: 'Token Address',
+                          value: records?.entity__token__address?.setValue || zeroAddress,
+                        },
+                      ]}
+                    />
+                  </>
+                )
+              })
               .with('actions', () => {
                 if (records) {
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
                       registrar={records?.entity__registrar?.setValue || 'public'}
+                      claimEntity={claimEntity}
+                      partners={records.partners}
+                      onChainOwner={onChainOwner}
                       owner={owner}
                       multisigAddress={multisigAddress}
                       entityMemberManager={entityMemberManager}

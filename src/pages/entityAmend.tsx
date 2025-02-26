@@ -592,7 +592,6 @@ export default function Page() {
               fields={changedRecords}
               domainName={entityRegistrarDomain}
               compareToOldValues={true}
-              claimEntity={null}
             />
           </div>
         ) : null}

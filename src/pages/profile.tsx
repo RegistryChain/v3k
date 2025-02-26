@@ -7,7 +7,11 @@ import { useAccount } from 'wagmi'
 
 import { ErrorModal } from '@app/components/ErrorModal'
 import ProfileContent from '@app/components/pages/profile/[name]/Profile'
-import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWriteToResolver'
+import {
+  executeWriteToResolver,
+  getRecordData,
+  useRecordData,
+} from '@app/hooks/useExecuteWriteToResolver'
 import { useInitial } from '@app/hooks/useInitial'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -35,6 +39,8 @@ export default function Page() {
 
   const { address, isConnected } = useAccount()
 
+  const { data: fields, loading, error, refetch } = useRecordData({ domain })
+
   const publicClient = useMemo(
     () =>
       createPublicClient({
@@ -46,7 +52,7 @@ export default function Page() {
   const claimEntity = async () => {
     await openConnect()
     try {
-      if (address && owner !== address) {
+      if (address) {
         const formationPrep: any = {
           functionName: 'transfer',
           args: [namehash(normalize(records?.domain?.setValue || domain)), address],
@@ -91,7 +97,9 @@ export default function Page() {
       }
     } catch (err: any) {
       console.log(err.message)
-      setErrorMessage(err.message)
+      if (err.message !== 'Cannot convert undefined to a BigInt') {
+        setErrorMessage(err.message)
+      }
     }
   }
 
@@ -99,15 +107,15 @@ export default function Page() {
     if (openConnectModal && !address) await openConnectModal()
   }
 
-  const getRecords = async () => {
-    const fields = await getRecordData({ domain })
+  useEffect(() => {
     if (fields) {
-      fields.partners = fields.partners?.filter(
+      const fieldsOverride: any = fields
+      fieldsOverride.partners = fieldsOverride.partners?.filter(
         (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
       )
-      setRecords(fields)
+      setRecords(fieldsOverride)
     }
-  }
+  }, [fields])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum && !wallet) {
@@ -147,9 +155,10 @@ export default function Page() {
           owner,
           setOwner,
           claimEntity,
+          loadingRecords: loading,
           records,
           setRecords,
-          getRecords,
+          getRecords: refetch,
         }}
       />
     </>
