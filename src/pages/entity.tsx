@@ -117,7 +117,7 @@ export default function Page() {
   )
 
   const code = entityTypeObj?.countryJurisdictionCode
-    ? entityTypeObj?.countryJurisdictionCode?.split('-')?.join('.')
+    ? entityTypeObj?.countryJurisdictionCode
     : entityTypeObj?.countryCode
 
   useEffect(() => {

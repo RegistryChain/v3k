@@ -131,6 +131,9 @@ const ProfileContent = ({
   records,
   setRecords,
   getRecords,
+  wallet,
+  setWallet,
+  setErrorMessage,
 }: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
@@ -433,6 +436,8 @@ const ProfileContent = ({
                       client={publicClient}
                       name={domain}
                       checkEntityStatus={() => checkEntityStatus()}
+                      wallet={wallet}
+                      setWallet={setWallet}
                     />
                   )
                 } else {
@@ -458,9 +463,13 @@ const ProfileContent = ({
                 <>
                   <RegulatoryTab
                     registrarType={registrarType}
-                    name={normalise(domain)}
+                    domain={normalise(domain)}
+                    setErrorMessage={setErrorMessage}
                     nameDetails={{}}
+                    partners={records.partners}
                     breakpoints={breakpoints}
+                    wallet={wallet}
+                    setWallet={setWallet}
                   />
                 </>
               ))

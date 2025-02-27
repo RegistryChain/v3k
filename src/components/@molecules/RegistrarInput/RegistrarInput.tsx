@@ -487,7 +487,6 @@ export const RegistrarInput = ({
       ))}
     </SearchResultsContainer>
   )
-  console.log(countries, 'coco  ', uniqueCountries)
 
   return (
     <Container data-testid="search-input-desktop" $size={size}>
@@ -564,20 +563,4 @@ export const RegistrarInput = ({
       </div>
     </Container>
   )
-  // }
-  // return (
-  //   <Container data-testid="search-input-mobile" $size="extraLarge">
-  //     <Input
-  //       data-testid="name-table-header-search"
-  //       size="small"
-  //       label="search"
-  //       value={value}
-  //       onChange={(e) => setValue?.(e.target.value)}
-  //       hideLabel
-  //       icon={<MagnifyingGlassSimpleSVG />}
-  //       placeholder={field}
-  //     />
-  //     {SearchResultsElement}
-  //   </Container>
-  // )
 }

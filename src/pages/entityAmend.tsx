@@ -98,7 +98,7 @@ export default function Page() {
   )
 
   const code = entityTypeObj?.countryJurisdictionCode
-    ? entityTypeObj.countryJurisdictionCode.split('-').join('.')
+    ? entityTypeObj.countryJurisdictionCode
     : entityTypeObj?.countryCode
 
   // 'IMPORTANT - When pulling entity data thats already on chain, get stringified object to see if any changes',

@@ -5,6 +5,7 @@ import styled, { css } from 'styled-components'
 import {
   Address,
   createPublicClient,
+  encodeFunctionData,
   getContract,
   http,
   namehash,
@@ -12,8 +13,9 @@ import {
   zeroAddress,
 } from 'viem'
 import { sepolia } from 'viem/chains'
+import { normalize } from 'viem/ens'
 
-import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
+import { Button, Dropdown, Input, mq, Typography } from '@ensdomains/thorin'
 
 import { EntityInput } from '@app/components/@molecules/EntityInput/EntityInput'
 import FaucetBanner from '@app/components/@molecules/FaucetBanner'
@@ -21,12 +23,15 @@ import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
+import { executeWriteToResolver, getRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
+import { normalizeLabel } from '@app/utils/utils'
 
 import contractAddresses from '../../../../../constants/contractAddresses.json'
 import entityTypesObj from '../../../../../constants/entityTypes.json'
+import l1abi from '../../../../../constants/l1abi.json'
 import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
 
 const GradientTitle = styled.h1(
@@ -105,9 +110,9 @@ const StyledLeadingHeading = styled(LeadingHeading)(
   `,
 )
 
-const tld = '.registrychain.com'
+const tld = '.entity.id'
 
-export default function JurisDropdown() {
+export default function JurisDropdown({ domain, setErrorMessage, partners, wallet }: any) {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
 
@@ -127,6 +132,69 @@ export default function JurisDropdown() {
       entityIsAvailable(entityJurisdiction + tld, entityName)
     }
   }, [entityName, entityJurisdiction])
+
+  const amendAddPartner = async () => {
+    // Take entity name, registrar slug, tld and form the entity.id
+    const registrarSlug = entityType?.countryJurisdictionCode
+      ? entityType?.countryJurisdictionCode
+      : entityType?.countryCode
+
+    if (!registrarSlug) {
+      setErrorMessage('No jurisdiction or etity type selected')
+      return
+    }
+
+    const normalizedLabel = normalizeLabel(entityName)
+
+    const parentDomain = (normalizedLabel + '.' + registrarSlug + tld)?.toLowerCase()
+
+    const parentNodeHash = namehash(normalize(domain))
+    const partnerIdx = partners?.length || 0
+
+    const textsToChange = [
+      { key: `partner__[${partnerIdx}]__name`, value: entityName },
+      { key: `partner__[${partnerIdx}]__domain`, value: parentDomain },
+      { key: `partner__[${partnerIdx}]__nodeHash`, value: parentNodeHash },
+      { key: `partner__[${partnerIdx}]__type`, value: entityType?.entityTypeName || 'company' },
+    ]
+
+    const multicalls: string[] = []
+    textsToChange.forEach((x: any) => {
+      multicalls.push(
+        encodeFunctionData({
+          abi: l1abi,
+          functionName: 'setText',
+          args: [namehash(domain), x.key, x.value],
+        }),
+      )
+    })
+    // Use Resolver multicall(setText[])
+    const formationPrep: any = {
+      functionName: 'multicall',
+      args: [multicalls],
+      abi: l1abi,
+      address: contractAddresses['DatabaseResolver'],
+    }
+
+    try {
+      const returnVal = await executeWriteToResolver(wallet, formationPrep, null)
+      if (returnVal) {
+        const existingRecord = await getRecordData({ domain: parentDomain, needsSchema: false })
+        if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
+          if (entityName && entityJurisdiction && entityType?.entityTypeName) {
+            router.replace(
+              'https://morula.registrychain.com/entity?name=' +
+                entityName +
+                '&type=' +
+                entityType.ELF,
+            )
+          }
+        }
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message)
+    }
+  }
 
   const entityIsAvailable = async (entityJurisdiction: string, entityName: string) => {
     // const client: any = publicClient
@@ -211,6 +279,19 @@ export default function JurisDropdown() {
     <>
       <Container>
         <Stack>
+          <div style={{ width: '100%', padding: '0 48px' }}>
+            <Input
+              data-testid="name-table-header-search"
+              size="medium"
+              label="search"
+              value={entityName}
+              onChange={(e) => {
+                setEntityName(e.target.value)
+              }}
+              hideLabel
+              placeholder={'Parent Entity Name'}
+            />
+          </div>
           <RegistrarInput
             entityTypes={entityTypesObj}
             field={'Jurisdiction'}
@@ -243,10 +324,10 @@ export default function JurisDropdown() {
             ></div>
           ) : null}
           <Button
+            onClick={() => amendAddPartner()}
             style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
             shape="square"
             size="small"
-            disabled={true}
           >
             Submit Formation
           </Button>
