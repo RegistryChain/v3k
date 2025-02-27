@@ -1,4 +1,7 @@
-import { Input, InputGroup, Label, Select, TextArea } from './AgentModalStyles'
+import { TextArea } from './AgentModalStyles'
+import { TextField, Select, FormControl, InputLabel } from '@mui/material'
+import MenuItem from '@mui/material/MenuItem';
+import { on } from 'events';
 
 type FormInputProps = {
   type?: 'text' | 'select' | 'textarea'
@@ -8,6 +11,7 @@ type FormInputProps = {
   options?: string[]
   placeholder?: string
   rows?: number
+  required?: boolean
 }
 
 export const FormInput = ({
@@ -18,21 +22,25 @@ export const FormInput = ({
   options,
   placeholder,
   rows = 1,
+  required,
 }: FormInputProps) => {
-  let inputElement = null
   if (type === 'select') {
-    inputElement = (
-      <Select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">{placeholder}</option>
-        {options?.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </Select>
+    return (
+      <FormControl fullWidth required={required}>
+        <InputLabel id="select-label">{label}</InputLabel>
+        <Select labelId="select-label" value={value} onChange={(e) => onChange(e.target.value)}
+          label={label}>
+          <MenuItem value="" disabled>{placeholder}</MenuItem>
+          {options?.map((opt) => (
+            <MenuItem key={opt} value={opt}>
+              {opt}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     )
   } else if (type === 'textarea') {
-    inputElement = (
+    return (
       <TextArea
         rows={rows}
         value={value}
@@ -41,20 +49,17 @@ export const FormInput = ({
       />
     )
   } else {
-    inputElement = (
-      <Input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
+    return (
+      <FormControl fullWidth>
+        <TextField
+          required={required}
+          label={label}
+          variant="outlined"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+        />
+      </FormControl>
     )
   }
-
-  return (
-    <InputGroup>
-      <Label>{label}</Label>
-      {inputElement}
-    </InputGroup>
-  )
 }

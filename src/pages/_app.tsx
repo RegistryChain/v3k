@@ -24,6 +24,7 @@ import i18n from '../i18n'
 
 import '../styles.css'
 import { Provider } from '@app/components/ui/provider'
+import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 
 const rainbowKitTheme: Theme = {
   ...lightTheme({
@@ -131,6 +132,27 @@ type AppPropsWithLayout = AppProps & {
 
 setupAnalytics()
 
+
+const theme = {
+  ...thorinLightTheme,
+  colors: {
+    ...thorinLightTheme.colors,
+    text: '#000000',
+    accent: '#6a24d6',
+  }
+}
+
+const muiTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#000000',
+    },
+    secondary: {
+      main: '#6a24d6',
+    },
+  },
+});
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page)
 
@@ -140,21 +162,23 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         <Provider>
           <RainbowKitProvider theme={rainbowKitTheme}>
             <TransactionStoreProvider>
-              <ThemeProvider theme={thorinLightTheme}>
-                <BreakpointProvider queries={breakpoints}>
-                  <GlobalStyle />
-                  <ThorinGlobalStyles />
-                  <SyncProvider>
-                    <TransactionFlowProvider>
-                      <SyncDroppedTransaction>
-                        <Notifications />
-                        {/* <TestnetWarning /> */}
-                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                      </SyncDroppedTransaction>
-                    </TransactionFlowProvider>
-                  </SyncProvider>
-                </BreakpointProvider>
-              </ThemeProvider>
+              <MuiThemeProvider theme={muiTheme}>
+                <ThemeProvider theme={theme}>
+                  <BreakpointProvider queries={breakpoints}>
+                    <GlobalStyle />
+                    <ThorinGlobalStyles />
+                    <SyncProvider>
+                      <TransactionFlowProvider>
+                        <SyncDroppedTransaction>
+                          <Notifications />
+                          {/* <TestnetWarning /> */}
+                          <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                        </SyncDroppedTransaction>
+                      </TransactionFlowProvider>
+                    </SyncProvider>
+                  </BreakpointProvider>
+                </ThemeProvider>
+              </MuiThemeProvider>
             </TransactionStoreProvider>
           </RainbowKitProvider>
         </Provider>

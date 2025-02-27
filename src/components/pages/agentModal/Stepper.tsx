@@ -10,9 +10,12 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import InfoIcon from '@mui/icons-material/Info';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
 import { StepIconProps } from '@mui/material/StepIcon';
-import { StepWrapper } from './AgentModalStyles'
-import { aC } from 'vitest/dist/reporters-yx5ZTtEV';
 
+
+interface CustomizedSteppersProps {
+  activeStep: number;
+  setActiveStep: (step: number) => void;
+}
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   transition: 'background-color 0.3s',
@@ -74,7 +77,7 @@ const ColorlibStepIconRoot = styled('div')<{
 }));
 
 
-function ColorlibStepIcon(props: StepIconProps) {
+function ColorlibStepIcon({ ...props }: StepIconProps) {
   const { active, completed, className } = props;
 
   const icons: { [index: string]: React.ReactElement<unknown> } = {
@@ -94,13 +97,6 @@ function ColorlibStepIcon(props: StepIconProps) {
 }
 
 const steps = ['General Info', 'Socials', 'Developer Info'];
-
-
-interface CustomizedSteppersProps {
-  activeStep: number;
-  setActiveStep: (step: number) => void;
-}
-
 
 export const CustomizedSteppers = ({
   activeStep,

@@ -117,7 +117,8 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       <Container className="min-safe">
         <Navigation />
         <ContentWrapper>
-          <AgentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+          {isModalOpen && <AgentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
