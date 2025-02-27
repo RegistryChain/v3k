@@ -62,12 +62,13 @@ const ActionsTab = ({
   partners,
   owner,
   client,
+  wallet,
+  setWallet,
   name,
   checkEntityStatus,
 }: any) => {
   const [userRoles, setUserRoles]: any[] = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const [wallet, setWallet] = useState<any>(null)
   const { address, isConnected } = useAccount()
   const label = name.split('.')[0]
 

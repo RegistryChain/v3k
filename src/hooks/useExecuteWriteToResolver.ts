@@ -100,7 +100,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
       },
     )
     const existingRecord = await res.json()
-    if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
+    if (!existingRecord || (JSON.stringify(existingRecord) === '{}' && needsSchema)) {
       return await importEntity({ filingID: '', name, registrar })
     }
     return existingRecord

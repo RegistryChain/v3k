@@ -64,36 +64,44 @@ const ItemsContainer = styled(CacheableComponent)(
   `,
 )
 
-const RegulatoryTab = ({ registrarType = 'company', breakpoints }: any) => {
-  const licenses: { [x: string]: any } = {
-    company: {
-      tax__ids: [
-        { jurisdiction: 'USA', org: 'Internal Revenue Service', licName: 'EIN' },
-        { jurisdiction: 'Brazil', org: 'Receita Federal do Brasil', licName: 'CNPJ' },
-        { jurisdiction: 'UK', org: 'HMRC', licName: 'UTR' },
-        { jurisdiction: 'Germany', org: 'BZSt', licName: 'TIN' },
-        { jurisdiction: 'UAE', org: 'FTA', licName: 'TRN' },
-      ],
-      digital__asset__permits: [
-        {
-          jurisdiction: 'UAE',
-          org: 'Virtual Assets Regulatory Authority of Dubai',
-          licName: 'VASP',
-        },
-        { jurisdiction: 'Australia', org: 'AUSTRAC', licName: 'DCE' },
-        { jurisdiction: 'France', org: 'Autorité des Marchés Financiers', licName: 'DASP' },
-        { jurisdiction: 'Bahrain', org: 'Central Bank of Bahrain', licName: 'CASP' },
-        { jurisdiction: 'Italy', org: 'Organismo Agenti e Mediatori', licName: 'DASP' },
-      ],
-    },
-    civil: {
-      official__documentation: [
-        { jurisdiction: 'Florida', org: 'Department of Health', licName: 'Marriage Certificate' },
-        { jurisdiction: 'Florida', org: 'Secretary of State', licName: 'Apostile' },
-      ],
-    },
-  }
+const licenses: { [x: string]: any } = {
+  company: {
+    tax__ids: [
+      { jurisdiction: 'USA', org: 'Internal Revenue Service', licName: 'EIN' },
+      { jurisdiction: 'Brazil', org: 'Receita Federal do Brasil', licName: 'CNPJ' },
+      { jurisdiction: 'UK', org: 'HMRC', licName: 'UTR' },
+      { jurisdiction: 'Germany', org: 'BZSt', licName: 'TIN' },
+      { jurisdiction: 'UAE', org: 'FTA', licName: 'TRN' },
+    ],
+    digital__asset__permits: [
+      {
+        jurisdiction: 'UAE',
+        org: 'Virtual Assets Regulatory Authority of Dubai',
+        licName: 'VASP',
+      },
+      { jurisdiction: 'Australia', org: 'AUSTRAC', licName: 'DCE' },
+      { jurisdiction: 'France', org: 'Autorité des Marchés Financiers', licName: 'DASP' },
+      { jurisdiction: 'Bahrain', org: 'Central Bank of Bahrain', licName: 'CASP' },
+      { jurisdiction: 'Italy', org: 'Organismo Agenti e Mediatori', licName: 'DASP' },
+    ],
+  },
+  civil: {
+    official__documentation: [
+      { jurisdiction: 'Florida', org: 'Department of Health', licName: 'Marriage Certificate' },
+      { jurisdiction: 'Florida', org: 'Secretary of State', licName: 'Apostile' },
+    ],
+  },
+}
 
+const RegulatoryTab = ({
+  partners,
+  domain,
+  wallet,
+  setWallet,
+  setErrorMessage,
+  registrarType = 'company',
+  breakpoints,
+}: any) => {
   const licenseComps: any[] = []
 
   const jurisSelect = (
@@ -104,7 +112,13 @@ const RegulatoryTab = ({ registrarType = 'company', breakpoints }: any) => {
         </Typography>
       </HeaderContainer>
 
-      <JurisDropdown />
+      <JurisDropdown
+        wallet={wallet}
+        setErrorMessage={setErrorMessage}
+        domain={domain}
+        setWallet={setWallet}
+        partners={partners}
+      />
     </Container>
   )
 

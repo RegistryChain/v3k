@@ -159,6 +159,9 @@ export default function Page() {
           records,
           setRecords,
           getRecords: refetch,
+          setErrorMessage,
+          wallet,
+          setWallet,
         }}
       />
     </>
