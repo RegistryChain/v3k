@@ -133,7 +133,7 @@ export async function importEntity({ filingID, name, registrar }: any) {
 }
 
 export async function getEntitiesList({
-  registrar = 'public',
+  registrar = 'ai',
   nameSubstring = '',
   sortType,
   sortDirection,
