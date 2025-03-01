@@ -24,7 +24,7 @@ const LinkWrapper = styled.a<{
     gap: ${theme.space['1.5']};
     cursor: pointer;
     
-    color: #333 !important;
+    color: ${theme.colors.text};
     transition: all 0.15s ease-in-out;
 
     ${!$asText
@@ -45,7 +45,7 @@ const LinkWrapper = styled.a<{
         `
       : css`
           &:hover {
-            color: ${$isActive ? theme.colors.accentBright : theme.colors.textPrimary};
+            color: ${$isActive ? theme.colors.accent : theme.colors.textPrimary};
           }
         `}
     ${$isActive &&
@@ -58,6 +58,10 @@ const LinkWrapper = styled.a<{
       border: none;
       top: ${theme.space['0.5']};
       right: ${theme.space['0.5']};
+    }
+
+    &:hover {
+      color: ${theme.colors.accent};
     }
   `,
 )

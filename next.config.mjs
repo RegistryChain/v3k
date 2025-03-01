@@ -23,9 +23,6 @@ const babelIncludeRegexes = [
  * */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    optimizePackageImports: ["@chakra-ui/react"],
-  },
   compiler: {
     styledComponents: true,
   },

@@ -20,7 +20,7 @@ const Button = styled.button<{ $active: boolean }>(
     transition: all 0.15s ease-in-out;
 
     cursor: pointer;
-    color: ${theme.colors.grey};
+    color: ${theme.colors.text};
 
     & > svg {
       display: block;
@@ -30,6 +30,7 @@ const Button = styled.button<{ $active: boolean }>(
 
     &:hover {
       background-color: ${theme.colors.greyLight};
+      color: ${theme.colors.accent};
     }
 
     ${$active &&

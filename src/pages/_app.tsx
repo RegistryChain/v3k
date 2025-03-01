@@ -10,7 +10,6 @@ import { createGlobalStyle, keyframes, ThemeProvider } from 'styled-components'
 import { ThorinGlobalStyles, lightTheme as thorinLightTheme } from '@ensdomains/thorin'
 
 import { Notifications } from '@app/components/Notifications'
-import { TestnetWarning } from '@app/components/TestnetWarning'
 import { TransactionStoreProvider } from '@app/hooks/transactions/TransactionStoreContext'
 import { Basic } from '@app/layouts/Basic'
 import { TransactionFlowProvider } from '@app/transaction-flow/TransactionFlowProvider'
@@ -23,7 +22,7 @@ import { SyncProvider } from '@app/utils/SyncProvider/SyncProvider'
 import i18n from '../i18n'
 
 import '../styles.css'
-import { Provider } from '@app/components/ui/provider'
+import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 
 const rainbowKitTheme: Theme = {
   ...lightTheme({
@@ -131,33 +130,53 @@ type AppPropsWithLayout = AppProps & {
 
 setupAnalytics()
 
+
+const theme = {
+  ...thorinLightTheme,
+  colors: {
+    ...thorinLightTheme.colors,
+    text: '#000000',
+    accent: '#6a24d6',
+  }
+}
+
+const muiTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#000000',
+    },
+    secondary: {
+      main: '#6a24d6',
+    },
+  },
+});
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page)
 
   return (
     <I18nextProvider i18n={i18n}>
       <QueryProviders>
-        <Provider>
           <RainbowKitProvider theme={rainbowKitTheme}>
             <TransactionStoreProvider>
-              <ThemeProvider theme={thorinLightTheme}>
-                <BreakpointProvider queries={breakpoints}>
-                  <GlobalStyle />
-                  <ThorinGlobalStyles />
-                  <SyncProvider>
-                    <TransactionFlowProvider>
-                      <SyncDroppedTransaction>
-                        <Notifications />
-                        {/* <TestnetWarning /> */}
-                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                      </SyncDroppedTransaction>
-                    </TransactionFlowProvider>
-                  </SyncProvider>
-                </BreakpointProvider>
-              </ThemeProvider>
+              <MuiThemeProvider theme={muiTheme}>
+                <ThemeProvider theme={theme}>
+                  <BreakpointProvider queries={breakpoints}>
+                    <GlobalStyle />
+                    <SyncProvider>
+                      <TransactionFlowProvider>
+                        <SyncDroppedTransaction>
+                          <Notifications />
+                          {/* <TestnetWarning /> */}
+                          <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                        </SyncDroppedTransaction>
+                      </TransactionFlowProvider>
+                    </SyncProvider>
+                  </BreakpointProvider>
+                </ThemeProvider>
+              </MuiThemeProvider>
             </TransactionStoreProvider>
           </RainbowKitProvider>
-        </Provider>
       </QueryProviders>
     </I18nextProvider>
   )

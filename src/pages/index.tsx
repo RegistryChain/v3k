@@ -49,6 +49,24 @@ const SubtitleWrapper = styled.div(
   `,
 )
 
+const AddAgentButton = styled.button(
+  ({ theme }) => css`
+    font-weight: 700;
+    min-width: 200px;
+    background-color: ${theme.colors.accent};
+    border: none;
+    border-radius: 12px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.1s ease-in;
+    padding: ${theme.space['2']} ${theme.space['4']};
+    color: white;
+    &:hover {
+      background-color: #8f58e3;
+    }
+    `
+)
+
 const Container = styled.div(
   () => css`
     flex-grow: 1;
@@ -173,14 +191,11 @@ export default function Page() {
         <Stack>
           <FeaturedAgents />
           <TrendingAgents />
-          <Button
-            style={{ width: breakpoints.xs && !breakpoints.sm ? '100%' : '220px', height: '48px' }}
-            shape="square"
-            size="small"
+          <AddAgentButton
             onClick={() => setIsModalOpen(true)}
           >
-            Create Agent
-          </Button>
+            Add Agent
+          </AddAgentButton>
         </Stack>
       </Container>
     </>

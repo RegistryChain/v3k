@@ -28,11 +28,8 @@ export const Box = styled.div<any>`
   display: flex;
   cursor: pointer;
   align-items: center;
-  background-color: ${({ isPlaceholder }: any) => (isPlaceholder ? 'transparent' : '#f0f0f0')};
   border-radius: 8px;
   padding: 16px;
-  box-shadow: ${({ isPlaceholder }: any) =>
-    isPlaceholder ? 'none' : '0 4px 6px rgba(0, 0, 0, 0.1)'};
   visibility: ${({ isPlaceholder }: any) => (isPlaceholder ? 'hidden' : 'visible')};
 
   ${breakpoints.xs} {

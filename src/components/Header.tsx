@@ -128,6 +128,22 @@ const SearchWrapper = styled.div<{ $state: TransitionState }>(
   `,
 )
 
+const AddAgentButton = styled.button(
+  ({ theme }) => css`
+    font-weight: 700;
+    min-width: 120px;
+    border: none;
+    border-radius: ${theme.radii.full};
+    font-size: ${theme.fontSizes.body};
+    cursor: pointer;
+    transition: all 0.1s ease-in;
+
+    &:hover {
+      color: ${theme.colors.accent};
+    }
+    `
+)
+
 const routesNoSearch = routes.filter(
   (route) => route.name !== 'search' && route.icon && !route.onlyDropdown && !route.disabled,
 )
@@ -218,12 +234,11 @@ export const Header = () => {
             $state={breakpoints.lg ? 'entered' : state}
           >
             {RouteItems}
-            <div
-              style={{ fontWeight: '700', cursor: 'pointer', minWidth: '120px' }}
+            <AddAgentButton
               onClick={() => setIsModalOpen(true)}
             >
-              Create Agent
-            </div>
+              Add Agent
+            </AddAgentButton>
           </RouteContainer>
         </RouteWrapper>
         <Hamburger />
