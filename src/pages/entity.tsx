@@ -82,7 +82,7 @@ export default function Page() {
   const isSelf = router.query.connected === 'true'
 
   const [project, setProject] = useState('REGISTRYCHAIN')
-  const [registrationStep, setRegistrationStep] = useState<number>(1)
+  const [registrationStep, setRegistrationStep] = useState<number>(5)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [wallet, setWallet] = useState<any>(null)
   const [schemaFields, setSchemaFields] = useState<any>({})
@@ -631,7 +631,9 @@ export default function Page() {
             })
           }
         />
-        <div>
+        <div style={{
+          backgroundColor: 'red',
+        }}>
           <RecordsSection fields={schemaFields} domainName={''} compareToOldValues={false} />
         </div>
       </div>
