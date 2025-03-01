@@ -27,31 +27,38 @@ import {
 import contractAddressesObj from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 import { AdvancedConfiguration } from './AdvancedConfiguration'
-import { CloseButton, ModalContent, Overlay, StepWrapper, SubmitButton, StepContainer } from './AgentModalStyles'
+import {
+  CloseButton,
+  ModalContent,
+  Overlay,
+  StepContainer,
+  StepWrapper,
+  SubmitButton,
+} from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
 
 type FormState = {
-  name: string;
-  imageUrl: string;
-  category: string;
-  platform: string;
-  purpose: string;
-  github: string;
-  endpoint: string;
-  parentEntityId: string;
-  parentName: string;
-  description: string;
-  twitterHandle: string;
-  tokenAddress: string;
-  telegramHandle: string;
-};
+  name: string
+  avatar: string
+  category: string
+  platform: string
+  purpose: string
+  github: string
+  endpoint: string
+  parentEntityId: string
+  parentName: string
+  description: string
+  twitterHandle: string
+  tokenAddress: string
+  telegramHandle: string
+}
 
 interface StepProps {
-  isVisible: boolean;
-  formState: FormState;
-  handleFieldChange: (field: keyof FormState) => (value: string) => void;
+  isVisible: boolean
+  formState: FormState
+  handleFieldChange: (field: keyof FormState) => (value: string) => void
 }
 
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
@@ -68,8 +75,8 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
 
       <FormInput
         label="Image URL"
-        value={formState.imageUrl}
-        onChange={handleFieldChange('imageUrl')}
+        value={formState.avatar}
+        onChange={handleFieldChange('avatar')}
         placeholder="Enter image URL"
         required
       />
@@ -177,13 +184,12 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const router = useRouterWithHistory()
   const { openConnectModal } = useConnectModal()
   const modalRef = useRef(null)
-  const [isExpanded, setIsExpanded] = useState(false)
   const [actionStep, setActionStep] = useState(0)
 
   // Complete form state
   const originalForm: FormState = {
     name: '',
-    imageUrl: '',
+    avatar: '',
     category: '',
     platform: '',
     purpose: '',
@@ -240,8 +246,14 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const handleClickOutside = (event: any) => {
     const cur: any = modalRef.current
     // Select elements are part of the select dropdown and should not close the modal
-    const selectElements = document.querySelectorAll('.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *');
-    if (modalRef.current && !cur.contains(event.target) && !Array.from(selectElements).some((el) => el.contains(event.target))) {
+    const selectElements = document.querySelectorAll(
+      '.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *',
+    )
+    if (
+      modalRef.current &&
+      !cur.contains(event.target) &&
+      !Array.from(selectElements).some((el) => el.contains(event.target))
+    ) {
       onClose()
     }
   }
@@ -249,7 +261,6 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'entity__name', value: formState.name },
-      { key: 'avatar', value: formState.imageUrl },
       { key: 'entity__type', value: formState.category },
       { key: 'entity__registrar', value: 'AI' },
       { key: 'entity__code', value: '0002' },
@@ -262,14 +273,12 @@ const AgentModal = ({ isOpen, onClose }: any) => {
         label + '.' + stateCopy.parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
     }
 
-    return isExpanded
-      ? [
-        ...baseRecords,
-        ...Object.entries(formState)
-          .filter(([key]) => !['name', 'imageUrl', 'category'].includes(key))
-          .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
-      ]
-      : baseRecords
+    return [
+      ...baseRecords,
+      ...Object.entries(formState)
+        .filter(([key, value]) => value)
+        .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
+    ]
   }
 
   const submitEntityData = async (entityDomain: string, currentEntityOwner: Address) => {
@@ -376,9 +385,16 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
   return (
     <Overlay>
-      <ModalContent ref={modalRef} isExpanded={isExpanded}>
+      <ModalContent ref={modalRef} isExpanded={false}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '24px', fontWeight: 'bold' }}>
+        <h2
+          style={{
+            textAlign: 'center',
+            fontSize: '24px',
+            marginBottom: '24px',
+            fontWeight: 'bold',
+          }}
+        >
           Add Agent{formState.name ? ': ' : ''}
           <span style={{ fontWeight: '900', color: 'var(--color-accent)' }}>
             {formState.name ? `${formState.name.toLowerCase()}.ai.entity.id` : ''}
@@ -389,16 +405,33 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
         <StepContainer>
           <>
-            {actionStep === 0 && <Step1 isVisible={actionStep === 0} formState={formState} handleFieldChange={handleFieldChange} />}
-            {actionStep === 1 && <Step2 isVisible={actionStep === 1} formState={formState} handleFieldChange={handleFieldChange} />}
-            {actionStep === 2 && <Step3 isVisible={actionStep === 2} formState={formState} handleFieldChange={handleFieldChange} />}
+            {actionStep === 0 && (
+              <Step1
+                isVisible={actionStep === 0}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
+            {actionStep === 1 && (
+              <Step2
+                isVisible={actionStep === 1}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
+            {actionStep === 2 && (
+              <Step3
+                isVisible={actionStep === 2}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
           </>
         </StepContainer>
 
-
         <div style={{ width: '100%' }}>
           <SubmitButton
-            disabled={!formState.name || !formState.imageUrl || !formState.category}
+            disabled={!formState.name || !formState.avatar || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}
