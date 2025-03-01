@@ -1,4 +1,3 @@
-import { Container } from '@chakra-ui/react'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -35,6 +34,7 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import PluginsTab from './tabs/PluginsTab'
 import RegulatoryTab from './tabs/Regulatory'
+import { Box } from '@mui/material'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -394,9 +394,9 @@ const ProfileContent = ({
               .with('entity', () => {
                 if (loadingRecords)
                   return (
-                    <Container>
+                    <Box>
                       <Spinner color="accent" size="medium" />
-                    </Container>
+                    </Box>
                   )
 
                 return (

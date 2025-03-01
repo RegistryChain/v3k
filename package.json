@@ -48,8 +48,8 @@
     "subgraph:update": "ens-test-env subgraph --var NEXT_PUBLIC_DEPLOYMENT_ADDRESSES"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.5.1",
     "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@ensdomains/address-encoder": "1.1.1",
     "@ensdomains/content-hash": "^3.0.0-beta.5",
     "@ensdomains/ens-contracts": "1.2.0-beta.0",
@@ -58,6 +58,8 @@
     "@metamask/mobile-provider": "^2.1.0",
     "@metamask/post-message-stream": "^6.1.2",
     "@metamask/providers": "^14.0.2",
+    "@mui/icons-material": "^6.4.6",
+    "@mui/material": "^6.4.6",
     "@noble/hashes": "^1.3.2",
     "@rainbow-me/rainbowkit": "2.1.2",
     "@react-icons/all-files": "^4.1.0",

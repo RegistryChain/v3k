@@ -5,11 +5,11 @@ import { useAccount } from 'wagmi'
 import DownDirectionSVG from '@app/assets/SortAscending.svg'
 import UpDirectionSVG from '@app/assets/SortDescending.svg'
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
-import { Button } from '@app/components/ui/button'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { Entity, Partner } from '@app/types/directory'
 
 import * as Styles from './DirectoryTable.styles'
+import { Button } from '@mui/material'
 
 const { ButtonContainer } = Styles
 

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const Overlay = styled.div`
   position: fixed;
@@ -20,7 +20,8 @@ export const ModalContent = styled.div<{ isExpanded: boolean }>`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 24px;
   width: ${({ isExpanded }) => (isExpanded ? '90%' : '60%')};
-  max-height: ${({ isExpanded }) => (isExpanded ? '90%' : '50%')};
+  height: 500px;
+  min-width: 600px;
   overflow-y: auto;
   transition:
     width 0.3s ease,
@@ -44,11 +45,6 @@ export const CloseButton = styled.button`
   &:hover {
     color: #000;
   }
-`
-
-export const InputGroup = styled.div`
-  margin-bottom: 16px;
-  text-align: center;
 `
 
 export const Label = styled.label`
@@ -98,3 +94,48 @@ export const AdvancedHeader = styled.div<{ isExpanded: boolean }>`
     color: #333;
   }
 `
+
+export const SubmitButton = styled.button(
+  ({ theme }) => css`
+  width: 220px;
+  height: 48px;
+  margin: 0 auto;
+  display: block;
+  background-color: ${theme.colors.accent};
+  color: white;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #8f58e3;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`);
+
+export const StepContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 24px;
+  padding: 24px;
+  width: 100%;
+`;
+
+
+export const StepWrapper = styled.div<{ isVisible: boolean }>`
+  gap: 16px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.5s ease-in-out;
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
+`;

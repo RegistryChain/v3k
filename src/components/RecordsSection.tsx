@@ -1,12 +1,9 @@
-import { Collapsible } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaChevronDown } from 'react-icons/fa'
 import styled, { css } from 'styled-components'
 import { isAddress, namehash, zeroAddress } from 'viem'
-import { normalize } from 'viem/ens'
-import { useAccount } from 'wagmi'
 
 import { Button, mq, Typography } from '@ensdomains/thorin'
 
@@ -17,6 +14,7 @@ import { CompanyAddresses } from './CompanyAddresses'
 import CompanyInfo from './CompanyInfo'
 import { CompanyPartners } from './CompanyPartners'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`
@@ -197,55 +195,55 @@ export const RecordsSection = ({
     <>
       <TabWrapper data-testid="records-tab">
         <AllRecords>
-          <Collapsible.Root defaultOpen>
-            <Collapsible.Trigger>
+          <Accordion defaultExpanded>
+            <AccordionSummary>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Entity Details <FaChevronDown />
               </SectionTitle>
-            </Collapsible.Trigger>
-            <Collapsible.Content>
+            </AccordionSummary>
+            <AccordionDetails>
               <RecordSection key={'section1Records'}>{sectionsDisplay}</RecordSection>
-            </Collapsible.Content>
-          </Collapsible.Root>
+            </AccordionDetails>
+          </Accordion>
 
-          <Collapsible.Root defaultOpen>
-            <Collapsible.Trigger>
+          <Accordion defaultExpanded>
+            <AccordionSummary>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Addresses <FaChevronDown />
               </SectionTitle>
-            </Collapsible.Trigger>
-            <Collapsible.Content>{addressSection}</Collapsible.Content>
-          </Collapsible.Root>
+            </AccordionSummary>
+            <AccordionDetails>{addressSection}</AccordionDetails>
+          </Accordion>
 
-          <Collapsible.Root defaultOpen>
-            <Collapsible.Trigger>
+          <Accordion defaultExpanded>
+            <AccordionSummary>
               <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                 Partners <FaChevronDown />
               </SectionTitle>
-            </Collapsible.Trigger>
-            <Collapsible.Content>{partnerSection}</Collapsible.Content>
-          </Collapsible.Root>
+            </AccordionSummary>
+            <AccordionDetails>{partnerSection}</AccordionDetails>
+          </Accordion>
 
           {childrenSection && (
-            <Collapsible.Root defaultOpen>
-              <Collapsible.Trigger>
+            <Accordion defaultExpanded>
+              <AccordionSummary>
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                   Child Entities <FaChevronDown />
                 </SectionTitle>
-              </Collapsible.Trigger>
-              <Collapsible.Content>{childrenSection}</Collapsible.Content>
-            </Collapsible.Root>
+              </AccordionSummary>
+              <AccordionDetails>{childrenSection}</AccordionDetails>
+            </Accordion>
           )}
 
           {/* {changeLogSection && (
-            <Collapsible.Root defaultOpen>
+            <Accordion defaultOpen>
               <Collapsible.Trigger>
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                   Entity Changes <FaChevronDown />
                 </SectionTitle>
               </Collapsible.Trigger>
-              <Collapsible.Content>{changeLogSection}</Collapsible.Content>
-            </Collapsible.Root>
+              <AccordionDetails>{changeLogSection}</AccordionDetails>
+            </Accordion>
           )} */}
         </AllRecords>
       </TabWrapper>

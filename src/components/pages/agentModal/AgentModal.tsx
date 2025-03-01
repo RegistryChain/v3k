@@ -14,8 +14,6 @@ import {
 import { normalize, packetToBytes } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
-import { Button } from '@ensdomains/thorin'
-
 import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
@@ -29,9 +27,146 @@ import {
 import contractAddressesObj from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 import { AdvancedConfiguration } from './AdvancedConfiguration'
-import { CloseButton, ModalContent, Overlay } from './AgentModalStyles'
+import { CloseButton, ModalContent, Overlay, StepWrapper, SubmitButton, StepContainer } from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
+import { CustomizedSteppers } from './Stepper'
+
+type FormState = {
+  name: string;
+  imageUrl: string;
+  category: string;
+  platform: string;
+  purpose: string;
+  github: string;
+  endpoint: string;
+  parentEntityId: string;
+  parentName: string;
+  description: string;
+  twitterHandle: string;
+  tokenAddress: string;
+  telegramHandle: string;
+};
+
+interface StepProps {
+  isVisible: boolean;
+  formState: FormState;
+  handleFieldChange: (field: keyof FormState) => (value: string) => void;
+}
+
+const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+  return (
+    <StepWrapper isVisible={isVisible}>
+      {/* Core Inputs */}
+      <FormInput
+        label="Name"
+        value={formState.name}
+        onChange={handleFieldChange('name')}
+        placeholder="Enter agent name"
+        required
+      />
+
+      <FormInput
+        label="Image URL"
+        value={formState.imageUrl}
+        onChange={handleFieldChange('imageUrl')}
+        placeholder="Enter image URL"
+        required
+      />
+
+      <FormInput
+        label="Category"
+        type="select"
+        value={formState.category}
+        onChange={handleFieldChange('category')}
+        options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
+        placeholder="Select a category"
+        required
+      />
+    </StepWrapper>
+  )
+}
+
+const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+  return (
+    <StepWrapper isVisible={isVisible}>
+      <FormInput
+        label="Token Address"
+        value={formState.tokenAddress}
+        onChange={handleFieldChange('tokenAddress')}
+        placeholder="Enter Token Address"
+      />
+
+      <FormInput
+        label="Platform"
+        value={formState.platform}
+        onChange={handleFieldChange('platform')}
+        placeholder="Enter platform"
+      />
+
+      <FormInput
+        label="Purpose"
+        value={formState.purpose}
+        onChange={handleFieldChange('purpose')}
+        placeholder="Enter Purpose"
+      />
+
+      <FormInput
+        label="Github"
+        value={formState.github}
+        onChange={handleFieldChange('github')}
+        placeholder="Github"
+      />
+
+      <FormInput
+        label="Endpoint"
+        value={formState.endpoint}
+        onChange={handleFieldChange('endpoint')}
+        placeholder="Enter Endpoint"
+      />
+
+      <FormInput
+        label="X (Twitter) Handle"
+        value={formState.twitterHandle}
+        onChange={handleFieldChange('twitterHandle')}
+        placeholder="Enter Twitter Handle"
+      />
+
+      <FormInput
+        label="Telegram Handle"
+        value={formState.telegramHandle}
+        onChange={handleFieldChange('telegramHandle')}
+        placeholder="Enter Telegram Handle"
+      />
+
+      <FormInput
+        label="Description"
+        value={formState.description}
+        onChange={handleFieldChange('description')}
+        placeholder="Enter description"
+      />
+    </StepWrapper>
+  )
+}
+
+const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+  return (
+    <StepWrapper isVisible={isVisible}>
+      <FormInput
+        label="Name"
+        value={formState.parentName}
+        onChange={handleFieldChange('parentName')}
+        placeholder="Enter Developer Name"
+      />
+      <FormInput
+        label="Entity ID"
+        value={formState.parentEntityId}
+        onChange={handleFieldChange('parentEntityId')}
+        placeholder="Enter an entity.id domain"
+      />
+    </StepWrapper>
+  )
+}
 
 const tld = 'entity.id'
 const contractAddresses = contractAddressesObj as Record<string, Address>
@@ -46,7 +181,7 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const [actionStep, setActionStep] = useState(0)
 
   // Complete form state
-  const originalForm = {
+  const originalForm: FormState = {
     name: '',
     imageUrl: '',
     category: '',
@@ -104,7 +239,9 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   // Close modal when clicking outside of it
   const handleClickOutside = (event: any) => {
     const cur: any = modalRef.current
-    if (modalRef.current && !cur.contains(event.target)) {
+    // Select elements are part of the select dropdown and should not close the modal
+    const selectElements = document.querySelectorAll('.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *');
+    if (modalRef.current && !cur.contains(event.target) && !Array.from(selectElements).some((el) => el.contains(event.target))) {
       onClose()
     }
   }
@@ -127,11 +264,11 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
     return isExpanded
       ? [
-          ...baseRecords,
-          ...Object.entries(formState)
-            .filter(([key]) => !['name', 'imageUrl', 'category'].includes(key))
-            .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
-        ]
+        ...baseRecords,
+        ...Object.entries(formState)
+          .filter(([key]) => !['name', 'imageUrl', 'category'].includes(key))
+          .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
+      ]
       : baseRecords
   }
 
@@ -241,110 +378,31 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     <Overlay>
       <ModalContent ref={modalRef} isExpanded={isExpanded}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2 style={{ textAlign: 'center', fontSize: '24px' }}>
-          Creating Agent{formState.name ? ': ' : ''}
-          <span style={{ fontWeight: '900', color: 'red' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '24px', fontWeight: 'bold' }}>
+          Add Agent{formState.name ? ': ' : ''}
+          <span style={{ fontWeight: '900', color: 'var(--color-accent)' }}>
             {formState.name ? `${formState.name.toLowerCase()}.ai.entity.id` : ''}
           </span>
         </h2>
 
-        {/* Core Inputs */}
-        <FormInput
-          label="Name"
-          value={formState.name}
-          onChange={handleFieldChange('name')}
-          placeholder="Enter agent name"
-        />
+        <CustomizedSteppers activeStep={actionStep} setActiveStep={setActionStep} />
 
-        <FormInput
-          label="Image URL"
-          value={formState.imageUrl}
-          onChange={handleFieldChange('imageUrl')}
-          placeholder="Enter image URL"
-        />
+        <StepContainer>
+          <>
+            {actionStep === 0 && <Step1 isVisible={actionStep === 0} formState={formState} handleFieldChange={handleFieldChange} />}
+            {actionStep === 1 && <Step2 isVisible={actionStep === 1} formState={formState} handleFieldChange={handleFieldChange} />}
+            {actionStep === 2 && <Step3 isVisible={actionStep === 2} formState={formState} handleFieldChange={handleFieldChange} />}
+          </>
+        </StepContainer>
 
-        <FormInput
-          label="Category"
-          type="select"
-          value={formState.category}
-          onChange={handleFieldChange('category')}
-          options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
-          placeholder="Select a category"
-        />
-
-        <AdvancedConfiguration isExpanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)}>
-          {/* Advanced Inputs */}
-          <FormInput
-            label="Token Address"
-            value={formState.tokenAddress}
-            onChange={handleFieldChange('tokenAddress')}
-            placeholder="Enter Token Address"
-          />
-
-          <FormInput
-            label="Platform"
-            value={formState.platform}
-            onChange={handleFieldChange('platform')}
-            placeholder="Enter platform"
-          />
-
-          <FormInput
-            label="Purpose"
-            value={formState.purpose}
-            onChange={handleFieldChange('purpose')}
-            placeholder="Enter Purpose"
-          />
-
-          <FormInput
-            label="Github"
-            value={formState.github}
-            onChange={handleFieldChange('github')}
-            placeholder="Github"
-          />
-
-          <FormInput
-            label="Endpoint"
-            value={formState.endpoint}
-            onChange={handleFieldChange('endpoint')}
-            placeholder="Enter Endpoint"
-          />
-
-          <FormInput
-            label="X (Twitter) Handle"
-            value={formState.twitterHandle}
-            onChange={handleFieldChange('twitterHandle')}
-            placeholder="Enter Twitter Handle"
-          />
-
-          <FormInput
-            label="Telegram Handle"
-            value={formState.telegramHandle}
-            onChange={handleFieldChange('telegramHandle')}
-            placeholder="Enter Telegram Handle"
-          />
-
-          <FormInput
-            label="Description"
-            value={formState.description}
-            onChange={handleFieldChange('description')}
-            placeholder="Enter description"
-          />
-
-          <ParentEntitySection
-            parentName={formState.parentName}
-            setParentName={handleFieldChange('parentName')}
-            parentEntityId={formState.parentEntityId}
-            setParentEntityId={handleFieldChange('parentEntityId')}
-          />
-        </AdvancedConfiguration>
 
         <div style={{ width: '100%' }}>
-          <Button
-            style={{ width: '220px', height: '48px', margin: '0 auto', display: 'block' }}
+          <SubmitButton
+            disabled={!formState.name || !formState.imageUrl || !formState.category}
             onClick={handleRegistration}
           >
-            {actions[actionStep]}
-          </Button>
+            {actions[0]}
+          </SubmitButton>
         </div>
       </ModalContent>
     </Overlay>
