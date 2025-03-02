@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import {
   Address,
   createWalletClient,
@@ -64,6 +64,7 @@ const ActionsTab = ({
   client,
   wallet,
   setWallet,
+  makeAmendment,
   name,
   checkEntityStatus,
 }: any) => {
@@ -401,15 +402,18 @@ const ActionsTab = ({
     )
   }
 
-  let amendmentsTrigger = null
-  if (address === owner || (owner === multisigAddress && txsExecuted?.length >= 1)) {
-    amendmentsTrigger = (
-      <ActionsProposal
-        setErrorMessage={setErrorMessage}
-        multisigAddress={multisigAddress}
-        wallet={wallet}
-        name={name}
-      />
+  let amendmentElement = null
+  if (address === owner || owner === multisigAddress) {
+    amendmentElement = (
+      <div style={{ width: '50%', margin: '16px 0' }}>
+        <Button
+          onClick={() => {
+            makeAmendment()
+          }}
+        >
+          Make Amendment
+        </Button>
+      </div>
     )
   }
 
@@ -478,11 +482,9 @@ const ActionsTab = ({
       <div style={{ width: '50%', margin: '16px 0' }}>
         <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
       </div>
+      {amendmentElement}
       <div style={{ width: '50%', margin: '16px 0' }}>
         <Button>KYC verification</Button>
-      </div>
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button>Make Amendment</Button>
       </div>
     </div>
   )
