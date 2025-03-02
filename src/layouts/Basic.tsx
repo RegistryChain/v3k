@@ -110,15 +110,24 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
     }
   }, [isConnected, chainId, router])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [agentModalPrepopulate, setAgentModalPrepopulate] = useState({})
 
   return (
     // <LayoutContext.Provider value={{ testMode }}>
-    <ModalContext.Provider value={{ isModalOpen, setIsModalOpen }}>
+    <ModalContext.Provider
+      value={{ isModalOpen, setIsModalOpen, agentModalPrepopulate, setAgentModalPrepopulate }}
+    >
       <Container className="min-safe">
         <Navigation />
         <ContentWrapper>
-
-          {isModalOpen && <AgentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
+          {isModalOpen && (
+            <AgentModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              agentModalPrepopulate={agentModalPrepopulate}
+              setAgentModalPrepopulate={setAgentModalPrepopulate}
+            />
+          )}
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>

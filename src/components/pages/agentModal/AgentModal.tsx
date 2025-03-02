@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Address,
   encodeAbiParameters,
+  encodeFunctionData,
   isAddressEqual,
   labelhash,
   namehash,
@@ -18,6 +19,7 @@ import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
+  getChangedRecords,
   getContractInstance,
   getPublicClient,
   getWalletClient,
@@ -179,7 +181,7 @@ const tld = 'entity.id'
 const contractAddresses = contractAddressesObj as Record<string, Address>
 const actions = ['Register Agent', 'Add Agent Information', 'Deploy Agent Contract']
 
-const AgentModal = ({ isOpen, onClose }: any) => {
+const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepopulate }: any) => {
   const { address } = useAccount()
   const router = useRouterWithHistory()
   const { openConnectModal } = useConnectModal()
@@ -202,10 +204,41 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     tokenAddress: '',
     telegramHandle: '',
   }
-  const [formState, setFormState] = useState(originalForm)
+  // Text record key mapping
+  const mapKeyToRecord = (formKey: string) => {
+    const mapping: Record<string, string> = {
+      platform: 'location',
+      description: 'description',
+      twitterHandle: 'entity__twitter',
+      tokenAddress: 'entity__token__address',
+      telegramHandle: 'entity__telegram',
+      purpose: 'entity__purpose',
+      github: 'entity__github',
+      endpoint: 'entity__endpoint',
+      parentEntityId: 'partner__[0]__domain',
+      parentName: 'partner__[0]__name',
+      category: 'entity__type',
+    }
+    return mapping[formKey] || formKey
+  }
+
+  const originalFormToSet: any = originalForm
+  useMemo(() => {
+    if (agentModalPrepopulate) {
+      if (Object.keys(agentModalPrepopulate)?.length > 0) {
+        Object.keys(originalForm).forEach((field: any) => {
+          const prepopField = mapKeyToRecord(field)
+          originalFormToSet[field] = agentModalPrepopulate[prepopField]
+        })
+      }
+    }
+  }, [agentModalPrepopulate])
+
+  const [formState, setFormState] = useState(originalFormToSet)
   const publicClient = useMemo(getPublicClient, [])
 
   const registerEntity = async (entityDomain: string) => {
+    // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
     const registrarContract: any = getContractInstance(
       getWalletClient(address as Address),
       `ai.${tld}`,
@@ -261,7 +294,6 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'entity__name', value: formState.name },
-      { key: 'entity__type', value: formState.category },
       { key: 'entity__registrar', value: 'AI' },
       { key: 'entity__code', value: '0002' },
     ]
@@ -294,11 +326,13 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
     const formationPrep = createFormationPrep(texts)
 
+    // Pass in amendment formationPrep as multicall(setText())
+
     await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
   }
 
   const handleFieldChange = (field: keyof typeof formState) => (value: string) =>
-    setFormState((prev) => ({ ...prev, [field]: value }))
+    setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
@@ -327,41 +361,50 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     onClose()
   }
 
-  // Text record key mapping
-  const mapKeyToRecord = (formKey: string) => {
-    const mapping: Record<string, string> = {
-      platform: 'location',
-      description: 'description',
-      twitterHandle: 'entity__twitter',
-      tokenAddress: 'entity__token__address',
-      telegramHandle: 'entity__telegram',
-      purpose: 'entity__purpose',
-      github: 'entity__github',
-      endpoint: 'entity__endpoint',
-      parentEntityId: 'partner__[0]__domain',
-      parentName: 'partner__[0]__name',
+  const createFormationPrep = (texts: any[]) => {
+    if (agentModalPrepopulate) {
+      if (Object.keys(agentModalPrepopulate)?.length > 0) {
+        const nodeHash = namehash(agentModalPrepopulate.domain)
+        const changedRecords = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord)
+        const multicalls: string[] = []
+        changedRecords.forEach((x: any) => {
+          multicalls.push(
+            encodeFunctionData({
+              abi: l1abi,
+              functionName: 'setText',
+              args: [nodeHash, x.key, x.value],
+            }),
+          )
+        })
+        // Use Resolver multicall(setText[])
+        const formationPrep: any = {
+          functionName: 'multicall',
+          args: [multicalls],
+          abi: l1abi,
+          address: contractAddresses['DatabaseResolver'],
+        }
+        return formationPrep
+      }
     }
-    return mapping[formKey] || formKey
+    return {
+      functionName: 'register',
+      args: [
+        toHex(packetToBytes(formState.name)),
+        address,
+        0,
+        zeroHash,
+        zeroAddress,
+        texts.map((x) =>
+          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+        ),
+        false,
+        0,
+        zeroHash,
+      ],
+      abi: l1abi,
+      address: contractAddresses['DatabaseResolver'],
+    }
   }
-
-  const createFormationPrep = (texts: any[]) => ({
-    functionName: 'register',
-    args: [
-      toHex(packetToBytes(formState.name)),
-      address,
-      0,
-      zeroHash,
-      zeroAddress,
-      texts.map((x) =>
-        encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
-      ),
-      false,
-      0,
-      zeroHash,
-    ],
-    abi: l1abi,
-    address: contractAddresses['DatabaseResolver'],
-  })
 
   // const createFormationCallback = () => ({
   //   functionName: 'deployEntityContracts',
