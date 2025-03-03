@@ -18,7 +18,7 @@ export const ModalContent = styled.div<{ isExpanded: boolean }>`
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  padding: 24px;
+  padding: 24px 24px 0;
   width: ${({ isExpanded }) => (isExpanded ? '90%' : '60%')};
   height: 500px;
   min-width: 600px;
@@ -122,9 +122,9 @@ export const StepContainer = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin-bottom: 24px;
   padding: 24px;
   width: 100%;
+  min-height: 250px;
 `;
 
 
@@ -139,3 +139,13 @@ export const StepWrapper = styled.div<{ isVisible: boolean }>`
   transition: opacity 0.5s ease-in-out;
   opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
 `;
+
+export const ButtonWrapper = styled.div`
+  box-shadow: 0 -4px 4px -4px rgba(0, 0, 0, 0.2);
+  margin: auto -24px;
+  padding: 24px;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 2;
+`
