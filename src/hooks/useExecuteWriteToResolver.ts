@@ -241,7 +241,6 @@ export function useRecordData({ domain = '' }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const nodeHash = namehash(normalise(domain))
-
   const fetchRecordData = useCallback(async () => {
     if (!domain) return
 

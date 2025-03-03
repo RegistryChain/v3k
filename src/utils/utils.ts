@@ -430,7 +430,7 @@ const getEmptyPartner = () => {
     }
     const type = partnerSchema[field]?.instance
     const defaultValue = getDefaultValueByType(type)
-    partnerEmpty[field] = { type, label, oldValue: defaultValue, setValue: defaultValue }
+    partnerEmpty[field] = defaultValue
   })
 
   return partnerEmpty

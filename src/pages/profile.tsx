@@ -55,7 +55,7 @@ export default function Page() {
       if (address) {
         const formationPrep: any = {
           functionName: 'transfer',
-          args: [namehash(normalize(records?.domain?.setValue || domain)), address],
+          args: [namehash(normalize(records?.domain || domain)), address],
           abi: l1abi,
           address: contractAddressesObj['DatabaseResolver'],
         }
@@ -111,7 +111,7 @@ export default function Page() {
     if (fields) {
       const fieldsOverride: any = fields
       fieldsOverride.partners = fieldsOverride.partners?.filter(
-        (partner: any) => partner?.wallet__address?.setValue || partner?.name?.setValue,
+        (partner: any) => partner?.wallet__address || partner?.name,
       )
       setRecords(fieldsOverride)
     }
