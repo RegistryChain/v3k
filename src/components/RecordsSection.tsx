@@ -1,3 +1,4 @@
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,11 +11,10 @@ import { Button, mq, Typography } from '@ensdomains/thorin'
 import { cacheableComponentStyles } from '@app/components/@atoms/CacheableComponent'
 import { normalizeLabel } from '@app/utils/utils'
 
+import AgentInfo from './AgentInfo'
 import { CompanyAddresses } from './CompanyAddresses'
-import CompanyInfo from './CompanyInfo'
 import { CompanyPartners } from './CompanyPartners'
 import { TabWrapper as OriginalTabWrapper } from './pages/profile/TabWrapper'
-import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
 
 const TabWrapper = styled(OriginalTabWrapper)(
   () => css`
@@ -117,12 +117,10 @@ export const RecordsSection = ({
   compareToOldValues: Boolean
 }) => {
   const { t } = useTranslation('profile')
-
   const filteredCompanyData = useMemo(() => {
     const allowedFields = ['description', 'avatar', 'location', 'purpose', 'url', 'domain']
     return Object.keys(fields)?.filter(
-      (field) =>
-        (field.includes('entity') || allowedFields.includes(field)) && fields[field]?.setValue,
+      (field) => (field.includes('entity') || allowedFields.includes(field)) && fields[field],
     )
   }, [fields])
 
@@ -181,7 +179,7 @@ export const RecordsSection = ({
       <div key={'companydiv'} style={{ width: '100%' }}>
         <RecordSection key={'section1SubRecordscompany'}>
           <SectionHeader>{headerSection}</SectionHeader>
-          <CompanyInfo
+          <AgentInfo
             filteredCompanyData={filteredCompanyData}
             fields={fields}
             compareToOldValues={compareToOldValues}
