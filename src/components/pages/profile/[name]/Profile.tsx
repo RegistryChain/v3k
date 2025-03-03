@@ -1,5 +1,6 @@
+import { Box } from '@mui/material'
 import Head from 'next/head'
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
@@ -22,6 +23,7 @@ import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
+import { ModalContext } from '@app/layouts/Basic'
 import { Content, ContentWarning } from '@app/layouts/Content'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
@@ -34,7 +36,6 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import PluginsTab from './tabs/PluginsTab'
 import RegulatoryTab from './tabs/Regulatory'
-import { Box } from '@mui/material'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -141,7 +142,7 @@ const ProfileContent = ({
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
-
+  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
 
@@ -158,6 +159,15 @@ const ProfileContent = ({
       }),
     [],
   )
+
+  const makeAmendment = async () => {
+    const recordsToPopulate: any = {}
+    Object.keys(records).forEach((field) => {
+      recordsToPopulate[field] = records[field]?.oldValue
+    })
+    setAgentModalPrepopulate(recordsToPopulate)
+    setIsModalOpen(true)
+  }
 
   useEffect(() => {
     if (isSelf && domain) {
@@ -435,6 +445,7 @@ const ProfileContent = ({
                       entityMemberManager={entityMemberManager}
                       client={publicClient}
                       name={domain}
+                      makeAmendment={makeAmendment}
                       checkEntityStatus={() => checkEntityStatus()}
                       wallet={wallet}
                       setWallet={setWallet}

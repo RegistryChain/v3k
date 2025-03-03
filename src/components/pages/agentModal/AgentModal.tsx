@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Address,
   encodeAbiParameters,
+  encodeFunctionData,
   isAddressEqual,
   labelhash,
   namehash,
@@ -18,6 +19,7 @@ import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
+  getChangedRecords,
   getContractInstance,
   getPublicClient,
   getWalletClient,
@@ -27,31 +29,38 @@ import {
 import contractAddressesObj from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 import { AdvancedConfiguration } from './AdvancedConfiguration'
-import { CloseButton, ModalContent, Overlay, StepWrapper, SubmitButton, StepContainer } from './AgentModalStyles'
+import {
+  CloseButton,
+  ModalContent,
+  Overlay,
+  StepContainer,
+  StepWrapper,
+  SubmitButton,
+} from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
 
 type FormState = {
-  name: string;
-  imageUrl: string;
-  category: string;
-  platform: string;
-  purpose: string;
-  github: string;
-  endpoint: string;
-  parentEntityId: string;
-  parentName: string;
-  description: string;
-  twitterHandle: string;
-  tokenAddress: string;
-  telegramHandle: string;
-};
+  name: string
+  avatar: string
+  category: string
+  platform: string
+  purpose: string
+  github: string
+  endpoint: string
+  parentEntityId: string
+  parentName: string
+  description: string
+  twitterHandle: string
+  tokenAddress: string
+  telegramHandle: string
+}
 
 interface StepProps {
-  isVisible: boolean;
-  formState: FormState;
-  handleFieldChange: (field: keyof FormState) => (value: string) => void;
+  isVisible: boolean
+  formState: FormState
+  handleFieldChange: (field: keyof FormState) => (value: string) => void
 }
 
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
@@ -68,8 +77,8 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
 
       <FormInput
         label="Image URL"
-        value={formState.imageUrl}
-        onChange={handleFieldChange('imageUrl')}
+        value={formState.avatar}
+        onChange={handleFieldChange('avatar')}
         placeholder="Enter image URL"
         required
       />
@@ -172,18 +181,17 @@ const tld = 'entity.id'
 const contractAddresses = contractAddressesObj as Record<string, Address>
 const actions = ['Register Agent', 'Add Agent Information', 'Deploy Agent Contract']
 
-const AgentModal = ({ isOpen, onClose }: any) => {
+const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepopulate }: any) => {
   const { address } = useAccount()
   const router = useRouterWithHistory()
   const { openConnectModal } = useConnectModal()
   const modalRef = useRef(null)
-  const [isExpanded, setIsExpanded] = useState(false)
   const [actionStep, setActionStep] = useState(0)
 
   // Complete form state
   const originalForm: FormState = {
     name: '',
-    imageUrl: '',
+    avatar: '',
     category: '',
     platform: '',
     purpose: '',
@@ -196,10 +204,41 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     tokenAddress: '',
     telegramHandle: '',
   }
-  const [formState, setFormState] = useState(originalForm)
+  // Text record key mapping
+  const mapKeyToRecord = (formKey: string) => {
+    const mapping: Record<string, string> = {
+      platform: 'location',
+      description: 'description',
+      twitterHandle: 'entity__twitter',
+      tokenAddress: 'entity__token__address',
+      telegramHandle: 'entity__telegram',
+      purpose: 'entity__purpose',
+      github: 'entity__github',
+      endpoint: 'entity__endpoint',
+      parentEntityId: 'partner__[0]__domain',
+      parentName: 'partner__[0]__name',
+      category: 'entity__type',
+    }
+    return mapping[formKey] || formKey
+  }
+
+  const originalFormToSet: any = originalForm
+  useMemo(() => {
+    if (agentModalPrepopulate) {
+      if (Object.keys(agentModalPrepopulate)?.length > 0) {
+        Object.keys(originalForm).forEach((field: any) => {
+          const prepopField = mapKeyToRecord(field)
+          originalFormToSet[field] = agentModalPrepopulate[prepopField]
+        })
+      }
+    }
+  }, [agentModalPrepopulate])
+
+  const [formState, setFormState] = useState(originalFormToSet)
   const publicClient = useMemo(getPublicClient, [])
 
   const registerEntity = async (entityDomain: string) => {
+    // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
     const registrarContract: any = getContractInstance(
       getWalletClient(address as Address),
       `ai.${tld}`,
@@ -240,8 +279,14 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const handleClickOutside = (event: any) => {
     const cur: any = modalRef.current
     // Select elements are part of the select dropdown and should not close the modal
-    const selectElements = document.querySelectorAll('.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *');
-    if (modalRef.current && !cur.contains(event.target) && !Array.from(selectElements).some((el) => el.contains(event.target))) {
+    const selectElements = document.querySelectorAll(
+      '.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *',
+    )
+    if (
+      modalRef.current &&
+      !cur.contains(event.target) &&
+      !Array.from(selectElements).some((el) => el.contains(event.target))
+    ) {
       onClose()
     }
   }
@@ -249,8 +294,6 @@ const AgentModal = ({ isOpen, onClose }: any) => {
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'entity__name', value: formState.name },
-      { key: 'avatar', value: formState.imageUrl },
-      { key: 'entity__type', value: formState.category },
       { key: 'entity__registrar', value: 'AI' },
       { key: 'entity__code', value: '0002' },
     ]
@@ -262,14 +305,12 @@ const AgentModal = ({ isOpen, onClose }: any) => {
         label + '.' + stateCopy.parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
     }
 
-    return isExpanded
-      ? [
-        ...baseRecords,
-        ...Object.entries(formState)
-          .filter(([key]) => !['name', 'imageUrl', 'category'].includes(key))
-          .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
-      ]
-      : baseRecords
+    return [
+      ...baseRecords,
+      ...Object.entries(formState)
+        .filter(([key, value]) => value)
+        .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
+    ]
   }
 
   const submitEntityData = async (entityDomain: string, currentEntityOwner: Address) => {
@@ -285,11 +326,13 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
     const formationPrep = createFormationPrep(texts)
 
+    // Pass in amendment formationPrep as multicall(setText())
+
     await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
   }
 
   const handleFieldChange = (field: keyof typeof formState) => (value: string) =>
-    setFormState((prev) => ({ ...prev, [field]: value }))
+    setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
@@ -318,41 +361,50 @@ const AgentModal = ({ isOpen, onClose }: any) => {
     onClose()
   }
 
-  // Text record key mapping
-  const mapKeyToRecord = (formKey: string) => {
-    const mapping: Record<string, string> = {
-      platform: 'location',
-      description: 'description',
-      twitterHandle: 'entity__twitter',
-      tokenAddress: 'entity__token__address',
-      telegramHandle: 'entity__telegram',
-      purpose: 'entity__purpose',
-      github: 'entity__github',
-      endpoint: 'entity__endpoint',
-      parentEntityId: 'partner__[0]__domain',
-      parentName: 'partner__[0]__name',
+  const createFormationPrep = (texts: any[]) => {
+    if (agentModalPrepopulate) {
+      if (Object.keys(agentModalPrepopulate)?.length > 0) {
+        const nodeHash = namehash(agentModalPrepopulate.domain)
+        const changedRecords = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord)
+        const multicalls: string[] = []
+        changedRecords.forEach((x: any) => {
+          multicalls.push(
+            encodeFunctionData({
+              abi: l1abi,
+              functionName: 'setText',
+              args: [nodeHash, x.key, x.value],
+            }),
+          )
+        })
+        // Use Resolver multicall(setText[])
+        const formationPrep: any = {
+          functionName: 'multicall',
+          args: [multicalls],
+          abi: l1abi,
+          address: contractAddresses['DatabaseResolver'],
+        }
+        return formationPrep
+      }
     }
-    return mapping[formKey] || formKey
+    return {
+      functionName: 'register',
+      args: [
+        toHex(packetToBytes(formState.name)),
+        address,
+        0,
+        zeroHash,
+        zeroAddress,
+        texts.map((x) =>
+          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+        ),
+        false,
+        0,
+        zeroHash,
+      ],
+      abi: l1abi,
+      address: contractAddresses['DatabaseResolver'],
+    }
   }
-
-  const createFormationPrep = (texts: any[]) => ({
-    functionName: 'register',
-    args: [
-      toHex(packetToBytes(formState.name)),
-      address,
-      0,
-      zeroHash,
-      zeroAddress,
-      texts.map((x) =>
-        encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
-      ),
-      false,
-      0,
-      zeroHash,
-    ],
-    abi: l1abi,
-    address: contractAddresses['DatabaseResolver'],
-  })
 
   // const createFormationCallback = () => ({
   //   functionName: 'deployEntityContracts',
@@ -376,9 +428,16 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
   return (
     <Overlay>
-      <ModalContent ref={modalRef} isExpanded={isExpanded}>
+      <ModalContent ref={modalRef} isExpanded={false}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '24px', fontWeight: 'bold' }}>
+        <h2
+          style={{
+            textAlign: 'center',
+            fontSize: '24px',
+            marginBottom: '24px',
+            fontWeight: 'bold',
+          }}
+        >
           Add Agent{formState.name ? ': ' : ''}
           <span style={{ fontWeight: '900', color: 'var(--color-accent)' }}>
             {formState.name ? `${formState.name.toLowerCase()}.ai.entity.id` : ''}
@@ -389,16 +448,33 @@ const AgentModal = ({ isOpen, onClose }: any) => {
 
         <StepContainer>
           <>
-            {actionStep === 0 && <Step1 isVisible={actionStep === 0} formState={formState} handleFieldChange={handleFieldChange} />}
-            {actionStep === 1 && <Step2 isVisible={actionStep === 1} formState={formState} handleFieldChange={handleFieldChange} />}
-            {actionStep === 2 && <Step3 isVisible={actionStep === 2} formState={formState} handleFieldChange={handleFieldChange} />}
+            {actionStep === 0 && (
+              <Step1
+                isVisible={actionStep === 0}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
+            {actionStep === 1 && (
+              <Step2
+                isVisible={actionStep === 1}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
+            {actionStep === 2 && (
+              <Step3
+                isVisible={actionStep === 2}
+                formState={formState}
+                handleFieldChange={handleFieldChange}
+              />
+            )}
           </>
         </StepContainer>
 
-
         <div style={{ width: '100%' }}>
           <SubmitButton
-            disabled={!formState.name || !formState.imageUrl || !formState.category}
+            disabled={!formState.name || !formState.avatar || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}

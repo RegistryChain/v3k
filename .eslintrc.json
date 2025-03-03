@@ -34,6 +34,7 @@
     "playwright/**/*.ts"
   ],
   "rules": {
+    "prefer-destructuring": "off",
     "no-empty": "off",
     "import/no-cycle": "off",
     "react/react-in-jsx-scope": "off",
