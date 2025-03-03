@@ -115,8 +115,8 @@ const AppComponent = ({ appData, category, breakpoints }: any) => {
               onChange={async (x) => {
                 if (x.target.value.includes('.entity.id')) {
                   const counterParty = await getRecordData({ domain: x.target.value })
-                  if (counterParty?.avatar?.setValue) {
-                    setCounterPartyAvatar(counterParty.avatar.setValue)
+                  if (counterParty?.avatar) {
+                    setCounterPartyAvatar(counterParty.avatar)
                   }
                 } else {
                   setCounterPartyAvatar('')

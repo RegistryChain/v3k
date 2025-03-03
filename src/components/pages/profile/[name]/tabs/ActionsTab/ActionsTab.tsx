@@ -393,7 +393,7 @@ const ActionsTab = ({
   // if on chain owner is zeroAddress but record.owner || partner.walletAddress is equal to account
   const hasOwnerOnchain = isAddress(onChainOwner) && onChainOwner !== zeroAddress
   const isOwnerOperatorOffchain =
-    owner === address || partners?.map((x: any) => x?.wallet__address?.setValue)?.includes(address)
+    owner === address || partners?.map((x: any) => x?.wallet__address)?.includes(address)
   if (!hasOwnerOnchain && isOwnerOperatorOffchain) {
     claimOnChainElement = (
       <div style={{ width: '50%', margin: '16px 0' }}>

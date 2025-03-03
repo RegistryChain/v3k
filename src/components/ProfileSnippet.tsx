@@ -214,7 +214,7 @@ export const ProfileSnippet = ({
   }, [address])
 
   const getRating = async () => {
-    const rate = await repTokenBalance(records.address.setValue)
+    const rate = await repTokenBalance(records.address)
     setRating(rate)
   }
 
@@ -279,8 +279,7 @@ export const ProfileSnippet = ({
   }
 
   useEffect(() => {
-    if (records?.address?.setValue) {
-      console.log(records)
+    if (records?.address) {
       getRating()
     }
   }, [records])
@@ -312,7 +311,7 @@ export const ProfileSnippet = ({
         </SectionTitle>
         {records.entity__registrar?.oldValue !== 'public' &&
         records.sourceActive &&
-        records.sourceActive?.setValue === false ? (
+        records.sourceActive === false ? (
           <ExclamationSymbol
             tooltipText={
               'This entity is not active according to the jurisdictional registrar source.'
@@ -329,7 +328,7 @@ export const ProfileSnippet = ({
       ) : (
         <>
           <div style={{ display: 'flex' }}>
-            <Image src={records.avatar.setValue} alt="e" height={88} />
+            <Image src={records.avatar} alt="e" height={88} />
             <div>
               <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
                 {name}
@@ -344,7 +343,7 @@ export const ProfileSnippet = ({
               {/* {statusSection} */}
               <StarRating
                 rating={rating}
-                onRate={(val: any) => sendStars(records?.address?.setValue || zeroAddress, val + 1)}
+                onRate={(val: any) => sendStars(records?.address || zeroAddress, val + 1)}
               />
             </div>
           </div>

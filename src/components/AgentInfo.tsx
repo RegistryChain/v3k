@@ -44,23 +44,27 @@ const StatusIndicator = styled.span`
   }
 `
 
-const CompanyInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
+const AgentInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
   return (
     <CompanyContainer>
       <StyledTable>
         {filteredCompanyData?.map((field: string, idx: Key | null | undefined) => {
-          let key = fields[field].label || field
+          let label = field
+            .split('__')
+            .map((x) => x[0]?.toUpperCase() + x?.slice(1))
+            .join(' ')
+          if (field === 'domain') {
+            label = 'Entity.ID'
+          }
+          let key = label || field
           key = key.split('Entity ').join('Agent ')
 
           const differenceCondition =
-            fields.jurisdictionalSource?.setValue?.[field]?.toUpperCase() !==
-              fields[field]?.setValue?.toUpperCase() &&
-            fields.jurisdictionalSource?.setValue?.[field]
+            fields.jurisdictionalSource?.[field]?.toUpperCase() !== fields[field]?.toUpperCase() &&
+            fields.jurisdictionalSource?.[field]
 
           const sameCondition =
-            fields.jurisdictionalSource?.setValue?.[field]?.toUpperCase() ===
-            fields[field]?.setValue?.toUpperCase()
-
+            fields.jurisdictionalSource?.[field]?.toUpperCase() === fields[field]?.toUpperCase()
           return (
             <Row key={idx}>
               <Cell isHeader>
@@ -69,27 +73,22 @@ const CompanyInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
                   {differenceCondition ? (
                     <div style={{ marginLeft: '4px', alignItems: 'center' }}>
                       <ExclamationSymbol
-                        tooltipText={
-                          fields[field].label +
-                          ' is not matching on jurisdictional registrar source'
-                        }
+                        tooltipText={label + ' is not matching on jurisdictional registrar source'}
                       />
                     </div>
                   ) : (
                     ''
                   )}
                   {sameCondition ? (
-                    <CheckmarkSymbol
-                      tooltipText={fields[field].label + ' is matches on  registrar source'}
-                    />
+                    <CheckmarkSymbol tooltipText={label + ' is matches on  registrar source'} />
                   ) : null}
                 </div>
               </Cell>
               <Cell>
                 {field === 'status' ? (
-                  <StatusIndicator>{fields[field].setValue}</StatusIndicator>
+                  <StatusIndicator>{fields[field]}</StatusIndicator>
                 ) : (
-                  fields[field].setValue
+                  fields[field]
                 )}
               </Cell>
             </Row>
@@ -100,4 +99,4 @@ const CompanyInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
   )
 }
 
-export default CompanyInfo
+export default AgentInfo

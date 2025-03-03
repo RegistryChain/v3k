@@ -163,7 +163,7 @@ const ProfileContent = ({
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
-      recordsToPopulate[field] = records[field]?.oldValue
+      recordsToPopulate[field] = records[field]
     })
     setAgentModalPrepopulate(recordsToPopulate)
     setIsModalOpen(true)
@@ -219,7 +219,7 @@ const ProfileContent = ({
       setStatus(status)
       setRecords((prev: { [x: string]: any }) => ({
         ...prev,
-        status: { ...prev.status, setValue: status },
+        status,
       }))
     } catch (e) {}
   }
@@ -232,17 +232,17 @@ const ProfileContent = ({
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
       if (
-        isAddress(records?.owner?.setValue) &&
-        records?.owner?.setValue !== zeroAddress &&
+        isAddress(records?.owner) &&
+        records?.owner !== zeroAddress &&
         (!owner || owner === zeroAddress)
       ) {
-        setOwner(records.owner?.setValue)
+        setOwner(records.owner)
       }
 
       if (Object.keys(records)?.length > 0) {
         setRecordsRequestPending(false)
         if (!status) {
-          if (records.sourceActive?.setValue === true) {
+          if (records.sourceActive === true) {
             setStatus('ACTIVE')
           } else {
             setStatus('INACTIVE')
@@ -318,7 +318,7 @@ const ProfileContent = ({
     return (
       <>
         <Head>
-          <title>{records?.entity__name?.setValue}</title>
+          <title>{records?.entity__name}</title>
           <meta name="description" content={domain + ' RegistryChain'} />
           <meta property="og:title" content={domain} />
           <meta property="og:description" content={domain + ' RegistryChain'} />
@@ -339,7 +339,7 @@ const ProfileContent = ({
 
   let nameRecord = title
   if (Object.keys(records)?.length > 0) {
-    nameRecord = records?.entity__name?.setValue
+    nameRecord = records?.entity__name
     if (nameRecord) {
       title = nameRecord + ' on V3K'
     }
@@ -419,12 +419,12 @@ const ProfileContent = ({
                       addressesObj={[
                         {
                           key: 'Agent Treasury',
-                          value: records?.address?.setValue || zeroAddress,
+                          value: records?.address || zeroAddress,
                         },
                         { key: 'Owner Address', value: owner }, // TODO: change placeholder address
                         {
                           key: 'Token Address',
-                          value: records?.entity__token__address?.setValue || zeroAddress,
+                          value: records?.entity__token__address || zeroAddress,
                         },
                       ]}
                     />
@@ -436,7 +436,7 @@ const ProfileContent = ({
                   return (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
-                      registrar={records?.entity__registrar?.setValue || 'public'}
+                      registrar={records?.entity__registrar || 'public'}
                       claimEntity={claimEntity}
                       partners={records.partners}
                       onChainOwner={onChainOwner}
