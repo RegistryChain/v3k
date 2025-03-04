@@ -100,10 +100,10 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
       },
     )
     const existingRecord = await res.json()
-    if (!existingRecord || (JSON.stringify(existingRecord) === '{}' && needsSchema)) {
+    if (!existingRecord.data || (JSON.stringify(existingRecord.data) === '{}' && needsSchema)) {
       return await importEntity({ filingID: '', name, registrar })
     }
-    return existingRecord
+    return existingRecord.data
   } catch (err) {
     console.log('getRecordData err', err)
     return Promise.resolve(new Response(null, { status: 204 }))
@@ -125,7 +125,7 @@ export async function importEntity({ filingID, name, registrar }: any) {
       },
     )
     const importedRecord = await res.json()
-    return importedRecord
+    return importedRecord.data
   } catch (err) {
     console.log('importEntity err', err)
     return Promise.resolve(new Response(null, { status: 204 }))
@@ -159,7 +159,8 @@ export async function getEntitiesList({
         },
       },
     )
-    return await res.json()
+    const entitiesList = await res.json()
+    return entitiesList.data
   } catch (err) {
     throw new Error('Failed to fetch entities list')
   }
@@ -263,7 +264,7 @@ export function useRecordData({ domain = '' }) {
 
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
 
-      const existingRecord = await res.json()
+      const existingRecord = (await res.json()).data
 
       if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
         const newRecord = await importEntity({ filingID: '', name, registrar })
