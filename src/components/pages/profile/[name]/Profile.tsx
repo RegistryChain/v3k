@@ -14,7 +14,7 @@ import {
   parseAbi,
   zeroAddress,
 } from 'viem'
-import { sepolia, baseSepolia } from 'viem/chains'
+import { sepolia, baseSepolia, bsc } from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
@@ -135,7 +135,6 @@ const ProfileContent = ({
   wallet,
   setWallet,
   setErrorMessage,
-  verificationStatus,
 }: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
@@ -169,6 +168,14 @@ const ProfileContent = ({
       }),
     [],
   )
+  const binancePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: bsc,
+        transport: http(),
+      }),
+    [],
+  )
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
@@ -178,13 +185,20 @@ const ProfileContent = ({
     setIsModalOpen(true)
   }
   const checkAddressVerification = async (_ownerAddress: string) => {
-    // Check Coinbase
+
     const coinbaseContract = getContract({
       address: contractAddresses.BaseSepoliaCoinbaseIndexer as Address,
       abi: parseAbi(['function getAttestationUid(address,bytes32) view returns (bytes32)']),
       client: basePublicClient,
     })
-    const verification = await getVerificationStatus(coinbaseContract, _ownerAddress)
+
+    const binanceContract = getContract({
+      address: contractAddresses.BinanceMainnetContract as Address,
+      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
+      client: binancePublicClient,
+    })
+    const verification = await getVerificationStatus(coinbaseContract, binanceContract, _ownerAddress)
+
     setVerification(verification)
     console.log("verification " + verification)
   }
@@ -250,6 +264,7 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
+      checkAddressVerification(records.owner)
       if (
         isAddress(records?.owner) &&
         records?.owner !== zeroAddress &&
@@ -308,14 +323,15 @@ const ProfileContent = ({
     }
   }
 
-  const passportApiKey = '5pj9ZGxE.mtiUDEnwYkvTpExwwYvaaF5of3qQ2OFD'
-  const scorerId = '11196'
 
 
 
-  const getVerificationStatus = async (coinbaseIndexerContract: any, _ownerAddress: string): Promise<string> => {
-    // let _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
-    // console.log("ownerAddress" + _ownerAddress)
+
+  const getVerificationStatus = async (coinbaseIndexerContract: any, binanceContract: any, _ownerAddress: string): Promise<string> => {
+    const passportApiKey = '5pj9ZGxE.mtiUDEnwYkvTpExwwYvaaF5of3qQ2OFD'
+    const scorerId = '11196'
+    //  _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
+    console.log("ownerAddress" + _ownerAddress)
     // Check GitCoin Passport
 
     // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${scorerId}/score/${_ownerAddress}`, {
@@ -336,16 +352,32 @@ const ProfileContent = ({
     }
     const isCoinbaseVerified = BigInt(attestationUid) !== 0n
 
+    let balance = 0
+    try {
+      balance = await binanceContract.read.balanceOf([_ownerAddress as Address])
+    } catch (e) {
+      console.log(e)
+    }
+    const isBinanceVerified = balance !== 0
+
     // Construct verification status
-    if (isGitcoinVerified && isCoinbaseVerified) {
-      return 'verified on GitCoin Passport and Coinbase'
-    } else if (isGitcoinVerified) {
-      return 'verified on GitCoin Passport'
-    } else if (isCoinbaseVerified) {
-      return 'verified on Coinbase'
-    } else {
+    const statuses: string[] = []
+
+    if (isGitcoinVerified) {
+      statuses.push('GitCoin Passport')
+    }
+    if (isCoinbaseVerified) {
+      statuses.push('Coinbase')
+    }
+    if (isBinanceVerified) {
+      statuses.push('Binance')
+    }
+
+    if (statuses.length === 0) {
       return 'not verified'
     }
+
+    return `verified on ${statuses.join(', ')}`
   }
 
   useProtectedRoute(
