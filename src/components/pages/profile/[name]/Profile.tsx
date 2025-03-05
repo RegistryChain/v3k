@@ -14,7 +14,7 @@ import {
   parseAbi,
   zeroAddress,
 } from 'viem'
-import { sepolia } from 'viem/chains'
+import { sepolia, baseSepolia } from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
@@ -135,6 +135,7 @@ const ProfileContent = ({
   wallet,
   setWallet,
   setErrorMessage,
+  verificationStatus,
 }: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
@@ -145,6 +146,7 @@ const ProfileContent = ({
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
+  const [verification, setVerification] = useState<string | undefined>()
 
   const registrars: any = registrarsObj
 
@@ -159,7 +161,14 @@ const ProfileContent = ({
       }),
     [],
   )
-
+  const basePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: baseSepolia,
+        transport: http(),
+      }),
+    [],
+  )
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
@@ -168,7 +177,17 @@ const ProfileContent = ({
     setAgentModalPrepopulate(recordsToPopulate)
     setIsModalOpen(true)
   }
-
+  const checkAddressVerification = async (_ownerAddress: string) => {
+    // Check Coinbase
+    const coinbaseContract = getContract({
+      address: contractAddresses.BaseSepoliaCoinbaseIndexer as Address,
+      abi: parseAbi(['function getAttestationUid(address,bytes32) view returns (bytes32)']),
+      client: basePublicClient,
+    })
+    const verification = await getVerificationStatus(coinbaseContract, _ownerAddress)
+    setVerification(verification)
+    console.log("verification " + verification)
+  }
   useEffect(() => {
     if (isSelf && domain) {
       router.replace(`/profile/${domain}`)
@@ -221,7 +240,7 @@ const ProfileContent = ({
         ...prev,
         status,
       }))
-    } catch (e) {}
+    } catch (e) { }
   }
 
   useEffect(() => {
@@ -236,6 +255,7 @@ const ProfileContent = ({
         records?.owner !== zeroAddress &&
         (!owner || owner === zeroAddress)
       ) {
+        checkAddressVerification(records.owner)
         setOwner(records.owner)
       }
 
@@ -288,13 +308,53 @@ const ProfileContent = ({
     }
   }
 
+  const passportApiKey = '5pj9ZGxE.mtiUDEnwYkvTpExwwYvaaF5of3qQ2OFD'
+  const scorerId = '11196'
+
+
+
+  const getVerificationStatus = async (coinbaseIndexerContract: any, _ownerAddress: string): Promise<string> => {
+    // let _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
+    // console.log("ownerAddress" + _ownerAddress)
+    // Check GitCoin Passport
+
+    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${scorerId}/score/${_ownerAddress}`, {
+    //   method: 'GET',
+    //   headers: {
+    //     'X-API-KEY': passportApiKey,
+    //   },
+    // })
+
+    // const passportData = await passportResponse.json()
+    const isGitcoinVerified = '0.00000' !== '0.00000'
+
+    let attestationUid = zeroAddress
+    try {
+      attestationUid = await coinbaseIndexerContract.read.getAttestationUid([_ownerAddress as Address, contractAddresses.BaseSepoliaCoinbaseAccountVerifiedSchema])
+    } catch (e) {
+      console.log(e)
+    }
+    const isCoinbaseVerified = BigInt(attestationUid) !== 0n
+
+    // Construct verification status
+    if (isGitcoinVerified && isCoinbaseVerified) {
+      return 'verified on GitCoin Passport and Coinbase'
+    } else if (isGitcoinVerified) {
+      return 'verified on GitCoin Passport'
+    } else if (isCoinbaseVerified) {
+      return 'verified on Coinbase'
+    } else {
+      return 'not verified'
+    }
+  }
+
   useProtectedRoute(
     '/',
     // When anything is loading, return true
     parentIsLoading
       ? true
       : // if is self, user must be connected
-        (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
+      (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
   )
 
   const suffixIndex = domain?.split('.')?.length - 1
@@ -421,7 +481,7 @@ const ProfileContent = ({
                           key: 'Agent Treasury',
                           value: records?.address || zeroAddress,
                         },
-                        { key: 'Owner Address', value: owner }, // TODO: change placeholder address
+                        { key: `Owner Address ( ${verification} )`, value: owner }, // TODO: change placeholder address
                         {
                           key: 'Token Address',
                           value: records?.entity__token__address || zeroAddress,
