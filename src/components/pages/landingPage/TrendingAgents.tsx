@@ -20,7 +20,7 @@ const GradientTitle = styled.h1(
     text-align: center;
     font-weight: 800;
     margin: 0;
-     color: ${theme.colors.accent};
+    color: ${theme.colors.accent};
 
     ${mq.sm.min(css`
       font-size: ${theme.fontSizes.headingOne};
@@ -113,7 +113,7 @@ const TrendingAgents = () => {
     try {
       // We only want agents with an imageURL, a name, a twitter
       const entities = await getEntitiesList({
-        registrar: 'AI',
+        registrar: 'ai',
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',

@@ -113,7 +113,7 @@ const FeaturedAgents = () => {
     try {
       // We only want agents with an imageURL, a name, a twitter
       const entities = await getEntitiesList({
-        registrar: 'AI',
+        registrar: 'ai',
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',

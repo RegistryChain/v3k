@@ -294,7 +294,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'entity__name', value: formState.name },
-      { key: 'entity__registrar', value: 'AI' },
+      { key: 'entity__registrar', value: 'ai' },
       { key: 'entity__code', value: '0002' },
     ]
     let stateCopy = { ...formState }
