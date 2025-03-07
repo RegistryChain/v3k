@@ -7,16 +7,21 @@ import {
   encodeAbiParameters,
   getContract,
   Hex,
+  isAddress,
   namehash,
+  parseAbi,
   PrivateKeyAccount,
   RawContractError,
   WalletClient,
+  zeroAddress,
   zeroHash,
 } from 'viem'
 import { simulateContract } from 'viem/actions'
 import * as chains from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
+
+import contractAddresses from '../constants/contractAddresses.json'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
   // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
@@ -237,11 +242,85 @@ export async function handleDBStorage({
   return requestResponse
 }
 
-export function useRecordData({ domain = '' }) {
+export async function readResolverData(client: any, nodeHash: any) {
+  let results = []
+  try {
+    results = await client.multicall({
+      contracts: displayKeys.map((x) => ({
+        address: contractAddresses.PublicResolver,
+        abi: [
+          ...parseAbi([
+            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
+            'function text(bytes32,string memory) view returns (string memory)',
+          ]),
+        ],
+        functionName: 'text',
+        args: [nodeHash, x],
+      })) as any[],
+    })
+    results.domain = results.name + '.' + results?.entity__registrar + '.entity.id'
+  } catch (err: any) {
+    console.log('Error reading on chain resolver data ', err.message)
+  }
+
+  let resultsObj: any = {}
+  if (results) {
+    results.map((x: any) => {
+      return x?.result || ''
+    })
+  } else {
+    displayKeys.map((x: any, idx: any) => {
+      resultsObj[displayKeys[idx]] = x?.result || ''
+    })
+  }
+
+  return resultsObj
+}
+
+export const getResolverAddress = async (client: any, nodeHash: any) => {
+  let resolverAddr = zeroAddress
+  // Check resolver type
+  try {
+    const registry: any = await getContract({
+      client,
+      abi: [...parseAbi(['function resolver(bytes32) view returns (address)'])],
+      address: contractAddresses.ENSRegistry as Address,
+    })
+
+    resolverAddr = await registry.read.resolver([nodeHash])
+  } catch (err) {}
+  return resolverAddr
+  // if (resolverAddr === contractAddresses.DatabaseResolver) {
+  //   return await getRecordData({ domain })
+  // }
+}
+
+export function useRecordData({
+  domain = '',
+  wallet = null,
+  publicClient = null,
+  needsSchema = true,
+}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [resolverAddress, setResolverAddress] = useState('')
   const nodeHash = namehash(normalise(domain))
+
+  const getRes = async () => {
+    if (wallet) {
+      const res = await getResolverAddress(wallet, nodeHash)
+      if (isAddress(res)) {
+        setResolverAddress(res)
+      }
+    }
+  }
+  useEffect(() => {
+    if (wallet && domain) {
+      getRes()
+    }
+  }, [wallet, domain])
+
   const fetchRecordData = useCallback(async () => {
     if (!domain) return
 
@@ -252,25 +331,33 @@ export function useRecordData({ domain = '' }) {
     const name = domain.split('.')[0]
 
     try {
-      const res = await fetch(
-        process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
+      if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
+        const returnObj = await readResolverData(publicClient, nodeHash)
 
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-
-      const existingRecord = (await res.json()).data
-
-      if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
-        const newRecord = await importEntity({ filingID: '', name, registrar })
-        setData(newRecord)
+        setData(returnObj)
       } else {
-        setData(existingRecord)
+        const res = await fetch(
+          process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        )
+
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
+
+        const existingRecord = await res.json()
+        if (existingRecord?.data) {
+          const formatted = existingRecord?.data
+          setData(formatted)
+        } else if (!existingRecord?.data || JSON.stringify(existingRecord?.data) === '{}') {
+          const newRecord = await importEntity({ filingID: '', name, registrar })
+          setData(newRecord)
+        } else {
+          setData(null)
+        }
       }
     } catch (err: any) {
       console.error('getRecordData error:', err)
@@ -278,13 +365,13 @@ export function useRecordData({ domain = '' }) {
     } finally {
       setLoading(false)
     }
-  }, [domain])
+  }, [domain, resolverAddress])
 
   useEffect(() => {
-    if (domain) {
+    if (domain && wallet && resolverAddress) {
       fetchRecordData()
     }
-  }, [domain])
+  }, [domain, wallet, resolverAddress])
 
   return { data, loading, error, refetch: fetchRecordData }
 }
@@ -320,3 +407,80 @@ export function extractParentFromName(name: string): string {
   const [, parent] = /\w*\.(.*)$/.exec(name) || []
   return parent
 }
+
+export const displayKeys = [
+  'LEI',
+  'name',
+  'address',
+  'description',
+  'url',
+  'location',
+  'avatar',
+  'entity__name',
+  'entity__address',
+  'entity__registrar',
+  'entity__type',
+  'entity__description',
+  'entity__purpose',
+  'entity__formation__date',
+  'entity__lockup__days',
+  'entity__additional__terms',
+  'entity__selected__model',
+  'entity__lookup__number',
+  'entity__code',
+  'entity__arbitrator',
+  'partner__[0]__name',
+  'partner__[0]__type',
+  'partner__[0]__wallet__address',
+  'partner__[0]__physical__address',
+  'partner__[0]__DOB',
+  'partner__[0]__is__manager',
+  'partner__[0]__is__signer',
+  'partner__[0]__lockup',
+  'partner__[0]__shares',
+  'partner__[1]__name',
+  'partner__[1]__type',
+  'partner__[1]__wallet__address',
+  'partner__[1]__physical__address',
+  'partner__[1]__DOB',
+  'partner__[1]__is__manager',
+  'partner__[1]__is__signer',
+  'partner__[1]__lockup',
+  'partner__[1]__shares',
+  'partner__[2]__name',
+  'partner__[2]__type',
+  'partner__[2]__wallet__address',
+  'partner__[2]__physical__address',
+  'partner__[2]__DOB',
+  'partner__[2]__is__manager',
+  'partner__[2]__is__signer',
+  'partner__[2]__lockup',
+  'partner__[2]__shares',
+  'partner__[3]__name',
+  'partner__[3]__type',
+  'partner__[3]__wallet__address',
+  'partner__[3]__physical__address',
+  'partner__[3]__DOB',
+  'partner__[3]__is__manager',
+  'partner__[3]__is__signer',
+  'partner__[3]__lockup',
+  'partner__[3]__shares',
+  'partner__[4]__name',
+  'partner__[4]__type',
+  'partner__[4]__wallet__address',
+  'partner__[4]__physical__address',
+  'partner__[4]__DOB',
+  'partner__[4]__is__manager',
+  'partner__[4]__is__signer',
+  'partner__[4]__lockup',
+  'partner__[4]__shares',
+  'partner__[5]__name',
+  'partner__[5]__type',
+  'partner__[5]__wallet__address',
+  'partner__[5]__physical__address',
+  'partner__[5]__DOB',
+  'partner__[5]__is__manager',
+  'partner__[5]__is__signer',
+  'partner__[5]__lockup',
+  'partner__[5]__shares',
+]
