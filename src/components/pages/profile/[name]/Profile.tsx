@@ -279,8 +279,6 @@ const ProfileContent = ({
       }
       try {
         const multisig = await getMultisig(ownerAddress)
-        const memberManagerAddress = await multisig.read.entityMemberManager()
-        setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(ownerAddress)
       } catch (err) {
         console.log(err)
