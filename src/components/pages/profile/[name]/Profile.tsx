@@ -36,6 +36,7 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import PluginsTab from './tabs/PluginsTab'
 import RegulatoryTab from './tabs/Regulatory'
+import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -328,21 +329,20 @@ const ProfileContent = ({
 
 
   const getVerificationStatus = async (coinbaseIndexerContract: any, binanceContract: any, _ownerAddress: string): Promise<string> => {
-    const passportApiKey = '5pj9ZGxE.mtiUDEnwYkvTpExwwYvaaF5of3qQ2OFD'
-    const scorerId = '11196'
-    //  _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
+    // _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
     console.log("ownerAddress" + _ownerAddress)
     // Check GitCoin Passport
 
-    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${scorerId}/score/${_ownerAddress}`, {
+    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${process.env.NEXT_PUBLIC_SCORE_ID_API_KEY}/score/${_ownerAddress}`, {
     //   method: 'GET',
     //   headers: {
-    //     'X-API-KEY': passportApiKey,
+    //     'X-API-KEY': process.env.NEXT_PUBLIC_PASSPORT_API_KEY,
     //   },
     // })
 
     // const passportData = await passportResponse.json()
-    const isGitcoinVerified = '0.00000' !== '0.00000'
+    const isGitcoinVerified = false
+    //'0.00000' !== '0.00000'
 
     let attestationUid = zeroAddress
     try {
@@ -513,7 +513,10 @@ const ProfileContent = ({
                           key: 'Agent Treasury',
                           value: records?.address || zeroAddress,
                         },
-                        { key: `Owner Address ( ${verification} )`, value: owner }, // TODO: change placeholder address
+                        {
+                          key: ['Owner Address', verification !== 'not verified' ? <CheckmarkSymbol tooltipText={verification} /> : null]
+                          , value: owner
+                        }, // TODO: change placeholder address
                         {
                           key: 'Token Address',
                           value: records?.entity__token__address || zeroAddress,
