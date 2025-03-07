@@ -36,6 +36,7 @@ import {
   StepContainer,
   StepWrapper,
   SubmitButton,
+  ButtonWrapper,
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
@@ -472,14 +473,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           </>
         </StepContainer>
 
-        <div style={{ width: '100%' }}>
+        <ButtonWrapper>
           <SubmitButton
             disabled={!formState.name || !formState.avatar || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}
           </SubmitButton>
-        </div>
+        </ButtonWrapper>
       </ModalContent>
     </Overlay>
   )
