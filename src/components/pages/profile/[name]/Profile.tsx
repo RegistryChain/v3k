@@ -21,6 +21,7 @@ import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
+import { useSubgraphRecords } from '@app/hooks/ensjs/subgraph/useSubgraphRecords'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { ModalContext } from '@app/layouts/Basic'
@@ -145,6 +146,15 @@ const ProfileContent = ({
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
+  // const {
+  //   data: subgraphRecords,
+  //   isFetching: isSubgraphRecordsFetching,
+  //   refetchIfEnabled: refetchSubgraphRecords,
+  // } = useSubgraphRecords({ name: 'hello101.ai.entity.id' })
+
+  // useEffect(() => {
+  //   console.log(subgraphRecords)
+  // }, [subgraphRecords])
 
   const registrars: any = registrarsObj
 

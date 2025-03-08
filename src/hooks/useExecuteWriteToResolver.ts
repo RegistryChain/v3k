@@ -13,7 +13,7 @@ import {
   WalletClient,
   zeroHash,
 } from 'viem'
-import { simulateContract } from 'viem/actions'
+import { signTypedData, simulateContract } from 'viem/actions'
 import * as chains from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
@@ -213,8 +213,8 @@ export async function handleDBStorage({
   message: any
   wallet: WalletClient
 }) {
-  const signature = await wallet.signTypedData({
-    account: wallet.account?.address as any,
+  let signature = null
+  let sigObj: any = {
     domain,
     message,
     types: {
@@ -225,7 +225,12 @@ export async function handleDBStorage({
       ],
     },
     primaryType: 'Message',
-  })
+  }
+  try {
+    signature = await signTypedData(wallet, sigObj)
+  } catch (err) {
+    console.log('THROWN ERROR ON SIGNATURE', err)
+  }
   const requestResponse = await ccipRequest({
     body: {
       data: message.callData,
