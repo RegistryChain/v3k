@@ -19,7 +19,6 @@ import { packetToBytes } from 'viem/ens'
 import { useAccount, useConnect } from 'wagmi'
 
 import { namehash, normalise } from '@ensdomains/ensjs/utils'
-import { Button } from '@ensdomains/thorin'
 
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { ErrorModal } from '@app/components/ErrorModal'
@@ -35,6 +34,18 @@ import ActionsConfirmation from './ActionsConfirmation'
 import ActionsExecuted from './ActionsExecuted'
 import ActionsExecution from './ActionsExecution'
 import ActionsProposal from './ActionsProposal'
+
+import { Button as MuiButton } from '@mui/material'
+import styled from 'styled-components'
+
+const Button = styled(MuiButton)`
+  text-transform: none;
+  border-radius: 24px;
+
+  &:hover {
+    border-color: #6a24d6;
+    color: #6a24d6;
+`;
 
 const methodsNames: any = {
   '0x9254f59a': 'operationSwitch',
@@ -459,7 +470,7 @@ const ActionsTab = ({
       />
       {claimOnChainElement}
       <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
+        <Button variant="outlined" onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
       </div>
       {balances.length > 0 ? (
         <div style={{ width: '50%', margin: '16px 0' }}>
@@ -480,11 +491,11 @@ const ActionsTab = ({
       ) : null}
 
       <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
+        <Button variant="outlined" onClick={() => deployMultisig()}>Deploy Contract Account</Button>
       </div>
       {amendmentElement}
       <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button>KYC verification</Button>
+        <Button variant="outlined">KYC verification</Button>
       </div>
     </div>
   )
