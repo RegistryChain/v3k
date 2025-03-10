@@ -71,6 +71,7 @@ export const SubnameListView = () => {
         page,
         sortDirection,
         sortType,
+        params: searchInput ? {} : { avatar: 'https' },
       })
 
       setSubnameResults((prevResults) => (resetResults ? results : [...prevResults, ...results]))

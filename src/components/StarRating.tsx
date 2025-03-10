@@ -31,7 +31,7 @@ export default function StarRating({ rating, onRate }: any) {
       }}
       onClick={(event) => event.stopPropagation()}
     >
-      {[0, 1, 2, 3, 4].map((index) => {
+      {[1,2, 3, 4, 5].map((index) => {
         return (
           <FaStar
             key={index}
