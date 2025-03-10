@@ -42,13 +42,9 @@ import PluginsTab from './tabs/PluginsTab'
 import RegulatoryTab from './tabs/Regulatory'
 import StarRating from '@app/components/StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
-import { ST } from 'next/dist/shared/lib/utils'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
 import axios from "axios";
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
-import G from 'glob'
-import { useAccount } from 'wagmi'
-import { a } from 'vitest/dist/suite-IbNSsUWN'
 
 
 const VideoContainer = styled.div`
@@ -77,7 +73,7 @@ const VideoEmbed = ({ searchQuery = "" }: {
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [videoId, setVideoId] = useState(null);
-  const API_KEY = "AIzaSyBbOljkviE9BZD9KNSyh4QD2EIvUNem3is";
+  const API_KEY = "AIzaSyCMBV3jBclsfPq7ZDHqOfg59fJFU0cLRd8";
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -125,7 +121,7 @@ const VideoEmbed = ({ searchQuery = "" }: {
 const BgBox = styled(Box)`
   position: relative;
   margin-bottom: 46px;
-  &:after {
+  &::after {
     content: '';
     top: 0;
     left: -50vw;
@@ -135,12 +131,10 @@ const BgBox = styled(Box)`
     background-color: #fafafa;
   }
   `
-
-
 const StyledBox = styled(Box)`
   position: relative;
   margin-bottom: 46px;
-  &:after {
+  &::after {
     content: '';
     top: 0;
     left: -50vw;
@@ -546,7 +540,11 @@ const ProfileContent = ({
           <Spinner color="accent" size="medium" />
         </Grid>
       ) : (
-        records ? (
+        match(records).with(undefined, () => (
+          <MessageContainer>
+            Entity not found. Actions are available for entities with drafted or submitted data.
+          </MessageContainer>
+        )).otherwise(() => (
           <Box>
             <Grid container spacing={8} minHeight={'calc(100vh - 350px)'}>
               {/* Sidebar */}
@@ -645,13 +643,13 @@ const ProfileContent = ({
                       borderBottom: '1px solid #E5E5E5',
                     }}>
                     <Box minWidth={200}>
-                      <Typography weight='bold'>Features</Typography>
+                      <Typography weight='bold'>Capabilities</Typography>
                     </Box>
                     <Box>
                       <ul>
-                        <li>Feature 1</li>
-                        <li>Feature 2</li>
-                        <li>Feature 3</li>
+                        <li>iOS</li>
+                        <li>Android</li>
+                        <li>Desktop</li>
                       </ul>
                     </Box>
                   </Box>
@@ -682,19 +680,6 @@ const ProfileContent = ({
                     <Box>
                       {/* TODO: add real categories */}
                       <Typography>{records.entity__type}, {records.entity__platform}</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Agent token address</Typography>
-                    </Box>
-                    <Box>
-                      {/* TODO: add real categories */}
-                      <Typography>{records.entity__token__address}</Typography>
                     </Box>
                   </Box>
 
@@ -762,27 +747,29 @@ const ProfileContent = ({
                       borderBottom: '1px solid #E5E5E5',
                     }}>
                     <Box minWidth={200}>
-                      <Typography weight='bold'>Agent code</Typography>
-                    </Box>
-                    <Box>
-
-                      <Typography>{records.entity__code}</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
                       <Typography weight='bold'>Registrar</Typography>
                     </Box>
                     <Box>
                       <Typography>{records.entity__registrar}</Typography>
                     </Box>
                   </Box>
+
+                  <Box
+                    display='flex'
+                    gap={2}
+                    py={2} 
+                    style={{
+                      borderBottom: '1px solid #E5E5E5',
+                    }}>
+                    <Box minWidth={200}>
+                      <Typography weight='bold'>Agent token address</Typography>
+                    </Box>
+                    <Box>
+                      {/* TODO: add real categories */}
+                      <Typography>{records.entity__token__address}</Typography>
+                    </Box>
+                  </Box>
+
                   <Box
                     display='flex'
                     gap={2}
@@ -803,7 +790,8 @@ const ProfileContent = ({
               </Grid>
 
               {/*TODO: Possible actions, double check what should be displayed for owner only */}
-              <Grid container spacing={6}>
+              {/* show to agent developer only */}
+              {/* <Grid container spacing={6}>
                 <Grid size={{
                   xs: 12,
                   sm: 4
@@ -836,14 +824,10 @@ const ProfileContent = ({
                     />
                   ) : null}
                 </Grid>
-              </Grid>
+              </Grid> */}
             </Box>
-          </Box >) : (
-          <MessageContainer>
-            Entity not found. Actions are available for entities with drafted or submitted data.
-          </MessageContainer>
-        )
-      )}
+          </Box >)
+        ))}
 
       {/* <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={domain}>
         {{

@@ -45,6 +45,7 @@ const Button = styled(MuiButton)`
   &:hover {
     border-color: #6a24d6;
     color: #6a24d6;
+  }
 `;
 
 const methodsNames: any = {
@@ -417,6 +418,7 @@ const ActionsTab = ({
     amendmentElement = (
       <div style={{ width: '50%', margin: '16px 0' }}>
         <Button
+          variant="outlined"
           onClick={() => {
             makeAmendment()
           }}
