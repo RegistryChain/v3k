@@ -377,14 +377,13 @@ const ActionsTab = ({
       readTransactions()
     }
   }, [address])
-
-  const txsToConfirm = useMemo(() => txs.filter((x: any) => x.sigsMade < x.sigsNeeded), [txs])
+  const txsToConfirm = useMemo(() => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade < x.sigsNeeded) : [], [txs])
   const txsToExecute = useMemo(
-    () => txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed),
+    () => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed) : [],
     [txs],
   )
   const txsExecuted = useMemo(
-    () => txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed),
+    () => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed) : [],
     [txs],
   )
 

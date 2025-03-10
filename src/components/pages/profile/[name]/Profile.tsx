@@ -14,7 +14,9 @@ import {
   parseAbi,
   zeroAddress,
 } from 'viem'
-import { sepolia } from 'viem/chains'
+import { sepolia, baseSepolia, bsc } from 'viem/chains'
+
+import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 import { normalise } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
@@ -45,6 +47,8 @@ import { truncateEthAddress } from '@app/utils/truncateAddress'
 import axios from "axios";
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
 import G from 'glob'
+import { useAccount } from 'wagmi'
+import { a } from 'vitest/dist/suite-IbNSsUWN'
 
 
 const VideoContainer = styled.div`
@@ -68,7 +72,9 @@ const Iframe = styled.iframe`
 // AIzaSyBbOljkviE9BZD9KNSyh4QD2EIvUNem3is
 
 
-const VideoEmbed = ({ searchQuery = "" }) => {
+const VideoEmbed = ({ searchQuery = "" }: {
+  searchQuery: string
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [videoId, setVideoId] = useState(null);
   const API_KEY = "AIzaSyBbOljkviE9BZD9KNSyh4QD2EIvUNem3is";
@@ -226,6 +232,7 @@ const ProfileContent = ({
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
   const { rating, getRating } = useGetRating()
+  const [verification, setVerification] = useState<string | undefined>()
 
   const registrars: any = registrarsObj
 
@@ -240,7 +247,22 @@ const ProfileContent = ({
       }),
     [],
   )
-
+  const basePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: baseSepolia,
+        transport: http(),
+      }),
+    [],
+  )
+  const binancePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: bsc,
+        transport: http(),
+      }),
+    [],
+  )
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
@@ -249,7 +271,24 @@ const ProfileContent = ({
     setAgentModalPrepopulate(recordsToPopulate)
     setIsModalOpen(true)
   }
+  const checkAddressVerification = async (_ownerAddress: string) => {
 
+    const coinbaseContract = getContract({
+      address: contractAddresses.BaseSepoliaCoinbaseIndexer as Address,
+      abi: parseAbi(['function getAttestationUid(address,bytes32) view returns (bytes32)']),
+      client: basePublicClient,
+    })
+
+    const binanceContract = getContract({
+      address: contractAddresses.BinanceMainnetContract as Address,
+      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
+      client: binancePublicClient,
+    })
+    const verification = await getVerificationStatus(coinbaseContract, binanceContract, _ownerAddress)
+
+    setVerification(verification)
+    console.log("verification " + verification)
+  }
   useEffect(() => {
     if (records?.address) {
       getRating(records?.address)
@@ -318,11 +357,13 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
+      checkAddressVerification(records.owner)
       if (
         isAddress(records?.owner) &&
         records?.owner !== zeroAddress &&
         (!owner || owner === zeroAddress)
       ) {
+        checkAddressVerification(records.owner)
         setOwner(records.owner)
       }
 
@@ -366,13 +407,67 @@ const ProfileContent = ({
       }
       try {
         const multisig = await getMultisig(ownerAddress)
-        const memberManagerAddress = await multisig.read.entityMemberManager()
-        setEntityMemberManager(memberManagerAddress)
         setMultisigAddress(ownerAddress)
       } catch (err) {
         console.log(err)
       }
     }
+  }
+
+
+
+
+
+  const getVerificationStatus = async (coinbaseIndexerContract: any, binanceContract: any, _ownerAddress: string): Promise<string> => {
+    // _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
+    console.log("ownerAddress" + _ownerAddress)
+    // Check GitCoin Passport
+
+    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${process.env.NEXT_PUBLIC_SCORE_ID_API_KEY}/score/${_ownerAddress}`, {
+    //   method: 'GET',
+    //   headers: {
+    //     'X-API-KEY': process.env.NEXT_PUBLIC_PASSPORT_API_KEY,
+    //   },
+    // })
+
+    // const passportData = await passportResponse.json()
+    const isGitcoinVerified = false
+    //'0.00000' !== '0.00000'
+
+    let attestationUid = zeroAddress
+    try {
+      attestationUid = await coinbaseIndexerContract.read.getAttestationUid([_ownerAddress as Address, contractAddresses.BaseSepoliaCoinbaseAccountVerifiedSchema])
+    } catch (e) {
+      console.log(e)
+    }
+    const isCoinbaseVerified = BigInt(attestationUid) !== 0n
+
+    let balance = 0
+    try {
+      balance = await binanceContract.read.balanceOf([_ownerAddress as Address])
+    } catch (e) {
+      console.log(e)
+    }
+    const isBinanceVerified = balance !== 0
+
+    // Construct verification status
+    const statuses: string[] = []
+
+    if (isGitcoinVerified) {
+      statuses.push('GitCoin Passport')
+    }
+    if (isCoinbaseVerified) {
+      statuses.push('Coinbase')
+    }
+    if (isBinanceVerified) {
+      statuses.push('Binance')
+    }
+
+    if (statuses.length === 0) {
+      return 'not verified'
+    }
+
+    return `verified on ${statuses.join(', ')}`
   }
 
   useProtectedRoute(
@@ -697,8 +792,11 @@ const ProfileContent = ({
                     <Box minWidth={200}>
                       <Typography weight='bold'>Owner address</Typography>
                     </Box>
-                    <Box>
-                      <Typography>{records.owner}</Typography>
+                    <Box display={'flex'} gap={0.5}>
+                      {verification !== 'not verified' ? <CheckmarkSymbol tooltipText={verification} /> : null}
+                      <Typography>
+                        {records.owner}
+                      </Typography>
                     </Box>
                   </Box>
                 </Grid>
@@ -719,7 +817,7 @@ const ProfileContent = ({
                   xs: 12,
                   sm: 7
                 }}>
-                  {domain && records ? (
+                  {domain && records && address ? (
                     <ActionsTab
                       refreshRecords={() => getRecords()}
                       registrar={records?.entity__registrar || 'public'}
