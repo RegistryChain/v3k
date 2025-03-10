@@ -1,4 +1,5 @@
 import { QueryFunctionContext, useQuery } from '@tanstack/react-query'
+import { getEnsName } from 'viem/actions'
 
 import { getName, GetNameParameters, GetNameReturnType } from '@ensdomains/ensjs/public'
 
@@ -32,7 +33,7 @@ export const getPrimaryNameQueryFn =
 
     const client: any = config.getClient({ chainId })
 
-    const res = await getName(client, { address, ...params })
+    const res: any = await getEnsName(client, { address, ...params })
 
     if (!res || !res.name || (!res.match && !params.allowMismatch)) return null
 

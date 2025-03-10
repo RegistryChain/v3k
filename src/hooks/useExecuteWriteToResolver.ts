@@ -140,8 +140,8 @@ export async function importEntity({ filingID, name, registrar }: any) {
 export async function getEntitiesList({
   registrar = 'ai',
   nameSubstring = '',
-  sortType,
-  sortDirection,
+  sortType = '',
+  sortDirection = '',
   page = 0,
   limit = 25,
   params = {},
@@ -151,7 +151,17 @@ export async function getEntitiesList({
     if (params) {
       if (Object.keys(params)?.length > 0) {
         const fields = Object.keys(params)
-        paramsQuery = '&' + fields.map((x) => x + '=' + params[x]).join('&')
+        paramsQuery =
+          '&' +
+          fields
+            .map((x) => {
+              if (typeof params[x] === 'object') {
+                return x + '=' + JSON.stringify(params[x])
+              }
+
+              return x + '=' + params[x]
+            })
+            .join('&')
       }
     }
     const res = await fetch(

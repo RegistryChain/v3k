@@ -61,9 +61,9 @@ export const useSimpleSearch = (options: Options = {}) => {
   const cache = options.cache ?? true
 
   const queryClient = useQueryClient()
-  const chainId: any = useChainId()
+  const chainId = useChainId()
   const createQueryKey = createQueryKeyWithChain(chainId)
-  const config: any = useConfig()
+  const config = useConfig()
 
   useEffect(() => {
     return () => {
@@ -79,7 +79,7 @@ export const useSimpleSearch = (options: Options = {}) => {
         const cachedData = queryClient.getQueryData<Result[]>(createQueryKey(query))
         if (cachedData) return cachedData
       }
-      const client: any = config.getClient({ chainId })
+      const client = config.getClient({ chainId })
       const results = await Promise.allSettled([
         queryByName(client, { name: query }),
         ...(isAddress(query) ? [queryByAddress(client, { address: query })] : []),

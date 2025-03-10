@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { Address, labelhash } from 'viem'
+import { Address, getContract, labelhash } from 'viem'
 import { useClient } from 'wagmi'
 
 import { getDecodedName, Name } from '@ensdomains/ensjs/subgraph'
 import { decodeLabelhash, isEncodedLabelhash, saveName } from '@ensdomains/ensjs/utils'
-import { Button, Dialog, Heading, mq, Typography } from '@ensdomains/thorin'
+import { Button, Dialog, Heading, Typography } from '@ensdomains/thorin'
 
 import { DialogFooterWithBorder } from '@app/components/@molecules/DialogComponentVariants/DialogFooterWithBorder'
 import { DialogHeadingWithBorder } from '@app/components/@molecules/DialogComponentVariants/DialogHeadinWithBorder'
@@ -34,6 +34,8 @@ import {
 import { TransactionDialogPassthrough } from '@app/transaction-flow/types'
 
 import { TaggedNameItemWithFuseCheck } from './components/TaggedNameItemWithFuseCheck'
+import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { getWalletClient, normalizeLabel } from '@app/utils/utils'
 
 const DEFAULT_PAGE_SIZE = 10
 
@@ -83,20 +85,20 @@ const LoadingContainer = styled.div(
   `,
 )
 
-const NameTableHeaderWrapper = styled.div(({ theme }) => [
-  css`
+const NameTableHeaderWrapper = styled.div(
+  ({ theme }) => css`
     width: calc(100% + 2 * ${theme.space['4']});
     margin: 0 -${theme.space['4']} -${theme.space['4']};
     border-bottom: 1px solid ${theme.colors.border};
     > div {
       border-bottom: none;
     }
+    @media (min-width: ${theme.breakpoints.sm}px) {
+      width: calc(100% + 2 * ${theme.space['6']});
+      margin: 0 -${theme.space['6']} -${theme.space['6']};
+    }
   `,
-  mq.sm.min(css`
-    width: calc(100% + 2 * ${theme.space['6']});
-    margin: 0 -${theme.space['6']} -${theme.space['6']};
-  `),
-])
+)
 
 const ErrorContainer = styled.div(
   ({ theme }) => css`
@@ -132,6 +134,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, _setSearchQuery] = useState('')
+  const [offchainEntities, setOffchainEntities] = useState([])
   const setSearchQuery = useDebouncedCallback(_setSearchQuery, 300, [])
 
   const currentPrimary = usePrimaryName({ address })
@@ -150,11 +153,43 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
     pageSize: DEFAULT_PAGE_SIZE,
   })
 
+
   // Filter out the primary name's data
-  const filteredNamesPages =
-    namesData?.pages?.map((page: Name[]) =>
+  const filteredNamesPages = useMemo(() => {
+
+    let maps: any[] = namesData?.pages?.map((page: Name[]) =>
       page.filter((name: Name) => name?.name !== currentPrimary?.data?.name),
     ) || []
+
+
+    if (offchainEntities) {
+
+      const formattedEntities = offchainEntities.map((entity: any) => {
+        return { id: entity.nodeHash, isMigrated: true, labelName: entity.name, truncatedName: entity.domain, labelHash: labelhash(normalizeLabel(entity.domain.split('.')[0])), name: entity.domain, owner: entity.owner, parent: "ai.entity.id", resolvedAddress: entity.address }
+      })
+      maps = [...maps, formattedEntities]
+    }
+    return maps
+  }, [namesData, address, offchainEntities])
+
+
+  const getOwnerEntities = async () => {
+    const entities = await getEntitiesList({
+      registrar: "ai", limit: 10, nameSubstring: searchInput, params: {
+        $or: [
+          { owner: address },
+          { partners: { $elemMatch: { wallet__address: address } } }
+        ]
+      }
+    })
+    setOffchainEntities(entities)
+  }
+
+
+  useEffect(() => {
+
+    getOwnerEntities()
+  }, [searchInput])
 
   const selectedName = useWatch({
     control,
@@ -185,27 +220,65 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
     resolverStatus: resolverStatus.data,
   })
 
-  const dispatchTransactions = (name: string) => {
-    const transactionFlowItem = getPrimarynameTransactionFlowItem.callBack?.(name)
-    if (!transactionFlowItem) return
-    const transactionCount = transactionFlowItem.transactions.length
-    if (transactionCount === 1) {
-      // TODO: Fix typescript transactions error
-      dispatch({
-        name: 'setTransactions',
-        payload: transactionFlowItem.transactions as any[],
-      })
-      dispatch({
-        name: 'setFlowStage',
-        payload: 'transaction',
-      })
-      return
-    }
-    dispatch({
-      name: 'startFlow',
-      key: 'ChangePrimaryName',
-      payload: transactionFlowItem,
+  const dispatchTransactions = async (name: string) => {
+    // const transactionFlowItem = getPrimarynameTransactionFlowItem.callBack?.(name)
+    // if (!transactionFlowItem) return
+    // const transactionCount = transactionFlowItem.transactions.length
+    // if (transactionCount === 1) {
+    //   // TODO: Fix typescript transactions error
+    //   dispatch({
+    //     name: 'setTransactions',
+    //     payload: transactionFlowItem.transactions as any[],
+    //   })
+    //   dispatch({
+    //     name: 'setFlowStage',
+    //     payload: 'transaction',
+    //   })
+    //   return
+    // }
+    // dispatch({
+    //   name: 'startFlow',
+    //   key: 'ChangePrimaryName',
+    //   payload: transactionFlowItem,
+    // })
+
+    const revRes: any = getContract({
+      address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",
+      abi: [
+        {
+          inputs: [
+            { internalType: 'string', name: '', type: 'string' },
+          ],
+          name: 'setName',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+        {
+          inputs: [
+            { internalType: "address", name: '', type: 'address' },
+            { internalType: "address", name: '', type: 'address' },
+            { internalType: "address", name: '', type: 'address' },
+            { internalType: 'string', name: '', type: 'string' },
+          ],
+          name: 'setNameForAddr',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ],
+      client: getWalletClient(address as Address),
     })
+
+    try {
+      const tx = await revRes.write.setNameForAddr([address, address, "0x8c6ab6c2e78d7d2b2a6204e95d8a8874a95348a4", name])
+      console.log(tx)
+
+    } catch (err) {
+      console.log(err, 'Failure')
+    }
+
+
   }
 
   // Checks if name has encoded labels and attempts decrypt them if they exist
@@ -217,6 +290,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
     })
   const { mutate: mutateName, isPending: isMutationLoading } = useMutation({
     mutationFn: async (data: FormData) => {
+      console.log('IN DISPATCH', data)
       if (!data.name?.name) throw new Error('no_name')
 
       let validName = data.name.name
@@ -244,6 +318,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
       throw new Error('invalid_name')
     },
     onSuccess: (name) => {
+      console.log('ONSUCCESS')
       dispatchTransactions(name)
     },
     onError: (error, variables) => {
@@ -268,7 +343,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
     (!!namesData && filteredNamesPages.length > 1 && !searchQuery) || hasNextPage || !!searchQuery
 
   const hasNoEligibleNames =
-    !searchQuery && filteredNamesPages.length === 1 && filteredNamesPages[0].length === 0
+    filteredNamesPages.length === 0
 
   if (isLoading)
     return (
@@ -324,7 +399,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
         ref={formRef}
         onSubmit={handleSubmit((data) => mutateName(data))}
       >
-        {!!namesData && filteredNamesPages[0].length > 0 ? (
+        {!!namesData && (filteredNamesPages[0].length > 0 || offchainEntities?.length > 0) ? (
           <>
             {filteredNamesPages?.map((page: Name[]) =>
               page.map((name: Name) => (
