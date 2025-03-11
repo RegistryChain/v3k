@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { Address, getContract, labelhash } from 'viem'
+import { Address, getContract, labelhash, namehash, zeroAddress } from 'viem'
 import { useClient } from 'wagmi'
 
 import { getDecodedName, Name } from '@ensdomains/ensjs/subgraph'
@@ -34,8 +34,9 @@ import {
 import { TransactionDialogPassthrough } from '@app/transaction-flow/types'
 
 import { TaggedNameItemWithFuseCheck } from './components/TaggedNameItemWithFuseCheck'
-import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
-import { getWalletClient, normalizeLabel } from '@app/utils/utils'
+import { getEntitiesList, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
+import { getPublicClient, getWalletClient, normalizeLabel } from '@app/utils/utils'
+import { useRouter } from 'next/navigation'
 
 const DEFAULT_PAGE_SIZE = 10
 
@@ -136,6 +137,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
   const [searchQuery, _setSearchQuery] = useState('')
   const [offchainEntities, setOffchainEntities] = useState([])
   const setSearchQuery = useDebouncedCallback(_setSearchQuery, 300, [])
+  const router = useRouter()
 
   const currentPrimary = usePrimaryName({ address })
   const {
@@ -175,7 +177,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
 
   const getOwnerEntities = async () => {
     const entities = await getEntitiesList({
-      registrar: "ai", limit: 10, nameSubstring: searchInput, params: {
+      registrar: "any", limit: 20, nameSubstring: searchInput, params: {
         $or: [
           { owner: address },
           { partners: { $elemMatch: { wallet__address: address } } }
@@ -221,26 +223,14 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
   })
 
   const dispatchTransactions = async (name: string) => {
-    // const transactionFlowItem = getPrimarynameTransactionFlowItem.callBack?.(name)
-    // if (!transactionFlowItem) return
-    // const transactionCount = transactionFlowItem.transactions.length
-    // if (transactionCount === 1) {
-    //   // TODO: Fix typescript transactions error
-    //   dispatch({
-    //     name: 'setTransactions',
-    //     payload: transactionFlowItem.transactions as any[],
-    //   })
-    //   dispatch({
-    //     name: 'setFlowStage',
-    //     payload: 'transaction',
-    //   })
-    //   return
-    // }
-    // dispatch({
-    //   name: 'startFlow',
-    //   key: 'ChangePrimaryName',
-    //   payload: transactionFlowItem,
-    // })
+
+    const client = getPublicClient()
+    let resolverToUse: any = await getResolverAddress(client, namehash(name))
+    const parentHash = namehash(name.split('.').slice(1).join('.'))
+    console.log('Parent Hash', parentHash)
+    if (!resolverToUse || resolverToUse === zeroAddress) {
+      resolverToUse = await getResolverAddress(client, parentHash)
+    }
 
     const revRes: any = getContract({
       address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",
@@ -271,14 +261,19 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
     })
 
     try {
-      const tx = await revRes.write.setNameForAddr([address, address, "0x8c6ab6c2e78d7d2b2a6204e95d8a8874a95348a4", name])
+      const tx = await revRes.write.setNameForAddr([address, address, resolverToUse, name])
       console.log(tx)
+      const txRes = await client?.waitForTransactionReceipt({
+        hash: tx,
+      })
 
+      if (txRes.status === 'success') {
+        router.refresh()
+
+      }
     } catch (err) {
       console.log(err, 'Failure')
     }
-
-
   }
 
   // Checks if name has encoded labels and attempts decrypt them if they exist
@@ -318,7 +313,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
       throw new Error('invalid_name')
     },
     onSuccess: (name) => {
-      console.log('ONSUCCESS')
+      console.log('Setting Developer Profile Name')
       dispatchTransactions(name)
     },
     onError: (error, variables) => {

@@ -111,7 +111,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
     return existingRecord.data
   } catch (err) {
     console.log('getRecordData err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
@@ -133,7 +133,7 @@ export async function importEntity({ filingID, name, registrar }: any) {
     return importedRecord.data
   } catch (err) {
     console.log('importEntity err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
@@ -177,7 +177,7 @@ export async function getEntitiesList({
     const entitiesList = await res.json()
     return entitiesList.data
   } catch (err) {
-    throw new Error('Failed to fetch entities list')
+    return []
   }
 }
 

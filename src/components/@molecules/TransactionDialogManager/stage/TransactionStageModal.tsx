@@ -585,7 +585,6 @@ export const TransactionStageModal = ({
     actionName,
     preTransactionError,
   ])
-  console.log('pretra', preTransactionError)
   return (
     <>
       <Dialog.Heading title={t(`transaction.dialog.${stage}.title`)} />

@@ -71,7 +71,7 @@
     "home": "Home",
     "names": "Directory",
     "favourites": "Favourites",
-    "settings": "Settings",
+    "profile": "Developer",
     "governance": "Governance",
     "community": "Community",
     "developers": "Developers",
@@ -93,7 +93,7 @@
     "myProfile": "Profile",
     "disconnect": "Disconnect",
     "connect": "Connect",
-    "noPrimaryName": "No Primary Name",
+    "noPrimaryName": "No Developer Profile Selected",
     "viewProfile": "View Profile",
     "viewDetails": "View Details",
     "register": "Register"

@@ -155,91 +155,6 @@ export const PrimarySection = () => {
     showSelectPrimaryNameInput(`changePrimary-${address}`, {
       address: address!,
     })
-    // const client = createPublicClient({
-    //   chain: sepolia,
-    //   transport: http(),
-    // })
-    // const uniRes: any = getContract({
-    //   address: "0xc8af999e38273d658be1b921b88a9ddf005769cc",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         { internalType: 'bytes', name: '', type: 'bytes' },
-    //       ],
-    //       name: 'reverse',
-    //       outputs: [],
-    //       stateMutability: 'view',
-    //       type: 'function',
-    //     },
-    //   ],
-    //   client
-    // })
-    // console.log('tt')
-    // try {
-    //   console.log('testtit', await uniRes.read.reverse(["0x28333063663834653132316632313035653633383734366463636366666562636536356231386637630461646472077265766572736500"]))
-    // } catch (err) {
-    //   console.log(err)
-    // }
-
-
-
-    // const revRes: any = getContract({
-    //   address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         { internalType: 'string', name: '', type: 'string' },
-    //       ],
-    //       name: 'setName',
-    //       outputs: [],
-    //       stateMutability: 'nonpayable',
-    //       type: 'function',
-    //     },
-    //     {
-    //       inputs: [
-    //         { internalType: "address", name: '', type: 'address' },
-    //         { internalType: "address", name: '', type: 'address' },
-    //         { internalType: "address", name: '', type: 'address' },
-    //         { internalType: 'string', name: '', type: 'string' },
-    //       ],
-    //       name: 'setNameForAddr',
-    //       outputs: [],
-    //       stateMutability: 'nonpayable',
-    //       type: 'function',
-    //     },
-    //   ],
-    //   client: getWalletClient(address as Address),
-    // })
-
-    // try {
-    //   const tx = await revRes.write.setNameForAddr([address, address, resolver, daomain])
-    //   console.log(tx)
-
-    // } catch (err) {
-    //   console.log(err, 'Failure')
-    // }
-
-
-    // const pubRes: any = getContract({
-    //   address: "0xA6590F797808aC69549B9758d3b183C27Fe588Fd",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         { internalType: 'bytes32', name: '', type: 'bytes32' },
-    //         { internalType: 'string', name: '', type: 'string' },
-    //       ],
-    //       name: 'setName',
-    //       outputs: [],
-    //       stateMutability: 'nonpayable',
-    //       type: 'function',
-    //     },
-    //   ],
-    //   client: getWalletClient(address as Address),
-    // })
-
-    // const tx = await pubRes.write.setName([namehash('luce.ai.entity.id'), 'LUCE'])
-    // console.log(tx)
-
   }
 
   const resetPrimary = () => {
@@ -260,7 +175,7 @@ export const PrimarySection = () => {
                 {t('section.primary.title')}
               </Typography>
               <Typography data-testid="primary-name-label" fontVariant="headingTwo" ellipsis>
-                {truncatedName + 'os'}
+                {truncatedName}
               </Typography>
             </PrimaryNameInfo>
             <AvatarContainer>

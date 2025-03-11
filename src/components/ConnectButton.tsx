@@ -28,6 +28,7 @@ import { shortenAddress } from '@app/utils/utils'
 import { MoonIcon, SunIcon } from './@atoms/Icons'
 
 import BaseLink from './@atoms/BaseLink'
+import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 
 const StyledButtonWrapper = styled.div<{ $isTabBar?: boolean; $large?: boolean }>(
   ({ theme, $isTabBar, $large }) => [
@@ -126,7 +127,7 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   )
 }
 
-const HeaderProfile = ({ address }: { address: Address }) => {
+const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrimaryNameInput: any, address: Address }) => {
   const [isDarkMode, setDarkMode] = useState(true);
   const { t } = useTranslation('common')
 
@@ -180,16 +181,14 @@ const HeaderProfile = ({ address }: { address: Address }) => {
             ]
             : []),
           {
-            label: t('navigation.settings'),
+            label: t('navigation.profile'),
             color: 'text',
-            wrapper: (children: ReactNode, key: Key) => (
-              <BaseLink href="/my/settings" key={key}>
-                {children}
-              </BaseLink>
-            ),
-            as: 'a',
-            icon: <CogSVG />,
-            showIndicator: hasPendingTransactions,
+            onClick: () => {
+              showSelectPrimaryNameInput(`changePrimary-${address}`, {
+                address: address!,
+              })
+            },
+            icon: copied ? <CogSVG /> : <CogSVG />,
           },
           // TODO: Add back when dark mode is implemented
           // {
@@ -236,10 +235,12 @@ const HeaderProfile = ({ address }: { address: Address }) => {
 
 export const HeaderConnect = () => {
   const { address } = useAccountSafely()
+  const { usePreparedDataInput } = useTransactionFlow()
+  const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
 
   if (!address) {
     return <ConnectButton inHeader />
   }
 
-  return <HeaderProfile address={address} />
+  return <HeaderProfile address={address} showSelectPrimaryNameInput={showSelectPrimaryNameInput} />
 }

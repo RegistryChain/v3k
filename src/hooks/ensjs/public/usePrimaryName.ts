@@ -33,7 +33,7 @@ export const getPrimaryNameQueryFn =
 
     const client: any = config.getClient({ chainId })
 
-    const res: any = await getEnsName(client, { address, ...params })
+    const res: any = await getName(client, { address, ...params })
 
     if (!res || !res.name || (!res.match && !params.allowMismatch)) return null
 

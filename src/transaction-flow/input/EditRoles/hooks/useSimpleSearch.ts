@@ -16,10 +16,7 @@ type QueryByNameParams = {
   name: string
 }
 
-const queryByName = async (
-  client: ClientWithEns,
-  { name }: QueryByNameParams,
-): Promise<Result | null> => {
+const queryByName = async (client: any, { name }: QueryByNameParams): Promise<Result | null> => {
   try {
     const normalisedName = normalise(name)
     const record = await getAddressRecord(client, { name: normalisedName })
@@ -37,7 +34,7 @@ const queryByName = async (
 type QueryByAddressParams = { address: Address }
 
 const queryByAddress = async (
-  client: ClientWithEns,
+  client: any,
   { address }: QueryByAddressParams,
 ): Promise<Result | null> => {
   try {

@@ -50,7 +50,7 @@ export const getDentityProfile =
     const { name } = token
 
     // Get resolver address since it will be needed for setting verification record
-    const client = config.getClient({ chainId })
+    const client: any = config.getClient({ chainId })
     const records = await getRecords(client, { name, texts: [VERIFICATION_RECORD_KEY] })
     // Get owner data to
     const ownerData = await getOwner(client, { name })
