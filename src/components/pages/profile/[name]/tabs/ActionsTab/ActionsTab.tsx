@@ -293,17 +293,17 @@ const ActionsTab = ({
           abi: [
             {
               inputs: [{ internalType: 'bytes32', name: 'saltInput', type: 'bytes32' }],
-              name: 'deployClaimableSafe',
+              name: 'deployClaimableTreasury',
               outputs: [{ internalType: 'address', name: '', type: 'address' }],
               stateMutability: 'nonpayable',
               type: 'function',
             },
           ],
-          address: contractAddressesObj.ClaimableSafeFactory,
+          address: contractAddressesObj.ClaimableTreasuryFactory,
           client: wallet,
         })
 
-        const tx = await deployerContract.write.deployClaimableSafe([
+        const tx = await deployerContract.write.deployClaimableTreasury([
           generateSafeSalt(labelHashToUse, contractAddressesObj['ai.' + tld]),
         ])
       }

@@ -19,7 +19,7 @@ import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import { contracts } from '../constants/bytecode'
+import { contracts as contractsBytecode } from '../constants/bytecode'
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
 import { CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE } from './constants'
@@ -232,7 +232,10 @@ export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar
   )
 
   // Concatenate the bytecode and the encoded address
-  const bytecode = encodePacked(['bytes', 'bytes'], [contracts.claimableSafe, encodedAddress])
+  const bytecode = encodePacked(
+    ['bytes', 'bytes'],
+    [contractsBytecode.claimableTreasury, encodedAddress],
+  )
 
   // Step 2: Compute the salt
   const salt = keccak256(
@@ -246,7 +249,7 @@ export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar
   const hash = keccak256(
     encodePacked(
       ['bytes1', 'address', 'bytes32', 'bytes32'],
-      ['0xff', contractAddressesObj.ClaimableSafeFactory, salt, keccak256(bytecode)],
+      ['0xff', contractAddressesObj.ClaimableTreasuryFactory, salt, keccak256(bytecode)],
     ),
   )
 

@@ -193,9 +193,9 @@ export async function getTransactions({ nodeHash = zeroHash, address }: any) {
         },
       },
     )
-    return await res.json()
+    return (await res.json())?.data || []
   } catch (err) {
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return []
   }
 }
 
