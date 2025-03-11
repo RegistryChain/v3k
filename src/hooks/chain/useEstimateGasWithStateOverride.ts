@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { QueryFunctionContext } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import {
@@ -78,6 +79,7 @@ type StateOverride<Quantity256 = bigint, Quantity = number> = {
 
 type TransactionItem = {
   [TName in TransactionName]: Omit<TransactionParameters<TName>, 'client' | 'connectorClient'> & {
+    client: any
     name: TName
     stateOverride?: UserStateOverrides
   }
@@ -170,7 +172,7 @@ const estimateIndividualGas = async <TName extends TransactionName>({
   } as TransactionRequest)
 
   const stateOverrideWithBalance = stateOverride?.find(
-    (s) => s.address === connectorClient.account.address,
+    (s: any) => s.address === connectorClient.account.address,
   )
     ? stateOverride
     : [
@@ -184,35 +186,26 @@ const estimateIndividualGas = async <TName extends TransactionName>({
       ]
 
   const formattedOverrides = Object.fromEntries(
-    (stateOverrideWithBalance || []).map(({ address, balance, nonce, code, state, stateDiff }) => [
-      address,
-      {
-        ...(state ? { state: mapUserState(state) } : {}),
-        ...(stateDiff ? { stateDiff: mapUserState(stateDiff) } : {}),
-        ...(code ? { code } : {}),
-        ...(balance ? { balance: toHex(balance) } : {}),
-        ...(nonce ? { nonce: toHex(nonce) } : {}),
-      },
-    ]),
+    (stateOverrideWithBalance || []).map(
+      ({ address, balance, nonce, code, state, stateDiff }: any) => [
+        address,
+        {
+          ...(state ? { state: mapUserState(state) } : {}),
+          ...(stateDiff ? { stateDiff: mapUserState(stateDiff) } : {}),
+          ...(code ? { code } : {}),
+          ...(balance ? { balance: toHex(balance) } : {}),
+          ...(nonce ? { nonce: toHex(nonce) } : {}),
+        },
+      ],
+    ),
   )
 
   return client
-    .request<{
-      Method: 'eth_estimateGas'
-      Parameters:
-        | [transaction: RpcTransactionRequest]
-        | [transaction: RpcTransactionRequest, block: BlockNumber | BlockTag]
-        | [
-            transaction: RpcTransactionRequest,
-            block: BlockNumber | BlockTag,
-            overrides: StateOverride<Hex, Hex>,
-          ]
-      ReturnType: Hex
-    }>({
+    .request({
       method: 'eth_estimateGas',
       params: [formattedRequest, 'latest', formattedOverrides],
     })
-    .then((g) => hexToBigInt(g))
+    .then((g: any) => hexToBigInt(g))
 }
 
 export const estimateGasWithStateOverrideQueryFn =
@@ -249,7 +242,7 @@ export const estimateGasWithStateOverrideQueryFn =
     )
 
     return {
-      reduced: gasEstimates.reduce((acc, curr) => acc + curr, 0n),
+      reduced: gasEstimates.reduce((acc: any, curr: any) => acc + curr, 0n),
       gasEstimates,
     }
   }

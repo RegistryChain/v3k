@@ -1,13 +1,7 @@
 import { DecodedText } from '@ensdomains/ensjs/dist/types/types'
 
-import {
-  supportedGeneralRecordKeys,
-  SupportedGeneralRecordsKey,
-} from '@app/constants/supportedGeneralRecordKeys'
-import {
-  SupportedSocialRecordKey,
-  supportedSocialRecordKeys,
-} from '@app/constants/supportedSocialRecordKeys'
+import { supportedGeneralRecordKeys } from '@app/constants/supportedGeneralRecordKeys'
+import { supportedSocialRecordKeys } from '@app/constants/supportedSocialRecordKeys'
 import { VERIFICATION_RECORD_KEY } from '@app/constants/verification'
 import { VerificationProtocol } from '@app/transaction-flow/input/VerifyProfile/VerifyProfile-flow'
 
@@ -44,11 +38,7 @@ export const categoriseAndTransformTextRecords = ({
   }>(
     (acc, record) => {
       const normalisedRecord = normaliseProfileAccountsRecord(record)
-      if (
-        supportedSocialRecordKeys.includes(
-          normalisedRecord.normalisedKey as unknown as SupportedSocialRecordKey,
-        )
-      ) {
+      if (supportedSocialRecordKeys.includes(normalisedRecord.normalisedKey as unknown as any)) {
         const normalisedRecordWithVerifications =
           appendVerificationProps?.(normalisedRecord) || normalisedRecord
         return {
@@ -62,7 +52,7 @@ export const categoriseAndTransformTextRecords = ({
           ],
         }
       }
-      if (supportedGeneralRecordKeys.includes(record.key as unknown as SupportedGeneralRecordsKey))
+      if (supportedGeneralRecordKeys.includes(record.key as unknown as any))
         return {
           ...acc,
           general: [...acc.general, record],

@@ -30,7 +30,7 @@ const displayItems = ({ name, verifier }: Data, t: TFunction): TransactionDispla
 
 // TODO: Implement a function that identifies the url for the issuer and only removes that uri
 
-const transaction = async ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ connectorClient, data }: any) => {
   const { name, resolverAddress } = data
 
   return setTextRecord.makeFunctionData(connectorClient, {

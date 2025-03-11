@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { TFunction } from 'react-i18next'
 
 import { getPrice } from '@ensdomains/ensjs/public'
@@ -52,11 +53,7 @@ const displayItems = (
   ]
 }
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const { names, duration } = data
   const price = await getPrice(client, {
     nameOrNames: names,

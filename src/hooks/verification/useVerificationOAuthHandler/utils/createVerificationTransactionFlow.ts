@@ -30,7 +30,7 @@ export const createVerificationTransactionFlow = ({
         verifier,
         resolverAddress,
         verifiedPresentationUri,
-      }),
+      } as any),
     ],
   })
 }

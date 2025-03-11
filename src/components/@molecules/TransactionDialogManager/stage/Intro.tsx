@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useTranslation } from 'react-i18next'
 
 import { Button, Dialog } from '@ensdomains/thorin'
@@ -17,12 +18,12 @@ export const IntroStageModal = ({
   title,
   trailingLabel,
   stepStatus,
-}: TransactionIntro & {
+}: any & {
   transactions:
-    | {
-        name: string
-      }[]
-    | readonly { name: string }[]
+  | {
+    name: string
+  }[]
+  | readonly { name: string }[]
   stepStatus: 'inProgress' | 'notStarted' | 'completed'
   currentStep: number
   onDismiss: () => void

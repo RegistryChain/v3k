@@ -65,7 +65,7 @@ export type Props = {
 const AdvancedEditor = ({ data, transactions = [], dispatch, onDismiss }: Props) => {
   const { t } = useTranslation('profile')
   const name = data?.name || ''
-  const transaction = transactions.find(
+  const transaction: any = transactions.find(
     (item: TransactionItem) => item.name === 'updateProfile',
   ) as TransactionItem<'updateProfile'>
 
@@ -88,7 +88,7 @@ const AdvancedEditor = ({ data, transactions = [], dispatch, onDismiss }: Props)
             name,
             resolverAddress: fetchedProfile!.resolverAddress!,
             records,
-          }),
+          } as any),
         ],
       })
       dispatch({ name: 'setFlowStage', payload: 'transaction' })

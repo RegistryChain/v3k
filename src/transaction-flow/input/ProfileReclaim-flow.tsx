@@ -69,7 +69,6 @@ const ProfileReclaim = ({ data: { name, label, parent }, dispatch, onDismiss }: 
   const defaultResolverAddress = useContractAddress({ contract: 'ensPublicResolver' })
 
   const {
-    isDirty,
     records,
     register,
     trigger,
@@ -91,17 +90,17 @@ const ProfileReclaim = ({ data: { name, label, parent }, dispatch, onDismiss }: 
         contract: 'nameWrapper',
         label,
         parent,
-      }),
+      } as any),
     ]
 
-    if (isDirty && records.length) {
+    if (records.length) {
       payload.push(
         createTransactionItem('updateProfileRecords', {
           name,
           records: profileEditorFormToProfileRecords(getValues()),
           resolverAddress: defaultResolverAddress,
           clearRecords: false,
-        }) as never,
+        } as any) as never,
       )
     }
     dispatch({
@@ -205,9 +204,7 @@ const ProfileReclaim = ({ data: { name, label, parent }, dispatch, onDismiss }: 
               }
               trailing={
                 <Button data-testid="reclaim-profile-next" onClick={handleSubmit}>
-                  {isDirty
-                    ? t('action.next', { ns: 'common' })
-                    : t('action.skip', { ns: 'common' })}
+                  {t('action.next', { ns: 'common' })}
                 </Button>
               }
             />

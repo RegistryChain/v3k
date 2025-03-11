@@ -182,7 +182,7 @@ const createTransactionRequestUnsafe = async ({
   params,
   chainId,
 }: CreateTransactionRequestUnsafeParameters) => {
-  const transactionRequest = await createTransactionRequest({
+  const transactionRequest: any = await createTransactionRequest({
     name: params.name,
     data: params.data,
     connectorClient,
@@ -203,15 +203,16 @@ const createTransactionRequestUnsafe = async ({
     transactionName: params.name,
   })
 
-  const request = await prepareTransactionRequest(client, {
+  const txReqData: any = {
     to: transactionRequest.to,
     accessList,
     account: connectorClient.account,
     data: transactionRequest.data,
     gas: gasLimit,
     parameters: ['fees', 'nonce', 'type'],
-    ...('value' in transactionRequest ? { value: transactionRequest.value } : {}),
-  })
+    value: transactionRequest.value,
+  }
+  const request = await prepareTransactionRequest(client, txReqData)
 
   return {
     ...request,

@@ -62,7 +62,7 @@ export const useGetPrimaryNameTransactionFlowItem = (
           name,
         })
       ) {
-        transactions.push(createTransactionItem('setPrimaryName', { name, address }))
+        transactions.push(createTransactionItem('setPrimaryName', { name, address } as any))
       }
 
       if (
@@ -79,7 +79,7 @@ export const useGetPrimaryNameTransactionFlowItem = (
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
             resolverAddress: '0x8c6ab6c2e78d7d2b2a6204e95d8a8874a95348a4',
-          }),
+          } as any),
         )
       }
 

@@ -81,7 +81,7 @@ export const DentityView = ({
           name,
           verifier: 'dentity',
           resolverAddress,
-        }),
+        } as any),
       ],
     })
     dispatch({

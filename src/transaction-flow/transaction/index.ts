@@ -29,7 +29,7 @@ import updateResolver from './updateResolver'
 import updateVerificationRecord from './updateVerificationRecord'
 import wrapName from './wrapName'
 
-export const transactions = {
+export const transaction: any = {
   approveDnsRegistrar,
   approveNameWrapper,
   burnFuses,
@@ -62,14 +62,14 @@ export const transactions = {
   removeVerificationRecord,
 }
 
-export type Transaction = typeof transactions
+export type Transaction = typeof transaction
 export type TransactionName = keyof Transaction
 
 export type TransactionParameters<T extends TransactionName> = Parameters<
   Transaction[T]['transaction']
 >[0]
 
-export type TransactionData<T extends TransactionName> = TransactionParameters<T>['data']
+export type TransactionData<T extends TransactionName> = TransactionParameters<T>[]
 
 export type TransactionReturnType<T extends TransactionName> = ReturnType<
   Transaction[T]['transaction']
@@ -83,12 +83,9 @@ export const createTransactionItem = <T extends TransactionName>(
   data,
 })
 
-export const createTransactionRequest = <TName extends TransactionName>({
-  name,
-  ...rest
-}: { name: TName } & TransactionParameters<TName>): TransactionReturnType<TName> => {
+export const createTransactionRequest = ({ name, ...rest }: any) => {
   // i think this has to be any :(
-  return transactions[name].transaction({ ...rest } as any) as TransactionReturnType<TName>
+  // return transactions[name].transaction({ ...rest } as any) as any
 }
 
 export type TransactionItem<TName extends TransactionName = TransactionName> = {

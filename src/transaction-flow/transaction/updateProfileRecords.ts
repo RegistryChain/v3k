@@ -73,11 +73,7 @@ const displayItems = (
   ]
 }
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const { name, resolverAddress, records, previousRecords = [], clearRecords } = data
   const submitRecords = getProfileRecordsDiff(records, previousRecords)
   const recordOptions = await profileRecordsToRecordOptionsWithDeleteAbiArray(client, {

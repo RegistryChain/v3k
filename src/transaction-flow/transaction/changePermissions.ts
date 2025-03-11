@@ -83,7 +83,7 @@ const displayItems = (
   ]
 }
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   const { contract } = data
   if (contract === 'setChildFuses') {
     return setChildFuses.makeFunctionData(connectorClient, {

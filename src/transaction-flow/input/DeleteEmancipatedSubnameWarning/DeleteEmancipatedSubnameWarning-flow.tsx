@@ -33,10 +33,10 @@ const DeleteEmancipatedSubnameWarning = ({ data, dispatch, onDismiss }: Props) =
   const { data: wrapperData, isLoading } = useWrapperData({ name: data.name })
   const expiryStr = wrapperData?.expiry?.date
     ? wrapperData.expiry.date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
     : undefined
   const expiryLabel = expiryStr ? ` (${expiryStr})` : ''
 
@@ -48,7 +48,7 @@ const DeleteEmancipatedSubnameWarning = ({ data, dispatch, onDismiss }: Props) =
           name: data.name,
           contract: 'nameWrapper',
           method: 'setRecord',
-        }),
+        } as any),
       ],
     })
     dispatch({ name: 'setFlowStage', payload: 'transaction' })

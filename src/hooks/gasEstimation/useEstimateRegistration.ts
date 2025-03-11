@@ -25,7 +25,7 @@ export const useEstimateFullRegistration = ({
   const { address } = useAccountSafely()
   const { data: gasPrice, isLoading: gasPriceLoading } = useGasPrice()
 
-  const registrationParams = useRegistrationParams({
+  const registrationParams: any = useRegistrationParams({
     name,
     owner: address || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
     registrationData,
@@ -79,7 +79,7 @@ export const useEstimateFullRegistration = ({
           },
         ],
       },
-    ],
+    ] as any[],
     enabled: !!ethRegistrarControllerAddress && !!price,
   })
 

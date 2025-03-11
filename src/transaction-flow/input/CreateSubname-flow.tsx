@@ -149,7 +149,7 @@ const CreateSubname = ({ data: { parent, isWrapped }, dispatch, onDismiss }: Pro
         contract: isWrapped ? 'nameWrapper' : 'registry',
         label: debouncedLabel,
         parent,
-      }),
+      } as any),
     ]
 
     if (records.length) {
@@ -159,7 +159,7 @@ const CreateSubname = ({ data: { parent, isWrapped }, dispatch, onDismiss }: Pro
           records: profileEditorFormToProfileRecords(getValues()),
           resolverAddress: defaultResolverAddress,
           clearRecords: false,
-        }) as never,
+        } as any) as never,
       )
     }
     dispatch({

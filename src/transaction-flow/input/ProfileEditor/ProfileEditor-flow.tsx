@@ -16,7 +16,6 @@ import { ProfileRecordInput } from '@app/components/pages/profile/[name]/registr
 import { ProfileRecordTextarea } from '@app/components/pages/profile/[name]/registration/steps/Profile/ProfileRecordTextarea'
 import {
   getProfileRecordsDiff,
-  isEthAddressRecord,
   profileEditorFormToProfileRecords,
   profileToProfileRecords,
 } from '@app/components/pages/profile/[name]/registration/steps/Profile/profileRecordUtils'
@@ -132,7 +131,6 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
     addRecords,
     updateRecord,
     removeRecordAtIndex,
-    updateRecordAtIndex,
     removeRecordByGroupAndKey,
     setAvatar,
     labelForRecord,
@@ -148,7 +146,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
   const [isRecordsUpdated, setIsRecordsUpdated] = useState(false)
   useEffect(() => {
     const updateProfileRecordsWithTransactionData = () => {
-      const transaction = transactions.find(
+      const transaction: any = transactions.find(
         (item: TransactionItem) => item.name === 'updateProfileRecords',
       ) as TransactionItem<'updateProfileRecords'>
       if (!transaction) return
@@ -197,7 +195,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
             records,
             previousRecords: existingRecords,
             clearRecords: false,
-          }),
+          } as any),
         ],
       })
       dispatch({ name: 'setFlowStage', payload: 'transaction' })
@@ -308,11 +306,8 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
                     error={errorForRecordAtIndex(index)}
                     validated={isDirtyForRecordAtIndex(index)}
                     onDelete={() => {
-                      if (isEthAddressRecord(field)) {
-                        updateRecordAtIndex(index, { ...field, value: '' })
-                      } else {
-                        handleDeleteRecord(field, index)
-                      }
+
+                      handleDeleteRecord(field, index)
                     }}
                     {...register(`records.${index}.value`, {
                       validate: validatorForRecord(field),

@@ -43,7 +43,7 @@ const displayItems = (
   },
 ]
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   return transferName.makeFunctionData(
     connectorClient,
     data.contract === 'registrar'

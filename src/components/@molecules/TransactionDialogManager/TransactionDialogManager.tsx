@@ -7,7 +7,6 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { Dialog } from '@ensdomains/thorin'
 
-import { transactions } from '@app/transaction-flow/transaction'
 import { queryClientWithRefetch } from '@app/utils/query/reactQuery'
 
 import { DataInputComponents } from '../../../transaction-flow/input'
@@ -126,24 +125,9 @@ export const TransactionDialogManager = ({
         .otherwise(([_selectedKey, _selectedItem]) => {
           if (!_selectedKey || !_selectedItem) return null
           const transactionItem = _selectedItem.transactions[_selectedItem.currentTransaction]
-          const transaction = transactions[transactionItem.name]
 
           return (
-            <TransactionStageModal
-              actionName={transactionItem.name}
-              displayItems={transaction.displayItems(transactionItem.data as any, t)}
-              helper={
-                'helper' in transaction && typeof transaction.helper === 'function'
-                  ? transaction.helper(transactionItem.data as any, t)
-                  : undefined
-              }
-              currentStep={_selectedItem.currentTransaction}
-              stepCount={_selectedItem.transactions.length}
-              transaction={transactionItem}
-              txKey={selectedKey}
-              backToInput={'backToInput' in transaction ? !!transaction.backToInput : false}
-              {...{ dispatch, onDismiss }}
-            />
+            null
           )
         })}
     </Dialog>

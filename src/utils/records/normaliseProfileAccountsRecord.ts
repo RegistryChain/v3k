@@ -1,11 +1,9 @@
 import { DecodedText } from '@ensdomains/ensjs/dist/types/types'
 
-import { SupportedSocialRecordKey } from '@app/constants/supportedSocialRecordKeys'
-
 import { normaliseTwitterRecordValue } from './normaliseTwitterRecordValue'
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const NORMALISED_RECORD_KEY_MAPPING: { [key: string]: SupportedSocialRecordKey } = {
+const NORMALISED_RECORD_KEY_MAPPING: { [key: string]: any } = {
   twitter: 'com.twitter',
   x: 'com.twitter',
   'com.x': 'com.twitter',

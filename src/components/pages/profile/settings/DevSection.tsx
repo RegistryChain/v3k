@@ -61,7 +61,7 @@ export const DevSection = () => {
 
   const sendName = async () => {
     createTransactionFlow('dev-sendName', {
-      transactions: [createTransactionItem('testSendName', {})],
+      transactions: [createTransactionItem('testSendName', {} as any)],
     })
   }
 
