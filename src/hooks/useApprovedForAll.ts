@@ -43,8 +43,8 @@ export const useApprovedForAll = ({
   operatorContract,
   enabled = true,
 }: UseApprovedForAllParameters) => {
-  const contractAddress = useContractAddress({ contract })
-  const operatorAddress = useContractAddress({
+  const contractAddress: any = useContractAddress({ contract })
+  const operatorAddress: any = useContractAddress({
     contract: operatorContract,
   })
   return useReadContract({

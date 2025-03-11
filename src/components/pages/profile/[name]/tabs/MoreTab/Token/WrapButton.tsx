@@ -65,23 +65,23 @@ const WrapButton = ({ name, ownerData, profile, canBeWrapped }: Props) => {
     const transactions: GenericTransaction[] = [
       ...(needsApproval
         ? [
-            createTransactionItem('approveNameWrapper', {
-              address: address!,
-            }),
-          ]
+          createTransactionItem('approveNameWrapper', {
+            address: address!,
+          } as any),
+        ]
         : []),
       ...(isManagerAndShouldMigrate
         ? [
-            createTransactionItem('migrateProfile', {
-              name,
-            }),
-          ]
+          createTransactionItem('migrateProfile', {
+            name,
+          } as any),
+        ]
         : []),
       createTransactionItem('wrapName', {
         name,
-      }),
+      } as any),
       ...(isRegistrantAndShouldMigrate
-        ? [createTransactionItem('migrateProfile', { name, resolverAddress })]
+        ? [createTransactionItem('migrateProfile', { name, resolverAddress } as any)]
         : []),
     ]
 

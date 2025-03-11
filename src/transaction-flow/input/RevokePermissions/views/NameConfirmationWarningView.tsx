@@ -33,7 +33,7 @@ export const NameConfirmationWarningView = forwardRef<HTMLFormElement, Props>(
             {t('input.revokePermissions.views.lastWarning.message', { name })}
           </CenterAlignedTypography>
           <Input
-            placeholder="Enter your Entity name"
+            placeholder="Enter your ENS name"
             label=""
             data-testid="input-name-confirmation"
             onKeyDown={(e) => {

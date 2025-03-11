@@ -15,14 +15,14 @@ type Props = {
   status: NameWrapperState
 }
 
-const UnwrapButton = ({ name, ownerData, status }: Props) => {
+const UnwrapButton = ({ name, ownerData, status }: any) => {
   const { t } = useTranslation('profile')
 
   const { address } = useAccountSafely()
   const { createTransactionFlow } = useTransactionFlow()
   const handleUnwrapClick = () => {
     createTransactionFlow(`unwrapName-${name}`, {
-      transactions: [createTransactionItem('unwrapName', { name })],
+      transactions: [createTransactionItem('unwrapName', { name } as any)],
     })
   }
 

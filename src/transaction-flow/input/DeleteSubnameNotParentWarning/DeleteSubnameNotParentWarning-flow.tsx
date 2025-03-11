@@ -53,7 +53,7 @@ const DeleteSubnameNotParentWarning = ({ data, dispatch, onDismiss }: Props) => 
           name: data.name,
           contract: data.contract,
           method: 'setRecord',
-        }),
+        } as any),
       ],
     })
     dispatch({ name: 'setFlowStage', payload: 'transaction' })

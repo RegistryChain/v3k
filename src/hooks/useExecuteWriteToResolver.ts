@@ -111,7 +111,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
     return existingRecord.data
   } catch (err) {
     console.log('getRecordData err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
@@ -133,15 +133,15 @@ export async function importEntity({ filingID, name, registrar }: any) {
     return importedRecord.data
   } catch (err) {
     console.log('importEntity err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
 export async function getEntitiesList({
   registrar = 'ai',
   nameSubstring = '',
-  sortType,
-  sortDirection,
+  sortType = '',
+  sortDirection = '',
   page = 0,
   limit = 25,
   params = {},
@@ -151,7 +151,17 @@ export async function getEntitiesList({
     if (params) {
       if (Object.keys(params)?.length > 0) {
         const fields = Object.keys(params)
-        paramsQuery = '&' + fields.map((x) => x + '=' + params[x]).join('&')
+        paramsQuery =
+          '&' +
+          fields
+            .map((x) => {
+              if (typeof params[x] === 'object') {
+                return x + '=' + JSON.stringify(params[x])
+              }
+
+              return x + '=' + params[x]
+            })
+            .join('&')
       }
     }
     const res = await fetch(
@@ -167,7 +177,7 @@ export async function getEntitiesList({
     const entitiesList = await res.json()
     return entitiesList.data
   } catch (err) {
-    throw new Error('Failed to fetch entities list')
+    return []
   }
 }
 

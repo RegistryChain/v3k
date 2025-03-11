@@ -32,11 +32,7 @@ const displayItems = ({ name }: Data, t: TFunction): TransactionDisplayItem[] =>
   ]
 }
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const { name, resolverAddress } = data
   const subgraphRecords = await getSubgraphRecords(client, {
     name,

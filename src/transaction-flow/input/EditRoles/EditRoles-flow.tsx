@@ -73,25 +73,25 @@ const EditRoles = ({ data: { name }, dispatch, onDismiss }: Props) => {
     )
     const transactions = [
       dirtyValues['eth-record']
-        ? createTransactionItem('updateEthAddress', { name, address: dirtyValues['eth-record'] })
+        ? createTransactionItem('updateEthAddress', { name, address: dirtyValues['eth-record'] } as any)
         : null,
       dirtyValues.manager
         ? makeTransferNameOrSubnameTransactionItem({
-            name,
-            newOwnerAddress: dirtyValues.manager,
-            sendType: 'sendManager',
-            isOwnerOrManager,
-            abilities: abilities.data,
-          })
+          name,
+          newOwnerAddress: dirtyValues.manager,
+          sendType: 'sendManager',
+          isOwnerOrManager,
+          abilities: abilities.data,
+        })
         : null,
       dirtyValues.owner
         ? makeTransferNameOrSubnameTransactionItem({
-            name,
-            newOwnerAddress: dirtyValues.owner,
-            sendType: 'sendOwner',
-            isOwnerOrManager,
-            abilities: abilities.data,
-          })
+          name,
+          newOwnerAddress: dirtyValues.owner,
+          sendType: 'sendOwner',
+          isOwnerOrManager,
+          abilities: abilities.data,
+        })
         : null,
     ].filter(
       (

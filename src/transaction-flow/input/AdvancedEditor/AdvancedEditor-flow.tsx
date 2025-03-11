@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
 import { RecordOptions } from '@ensdomains/ensjs/utils'
-import { Button, Dialog, mq } from '@ensdomains/thorin'
+import { Button, Dialog } from '@ensdomains/thorin'
 
 import AddRecord from '@app/components/@molecules/AdvancedEditor/AddRecord'
 import AdvancedEditorTabContent from '@app/components/@molecules/AdvancedEditor/AdvancedEditorTabContent'
@@ -14,8 +14,8 @@ import { createTransactionItem, TransactionItem } from '@app/transaction-flow/tr
 import type { TransactionDialogPassthrough } from '@app/transaction-flow/types'
 import { Profile } from '@app/types'
 
-const NameContainer = styled.div(({ theme }) => [
-  css`
+const NameContainer = styled.div(
+  ({ theme }) => css`
     display: block;
     width: 100%;
     padding-left: ${theme.space['2']};
@@ -33,11 +33,12 @@ const NameContainer = styled.div(({ theme }) => [
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+
+    @media (min-width: ${theme.breakpoints.sm}px) {
+      text-align: left;
+    }
   `,
-  mq.sm.min(css`
-    text-align: left;
-  `),
-])
+)
 
 const FooterContainer = styled.div(
   ({ theme }) => css`
@@ -46,9 +47,9 @@ const FooterContainer = styled.div(
     width: 100%;
     margin: 0 auto;
 
-    ${mq.sm.min(css`
+    @media (min-width: ${theme.breakpoints.sm}px) {
       margin-top: -${theme.space['2']};
-    `)}
+    }
   `,
 )
 
@@ -64,7 +65,7 @@ export type Props = {
 const AdvancedEditor = ({ data, transactions = [], dispatch, onDismiss }: Props) => {
   const { t } = useTranslation('profile')
   const name = data?.name || ''
-  const transaction = transactions.find(
+  const transaction: any = transactions.find(
     (item: TransactionItem) => item.name === 'updateProfile',
   ) as TransactionItem<'updateProfile'>
 
@@ -87,7 +88,7 @@ const AdvancedEditor = ({ data, transactions = [], dispatch, onDismiss }: Props)
             name,
             resolverAddress: fetchedProfile!.resolverAddress!,
             records,
-          }),
+          } as any),
         ],
       })
       dispatch({ name: 'setFlowStage', payload: 'transaction' })

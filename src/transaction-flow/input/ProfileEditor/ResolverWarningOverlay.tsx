@@ -108,7 +108,7 @@ const ResolverWarningOverlay = ({
           name,
           contract: isWrapped ? 'nameWrapper' : 'registry',
           resolverAddress: latestResolverAddress,
-        }),
+        } as any),
       ],
     })
     dispatch({
@@ -131,12 +131,12 @@ const ResolverWarningOverlay = ({
         transactions: [
           createTransactionItem('migrateProfile', {
             name,
-          }),
+          } as any),
           createTransactionItem('updateResolver', {
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
             resolverAddress: latestResolverAddress,
-          }),
+          } as any),
         ],
       },
     })
@@ -157,12 +157,12 @@ const ResolverWarningOverlay = ({
           createTransactionItem('resetProfile', {
             name,
             resolverAddress: latestResolverAddress,
-          }),
+          } as any),
           createTransactionItem('updateResolver', {
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
             resolverAddress: latestResolverAddress,
-          }),
+          } as any),
         ],
       },
     })
@@ -186,12 +186,12 @@ const ResolverWarningOverlay = ({
           createTransactionItem('migrateProfileWithReset', {
             name,
             resolverAddress: oldResolverAddress,
-          }),
+          } as any),
           createTransactionItem('updateResolver', {
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
             resolverAddress: latestResolverAddress,
-          }),
+          } as any),
         ],
       },
     })

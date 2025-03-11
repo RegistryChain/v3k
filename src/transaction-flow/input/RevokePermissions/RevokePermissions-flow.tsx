@@ -290,7 +290,7 @@ const RevokePermissions = ({ data, transactions, onDismiss, dispatch }: Props) =
               child: childNamedFuses,
             },
             expiry: form.expiryType === 'max' ? maxExpiry : customExpiry,
-          }),
+          } as any),
         ],
       })
     } else {
@@ -301,7 +301,7 @@ const RevokePermissions = ({ data, transactions, onDismiss, dispatch }: Props) =
             name,
             contract: 'setFuses',
             fuses: childNamedFuses,
-          }),
+          } as any),
         ],
       })
     }

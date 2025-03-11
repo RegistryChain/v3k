@@ -152,15 +152,14 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
             name,
             contract: 'nameWrapper',
             newOwnerAddress: address,
-          }),
+          } as any),
           createTransactionItem('deleteSubname', {
             contract: 'nameWrapper',
             name,
             method: 'setRecord',
-          }),
+          } as any),
         ]
       }
-
     } else if (abilities.canDeleteError) {
       actions.push({
         label: t('tabs.entity.actions.deleteSubname.label'),
@@ -187,7 +186,7 @@ export const useProfileActions = ({ name, enabled: enabled_ = true }: Props) => 
                 contract: 'nameWrapper',
                 label,
                 parent,
-              }),
+              } as any),
             ],
           })
         },
