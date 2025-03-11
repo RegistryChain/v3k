@@ -79,8 +79,8 @@ interface ProfileSnippetProps {
   name: string
   multisigAddress: string
   records: any
-  status: string
-  domainName: string
+  status?: string
+  domainName?: string
   withRating?: boolean
 }
 
@@ -170,13 +170,16 @@ export const ProfileSnippet = ({
               <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
                 {name}
               </NameRecord>
-              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                <Typography>
-                  <a href={'https://app.ens.domains/' + domainName}>
-                    <i>{normalize(domainName)}</i>
-                  </a>
-                </Typography>
-              </SectionTitle>
+              {domainName && (
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  <Typography>
+                    <a href={'https://app.ens.domains/' + domainName}>
+                      <i>{normalize(domainName)}</i>
+                    </a>
+                  </Typography>
+                </SectionTitle>
+              )}
+
               {/* {statusSection} */}
 
               {withRating && (
