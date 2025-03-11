@@ -14,7 +14,7 @@ import {
   parseAbi,
   zeroAddress,
 } from 'viem'
-import { sepolia } from 'viem/chains'
+import { sepolia, baseSepolia, bsc } from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
 import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
@@ -36,6 +36,7 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import PluginsTab from './tabs/PluginsTab'
 import RegulatoryTab from './tabs/Regulatory'
+import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 const MessageContainer = styled.div(
   ({ theme }) => css`
@@ -145,6 +146,7 @@ const ProfileContent = ({
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
+  const [verification, setVerification] = useState<string | undefined>()
 
   const registrars: any = registrarsObj
 
@@ -159,7 +161,22 @@ const ProfileContent = ({
       }),
     [],
   )
-
+  const basePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: baseSepolia,
+        transport: http(),
+      }),
+    [],
+  )
+  const binancePublicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: bsc,
+        transport: http(),
+      }),
+    [],
+  )
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
@@ -168,7 +185,24 @@ const ProfileContent = ({
     setAgentModalPrepopulate(recordsToPopulate)
     setIsModalOpen(true)
   }
+  const checkAddressVerification = async (_ownerAddress: string) => {
 
+    const coinbaseContract = getContract({
+      address: contractAddresses.BaseSepoliaCoinbaseIndexer as Address,
+      abi: parseAbi(['function getAttestationUid(address,bytes32) view returns (bytes32)']),
+      client: basePublicClient,
+    })
+
+    const binanceContract = getContract({
+      address: contractAddresses.BinanceMainnetContract as Address,
+      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
+      client: binancePublicClient,
+    })
+    const verification = await getVerificationStatus(coinbaseContract, binanceContract, _ownerAddress)
+
+    setVerification(verification)
+    console.log("verification " + verification)
+  }
   useEffect(() => {
     if (isSelf && domain) {
       router.replace(`/profile/${domain}`)
@@ -221,7 +255,7 @@ const ProfileContent = ({
         ...prev,
         status,
       }))
-    } catch (e) {}
+    } catch (e) { }
   }
 
   useEffect(() => {
@@ -231,11 +265,13 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
+      checkAddressVerification(records.owner)
       if (
         isAddress(records?.owner) &&
         records?.owner !== zeroAddress &&
         (!owner || owner === zeroAddress)
       ) {
+        checkAddressVerification(records.owner)
         setOwner(records.owner)
       }
 
@@ -288,13 +324,69 @@ const ProfileContent = ({
     }
   }
 
+
+
+
+
+  const getVerificationStatus = async (coinbaseIndexerContract: any, binanceContract: any, _ownerAddress: string): Promise<string> => {
+    // _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
+    console.log("ownerAddress" + _ownerAddress)
+    // Check GitCoin Passport
+
+    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${process.env.NEXT_PUBLIC_SCORE_ID_API_KEY}/score/${_ownerAddress}`, {
+    //   method: 'GET',
+    //   headers: {
+    //     'X-API-KEY': process.env.NEXT_PUBLIC_PASSPORT_API_KEY,
+    //   },
+    // })
+
+    // const passportData = await passportResponse.json()
+    const isGitcoinVerified = false
+    //'0.00000' !== '0.00000'
+
+    let attestationUid = zeroAddress
+    try {
+      attestationUid = await coinbaseIndexerContract.read.getAttestationUid([_ownerAddress as Address, contractAddresses.BaseSepoliaCoinbaseAccountVerifiedSchema])
+    } catch (e) {
+      console.log(e)
+    }
+    const isCoinbaseVerified = BigInt(attestationUid) !== 0n
+
+    let balance = 0
+    try {
+      balance = await binanceContract.read.balanceOf([_ownerAddress as Address])
+    } catch (e) {
+      console.log(e)
+    }
+    const isBinanceVerified = balance !== 0
+
+    // Construct verification status
+    const statuses: string[] = []
+
+    if (isGitcoinVerified) {
+      statuses.push('GitCoin Passport')
+    }
+    if (isCoinbaseVerified) {
+      statuses.push('Coinbase')
+    }
+    if (isBinanceVerified) {
+      statuses.push('Binance')
+    }
+
+    if (statuses.length === 0) {
+      return 'not verified'
+    }
+
+    return `verified on ${statuses.join(', ')}`
+  }
+
   useProtectedRoute(
     '/',
     // When anything is loading, return true
     parentIsLoading
       ? true
       : // if is self, user must be connected
-        (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
+      (isSelf ? address : true) && typeof domain === 'string' && domain.length > 0,
   )
 
   const suffixIndex = domain?.split('.')?.length - 1
@@ -421,7 +513,10 @@ const ProfileContent = ({
                           key: 'Agent Treasury',
                           value: records?.address || zeroAddress,
                         },
-                        { key: 'Owner Address', value: owner }, // TODO: change placeholder address
+                        {
+                          key: ['Owner Address', verification !== 'not verified' ? <CheckmarkSymbol tooltipText={verification} /> : null]
+                          , value: owner
+                        }, // TODO: change placeholder address
                         {
                           key: 'Token Address',
                           value: records?.entity__token__address || zeroAddress,
