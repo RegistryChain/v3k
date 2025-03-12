@@ -1,6 +1,6 @@
 import { Box, Grid2 as Grid, Link } from '@mui/material'
 import Head from 'next/head'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
@@ -19,7 +19,7 @@ import { sepolia, baseSepolia, bsc } from 'viem/chains'
 import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 import { normalise } from '@ensdomains/ensjs/utils'
-import { Banner, CheckCircleSVG, Spinner, Typography } from '@ensdomains/thorin'
+import { Banner, CheckCircleSVG, mq, Spinner, Typography } from '@ensdomains/thorin'
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 
@@ -45,7 +45,121 @@ import { useGetRating } from '@app/hooks/useGetRating'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
 import axios from "axios";
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
+import { useEnsHistory } from '@app/hooks/useEnsHistory'
+import { Outlink } from '@app/components/Outlink'
+import { Card } from '@app/components/Card'
 
+
+const TransactionSectionContainer = styled.div<{
+  $height: string
+}>(
+  ({ $height }) => css`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    height: ${$height};
+    transition: 0.2s all ease-in-out;
+    justify-content: flex-end;
+    background-color: transparent;
+  `,
+)
+
+const TransactionSectionInner = styled.div(
+  () => css`
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  `,
+)
+
+const RecentTransactionsMessage = styled(Typography)(
+  ({ theme }) => css`
+    display: flex;
+    justify-content: center;
+    color: ${theme.colors.textTertiary};
+    padding: ${theme.space['4']};
+  `,
+)
+
+const TransactionContainer = styled(Card)(
+  ({ theme, onClick }) => css`
+    width: 100%;
+    min-height: ${theme.space['18']};
+    padding: ${theme.space['3']} 0;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: ${theme.space['3']};
+    flex-gap: ${theme.space['3']};
+    border: none;
+    border-bottom: 1px solid ${theme.colors.border};
+    border-radius: ${theme.radii.none};
+
+    ${onClick &&
+    css`
+      cursor: pointer;
+    `}
+
+    &:last-of-type {
+      border: none;
+    }
+  `,
+)
+
+const TransactionInfoContainer = styled.div(
+  ({ theme }) => css`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: ${theme.space['0.5']};
+  `,
+)
+
+const StyledOutlink = styled(Outlink)<{ $error: boolean }>(
+  ({ theme, $error }) =>
+    $error &&
+    css`
+      > div {
+        color: ${theme.colors.red};
+      }
+      color: ${theme.colors.red};
+    `,
+)
+
+const ContinueContainer = styled.div(({ theme }) => [
+  css`
+    max-width: ${theme.space['48']};
+    width: fit-content;
+    button {
+      padding: 0 ${theme.space['4']};
+    }
+  `,
+  mq.sm.min(css`
+    button {
+      padding: 0 ${theme.space['8']};
+    }
+  `),
+])
+
+const ViewMoreInner = styled(Typography)(
+  ({ theme }) => css`
+    width: 100%;
+    text-align: center;
+    color: ${theme.colors.textSecondary};
+  `,
+)
+
+const InfoContainer = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: ${theme.space['2']};
+  `,
+)
 
 const VideoContainer = styled.div`
   width: 100%;
@@ -222,11 +336,14 @@ const ProfileContent = ({
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
+  const [historyOpenIndex, setHistoryOpenIndex] = useState<any>(null)
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const breakpoints = useBreakpoint()
   const { rating, getRating } = useGetRating()
+  const { history, fetchEnsHistory } = useEnsHistory()
   const [verification, setVerification] = useState<string | undefined>()
+  const ref = useRef<HTMLDivElement>(null)
 
   const registrars: any = registrarsObj
 
@@ -283,6 +400,15 @@ const ProfileContent = ({
     setVerification(verification)
     console.log("verification " + verification)
   }
+
+  useEffect(() => {
+    console.log(history)
+  }, [history])
+
+  useEffect(() => {
+    fetchEnsHistory(namehash(domain))
+  }, [])
+
   useEffect(() => {
     if (records?.address) {
       getRating(records?.address)
@@ -316,6 +442,10 @@ const ProfileContent = ({
       checkEntityStatus()
     }
   }, [multisigAddress])
+
+  const onOffChainHistory = useMemo(() => {
+    return [...(records?.changeLogs || []), ...history].sort((a, b) => a.timestamp - b.timestamp)
+  }, [records, history])
 
   const checkEntityStatus = async () => {
     const multisig: any = await getMultisig(multisigAddress)
@@ -757,7 +887,7 @@ const ProfileContent = ({
                   <Box
                     display='flex'
                     gap={2}
-                    py={2} 
+                    py={2}
                     style={{
                       borderBottom: '1px solid #E5E5E5',
                     }}>
@@ -787,6 +917,60 @@ const ProfileContent = ({
                     </Box>
                   </Box>
                 </Grid>
+                <TransactionSectionContainer $height={'auto'} data-testid="transaction-section-container">
+                  <Typography weight="bold" asProp='h2' style={{ textAlign: "left", width: "100%" }}>Change Log</Typography>
+                  <TransactionSectionInner ref={ref}>
+                    {onOffChainHistory.length > 0 ? (
+                      <>
+                        {onOffChainHistory.map(({ hash, status, sourceFunction, changedProperties, timestamp, }, i) => {
+                          return (
+                            <TransactionContainer
+                              data-testid={`transaction-${status}`}
+                              // eslint-disable-next-line react/no-array-index-key
+                              key={`${sourceFunction}-${i}`}
+                              onClick={() => {
+                                if (historyOpenIndex === i) {
+                                  setHistoryOpenIndex(null)
+                                } else {
+                                  setHistoryOpenIndex(i)
+                                }
+                              }
+                              }
+                            >
+                              <InfoContainer>
+                                {status === 'pending' && (
+                                  <Spinner data-testid="pending-spinner" color="accent" />
+                                )}
+                                <TransactionInfoContainer>
+                                  <Typography weight="bold">{sourceFunction}</Typography>
+                                  <Typography weight="bold">{(new Date(timestamp)).toLocaleString()}</Typography>
+
+                                  {hash ? <StyledOutlink
+                                    $error={status === 'failed'}
+                                    href={makeEtherscanLink(hash, 'sepolia')}
+                                    target="_blank"
+                                  >
+                                    Success
+                                  </StyledOutlink> : null}
+                                </TransactionInfoContainer>
+                              </InfoContainer>
+                              {historyOpenIndex === i ? <InfoContainer>
+                                {JSON.stringify(changedProperties)}
+                              </InfoContainer> : null}
+
+
+                            </TransactionContainer>
+                          )
+                        })}
+                      </>
+                    ) : (
+                      <RecentTransactionsMessage weight="bold">
+                        No Recent Transactions
+                      </RecentTransactionsMessage>
+                    )}
+                  </TransactionSectionInner>
+                </TransactionSectionContainer>
+
               </Grid>
 
               {/*TODO: Possible actions, double check what should be displayed for owner only */}
