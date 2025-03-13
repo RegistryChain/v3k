@@ -261,15 +261,19 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       // );
 
       // data.append("file", formState.imageFile);
+      try {
+        const { cid } = await pinata.upload.public.file(formState.imageFile)
+        const url = await pinata.gateways.public.convert(cid);
+        handleFieldChange('avatar')(url);
 
-      const { cid } = await pinata.upload.public.file(formState.imageFile)
-      const url = await pinata.gateways.public.convert(cid);
+      } catch (e) { 
+        console.log(e)
+      }
       // const uploadRequest = await fetch("/api/files", {
       //   method: "POST",
       //   body: data,
       // });
       // const signedUrl = await uploadRequest.json();
-      handleFieldChange('avatar')(url);
       // alert(signedUrl);
 
     } catch (e) {
