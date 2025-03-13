@@ -42,7 +42,7 @@ export default function Page() {
       {{
         trailing: (
           <OtherWrapper>
-            <PrimarySection />
+            <PrimarySection address={address} />
             <DeveloperAgents data={{ address }} />
             <TransactionSection />
             {IS_DEV_ENVIRONMENT && <DevSection />}

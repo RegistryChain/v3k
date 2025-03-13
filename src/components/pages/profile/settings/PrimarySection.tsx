@@ -6,17 +6,13 @@ import { Button, Card, CrossSVG, mq, PersonPlusSVG, Skeleton, Typography } from 
 import { AvatarWithLink } from '@app/components/@molecules/AvatarWithLink/AvatarWithLink'
 import { DisabledButtonWithTooltip } from '@app/components/@molecules/DisabledButtonWithTooltip'
 import { useAccountSafely } from '@app/hooks/account/useAccountSafely'
-import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useBasicName } from '@app/hooks/useBasicName'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
-import { Address, createPublicClient, getContract, http } from 'viem'
-import { sepolia } from 'viem/chains'
-import { getWalletClient } from '@app/utils/utils'
-import { useRecordData } from '@app/hooks/useExecuteWriteToResolver'
-import { useMemo } from 'react'
-import { infuraUrl } from '@app/utils/query/wagmi'
-import { TransactionSection } from './TransactionSection/TransactionSection'
+import { useEffect, useMemo } from 'react'
+import { useGetRating } from '@app/hooks/useGetRating'
+import StarIcon from '@mui/icons-material/Star';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
 
 const SkeletonFiller = styled.div(
   ({ theme }) => css`
@@ -136,24 +132,15 @@ const ActionsContainer = styled.div(({ theme }) => [
   `),
 ])
 
-export const PrimarySection = () => {
-  const { t } = useTranslation('settings')
+export const PrimarySection = ({ address, primary, record }: any) => {
+  const { t } = useTranslation('developer')
 
-  const { address } = useAccountSafely()
+  const { address: connectedAddress } = useAccountSafely()
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const showResetPrimaryNameInput = usePreparedDataInput('ResetPrimaryName')
-  const publicClient: any = useMemo(
-    () =>
-      createPublicClient({
-        chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
-      }),
-    [],
-  )
+  const { rating, getRating } = useGetRating()
 
-  const primary = usePrimaryName({ address })
-  const { data: fields, loading, error, refetch } = useRecordData({ domain: primary.data?.name, publicClient })
 
   const { truncatedName, isLoading: basicLoading } = useBasicName({
     name: primary.data?.name,
@@ -177,7 +164,12 @@ export const PrimarySection = () => {
       address,
     })
   }
-  console.log(fields)
+
+  useEffect(() => {
+    if (record?.address) {
+      getRating(record?.address)
+    }
+  }, [record])
 
   return (
     <Skeleton loading={isLoading} as={SkeletonFiller as any}>
@@ -191,35 +183,18 @@ export const PrimarySection = () => {
               <Typography data-testid="primary-name-label" fontVariant="headingTwo" ellipsis>
                 {truncatedName}
               </Typography>
-              <Typography fontVariant="body" ellipsis>
-                {(fields?.description || "") + ' ' + (fields?.entity__purpose || "")}
+              <Typography fontVariant="body">
+                {(record?.description || "")}
+              </Typography>
+              <Typography fontVariant="body">
+                {(record?.entity__purpose || "")}
               </Typography>
             </PrimaryNameInfo>
             <AvatarContainer>
               <AvatarWithLink name={primary.data?.name} label="primary name avatar" />
             </AvatarContainer>
             <ActionsContainer>
-              {hasGraphError ? (
-                <>
-                  <DisabledButtonWithTooltip
-                    buttonId="disabled-reset-primary-name-button"
-                    buttonText={t('action.remove', { ns: 'common' })}
-                    content={t('errors.networkError.blurb', { ns: 'common' })}
-                    prefix={<CrossSVG />}
-                    size="medium"
-                    mobilePlacement="top"
-                    loading={hasGraphErrorLoading}
-                  />
-                  <DisabledButtonWithTooltip
-                    buttonId="disabled-change-primary-name-button"
-                    buttonText={t('action.change', { ns: 'common' })}
-                    content={t('errors.networkError.blurb', { ns: 'common' })}
-                    prefix={<PersonPlusSVG />}
-                    size="medium"
-                    mobilePlacement="top"
-                    loading={hasGraphErrorLoading}
-                  />
-                </>
+              {connectedAddress !== address ? (null
               ) : (
                 <>
                   <Button
@@ -277,7 +252,53 @@ export const PrimarySection = () => {
             <NoNameDescription>{t('section.primary.noNameDescription')}</NoNameDescription>
           </NoNameContainer>
         )}
+
+        {
+          record ? (
+            <div>
+              <dl>
+                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                  <dt>
+                    <Typography weight='bold'>Website:</Typography>
+                  </dt>
+                  <dd>
+                    <a href={record.url} >{record.url}</a>
+                  </dd>
+                </div>
+                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                  <dt>
+                    <Typography weight='bold'>Entity Type:</Typography>
+                  </dt>
+                  <dd>
+                    {record.entity__type}
+                  </dd>
+                </div>
+                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                  <dt>
+                    <Typography weight='bold'>Location:</Typography>
+                  </dt>
+                  <dd>
+                    {record.location}
+                  </dd>
+                </div>
+                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                  <dt>
+                    <Typography weight='bold'>Rating:</Typography>
+                  </dt>
+                  <dd style={{ display: 'flex', alignItems: 'center' }}>
+                    {rating.toFixed(2)}&nbsp;
+                    {
+                      rating > 4 ? (<StarIcon style={{ fontSize: '15px' }} />) : (
+                        <StarHalfIcon style={{ fontSize: '15px' }} />
+                      )
+                    }
+                  </dd>
+                </div>
+              </dl>
+            </div>) : null
+        }
       </Card>
+
     </Skeleton>
   )
 }

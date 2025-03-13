@@ -1,0 +1,22 @@
+{
+  "title": "Developer",
+  "section": {
+    "wallet": {
+      "title": "Wallet"
+    },
+    "transaction": {
+      "title": "Transactions",
+      "noRecentTransactions": "No recent transactions",
+      "clearTransactions": {
+        "title": "Clear Transaction History",
+        "description": "Clearing your transaction history will permanently remove them from the ENS app. Your transactions will still be visible on the blockchain.",
+        "actionLabel": "Clear History"
+      }
+    },
+    "primary": {
+      "title": "Developer Profile",
+      "noNameDescription": "A Developer profile groups all of your agents under your selected entity. This allows you to get recognized for your work and better publicize your projects.",
+      "choosePrimaryName": "Choose developer profile"
+    }
+  }
+}

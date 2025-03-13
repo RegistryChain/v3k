@@ -38,7 +38,7 @@ import { getEntitiesList, getResolverAddress } from '@app/hooks/useExecuteWriteT
 import { getPublicClient, getWalletClient, normalizeLabel } from '@app/utils/utils'
 import { useRouter } from 'next/navigation'
 
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 100
 
 export const hasEncodedLabel = (name: string) =>
   name.split('.').some((label) => isEncodedLabelhash(label))

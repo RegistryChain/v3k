@@ -162,31 +162,17 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
       ensName={primary?.beautifiedName}
       dropdownItems={
         [
-          ...(primary?.name
-            ? [
-              {
-                label: t('wallet.myProfile'),
-                wrapper: (children: ReactNode, key: Key) => {
-                  console.log(children)
-                  return (
-                    <BaseLink href="/my/profile" key={key}>
-                      {children}
-                    </BaseLink>
-                  )
-                },
-                as: 'a' as 'a',
-                color: 'text',
-                icon: <PersonSVG />,
-              },
-            ]
-            : []),
+
           {
             label: t('navigation.profile'),
             color: 'text',
-            onClick: () => {
-              showSelectPrimaryNameInput(`changePrimary-${address}`, {
-                address: address!,
-              })
+            wrapper: (children: ReactNode, key: Key) => {
+              console.log(children)
+              return (
+                <BaseLink href={"/developer/" + address} key={key}>
+                  {children}
+                </BaseLink>
+              )
             },
             icon: copied ? <CogSVG /> : <CogSVG />,
           },

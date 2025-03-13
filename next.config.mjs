@@ -54,13 +54,11 @@ const nextConfig = {
         source: '/:address(0x[a-fA-F0-9]{40}$)',
         destination: '/address?address=:address',
       },
-      {source: '/agent/:name',
-      destination: '/profile?name=:name',
-    },
-    {
-      source: '/agent/amend/:name',
-      destination: '/agentAmend?name=:name',
-    },
+      { source: '/agent/:name', destination: '/profile?name=:name' },
+      {
+        source: '/agent/amend/:name',
+        destination: '/agentAmend?name=:name',
+      },
       {
         source: '/entity/:name',
         destination: '/profile?name=:name',
@@ -80,6 +78,10 @@ const nextConfig = {
       {
         source: '/:name/import',
         destination: '/import?name=:name',
+      },
+      {
+        source: '/developer/:entity',
+        destination: '/developer?entity=:entity',
       },
     ]
   },
@@ -195,9 +197,9 @@ const nextConfig = {
   },
   ...(process.env.NEXT_PUBLIC_IPFS
     ? {
-      trailingSlash: true,
-      assetPrefix: './',
-    }
+        trailingSlash: true,
+        assetPrefix: './',
+      }
     : {}),
 }
 

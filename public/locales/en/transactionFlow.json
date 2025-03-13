@@ -335,7 +335,7 @@
       }
     },
     "developerAgents": {
-      "title": "View agents by this developer",
+      "title": "Agents by this developer",
       "errors": {
         "noNamesFound": "No agents found",
         "noEligibleNames": "No eligible agents"

@@ -10,7 +10,6 @@ import { getDecodedName, Name } from '@ensdomains/ensjs/subgraph'
 import { decodeLabelhash, isEncodedLabelhash, saveName } from '@ensdomains/ensjs/utils'
 import { Button, Dialog, Heading, Typography } from '@ensdomains/thorin'
 
-import { DialogFooterWithBorder } from '@app/components/@molecules/DialogComponentVariants/DialogFooterWithBorder'
 import { DialogHeadingWithBorder } from '@app/components/@molecules/DialogComponentVariants/DialogHeadinWithBorder'
 import {
     NameTableHeader,
@@ -38,7 +37,7 @@ import { getPublicClient, getWalletClient, normalizeLabel } from '@app/utils/uti
 import { useRouter } from 'next/navigation'
 import { TaggedNameItem } from '@app/components/@atoms/NameDetailItem/TaggedNameItem'
 
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 100
 
 export const hasEncodedLabel = (name: string) =>
     name.split('.').some((label) => isEncodedLabelhash(label))
@@ -63,13 +62,7 @@ export const getNameFromUnknownLabels = (
     return [...processedLabels, tld].join('.')
 }
 
-type Data = {
-    address: Address
-}
 
-export type Props = {
-    data: Data
-} & TransactionDialogPassthrough
 
 type FormData = {
     name?: Name
@@ -144,7 +137,7 @@ const ScrollableDialogContent = styled.div`
 `;
 
 
-const DeveloperAgents = ({ data: { address }, dispatch, onDismiss }: Props) => {
+const DeveloperAgents = ({ address, record }: any) => {
     const { t } = useTranslation('transactionFlow')
     const formRef = useRef<HTMLFormElement>(null)
     const queryClient = useQueryClient()
@@ -162,8 +155,6 @@ const DeveloperAgents = ({ data: { address }, dispatch, onDismiss }: Props) => {
     const { handleSubmit, control, setValue } = form
 
     const client: any = useClient()
-
-    const [view, setView] = useState<'main' | 'decrypt'>('main')
 
     const [sortType, setSortType] = useState<SortType>('labelName')
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
@@ -188,7 +179,6 @@ const DeveloperAgents = ({ data: { address }, dispatch, onDismiss }: Props) => {
         },
         pageSize: DEFAULT_PAGE_SIZE,
     })
-
 
     // Filter out the primary name's data
     const filteredNamesPages = useMemo(() => {
@@ -348,18 +338,12 @@ const DeveloperAgents = ({ data: { address }, dispatch, onDismiss }: Props) => {
             if (!(error instanceof Error)) return
             if (error.message === 'invalid_name') {
                 setValue('unknownLabels', nameToFormData(variables.name?.name || '').unknownLabels)
-                setView('decrypt')
             }
         },
     })
 
-    const onConfirm = () => {
-        formRef.current?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
-    }
 
     const isLoading = isLoadingNames || isMutationLoading
-    const isLoadingName =
-        resolverStatus.isLoading || isWrappedLoading || getPrimarynameTransactionFlowItem.isLoading
 
     // Show header if more than one page has been loaded, if only one page has been loaded but there is another page, or if there is an active search query
     const showHeader =
@@ -378,21 +362,9 @@ const DeveloperAgents = ({ data: { address }, dispatch, onDismiss }: Props) => {
             </Dialog.Content>
         )
 
-    return view === 'decrypt' ? (
-        <UnknownLabelsForm
-            {...(form as UseFormReturn<UnknownLabelsFormData>)}
-            ref={formRef}
-            onSubmit={mutateName}
-            onCancel={() => {
-                setValue('unknownLabels', nameToFormData('').unknownLabels)
-                setView('main')
-            }}
-            onConfirm={onConfirm}
-        />
-    ) : (
-
-        <div style={{ width: "100%", bottom: "initial", padding: "0 10%" }}>
-            <div style={{ width: "100%", borderRadius: "24px", padding: "1.5rem", gap: "1.5rem", maxHeight: "min(90vh, 36rem)" }}>
+    return (
+        <div style={{ width: "100%", bottom: "initial", padding: "0" }}>
+            <div style={{ padding: "0 10%", width: "100%", borderRadius: "16px", gap: "1.5rem", maxHeight: "min(90vh, 36rem)", border: "1px solid hsl(0 0% 91%)" }}>
                 <DialogHeadingWithBorder title={t('input.developerAgents.title')} />
                 {showHeader && (
                     <NameTableHeaderWrapper>
