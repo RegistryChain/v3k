@@ -259,6 +259,14 @@ export const PrimarySection = ({ address, primary, record }: any) => {
               <dl>
                 <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
                   <dt>
+                    <Typography weight='bold'>Address:</Typography>
+                  </dt>
+                  <dd>
+                    <a href={"https://etherscan.io/address/" + record.address} >{record.address}</a>
+                  </dd>
+                </div>
+                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                  <dt>
                     <Typography weight='bold'>Website:</Typography>
                   </dt>
                   <dd>

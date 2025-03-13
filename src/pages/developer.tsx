@@ -46,8 +46,8 @@ export default function Page() {
         [],
     )
 
-    const primary = usePrimaryName({ address })
     const entity = router.query.entity as string
+    const primary = usePrimaryName({ address: entity })
     const { data: record, loading, error, refetch } = useRecordData({ domain: primary.data?.name, publicClient })
 
     const subgraphMeta = useSubgraphMeta()
