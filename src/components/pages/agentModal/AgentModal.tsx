@@ -1,6 +1,9 @@
 // components/AgentModal.tsx (updated)
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { TextField, Select, FormControl, InputLabel, MenuItem } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import styled, { css } from 'styled-components'
+
 import { PinataSDK } from 'pinata'
 import {
   Address,
@@ -42,6 +45,7 @@ import {
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
+import { lightGreen } from '@mui/material/colors'
 
 type FormState = {
   name: string
@@ -80,16 +84,27 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         placeholder="Enter agent name"
         required
       />
-
-      <input
-        type="file"
-        accept="image/*" // Accept only image files
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          handleFieldChange('imageFile')(file)
-        }}
-        required
-      />
+      <FormControl required>
+        <label htmlFor="fileUpload" style={{ paddingLeft: '6px', paddingBottom: '6px', color: '#666666' }}>Image * </label>
+        <input
+          type="file"
+          accept="image/*" 
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            handleFieldChange('imageFile')(file)
+          }}
+          style={{
+            color: '#666666' ,
+            display: "inline - block",
+            cursor: "pointer",
+            paddingLeft: "12px",
+            paddingTop: "10px",
+            paddingBottom: "10px",
+            outline: "10px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </FormControl>
 
       <FormInput
         label="Category"
@@ -361,14 +376,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
-    
+
     try {
       await uploadFile()
     } catch (err) {
       console.log(err, 'error in submitting agent data, uploading ipfs image')
       return
     }
-    
+
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
@@ -383,7 +398,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       console.log(err, 'error in registering entity name')
       return
     }
-  
+
     try {
       await submitEntityData(entityRegistrarDomain, currentEntityOwner)
     } catch (err) {
@@ -519,3 +534,11 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   )
 }
 export default AgentModal
+
+/* Add this CSS to your styles */
+export const sds = `::file-selector-button{
+  border: 2px solid black;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: lightgreen;
+}`
