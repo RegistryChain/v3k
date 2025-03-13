@@ -56,12 +56,13 @@ type FormState = {
   twitterHandle: string
   tokenAddress: string
   telegramHandle: string
+  imageFile: File | undefined
 }
 
 interface StepProps {
   isVisible: boolean
   formState: FormState
-  handleFieldChange: (field: keyof FormState) => (value: string) => void
+  handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
 
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
@@ -76,11 +77,13 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         required
       />
 
-      <FormInput
-        label="Image URL"
-        value={formState.avatar}
-        onChange={handleFieldChange('avatar')}
-        placeholder="Enter image URL"
+      <input
+        type="file"
+        accept="image/*" // Accept only image files
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          handleFieldChange('imageFile')(file)
+        }}
         required
       />
 
@@ -204,6 +207,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     twitterHandle: '',
     tokenAddress: '',
     telegramHandle: '',
+    imageFile: undefined
   }
   // Text record key mapping
   const mapKeyToRecord = (formKey: string) => {
@@ -238,6 +242,35 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const [formState, setFormState] = useState(originalFormToSet)
   const publicClient = useMemo(getPublicClient, [])
 
+  const uploadFile = async () => {
+    try {
+      if (!formState.imageFile) {
+        alert("No file selected");
+        return;
+      }
+      const data = new FormData();
+      data.append(
+        "file",
+        new Blob([formState.imageFile], {
+          type: "application/json",
+        })
+      );
+
+      data.append("file", formState.imageFile);
+      const uploadRequest = await fetch("/api/files", {
+        method: "POST",
+        body: data,
+      });
+      const signedUrl = await uploadRequest.json();
+      handleFieldChange('avatar')(signedUrl);
+      // alert(signedUrl);
+
+    } catch (e) {
+      console.log(e);
+
+      alert("Trouble uploading file");
+    }
+  };
   const registerEntity = async (entityDomain: string) => {
     // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
     const registrarContract: any = getContractInstance(
@@ -332,7 +365,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
   }
 
-  const handleFieldChange = (field: keyof typeof formState) => (value: string) =>
+  const handleFieldChange = (field: keyof typeof formState) => (value: string | File | undefined) =>
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
@@ -350,7 +383,12 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       console.log(err, 'error in registering entity name')
       return
     }
-
+    try {
+      uploadFile()
+    } catch (err) { 
+      console.log(err, 'error in submitting agent data, uploading ipfs image')
+      return
+    }
     try {
       await submitEntityData(entityRegistrarDomain, currentEntityOwner)
     } catch (err) {
@@ -475,7 +513,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
         <ButtonWrapper>
           <SubmitButton
-            disabled={!formState.name || !formState.avatar || !formState.category}
+            disabled={!formState.name || !formState.imageFile || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}
