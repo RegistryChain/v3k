@@ -38,7 +38,7 @@ import { getEntitiesList, getResolverAddress } from '@app/hooks/useExecuteWriteT
 import { getPublicClient, getWalletClient, normalizeLabel } from '@app/utils/utils'
 import { useRouter } from 'next/navigation'
 
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 100
 
 export const hasEncodedLabel = (name: string) =>
   name.split('.').some((label) => isEncodedLabelhash(label))
@@ -225,12 +225,7 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
   const dispatchTransactions = async (name: string) => {
 
     const client = getPublicClient()
-    let resolverToUse: any = await getResolverAddress(client, namehash(name))
-    const parentHash = namehash(name.split('.').slice(1).join('.'))
-    console.log('Parent Hash', parentHash)
-    if (!resolverToUse || resolverToUse === zeroAddress) {
-      resolverToUse = await getResolverAddress(client, parentHash)
-    }
+    let resolverToUse: any = await getResolverAddress(client, name)
 
     const revRes: any = getContract({
       address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",

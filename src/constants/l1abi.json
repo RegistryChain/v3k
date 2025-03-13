@@ -107,6 +107,12 @@
   },
   {
     "type": "function",
+    "name": "multicall",
+    "inputs": [{ "name": "", "type": "bytes[]", "internalType": "bytes[]" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "owner",
     "inputs": [],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],

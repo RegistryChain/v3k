@@ -48,6 +48,7 @@ import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
 import { useEnsHistory } from '@app/hooks/useEnsHistory'
 import { Outlink } from '@app/components/Outlink'
 import { Card } from '@app/components/Card'
+import { HistoryBox } from '@app/components/HistoryBox'
 
 
 const TransactionSectionContainer = styled.div<{
@@ -129,28 +130,6 @@ const StyledOutlink = styled(Outlink)<{ $error: boolean }>(
     `,
 )
 
-const ContinueContainer = styled.div(({ theme }) => [
-  css`
-    max-width: ${theme.space['48']};
-    width: fit-content;
-    button {
-      padding: 0 ${theme.space['4']};
-    }
-  `,
-  mq.sm.min(css`
-    button {
-      padding: 0 ${theme.space['8']};
-    }
-  `),
-])
-
-const ViewMoreInner = styled(Typography)(
-  ({ theme }) => css`
-    width: 100%;
-    text-align: center;
-    color: ${theme.colors.textSecondary};
-  `,
-)
 
 const InfoContainer = styled.div(
   ({ theme }) => css`
@@ -272,42 +251,6 @@ const MessageContainer = styled.div(
   `,
 )
 
-const TabButtonContainer = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: ${theme.space['6']};
-    flex-gap: ${theme.space['6']};
-    overflow: auto;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  `,
-)
-
-const TabButton = styled.button<{ $selected: boolean }>(
-  ({ theme, $selected }) => css`
-    display: block;
-    outline: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    background: none;
-    color: ${$selected ? theme.colors.accent : theme.colors.greyPrimary};
-    font-size: ${theme.fontSizes.extraLarge};
-    transition: all 0.15s ease-in-out;
-    cursor: pointer;
-    border-bottom: 1px solid ${$selected ? theme.colors.accent : 'transparent'};
-
-    &:hover {
-      color: ${$selected ? theme.colors.accentBright : theme.colors.text};
-    }
-  `,
-)
-
 const tabs = ['entity', 'actions', 'regulatory', 'plugins'] as const
 type Tab = (typeof tabs)[number]
 
@@ -332,14 +275,11 @@ const ProfileContent = ({
 }: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
-  const [entityMemberManager, setEntityMemberManager] = useState('')
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
-  const [historyOpenIndex, setHistoryOpenIndex] = useState<any>(null)
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
-  const breakpoints = useBreakpoint()
   const { rating, getRating } = useGetRating()
   const { history, fetchEnsHistory } = useEnsHistory()
   const [verification, setVerification] = useState<string | undefined>()
@@ -400,10 +340,6 @@ const ProfileContent = ({
     setVerification(verification)
     console.log("verification " + verification)
   }
-
-  useEffect(() => {
-    console.log(history)
-  }, [history])
 
   useEffect(() => {
     fetchEnsHistory(namehash(domain))
@@ -917,60 +853,7 @@ const ProfileContent = ({
                     </Box>
                   </Box>
                 </Grid>
-                <TransactionSectionContainer $height={'auto'} data-testid="transaction-section-container">
-                  <Typography weight="bold" asProp='h2' style={{ textAlign: "left", width: "100%" }}>Change Log</Typography>
-                  <TransactionSectionInner ref={ref}>
-                    {onOffChainHistory.length > 0 ? (
-                      <>
-                        {onOffChainHistory.map(({ hash, status, sourceFunction, changedProperties, timestamp, }, i) => {
-                          return (
-                            <TransactionContainer
-                              data-testid={`transaction-${status}`}
-                              // eslint-disable-next-line react/no-array-index-key
-                              key={`${sourceFunction}-${i}`}
-                              onClick={() => {
-                                if (historyOpenIndex === i) {
-                                  setHistoryOpenIndex(null)
-                                } else {
-                                  setHistoryOpenIndex(i)
-                                }
-                              }
-                              }
-                            >
-                              <InfoContainer>
-                                {status === 'pending' && (
-                                  <Spinner data-testid="pending-spinner" color="accent" />
-                                )}
-                                <TransactionInfoContainer>
-                                  <Typography weight="bold">{sourceFunction}</Typography>
-                                  <Typography weight="bold">{(new Date(timestamp)).toLocaleString()}</Typography>
-
-                                  {hash ? <StyledOutlink
-                                    $error={status === 'failed'}
-                                    href={makeEtherscanLink(hash, 'sepolia')}
-                                    target="_blank"
-                                  >
-                                    Success
-                                  </StyledOutlink> : null}
-                                </TransactionInfoContainer>
-                              </InfoContainer>
-                              {historyOpenIndex === i ? <InfoContainer>
-                                {JSON.stringify(changedProperties)}
-                              </InfoContainer> : null}
-
-
-                            </TransactionContainer>
-                          )
-                        })}
-                      </>
-                    ) : (
-                      <RecentTransactionsMessage weight="bold">
-                        No Recent Transactions
-                      </RecentTransactionsMessage>
-                    )}
-                  </TransactionSectionInner>
-                </TransactionSectionContainer>
-
+                <HistoryBox record={records} />
               </Grid>
 
               {/*TODO: Possible actions, double check what should be displayed for owner only */}

@@ -60,7 +60,7 @@ type Props = {
 
 export const AvatarWithLink = ({ name, label }: Props) => {
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name })
-  const profileURL = getDestination(`/profile/${name}`) as string
+  const profileURL = getDestination(`/agent/${name}`) as string
   return (
     <Container href={profileURL} data-testid="avatar-with-link">
       <Avatar src={avatar as any} label={label} />

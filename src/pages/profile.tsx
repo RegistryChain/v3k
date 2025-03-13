@@ -38,10 +38,7 @@ export default function Page() {
   const initial = useInitial()
 
   const { address, isConnected } = useAccount()
-
-  const { data: fields, loading, error, refetch } = useRecordData({ domain })
-
-  const publicClient = useMemo(
+  const publicClient: any = useMemo(
     () =>
       createPublicClient({
         chain: sepolia,
@@ -49,6 +46,9 @@ export default function Page() {
       }),
     [],
   )
+
+  const { data: fields, loading, error, refetch } = useRecordData({ domain, wallet, publicClient })
+
   const claimEntity = async () => {
     await openConnect()
     try {
