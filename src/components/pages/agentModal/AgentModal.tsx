@@ -256,7 +256,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       const url = await pinata.gateways.public.convert(cid);
       console.log("url")
       console.log(url)
-      handleFieldChange('avatar')(url);
+      formState.avatar = url
+      // setFormState(formState)
     } catch (e) {
       console.log(e);
       alert("Trouble uploading file");
@@ -362,7 +363,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const handleRegistration = async () => {
     
     try {
-      uploadFile()
+      await uploadFile()
     } catch (err) {
       console.log(err, 'error in submitting agent data, uploading ipfs image')
       return
