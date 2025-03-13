@@ -26,7 +26,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ connectorClient, data }: any) => {
   return commitName.makeFunctionData(connectorClient, data)
 }
 

@@ -19,7 +19,7 @@ import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import { contracts } from '../constants/bytecode'
+import { contracts as contractsBytecode } from '../constants/bytecode'
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
 import { CURRENCY_FLUCTUATION_BUFFER_PERCENTAGE } from './constants'
@@ -232,7 +232,10 @@ export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar
   )
 
   // Concatenate the bytecode and the encoded address
-  const bytecode = encodePacked(['bytes', 'bytes'], [contracts.claimableSafe, encodedAddress])
+  const bytecode = encodePacked(
+    ['bytes', 'bytes'],
+    [contractsBytecode.claimableTreasury, encodedAddress],
+  )
 
   // Step 2: Compute the salt
   const salt = keccak256(
@@ -246,7 +249,7 @@ export const generateSafeAddress = (claimingUser: any, labelHash: any, registrar
   const hash = keccak256(
     encodePacked(
       ['bytes1', 'address', 'bytes32', 'bytes32'],
-      ['0xff', contractAddressesObj.ClaimableSafeFactory, salt, keccak256(bytecode)],
+      ['0xff', contractAddressesObj.ClaimableTreasuryFactory, salt, keccak256(bytecode)],
     ),
   )
 
@@ -293,147 +296,6 @@ export function getDefaultValueByType(type: string) {
   }
 
   return typeMap[type] !== undefined ? typeMap[type] : null // Return `null` if the type is not mapped
-}
-
-export async function returnRecordFormat(record: any): Promise<any> {
-  const excludeKeys = [
-    '_id',
-    'id',
-    '__v',
-    'creationDate',
-    'constitutionHash',
-    'nodeHash',
-    'entity__status__GLEIF',
-    'hasKYC',
-    'inBusinessDoc',
-    'LEI',
-  ]
-
-  const recordObject: any = {}
-  if (!record?.partners || record?.partners?.length === 0) {
-    recordObject.partners = []
-  } else {
-    recordObject.partners = record.partners.map((p: any) => p?._doc || p)
-  }
-  Object.keys(record).forEach((field) => {
-    if (field !== 'partners') {
-      if (excludeKeys.includes(field)) {
-        delete recordObject[field]
-      } else {
-        let label = field
-          .split('__')
-          .map((x) => x[0]?.toUpperCase() + x?.slice(1))
-          .join(' ')
-        if (field === 'domain') {
-          label = 'Entity.ID'
-        }
-        const type = typeof record[field]
-        let value = record?.[field]
-        const defaultValue = getDefaultValueByType(type)
-        recordObject[field] = {
-          type,
-          label,
-          oldValue: value || defaultValue,
-          setValue: value || defaultValue,
-        }
-      }
-    } else {
-      // HERE IS WHERE TO JOIN THE LIVE SHARES/ROLES
-      recordObject.partners.forEach((partner: any, idx: number) => {
-        Object.keys(partner).forEach((partnerField) => {
-          if (excludeKeys.includes(partnerField)) {
-            delete recordObject.partners[idx][partnerField]
-          } else {
-            let label = partnerField
-              .split('__')
-              .map((x) => x[0]?.toUpperCase() + x?.slice(1))
-              .join(' ')
-            if (partnerField === 'domain') {
-              label = 'Entity.ID'
-            }
-            const type: any = typeof partner[partnerField]
-            let value = partner?.[partnerField]
-            if (type === 'Date') {
-              if (value?.toISOString()) {
-                value = value.toISOString().split('T')[0]
-              }
-            }
-            const defaultValue = getDefaultValueByType(type)
-            recordObject.partners[idx][partnerField] = {
-              type,
-              label,
-              oldValue: value || defaultValue,
-              setValue: value || defaultValue,
-            }
-          }
-        })
-      })
-    }
-  })
-
-  recordObject.partners.push(getEmptyPartner())
-
-  if (record.children?.length > 0) {
-    const children = record.children.map((child: any) => {
-      let childReturn: any = {}
-      Object.keys(child).forEach((field) => {
-        if (!excludeKeys.includes(field)) {
-          let label = field
-            .split('__')
-            .map((x) => x[0]?.toUpperCase() + x?.slice(1))
-            .join(' ')
-          if (field === 'domain') {
-            label = 'Entity.ID'
-          }
-          childReturn[field] = {
-            label,
-            type: typeof child[field],
-            oldValue: child[field],
-            setValue: child[field],
-          }
-        }
-      })
-
-      return { ...childReturn }
-    })
-    recordObject.children = children
-  }
-  return recordObject
-}
-
-const getEmptyPartner = () => {
-  const partnerEmpty: any = {}
-  const partnerSchema: any = {
-    name: { type: String },
-    LEI: { type: String }, // Indexed for faster lookups
-    nodeHash: { type: String },
-    domain: { type: String },
-    type: { type: String },
-    wallet__address: { type: String },
-    location: { type: String },
-    DOB: { type: Date },
-    inBusinessDoc: { type: Boolean },
-    hasKYC: { type: Boolean },
-    lockup: { type: String },
-    shares: { type: String },
-    roles: {
-      type: [String], // Array of strings
-    },
-  }
-  Object.keys(partnerSchema).map((field) => {
-    let label = field
-      .split('__')
-      .map((x) => x[0]?.toUpperCase() + x?.slice(1))
-      .join(' ')
-    if (field === 'domain') {
-      label = 'Entity.ID'
-    }
-    const type = partnerSchema[field]?.instance
-    const defaultValue = getDefaultValueByType(type)
-    partnerEmpty[field] = defaultValue
-  })
-
-  return partnerEmpty
 }
 
 export const getChangedRecords = (agentPrepopulate: any, formState: any, fieldMapping: any) => {

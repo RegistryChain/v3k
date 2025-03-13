@@ -14,7 +14,15 @@ const DetailsWrapper = styled.div(
   `,
 )
 
-const EntityViewTab = ({ domainName, multisigAddress, records, status }: any) => {
+interface EntityViewTabProps {
+  domainName: string
+  multisigAddress: string
+  records: any
+  status: string
+  withRating?: boolean
+}
+
+const EntityViewTab = ({ domainName, multisigAddress, records, status, withRating }: EntityViewTabProps) => {
   const { t } = useTranslation('profile')
 
   const nameRecord = records?.entity__name
@@ -27,6 +35,7 @@ const EntityViewTab = ({ domainName, multisigAddress, records, status }: any) =>
         multisigAddress={multisigAddress}
         status={status}
         domainName={domainName}
+        withRating={withRating}
       />
     </DetailsWrapper>
   )

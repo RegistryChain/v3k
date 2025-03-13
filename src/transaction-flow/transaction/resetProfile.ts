@@ -29,7 +29,7 @@ const displayItems = ({ name, resolverAddress }: Data, t: TFunction): Transactio
   ]
 }
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   return clearRecords.makeFunctionData(connectorClient, data)
 }
 

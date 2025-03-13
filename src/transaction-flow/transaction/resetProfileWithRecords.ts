@@ -51,7 +51,7 @@ const displayItems = ({ name, records }: Data, t: TFunction): TransactionDisplay
   ]
 }
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   return setRecords.makeFunctionData(connectorClient, {
     name: data.name,
     ...data.records,

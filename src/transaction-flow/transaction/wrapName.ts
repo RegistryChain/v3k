@@ -27,7 +27,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ connectorClient, data }: any) => {
   return wrapName.makeFunctionData(connectorClient, {
     name: data.name,
     newOwnerAddress: connectorClient.account.address,

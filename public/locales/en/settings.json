@@ -14,9 +14,9 @@
       }
     },
     "primary": {
-      "title": "Primary Name",
-      "noNameDescription": "A primary name links your address to a name, allowing dApps to display a name as your profile when connected to them. Learn about primary names",
-      "choosePrimaryName": "Choose primary name"
+      "title": "Developer Profile",
+      "noNameDescription": "A Developer profile groups all of your agents under your selected entity. This allows you to get recognized for your work and better publicize your projects.",
+      "choosePrimaryName": "Choose developer profile"
     }
   }
 }

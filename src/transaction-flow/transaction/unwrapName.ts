@@ -24,7 +24,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ connectorClient, data }: any) => {
   const { address } = connectorClient.account
 
   if (checkETH2LDFromName(data.name))

@@ -23,7 +23,7 @@ export const ChangePrimaryName = () => {
   return (
     <DescriptionWrapper>
       <Typography>
-        {t('tabs.entity.actions.setAsPrimaryName.description')}{' '}
+        {t('tabs.profile.actions.setAsPrimaryName.description')}{' '}
         <span>
           <Outlink href={getSupportLink('primaryName')}>
             {t('action.learnMore', { ns: 'common' })}

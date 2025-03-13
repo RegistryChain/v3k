@@ -30,7 +30,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({ connectorClient, data }: TransactionFunctionParameters<Data>) =>
+const transaction = async ({ connectorClient, data }: any) =>
   deleteSubname.makeFunctionData(connectorClient, {
     name: data.name,
     contract: data.contract,

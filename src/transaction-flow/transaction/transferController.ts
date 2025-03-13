@@ -26,7 +26,7 @@ const displayItems = (
   },
 ]
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   return transferName.makeFunctionData(connectorClient, {
     name: data.name,
     contract: 'registry',

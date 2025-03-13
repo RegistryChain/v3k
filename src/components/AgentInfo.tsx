@@ -45,6 +45,8 @@ const StatusIndicator = styled.span`
 `
 
 const AgentInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
+  console.log('filteredCompanyData', filteredCompanyData)
+  console.log('fields', fields)
   return (
     <CompanyContainer>
       <StyledTable>
