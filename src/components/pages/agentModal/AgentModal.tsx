@@ -66,7 +66,7 @@ interface StepProps {
   handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
 export const pinata = new PinataSDK({
-  pinataJwt: `${process.env.PINATA_JWT}`,
+  pinataJwt: `${process.env.NEXT_PUBLIC_PINATA_JWT}`,
   pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
 })
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
@@ -252,33 +252,13 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
         alert("No file selected");
         return;
       }
-      // const data = new FormData();
-      // data.append(
-      //   "file",
-      //   new Blob([formState.imageFile], {
-      //     type: "application/json",
-      //   })
-      // );
-
-      // data.append("file", formState.imageFile);
-      try {
-        const { cid } = await pinata.upload.public.file(formState.imageFile)
-        const url = await pinata.gateways.public.convert(cid);
-        handleFieldChange('avatar')(url);
-
-      } catch (e) { 
-        console.log(e)
-      }
-      // const uploadRequest = await fetch("/api/files", {
-      //   method: "POST",
-      //   body: data,
-      // });
-      // const signedUrl = await uploadRequest.json();
-      // alert(signedUrl);
-
+      const { cid } = await pinata.upload.public.file(formState.imageFile)
+      const url = await pinata.gateways.public.convert(cid);
+      console.log("url")
+      console.log(url)
+      handleFieldChange('avatar')(url);
     } catch (e) {
       console.log(e);
-
       alert("Trouble uploading file");
     }
   };
@@ -380,6 +360,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
+    
+    try {
+      uploadFile()
+    } catch (err) {
+      console.log(err, 'error in submitting agent data, uploading ipfs image')
+      return
+    }
+    
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
@@ -394,12 +382,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       console.log(err, 'error in registering entity name')
       return
     }
-    try {
-      uploadFile()
-    } catch (err) { 
-      console.log(err, 'error in submitting agent data, uploading ipfs image')
-      return
-    }
+  
     try {
       await submitEntityData(entityRegistrarDomain, currentEntityOwner)
     } catch (err) {
