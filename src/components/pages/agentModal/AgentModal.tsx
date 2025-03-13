@@ -1,6 +1,10 @@
 // components/AgentModal.tsx (updated)
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { TextField, Select, FormControl, InputLabel, MenuItem } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import styled, { css } from 'styled-components'
+
+import { PinataSDK } from 'pinata'
 import {
   Address,
   encodeAbiParameters,
@@ -41,6 +45,7 @@ import {
 import { FormInput } from './FormInput'
 import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
+import { lightGreen } from '@mui/material/colors'
 
 type FormState = {
   name: string
@@ -56,14 +61,18 @@ type FormState = {
   twitterHandle: string
   tokenAddress: string
   telegramHandle: string
+  imageFile: File | undefined
 }
 
 interface StepProps {
   isVisible: boolean
   formState: FormState
-  handleFieldChange: (field: keyof FormState) => (value: string) => void
+  handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
-
+export const pinata = new PinataSDK({
+  pinataJwt: `${process.env.NEXT_PUBLIC_PINATA_JWT}`,
+  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
+})
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
@@ -75,14 +84,27 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         placeholder="Enter agent name"
         required
       />
-
-      <FormInput
-        label="Image URL"
-        value={formState.avatar}
-        onChange={handleFieldChange('avatar')}
-        placeholder="Enter image URL"
-        required
-      />
+      <FormControl required>
+        <label htmlFor="fileUpload" style={{ paddingLeft: '6px', paddingBottom: '6px', color: '#666666' }}>Image * </label>
+        <input
+          type="file"
+          accept="image/*" 
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            handleFieldChange('imageFile')(file)
+          }}
+          style={{
+            color: '#666666' ,
+            display: "inline - block",
+            cursor: "pointer",
+            paddingLeft: "12px",
+            paddingTop: "10px",
+            paddingBottom: "10px",
+            outline: "10px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </FormControl>
 
       <FormInput
         label="Category"
@@ -204,6 +226,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     twitterHandle: '',
     tokenAddress: '',
     telegramHandle: '',
+    imageFile: undefined
   }
   // Text record key mapping
   const mapKeyToRecord = (formKey: string) => {
@@ -238,6 +261,23 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const [formState, setFormState] = useState(originalFormToSet)
   const publicClient = useMemo(getPublicClient, [])
 
+  const uploadFile = async () => {
+    try {
+      if (!formState.imageFile) {
+        alert("No file selected");
+        return;
+      }
+      const { cid } = await pinata.upload.public.file(formState.imageFile)
+      const url = await pinata.gateways.public.convert(cid);
+      console.log("url")
+      console.log(url)
+      formState.avatar = url
+      // setFormState(formState)
+    } catch (e) {
+      console.log(e);
+      alert("Trouble uploading file");
+    }
+  };
   const registerEntity = async (entityDomain: string) => {
     // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
     const registrarContract: any = getContractInstance(
@@ -332,10 +372,18 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
   }
 
-  const handleFieldChange = (field: keyof typeof formState) => (value: string) =>
+  const handleFieldChange = (field: keyof typeof formState) => (value: string | File | undefined) =>
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
+
+    try {
+      await uploadFile()
+    } catch (err) {
+      console.log(err, 'error in submitting agent data, uploading ipfs image')
+      return
+    }
+
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
@@ -475,7 +523,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
         <ButtonWrapper>
           <SubmitButton
-            disabled={!formState.name || !formState.avatar || !formState.category}
+            disabled={!formState.name || !formState.imageFile || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}
@@ -486,3 +534,11 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   )
 }
 export default AgentModal
+
+/* Add this CSS to your styles */
+export const sds = `::file-selector-button{
+  border: 2px solid black;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: lightgreen;
+}`
