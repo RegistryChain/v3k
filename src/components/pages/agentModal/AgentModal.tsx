@@ -1,6 +1,7 @@
 // components/AgentModal.tsx (updated)
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { PinataSDK } from 'pinata'
 import {
   Address,
   encodeAbiParameters,
@@ -64,7 +65,10 @@ interface StepProps {
   formState: FormState
   handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
-
+export const pinata = new PinataSDK({
+  pinataJwt: `${process.env.PINATA_JWT}`,
+  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
+})
 const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
@@ -248,21 +252,24 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
         alert("No file selected");
         return;
       }
-      const data = new FormData();
-      data.append(
-        "file",
-        new Blob([formState.imageFile], {
-          type: "application/json",
-        })
-      );
+      // const data = new FormData();
+      // data.append(
+      //   "file",
+      //   new Blob([formState.imageFile], {
+      //     type: "application/json",
+      //   })
+      // );
 
-      data.append("file", formState.imageFile);
-      const uploadRequest = await fetch("/api/files", {
-        method: "POST",
-        body: data,
-      });
-      const signedUrl = await uploadRequest.json();
-      handleFieldChange('avatar')(signedUrl);
+      // data.append("file", formState.imageFile);
+
+      const { cid } = await pinata.upload.public.file(formState.imageFile)
+      const url = await pinata.gateways.public.convert(cid);
+      // const uploadRequest = await fetch("/api/files", {
+      //   method: "POST",
+      //   body: data,
+      // });
+      // const signedUrl = await uploadRequest.json();
+      handleFieldChange('avatar')(url);
       // alert(signedUrl);
 
     } catch (e) {
