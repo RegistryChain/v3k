@@ -334,6 +334,13 @@
         "noEligibleNames": "No eligible names"
       }
     },
+    "developerAgents": {
+      "title": "View agents by this developer",
+      "errors": {
+        "noNamesFound": "No agents found",
+        "noEligibleNames": "No eligible agents"
+      }
+    },
     "resetPrimaryName": {
       "title": "Remove Developer Profile",
       "description": "This name will no longer appear as the name for this address. However, transactions to this name will still resolve to this address unless you remove the ETH record."

@@ -13,6 +13,10 @@ import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
 import { Address, createPublicClient, getContract, http } from 'viem'
 import { sepolia } from 'viem/chains'
 import { getWalletClient } from '@app/utils/utils'
+import { useRecordData } from '@app/hooks/useExecuteWriteToResolver'
+import { useMemo } from 'react'
+import { infuraUrl } from '@app/utils/query/wagmi'
+import { TransactionSection } from './TransactionSection/TransactionSection'
 
 const SkeletonFiller = styled.div(
   ({ theme }) => css`
@@ -139,8 +143,17 @@ export const PrimarySection = () => {
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const showResetPrimaryNameInput = usePreparedDataInput('ResetPrimaryName')
+  const publicClient: any = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
 
   const primary = usePrimaryName({ address })
+  const { data: fields, loading, error, refetch } = useRecordData({ domain: primary.data?.name, publicClient })
 
   const { truncatedName, isLoading: basicLoading } = useBasicName({
     name: primary.data?.name,
@@ -164,6 +177,7 @@ export const PrimarySection = () => {
       address,
     })
   }
+  console.log(fields)
 
   return (
     <Skeleton loading={isLoading} as={SkeletonFiller as any}>
@@ -176,6 +190,9 @@ export const PrimarySection = () => {
               </Typography>
               <Typography data-testid="primary-name-label" fontVariant="headingTwo" ellipsis>
                 {truncatedName}
+              </Typography>
+              <Typography fontVariant="body" ellipsis>
+                {(fields?.description || "") + ' ' + (fields?.entity__purpose || "")}
               </Typography>
             </PrimaryNameInfo>
             <AvatarContainer>
