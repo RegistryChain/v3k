@@ -3,8 +3,10 @@ import {
   Address,
   BaseError,
   decodeAbiParameters,
+  decodeFunctionResult,
   defineChain,
   encodeAbiParameters,
+  encodeFunctionData,
   getContract,
   Hex,
   isAddress,
@@ -22,6 +24,7 @@ import * as chains from 'viem/chains'
 import { normalise } from '@ensdomains/ensjs/utils'
 
 import contractAddresses from '../constants/contractAddresses.json'
+import l1abi from '../constants/l1abi.json'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
   // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
@@ -252,65 +255,82 @@ export async function handleDBStorage({
   return requestResponse
 }
 
-export async function readResolverData(client: any, nodeHash: any) {
-  let results = []
+export async function readResolverData(resolverAddress: any, client: any, nodeHash: any) {
+  let results: any = {}
   try {
-    results = await client.multicall({
-      contracts: displayKeys.map((x) => ({
-        address: contractAddresses.PublicResolver,
-        abi: [
-          ...parseAbi([
-            'function multicall(bytes[] memory data) view returns (bytes[] memory)',
-            'function text(bytes32,string memory) view returns (string memory)',
-          ]),
-        ],
+    const calls = displayKeys.map((key) =>
+      encodeFunctionData({
+        abi: parseAbi(['function text(bytes32,string) view returns (string)']),
         functionName: 'text',
-        args: [nodeHash, x],
-      })) as any[],
+        args: [nodeHash, key],
+      }),
+    )
+
+    const resolverContract: any = await getContract({
+      client,
+      abi: [
+        ...l1abi,
+        ...parseAbi(['function multicallView(bytes[] calldata) view returns (bytes calldata)']),
+      ],
+      address: resolverAddress as Address,
     })
-    results.domain = results.name + '.' + results?.entity__registrar + '.entity.id'
+
+    const multicallResponse = await resolverContract.read.multicallView([calls])
+
+    const encodedTexts = decodeAbiParameters([{ type: 'bytes[]' }], multicallResponse)[0]
+
+    const decodedResults: any[] = encodedTexts.map((result: any, index: number) => {
+      try {
+        return decodeAbiParameters([{ type: 'string' }], result)?.[0]
+      } catch (error) {
+        console.error(`Failed to decode text(${displayKeys[index]})`, error)
+        return ''
+      }
+    })
+
+    // Convert results into a key-value object
+    results = displayKeys.reduce(
+      (acc, key, index) => {
+        acc[key] = decodedResults[index] || '' // Assign null if decoding failed
+        return acc
+      },
+      {} as Record<string, string | null>,
+    )
   } catch (err: any) {
-    console.log('Error reading on chain resolver data ', err.message)
+    console.log('Error reading resolver data ', err.message)
   }
 
-  let resultsObj: any = {}
-  if (results) {
-    results.map((x: any) => {
-      return x?.result || ''
-    })
-  } else {
-    displayKeys.map((x: any, idx: any) => {
-      resultsObj[displayKeys[idx]] = x?.result || ''
-    })
-  }
-
-  return resultsObj
+  //hardcodes or derived fields
+  results.domain = results.name + '.' + results?.entity__registrar + '.entity.id'
+  return results
 }
 
-export const getResolverAddress = async (client: any, nodeHash: any) => {
+export const getResolverAddress = async (client: any, domain: any) => {
   let resolverAddr = zeroAddress
   // Check resolver type
+  const registry: any = await getContract({
+    client,
+    abi: [...parseAbi(['function resolver(bytes32) view returns (address)'])],
+    address: contractAddresses.ENSRegistry as Address,
+  })
   try {
-    const registry: any = await getContract({
-      client,
-      abi: [...parseAbi(['function resolver(bytes32) view returns (address)'])],
-      address: contractAddresses.ENSRegistry as Address,
-    })
+    resolverAddr = await registry.read.resolver([namehash(domain)])
+  } catch (err: any) {
+    console.log('ERROR GETTING CURRENT RESOLVER ADDRESS: ', err.message)
+  }
 
-    resolverAddr = await registry.read.resolver([nodeHash])
-  } catch (err) {}
+  if (resolverAddr === zeroAddress) {
+    try {
+      resolverAddr = await registry.read.resolver([namehash(domain.split('.').slice(1).join('.'))])
+    } catch (err: any) {
+      console.log('ERROR GETTING CURRENT PARENT RESOLVER ADDRESS: ', err.message)
+    }
+  }
+
   return resolverAddr
-  // if (resolverAddr === contractAddresses.DatabaseResolver) {
-  //   return await getRecordData({ domain })
-  // }
 }
 
-export function useRecordData({
-  domain = '',
-  wallet = null,
-  publicClient = null,
-  needsSchema = true,
-}) {
+export function useRecordData({ domain = '', wallet = null, publicClient = null }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -318,18 +338,21 @@ export function useRecordData({
   const nodeHash = namehash(normalise(domain))
 
   const getRes = async () => {
-    if (wallet) {
-      const res = await getResolverAddress(wallet, nodeHash)
-      if (isAddress(res)) {
-        setResolverAddress(res)
-      }
+    if (publicClient) {
+      try {
+        const res = await getResolverAddress(publicClient, normalise(domain))
+        if (isAddress(res) && res !== zeroAddress) {
+          setResolverAddress(res)
+          return
+        }
+      } catch (e) {}
     }
   }
   useEffect(() => {
-    if (wallet && domain) {
+    if (publicClient && domain) {
       getRes()
     }
-  }, [wallet, domain])
+  }, [publicClient, domain])
 
   const fetchRecordData = useCallback(async () => {
     if (!domain) return
@@ -342,7 +365,11 @@ export function useRecordData({
 
     try {
       if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
-        const returnObj = await readResolverData(publicClient, nodeHash)
+        const returnObj = await readResolverData(
+          resolverAddress || zeroAddress,
+          publicClient,
+          nodeHash,
+        )
 
         setData(returnObj)
       } else {
@@ -378,10 +405,10 @@ export function useRecordData({
   }, [domain, resolverAddress])
 
   useEffect(() => {
-    if (domain && wallet && resolverAddress) {
+    if (domain && (wallet || publicClient) && resolverAddress && resolverAddress !== zeroAddress) {
       fetchRecordData()
     }
-  }, [domain, wallet, resolverAddress])
+  }, [domain, wallet, publicClient, resolverAddress])
 
   return { data, loading, error, refetch: fetchRecordData }
 }
@@ -439,6 +466,9 @@ export const displayKeys = [
   'entity__lookup__number',
   'entity__code',
   'entity__arbitrator',
+]
+
+const partnerDisplayKeys = [
   'partner__[0]__name',
   'partner__[0]__type',
   'partner__[0]__wallet__address',
