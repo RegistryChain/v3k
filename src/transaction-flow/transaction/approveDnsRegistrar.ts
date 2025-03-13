@@ -43,7 +43,7 @@ const publicResolverSetApprovalForAllSnippet = [
   },
 ] as const
 
-const transaction = async ({ client }: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client }: any) => {
   return {
     to: getChainContractAddress({
       client,

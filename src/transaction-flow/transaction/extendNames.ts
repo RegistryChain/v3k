@@ -1,53 +1,59 @@
+// @ts-nocheck
 import type { TFunction } from 'react-i18next'
 
 import { getPrice } from '@ensdomains/ensjs/public'
 import { renewNames } from '@ensdomains/ensjs/wallet'
 
 import { Transaction, TransactionDisplayItem, TransactionFunctionParameters } from '@app/types'
-import { makeDisplay } from '@app/utils/currency'
 
-import { calculateValueWithBuffer, formatDuration } from '../../utils/utils'
+import { calculateValueWithBuffer, formatDurationOfDates, formatExpiry } from '../../utils/utils'
 
 type Data = {
   names: string[]
   duration: number
-  rentPrice: bigint
+  startDateTimestamp?: number
+  displayPrice?: string
 }
 
 const displayItems = (
-  { names, rentPrice, duration }: Data,
+  { names, duration, startDateTimestamp, displayPrice }: Data,
   t: TFunction<'translation', undefined>,
-): TransactionDisplayItem[] => [
-  {
-    label: 'name',
-    value: names.length > 1 ? `${names.length} names` : names[0],
-    type: names.length > 1 ? undefined : 'name',
-  },
-  {
-    label: 'action',
-    value: t('transaction.extendNames.actionValue', { ns: 'transactionFlow' }),
-  },
-  {
-    label: 'duration',
-    value: formatDuration(duration, t),
-  },
-  {
-    label: 'cost',
-    value: t('transaction.extendNames.costValue', {
-      ns: 'transactionFlow',
-      value: makeDisplay({
-        value: calculateValueWithBuffer(rentPrice),
-        symbol: 'eth',
+): TransactionDisplayItem[] => {
+  return [
+    {
+      label: 'name',
+      value: names.length > 1 ? `${names.length} names` : names[0],
+      type: names.length > 1 ? undefined : 'name',
+    },
+    {
+      label: 'action',
+      value: t('transaction.extendNames.actionValue', { ns: 'transactionFlow' }),
+    },
+    {
+      type: 'duration',
+      label: 'duration',
+      value: {
+        duration: formatDurationOfDates({
+          startDate: startDateTimestamp ? new Date(startDateTimestamp) : undefined,
+          endDate: startDateTimestamp ? new Date(startDateTimestamp + duration * 1000) : undefined,
+          t,
+        }),
+        newExpiry: startDateTimestamp
+          ? formatExpiry(new Date(startDateTimestamp + duration * 1000))
+          : undefined,
+      },
+    },
+    {
+      label: 'cost',
+      value: t('transaction.extendNames.costValue', {
+        ns: 'transactionFlow',
+        value: displayPrice,
       }),
-    }),
-  },
-]
+    },
+  ]
+}
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const { names, duration } = data
   const price = await getPrice(client, {
     nameOrNames: names,

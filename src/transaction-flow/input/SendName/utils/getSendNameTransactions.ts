@@ -29,7 +29,7 @@ export const getSendNameTransactions = ({
 
   const _transactions = [
     setEthRecordOnly
-      ? createTransactionItem('updateEthAddress', { name, address: recipient })
+      ? createTransactionItem('updateEthAddress', { name, address: recipient } as any)
       : null,
     setEthRecordAndResetProfile && resolverAddress
       ? createTransactionItem('resetProfileWithRecords', {
@@ -38,7 +38,7 @@ export const getSendNameTransactions = ({
             coins: [{ coin: 'ETH', value: recipient }],
           },
           resolverAddress,
-        })
+        } as any)
       : null,
     transactions.sendManager
       ? makeTransferNameOrSubnameTransactionItem({

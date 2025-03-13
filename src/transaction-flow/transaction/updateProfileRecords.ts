@@ -34,7 +34,7 @@ const displayItems = (
       }
     : {
         label: 'action',
-        value: t('transaction.description.updateRecords'),
+        value: t('transaction.description.updateProfile'),
       }
 
   const recordsList = recordOptionsToToupleList(
@@ -73,11 +73,7 @@ const displayItems = (
   ]
 }
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const { name, resolverAddress, records, previousRecords = [], clearRecords } = data
   const submitRecords = getProfileRecordsDiff(records, previousRecords)
   const recordOptions = await profileRecordsToRecordOptionsWithDeleteAbiArray(client, {

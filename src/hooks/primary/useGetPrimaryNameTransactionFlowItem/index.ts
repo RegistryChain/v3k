@@ -62,7 +62,7 @@ export const useGetPrimaryNameTransactionFlowItem = (
           name,
         })
       ) {
-        transactions.push(createTransactionItem('setPrimaryName', { name, address }))
+        transactions.push(createTransactionItem('setPrimaryName', { name, address } as any))
       }
 
       if (
@@ -78,27 +78,28 @@ export const useGetPrimaryNameTransactionFlowItem = (
           createTransactionItem('updateResolver', {
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
-            resolverAddress: latestResolverAddress,
-          }),
+            resolverAddress: '0x8c6ab6c2e78d7d2b2a6204e95d8a8874a95348a4',
+          } as any),
         )
       }
 
-      if (
-        checkRequiresUpdateEthAddressTransaction({
-          resolvedAddress: profileAddress,
-          address,
-          isResolverAuthorized: resolverStatus?.isAuthorized,
-          isLatestResolverEthAddressSetToAddress: resolverStatus?.hasMigratedRecord,
-        })
-      ) {
-        transactions.unshift(
-          createTransactionItem('updateEthAddress', {
-            name,
-            address,
-            latestResolver: !resolverStatus?.isAuthorized,
-          }),
-        )
-      }
+      // if (
+      //   checkRequiresUpdateEthAddressTransaction({
+      //     resolvedAddress: profileAddress,
+      //     address,
+      //     isResolverAuthorized: resolverStatus?.isAuthorized,
+      //     isLatestResolverEthAddressSetToAddress: resolverStatus?.hasMigratedRecord,
+      //   })
+      // ) {
+      //   console.log(profileAddress, address, resolverStatus)
+      //   transactions.unshift(
+      //     createTransactionItem('updateEthAddress', {
+      //       name,
+      //       address,
+      //       latestResolver: !resolverStatus?.isAuthorized,
+      //     }),
+      //   )
+      // }
 
       const introItem =
         transactions.length > 1

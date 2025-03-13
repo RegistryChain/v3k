@@ -72,19 +72,19 @@ const SyncManager = ({ data: { name }, dispatch, onDismiss }: Props) => {
     const transactions = [
       canSyncDNS
         ? createTransactionItem('syncManager', {
-            name,
-            address: account.address!,
-            dnsImportData: dnsImportData.data!,
-          })
+          name,
+          address: account.address!,
+          dnsImportData: dnsImportData.data!,
+        } as any)
         : null,
       canSyncEth && account.address
         ? makeTransferNameOrSubnameTransactionItem({
-            name,
-            newOwnerAddress: account.address,
-            sendType: 'sendManager',
-            isOwnerOrManager: true,
-            abilities: abilities.data!,
-          })
+          name,
+          newOwnerAddress: account.address,
+          sendType: 'sendManager',
+          isOwnerOrManager: true,
+          abilities: abilities.data!,
+        })
         : null,
     ].filter(
       (

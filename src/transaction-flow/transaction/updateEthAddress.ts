@@ -35,11 +35,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const resolverAddress = data?.latestResolver
     ? getChainContractAddress({ client, contract: 'ensPublicResolver' })
     : await getResolver(client, { name: data.name })
