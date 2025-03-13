@@ -84,27 +84,33 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         placeholder="Enter agent name"
         required
       />
-      <FormControl required>
-        <label htmlFor="fileUpload" style={{ paddingLeft: '6px', paddingBottom: '6px', color: '#666666' }}>Image * </label>
+
+      <label htmlFor="file-upload" style={{ 
+          color: '#666666',
+          display: "inline - block",
+          paddingLeft: "12px",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          outline: "10px",
+          // border: "1px solid #ccc",
+          cursor: "pointer",
+         }}>
         <input
+          id="file-upload"
+          required
           type="file"
-          accept="image/*" 
+          accept="image/*"
+          name='Upload Image'
           onChange={(e) => {
             const file = e.target.files?.[0];
             handleFieldChange('imageFile')(file)
           }}
           style={{
-            color: '#666666' ,
-            display: "inline - block",
-            cursor: "pointer",
-            paddingLeft: "12px",
-            paddingTop: "10px",
-            paddingBottom: "10px",
-            outline: "10px",
-            border: "1px solid #ccc",
+            display: 'none'
           }}
         />
-      </FormControl>
+        <span>Upload Image: {formState.imageFile?.name || 'No File Chosen'}</span>
+      </label>
 
       <FormInput
         label="Category"
