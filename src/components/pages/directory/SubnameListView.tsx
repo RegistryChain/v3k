@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { http } from 'viem'
+import { Address, getContract, http, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { createEnsPublicClient } from '@ensdomains/ensjs'
@@ -12,10 +12,13 @@ import {
   SortDirection,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
-import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
-import entityTypesObj from '../../../constants/entityTypes.json'
+import contractAddresses from '../../../constants/contractAddresses.json'
+import l1abi from '../../../constants/l1abi.json'
+
+import { getWalletClient } from '@app/utils/utils'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -29,7 +32,7 @@ const TabWrapperWithButtons = styled(TabWrapper)(
   `,
 )
 
-export const SubnameListView = () => {
+export const SubnameListView = ({ address }: any) => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
 
   const [sortType, setSortType] = useState<any>('entity__formation__date')
@@ -41,19 +44,14 @@ export const SubnameListView = () => {
   const [pageNumber, setPageNumber] = useState(0)
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false)
   const [finishedLoading, setFinishedLoading] = useState(false)
+  const [connectedIsAdmin, setConnectedIsAdmin] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState("")
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
 
-  const jurisList = useMemo(() => {
-    // const list = {}
-    // entityTypesObj.forEach((x) => {
-    //   list[x.countryJurisdictionCode] = true
-    // })
-    // return Object.keys(list)
-    return ['ai']
-  }, [entityTypesObj])
+  const jurisList = ['ai']
 
-  const client: any = useMemo(
+  const publicClient: any = useMemo(
     () =>
       createEnsPublicClient({
         chain: sepolia,
@@ -62,16 +60,45 @@ export const SubnameListView = () => {
     [],
   )
 
+  const moderateEntity = async (entityDomain: string, operation: any) => {
+    try {
+      if (address && entityDomain) {
+        const formationPrep = {
+          functionName: 'moderateEntity',
+          args: [
+            namehash(entityDomain),
+            operation
+          ],
+          abi: l1abi,
+          address: contractAddresses['DatabaseResolver'],
+        }
+
+        await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
+        getSubs(pageNumber)
+      }
+    } catch (err) { }
+  }
+
   const getSubs = async (page: number = pageNumber, resetResults = false) => {
     setIsLoadingNextPage(true)
+    let status = {}
+    if (connectedIsAdmin) {
+      if (selectedStatus === "true") {
+        status = { hidden: true }
+      } else if (selectedStatus === "false") {
+        status = { hidden: false }
+      }
+    }
     try {
+      let searchBase = searchInput ? {} : { avatar: 'https' }
       const results = await getEntitiesList({
         registrar,
         nameSubstring: searchInput,
         page,
         sortDirection,
         sortType,
-        params: searchInput ? {} : { avatar: 'https' },
+        address,
+        params: { ...searchBase, ...status },
       })
 
       setSubnameResults((prevResults) => (resetResults ? results : [...prevResults, ...results]))
@@ -84,6 +111,26 @@ export const SubnameListView = () => {
       setIsLoadingNextPage(false)
     }
   }
+
+  const checkConnectedAddressAdmin = async () => {
+
+    const registrar: any = await getContract({
+      client: publicClient,
+      abi: [...parseAbi(['function REGISTRAR_ADMIN_ROLE() view returns (bytes32)', 'function hasRole(bytes32, address) view returns (bool)'])],
+      address: contractAddresses["ai.entity.id"] as Address,
+    })
+    try {
+      let roleHash = await registrar.read.REGISTRAR_ADMIN_ROLE()
+      let isAdmin = await registrar.read.hasRole([roleHash, address])
+      setConnectedIsAdmin(isAdmin)
+    } catch (err: any) {
+      console.log('ERROR GETTING CONNECTED WALLET ADMIN LEVEL: ', err.message)
+    }
+  }
+
+  useEffect(() => {
+    checkConnectedAddressAdmin()
+  }, [address])
 
   useEffect(() => {
     if (pageNumber !== 0) {
@@ -99,7 +146,7 @@ export const SubnameListView = () => {
     }, 1000) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
-  }, [searchInput, registrar, sortType, sortDirection])
+  }, [searchInput, registrar, sortType, sortDirection, selectedStatus])
 
   const filteredSet = useMemo(
     () =>
@@ -136,6 +183,9 @@ export const SubnameListView = () => {
         onSearchChange={(s) => {
           setSearchInput(s)
         }}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        connectedIsAdmin={connectedIsAdmin}
       />
       <DirectoryTable
         sortDirection={sortDirection}
@@ -145,6 +195,8 @@ export const SubnameListView = () => {
         fetchData={getSubs}
         page={pageNumber}
         setPage={setPageNumber}
+        connectedIsAdmin={connectedIsAdmin}
+        moderateEntity={moderateEntity}
       />
     </TabWrapperWithButtons>
   )

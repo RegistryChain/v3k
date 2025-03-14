@@ -119,6 +119,7 @@ const TrendingAgents = () => {
         sortDirection: 'desc',
         sortType: 'creationDate',
         limit: 18,
+        address,
         params: { avatar: 'https', featured: 'false' },
       })
 
@@ -153,7 +154,7 @@ const TrendingAgents = () => {
         tokenAddress={agents.map((x: any) => x.address)}
         onResults={setSubgraphResults}
       />
-      <AgentGrid boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
+      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
     </>
   )
 }

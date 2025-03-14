@@ -206,7 +206,8 @@ const DeveloperAgents = ({ address, record }: any) => {
                     { owner: address },
                     { partners: { $elemMatch: { wallet__address: address } } }
                 ]
-            }
+            },
+            address
         })
         setOffchainEntities(entities)
     }

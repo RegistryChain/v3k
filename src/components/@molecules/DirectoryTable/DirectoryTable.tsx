@@ -31,6 +31,8 @@ interface DirectoryTableProps {
   onSortDirectionChange: (direction: 'asc' | 'desc') => void
   page: number
   setPage: React.Dispatch<React.SetStateAction<number>>
+  connectedIsAdmin: boolean,
+  moderateEntity: any
 }
 
 export const DirectoryTable = ({
@@ -41,11 +43,9 @@ export const DirectoryTable = ({
   onSortDirectionChange,
   page,
   setPage,
+  connectedIsAdmin,
+  moderateEntity
 }: DirectoryTableProps) => {
-  const router = useRouterWithHistory()
-  const tld = 'entity.id'
-  const { address } = useAccount()
-
   const paginatedData = data.slice(page * itemsPerPage, (page + 1) * itemsPerPage)
 
   const handleNextPage = async () => {
@@ -61,7 +61,7 @@ export const DirectoryTable = ({
 
   return (
     <div>
-      <AgentGrid boxes={paginatedData} onRate={() => null} />
+      <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={paginatedData} onRate={() => null} />
       <ButtonContainer>
         <Button disabled={page === 0} onClick={handlePrevPage}>
           Previous

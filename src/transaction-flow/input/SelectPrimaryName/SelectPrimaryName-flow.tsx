@@ -182,7 +182,8 @@ const SelectPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) =>
           { owner: address },
           { partners: { $elemMatch: { wallet__address: address } } }
         ]
-      }
+      },
+      address
     })
     setOffchainEntities(entities)
   }

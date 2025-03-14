@@ -11,6 +11,24 @@
     "stateMutability": "nonpayable"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "moderateEntity",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "type": "function",
     "name": "addr",
     "inputs": [{ "name": "node", "type": "bytes32", "internalType": "bytes32" }],

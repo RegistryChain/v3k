@@ -2,7 +2,7 @@
 import { AgentBox } from './AgentBox'
 import { Container, Row } from './AgentGridStyles'
 
-export const AgentGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
+export const AgentGrid = ({ rowHeight = 120, connectedIsAdmin = false, moderateEntity = () => null, boxes, onRate }: any) => {
   const rows = []
   for (let i = 0; i < boxes.length; i += 3) {
     const rowBoxes = boxes.slice(i, i + 3)
@@ -18,7 +18,8 @@ export const AgentGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
         <Row key={rowIndex}>
           {row.map((box: any, boxIndex: any) => (
             <AgentBox
-              key={boxIndex}
+              key={boxIndex + 'row' + rowIndex + 'do' + box.domain}
+              hidden={box.hidden}
               onRate={(x: any) => onRate(box.address, x + 1)}
               index={rowIndex * 3 + boxIndex + 1}
               rowHeight={rowHeight}
@@ -31,6 +32,8 @@ export const AgentGrid = ({ rowHeight = 120, boxes, onRate }: any) => {
               location={box.location}
               rating={box.rating}
               isPlaceholder={box.isPlaceholder}
+              connectedIsAdmin={connectedIsAdmin}
+              moderateEntity={moderateEntity}
             />
           ))}
         </Row>

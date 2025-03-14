@@ -27,7 +27,6 @@ import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
-  // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
   try {
     await simulateContract(wallet, calldata)
   } catch (err) {
@@ -147,6 +146,7 @@ export async function getEntitiesList({
   sortDirection = '',
   page = 0,
   limit = 25,
+  address = zeroAddress,
   params = {},
 }: any) {
   try {
@@ -169,7 +169,7 @@ export async function getEntitiesList({
     }
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
+        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
       {
         method: 'GET',
         headers: {
@@ -231,6 +231,8 @@ export async function handleDBStorage({
   message: any
   wallet: WalletClient
 }) {
+  domain.chainId += ''
+  message.expirationTimestamp += ''
   const signature = await wallet.signTypedData({
     account: wallet.account?.address as any,
     domain,

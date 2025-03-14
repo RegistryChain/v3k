@@ -119,6 +119,7 @@ const FeaturedAgents = () => {
         sortDirection: 'desc',
         sortType: 'creationDate',
         limit: 6,
+        address,
         params: { avatar: 'https', featured: 'true' },
       })
 
@@ -153,7 +154,7 @@ const FeaturedAgents = () => {
         tokenAddress={agents.map((x: any) => x.address)}
         onResults={setSubgraphResults}
       />
-      <AgentGrid boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
+      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
     </>
   )
 }

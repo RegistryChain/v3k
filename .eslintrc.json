@@ -34,6 +34,8 @@
     "playwright/**/*.ts"
   ],
   "rules": {
+    "no-alert": "off",
+    "no-param-reassign": "off",
     "no-await-in-loop": "off",
     "prefer-destructuring": "off",
     "no-empty": "off",

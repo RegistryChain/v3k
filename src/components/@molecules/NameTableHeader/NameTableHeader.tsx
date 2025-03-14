@@ -1,13 +1,9 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
 import { GetNamesForAddressParameters } from '@ensdomains/ensjs/subgraph'
 import { Input, MagnifyingGlassSimpleSVG, mq, Select } from '@ensdomains/thorin'
-
-import DownDirectionSVG from '@app/assets/SortAscending.svg'
-import UpDirectionSVG from '@app/assets/SortDescending.svg'
-import { CheckButton } from '@app/components/@atoms/CheckButton/CheckButton'
 
 const SearchInput = styled(Input)`
   min-width: 200px;
@@ -150,6 +146,9 @@ type Props = {
   onSortTypeChange?: any
   onRegistrarChange?: (type: string) => void
   onSortDirectionChange?: (direction: SortDirection) => void
+  selectedStatus?: string
+  setSelectedStatus?: (type: string) => void
+  connectedIsAdmin?: boolean
 }
 
 export const NameTableHeader = ({
@@ -168,6 +167,9 @@ export const NameTableHeader = ({
   onRegistrarChange,
   onSortDirectionChange,
   onSearchChange,
+  selectedStatus = "",
+  setSelectedStatus,
+  connectedIsAdmin = false
 }: PropsWithChildren<Props>) => {
   const { t } = useTranslation('common')
 
@@ -187,6 +189,12 @@ export const NameTableHeader = ({
     }))
   }
 
+  let statusOptions: any[] = [
+    { label: "all", value: "all" },
+    { label: "approved", value: "false" },
+    { label: "hidden", value: "true" },
+  ]
+
   return (
     <TableHeader $desktopGap={selectable ? 'small' : 'medium'}>
       <TableHeaderLeading>
@@ -201,6 +209,24 @@ export const NameTableHeader = ({
         </TableHeaderLeadingLeft>
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>
       </TableHeaderLeading>
+      <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
+        {connectedIsAdmin ? (
+          <><Label>Sort by entity status</Label>
+            <Select
+              value={selectedStatus}
+              size="small"
+              label="Status"
+              hideLabel
+              placeholder={t('action.sort')}
+              onChange={(e) => {
+                setSelectedStatus?.(e.target.value as any)
+              }}
+              options={statusOptions}
+              id="sort-by"
+            /></>
+        ) : null}
+      </TableHeaderTrailing>
+
       <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
         {registrar ? (
           <><Label>Sort by registrar type</Label>
