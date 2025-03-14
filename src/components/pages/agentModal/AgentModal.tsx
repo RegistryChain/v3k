@@ -92,7 +92,7 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
           paddingTop: "10px",
           paddingBottom: "10px",
           outline: "10px",
-          // border: "1px solid #ccc",
+          border: "1px solid #ccc",
           cursor: "pointer",
          }}>
         <input
