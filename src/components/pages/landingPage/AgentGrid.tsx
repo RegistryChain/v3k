@@ -27,7 +27,7 @@ export const AgentGrid = ({ rowHeight = 120, connectedIsAdmin = false, moderateE
               agentName={box.name}
               agentDomain={box.domain}
               agentDesc={
-                box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')
+                box.description ? (box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')) : ""
               }
               location={box.location}
               rating={box.rating}
