@@ -46,7 +46,6 @@ export const DirectoryTable = ({
   connectedIsAdmin,
   moderateEntity
 }: DirectoryTableProps) => {
-  const paginatedData = data.slice(page * itemsPerPage, (page + 1) * itemsPerPage)
 
   const handleNextPage = async () => {
     setPage((prevPage: number) => prevPage + 1)
@@ -61,7 +60,7 @@ export const DirectoryTable = ({
 
   return (
     <div>
-      <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={paginatedData} onRate={() => null} />
+      <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} />
       <ButtonContainer>
         <Button disabled={page === 0} onClick={handlePrevPage}>
           Previous

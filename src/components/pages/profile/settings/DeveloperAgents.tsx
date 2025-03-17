@@ -201,7 +201,10 @@ const DeveloperAgents = ({ address, record }: any) => {
 
     const getOwnerEntities = async () => {
         const entities = await getEntitiesList({
-            registrar: "ai", limit: 20, nameSubstring: searchInput, params: {
+            registrar: "ai",
+            limit: 20,
+            nameSubstring: searchInput,
+            params: {
                 $or: [
                     { owner: address },
                     { partners: { $elemMatch: { wallet__address: address } } }

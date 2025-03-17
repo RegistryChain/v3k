@@ -35,7 +35,7 @@ const TabWrapperWithButtons = styled(TabWrapper)(
 export const SubnameListView = ({ address }: any) => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
 
-  const [sortType, setSortType] = useState<any>('entity__formation__date')
+  const [sortType, setSortType] = useState<any>('creationDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [registrar, setRegistrarSelected] = useState<string>('ai')
 
@@ -101,7 +101,7 @@ export const SubnameListView = ({ address }: any) => {
         params: { ...searchBase, ...status },
       })
 
-      setSubnameResults((prevResults) => (resetResults ? results : [...prevResults, ...results]))
+      setSubnameResults(results)
       if (results.length !== 25) {
         setFinishedLoading(true)
       }
@@ -149,8 +149,8 @@ export const SubnameListView = ({ address }: any) => {
   }, [searchInput, registrar, sortType, sortDirection, selectedStatus])
 
   const filteredSet = useMemo(
-    () =>
-      subnameResults.map((record) => {
+    () => {
+      return subnameResults.map((record) => {
         const labelName = record.name.split(record.parentName).join('').split('.').join('.')
         const domainId = labelName.split('-').pop().split('.').join('')
         const commonName = labelName
@@ -159,7 +159,8 @@ export const SubnameListView = ({ address }: any) => {
           .join(' ')
 
         return { ...record, labelName, commonName, domainId, isPlaceHolder: false }
-      }),
+      })
+    },
     [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
   )
 
