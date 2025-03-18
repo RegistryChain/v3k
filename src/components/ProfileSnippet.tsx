@@ -22,6 +22,7 @@ import contractAddressesObj from '../constants/contractAddresses.json'
 import { ExclamationSymbol } from './ExclamationSymbol'
 import StarRating from './StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
+import { FaPencilAlt } from 'react-icons/fa'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -82,6 +83,8 @@ interface ProfileSnippetProps {
   status?: string
   domainName?: string
   withRating?: boolean
+  makeAmendment: any
+  owner: Address
 }
 
 export const ProfileSnippet = ({
@@ -91,6 +94,8 @@ export const ProfileSnippet = ({
   status,
   domainName,
   withRating = true,
+  owner,
+  makeAmendment
 }: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
 
@@ -168,7 +173,10 @@ export const ProfileSnippet = ({
             <Image src={records.avatar} alt="e" height={88} />
             <div>
               <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
-                {name}
+                <div style={{ display: "flex", gap: "5px" }}>
+                  <span>{name}</span>
+                  {owner === address ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
+                </div>
               </NameRecord>
               {domainName && (
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">

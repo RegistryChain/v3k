@@ -10,6 +10,7 @@ import ProfileContent from '@app/components/pages/profile/[name]/Profile'
 import {
   executeWriteToResolver,
   getRecordData,
+  getResolverAddress,
   useRecordData,
 } from '@app/hooks/useExecuteWriteToResolver'
 import { useInitial } from '@app/hooks/useInitial'
@@ -49,15 +50,16 @@ export default function Page() {
 
   const { data: fields, loading, error, refetch } = useRecordData({ domain, wallet, publicClient })
 
-  const claimEntity = async () => {
+  const claimEntity = async (newOwner: any = address) => {
     await openConnect()
     try {
-      if (address) {
+      const resolverAddress = getResolverAddress(publicClient, normalize(records?.domain || domain))
+      if (address && resolverAddress === contractAddressesObj['DatebaseResolver']) {
         const formationPrep: any = {
           functionName: 'transfer',
-          args: [namehash(normalize(records?.domain || domain)), address],
+          args: [namehash(normalize(records?.domain || domain)), newOwner],
           abi: l1abi,
-          address: contractAddressesObj['DatabaseResolver'],
+          address: resolverAddress,
         }
         let registrarAddress = contractAddressesObj['ai' + tld]
         const formationCallback: any = {

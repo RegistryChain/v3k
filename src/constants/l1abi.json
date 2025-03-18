@@ -11,6 +11,39 @@
     "stateMutability": "nonpayable"
   },
   {
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
+    "name": "proveTextRecords",
+    "outputs": [{ "internalType": "bytes", "name": "node", "type": "bytes" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address[]", "name": "_owners", "type": "address[]" },
+      { "internalType": "uint256", "name": "_threshold", "type": "uint256" },
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "bytes", "name": "data", "type": "bytes" },
+      { "internalType": "address", "name": "fallbackHandler", "type": "address" },
+      { "internalType": "address", "name": "paymentToken", "type": "address" },
+      { "internalType": "uint256", "name": "payment", "type": "uint256" },
+      { "internalType": "address payable", "name": "paymentReceiver", "type": "address" }
+    ],
+    "name": "setup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "node", "type": "address" },
+      { "internalType": "bytes", "name": "node", "type": "bytes" },
+      { "internalType": "bytes", "name": "node", "type": "bytes" }
+    ],
+    "name": "bringRecordsOnchain",
+    "outputs": [{ "internalType": "bytes", "name": "node", "type": "bytes" }],
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -168,6 +201,17 @@
     "stateMutability": "view"
   },
   {
+    "inputs": [
+      { "internalType": "address", "name": "_singleton", "type": "address" },
+      { "internalType": "bytes", "name": "initializer", "type": "bytes" },
+      { "internalType": "uint256", "name": "saltNonce", "type": "uint256" }
+    ],
+    "name": "createProxyWithNonce",
+    "outputs": [{ "internalType": "contract GnosisSafeProxy", "name": "proxy", "type": "address" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "type": "function",
     "name": "registerParamsCallback",
     "inputs": [
@@ -317,6 +361,16 @@
       }
     ],
     "anonymous": false
+  },
+  {
+    "name": "setOwner",
+    "type": "function",
+    "inputs": [
+      { "name": "node", "type": "bytes32", "internalType": "bytes32" },
+      { "name": "owner", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "event",

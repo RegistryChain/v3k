@@ -4,18 +4,20 @@ import {
   createWalletClient,
   custom,
   decodeAbiParameters,
+  decodeFunctionResult,
   encodeAbiParameters,
   encodeFunctionData,
   getContract,
   isAddress,
   labelhash,
   parseAbi,
+  parseAbiParameters,
   toHex,
   zeroAddress,
   zeroHash,
 } from 'viem'
 import { sepolia } from 'viem/chains'
-import { packetToBytes } from 'viem/ens'
+import { normalize, packetToBytes } from 'viem/ens'
 import { useAccount, useConnect } from 'wagmi'
 
 import { namehash, normalise } from '@ensdomains/ensjs/utils'
@@ -23,17 +25,13 @@ import { namehash, normalise } from '@ensdomains/ensjs/utils'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { roles } from '@app/constants/members'
-import { executeWriteToResolver, getTransactions } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getResolverAddress, getTransactions } from '@app/hooks/useExecuteWriteToResolver'
 import useTokenBalances from '@app/hooks/useTokenBalances'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { generateSafeAddress, generateSafeSalt, normalizeLabel } from '@app/utils/utils'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
 import l1abi from '../../../../../../constants/l1abi.json'
-import ActionsConfirmation from './ActionsConfirmation'
-import ActionsExecuted from './ActionsExecuted'
-import ActionsExecution from './ActionsExecution'
-import ActionsProposal from './ActionsProposal'
 
 import { Button as MuiButton } from '@mui/material'
 import styled from 'styled-components'
@@ -48,17 +46,6 @@ const Button = styled(MuiButton)`
   }
 `;
 
-const methodsNames: any = {
-  '0x9254f59a': 'operationSwitch',
-  '0x10f13a8c': 'setText',
-  '0xac9650d8': 'multicall',
-  '0x96393e81': 'toggleRoles',
-  '0xe1b09e0a': 'toggleContracts',
-  '0x528c198a': 'mintShares',
-  '0xee7a7c04': 'burnShares',
-  '0xa73f7f8a': 'addRole',
-  '0x208dd1ff': 'revokeRole',
-}
 
 const contractAddressesObj: any = contractAddresses
 
@@ -68,7 +55,6 @@ const ActionsTab = ({
   refreshRecords,
   multisigAddress,
   registrar,
-  entityMemberManager,
   onChainOwner,
   claimEntity,
   partners,
@@ -80,7 +66,6 @@ const ActionsTab = ({
   name,
   checkEntityStatus,
 }: any) => {
-  const [userRoles, setUserRoles]: any[] = useState([])
   const [errorMessage, setErrorMessage] = useState<string>('')
   const { address, isConnected } = useAccount()
   const label = name.split('.')[0]
@@ -111,176 +96,101 @@ const ActionsTab = ({
     setTxs(txArray)
   }
 
-  const processTxAction = (tx: any) => {
-    let data: any[] = []
-    let name = tx.title
-    if (tx.method === '0xac9650d8') {
-      data = decodeMulticallDatabytes(tx.dataBytes)
-      name = 'Update Entity - ' + tx.title
+
+  const migrateToOnchainRecords = async () => {
+
+    const resolverAddress = await getResolverAddress(wallet, name)
+    const calldataObject = {
+      abi: l1abi,
+      functionName: "proveTextRecords",
+      args: [namehash(name)],
+      address: resolverAddress
+    };
+
+    const callback = {
+      ...calldataObject,
+      functionName: "bringRecordsOnchain",
+      args: [contractAddressesObj["PublicResolver"]],
+      address: contractAddressesObj["ai.entity.id"]
     }
-    if (tx.method === '0x10f13a8c') {
+
+    const res = await executeWriteToResolver(wallet, calldataObject, callback)
+  }
+
+  // Function to deploy Safe Core Multisig
+  async function deploySafeMultisig() {
+
+    if (owner !== address) {
       return
     }
 
-    return { name, data }
-  }
-
-  const deployMultisig = async () => {
     try {
-      const formationPrep: any = {
-        functionName: 'register',
-        args: [
-          toHex(packetToBytes(label)),
-          owner,
-          0 /* duration */,
-          zeroHash /* secret */,
-          zeroAddress /* resolver */,
-          [
-            encodeAbiParameters(
-              [{ type: 'string' }, { type: 'string' }],
-              ['nodeHash', namehash(normalise(name))],
-            ),
-          ] /* data */,
-          false /* reverseRecord */,
-          0 /* fuses */,
-          zeroHash /* extraData */,
-        ],
+
+      const saltNonce = BigInt(Date.now()); // Use timestamp as nonce for uniqueness
+      // Instantiate the Safe Proxy Factory contract
+      const safeFactory: any = getContract({
+        address: contractAddressesObj["SepoliaSafeFactory"],
         abi: l1abi,
-        address: contractAddressesObj['DatabaseResolver'],
-      }
-      const domain: any = registrar?.toLowerCase() + '.' + tld
-      const registrarAddress: any =
-        contractAddressesObj[domain] || contractAddressesObj['public.' + tld]
+        client: wallet,
+      });
 
-      const formationCallback: any = {
-        functionName: 'deployEntityContracts',
-        abi: [
-          {
-            inputs: [
-              {
-                internalType: 'bytes',
-                name: 'responseBytes',
-                type: 'bytes',
-              },
-              {
-                internalType: 'bytes',
-                name: 'extraData',
-                type: 'bytes',
-              },
-            ],
-            name: 'deployEntityContracts',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-          },
+      const initializerBytes = encodeFunctionData({
+        abi: l1abi,
+        functionName: 'setup',
+        args: [
+          [owner],
+          BigInt(1),
+          zeroAddress,
+          "0x",
+          contractAddresses["SepoliaFallbackHandler"],
+          zeroAddress,
+          BigInt(0),
+          zeroAddress,
         ],
-        address: registrarAddress,
-        args: [],
+      });
+
+      // Write to contract (deploy Safe multisig)
+      const txHash = await safeFactory.write.createProxyWithNonce([
+        contractAddressesObj["SingletonAddress"],
+        initializerBytes,
+        saltNonce,
+      ]);
+
+
+      // Wait for transaction confirmation
+      const receipt = await client.waitForTransactionReceipt({ hash: txHash });
+
+      // Extract Safe contract address from logs
+      const safeAddress = receipt.logs[0]?.address;
+
+      if (!safeAddress || safeAddress === zeroAddress) {
+        setErrorMessage("No safe address detected")
+        return
       }
 
-      if (owner === address) {
-        const registrarContract: any = getContract({
-          abi: [
-            {
-              inputs: [{ type: 'address' }, { type: 'address' }],
-              name: 'isApprovedForAll',
-              outputs: [{ type: 'bool' }],
-              type: 'function',
-              stateMutability: 'view',
-            },
-            {
-              inputs: [
-                {
-                  internalType: 'address',
-                  name: '',
-                  type: 'address',
-                },
-                {
-                  internalType: 'bool',
-                  name: '',
-                  type: 'bool',
-                },
-              ],
-              name: 'setApprovalForAll',
-              outputs: [],
-              stateMutability: 'nonpayable',
-              type: 'function',
-            },
-          ],
+      console.log('Safe Multisig Deployed at:', safeAddress);
+
+      if (onChainOwner === zeroAddress && owner === address) {
+        // bring ownership on chain
+        await claimEntity(safeAddress)
+      }
+      if (onChainOwner === address) {
+        // transfer ownership to the safe
+        const registry: any = getContract({
+          abi: l1abi,
           address: contractAddressesObj.ENSRegistry,
-          client: wallet,
+          client: wallet
         })
 
-        const registrarApproved = await registrarContract.read.isApprovedForAll([
-          address,
-          registrarAddress,
-        ])
-        if (!registrarApproved) {
-          const approvalTx = await registrarContract.write.setApprovalForAll([
-            registrarAddress,
-            true,
-          ])
-          const approvalRes = await client?.waitForTransactionReceipt({
-            hash: approvalTx,
-          })
-        }
-      }
+        const txHash2 = await registry.write.setOwner([namehash(normalize(name)), safeAddress], { gas: 6000000n })
+        const receipt = await client.waitForTransactionReceipt({ hash: txHash2 });
 
-      const registerChaserTx = await executeWriteToResolver(
-        wallet,
-        formationPrep,
-        formationCallback,
-      )
-      const transactionRes = await client?.waitForTransactionReceipt({
-        hash: registerChaserTx,
-      })
-      if (transactionRes?.status === 'reverted') {
-        throw Error('Transaction failed - contract error')
       }
-      return () => window.location.reload()
     } catch (err: any) {
+      console.log(err.message)
       setErrorMessage(err.message)
+      return
     }
-  }
-
-  const decodeMulticallDatabytes = (databytes: any) => {
-    const txDataArray = decodeAbiParameters([{ type: 'bytes[]' }], databytes)[0]
-    const reformedData = txDataArray.map((data) => {
-      if (data.slice(0, 10) === '0x10f13a8c') {
-        const dec = decodeAbiParameters(
-          [
-            {
-              type: 'bytes32',
-            },
-            {
-              type: 'string',
-            },
-            {
-              type: 'string',
-            },
-          ],
-          data.split('10f13a8c').join('') as any,
-        )
-        return { key: dec[1], value: dec[2], method: 'setText' }
-      } else if (data.slice(0, 10) === '0xee7a7c04' || data.slice(0, 10) === '0x528c198a') {
-        const methods: any = { '0xee7a7c04': 'burnShares()', '0x528c198a': 'mintShares()' }
-        const dec = decodeAbiParameters(
-          [
-            {
-              type: 'address',
-            },
-            {
-              type: 'uint256',
-            },
-          ],
-          ('0x' + data.slice(10)) as any,
-        )
-        return { key: dec[0], value: dec[1], method: methods[data.slice(0, 10)] }
-      } else {
-        return null
-      }
-    })
-    return reformedData.filter((x) => x)
   }
 
   const claimPregeneratedSafe = async () => {
@@ -361,7 +271,7 @@ const ActionsTab = ({
         }),
         account: address,
       })
-      setWallet(newWallet)
+      // setWallet(newWallet)
     } else {
       console.error('Ethereum object not found on window')
     }
@@ -373,32 +283,7 @@ const ActionsTab = ({
     }
   }, [multisigAddress])
 
-  useEffect(() => {
-    if (entityMemberManager && address) {
-      readTransactions()
-    }
-  }, [address])
-  const txsToConfirm = useMemo(() => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade < x.sigsNeeded) : [], [txs])
-  const txsToExecute = useMemo(
-    () => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && !x.executed) : [],
-    [txs],
-  )
-  const txsExecuted = useMemo(
-    () => txs && txs.length > 0 ? txs.filter((x: any) => x.sigsMade >= x.sigsNeeded && x.executed) : [],
-    [txs],
-  )
 
-  // if (
-  //   isAddress(owner) &&
-  //   owner === address &&
-  //   (!isAddress(multisigAddress) || multisigAddress === zeroAddress)
-  // ) {
-  //   return (
-  //     <div style={{ width: '50%', margin: '16px 0' }}>
-  //       <Button onClick={() => deployMultisig()}>Deploy Contract Account</Button>
-  //     </div>
-  //   )
-  // }
 
   let claimOnChainElement = null
   // if on chain owner is zeroAddress but record.owner || partner.walletAddress is equal to account
@@ -407,8 +292,9 @@ const ActionsTab = ({
     owner === address || partners?.map((x: any) => x?.wallet__address)?.includes(address)
   if (!hasOwnerOnchain && isOwnerOperatorOffchain) {
     claimOnChainElement = (
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button onClick={() => claimEntity(namehash(name))}>Claim On-Chain</Button>
+      <div style={{ width: '100%', margin: '16px 0' }}>
+        <Button variant="outlined"
+          style={{ width: "100%" }} onClick={() => claimEntity(namehash(name))}>Claim On-Chain</Button>
       </div>
     )
   }
@@ -416,8 +302,8 @@ const ActionsTab = ({
   let amendmentElement = null
   if (address === owner || owner === multisigAddress) {
     amendmentElement = (
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button
+      <div style={{ width: '100%', margin: '16px 0' }}>
+        <Button style={{ width: "100%" }}
           variant="outlined"
           onClick={() => {
             makeAmendment()
@@ -429,38 +315,6 @@ const ActionsTab = ({
     )
   }
 
-  let txToConfirm = (
-    <div style={{ margin: '16px 0' }}>
-      <ActionsConfirmation
-        processTxAction={processTxAction}
-        refresh={refresh}
-        client={client}
-        txData={txsToConfirm}
-        multisigAddress={multisigAddress}
-        setErrorMessage={setErrorMessage}
-        wallet={wallet}
-      />
-    </div>
-  )
-
-  let txToExecute = (
-    <div style={{ margin: '16px 0' }}>
-      <ActionsExecution
-        refresh={() => {
-          refreshRecords()
-          refresh()
-        }}
-        client={client}
-        txData={txsToExecute}
-        processTxAction={processTxAction}
-        multisigAddress={multisigAddress}
-        setErrorMessage={setErrorMessage}
-        wallet={wallet}
-      />
-    </div>
-  )
-
-  let txHistory = <ActionsExecuted txData={txsExecuted} />
 
   return (
     <div>
@@ -470,8 +324,8 @@ const ActionsTab = ({
         breakpoints={breakpoints}
       />
       {claimOnChainElement}
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button variant="outlined" onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
+      <div style={{ width: '100%', margin: '16px 0' }}>
+        <Button style={{ width: "100%" }} variant="outlined" onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
       </div>
       {balances.length > 0 ? (
         <div style={{ width: '50%', margin: '16px 0' }}>
@@ -490,13 +344,18 @@ const ActionsTab = ({
           />
         </div>
       ) : null}
+      <div style={{ width: '100%', margin: '16px 0' }}>
 
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button variant="outlined" onClick={() => deployMultisig()}>Deploy Contract Account</Button>
+        <Button style={{ width: "100%" }} variant="outlined" onClick={() => deploySafeMultisig()}>Deploy Safe CA</Button>
       </div>
       {amendmentElement}
-      <div style={{ width: '50%', margin: '16px 0' }}>
-        <Button variant="outlined">KYC verification</Button>
+      <div style={{ width: '100%', margin: '16px 0' }}>
+        <Button onClick={() => migrateToOnchainRecords()} style={{ width: "100%" }} variant="outlined">
+          Migrate Onchain
+        </Button>
+      </div>
+      <div style={{ width: '100%', margin: '16px 0' }}>
+        <Button style={{ width: "100%" }} variant="outlined">KYC verification</Button>
       </div>
     </div>
   )

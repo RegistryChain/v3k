@@ -85,16 +85,15 @@ const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         required
       />
       <FormControl required>
-        <label htmlFor="fileUpload" style={{ paddingLeft: '6px', paddingBottom: '6px', color: '#666666' }}>Image * </label>
         <input
           type="file"
-          accept="image/*" 
+          accept="image/*"
           onChange={(e) => {
             const file = e.target.files?.[0];
             handleFieldChange('imageFile')(file)
           }}
           style={{
-            color: '#666666' ,
+            color: '#666666',
             display: "inline - block",
             cursor: "pointer",
             paddingLeft: "12px",
@@ -264,12 +263,10 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const uploadFile = async () => {
     try {
       if (!formState.imageFile) {
-        alert("No file selected");
         return;
       }
       const { cid } = await pinata.upload.public.file(formState.imageFile)
       const url = await pinata.gateways.public.convert(cid);
-      console.log("url")
       console.log(url)
       formState.avatar = url
       // setFormState(formState)
@@ -523,7 +520,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
         <ButtonWrapper>
           <SubmitButton
-            disabled={!formState.name || !formState.imageFile || !formState.category}
+            disabled={!formState.name || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}

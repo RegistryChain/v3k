@@ -156,7 +156,7 @@ export const Header = () => {
   const breakpoints = useBreakpoint()
   const transactions = useRecentTransactions()
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')
-  const { setIsModalOpen } = useContext<any>(ModalContext)
+  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
 
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const routeContainerRef = useRef<HTMLDivElement>(null)
@@ -235,7 +235,10 @@ export const Header = () => {
           >
             {RouteItems}
             <AddAgentButton
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setAgentModalPrepopulate({})
+                setIsModalOpen(true)
+              }}
             >
               Add Agent
             </AddAgentButton>

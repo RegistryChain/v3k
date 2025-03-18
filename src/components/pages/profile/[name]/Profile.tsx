@@ -19,126 +19,26 @@ import { sepolia, baseSepolia, bsc } from 'viem/chains'
 import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 import { normalise } from '@ensdomains/ensjs/utils'
-import { Banner, CheckCircleSVG, mq, Spinner, Typography } from '@ensdomains/thorin'
+import { Spinner, Typography } from '@ensdomains/thorin'
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 
 import BaseLink from '@app/components/@atoms/BaseLink'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
-import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
 import { ModalContext } from '@app/layouts/Basic'
-import { Content, ContentWarning } from '@app/layouts/Content'
-import { useBreakpoint } from '@app/utils/BreakpointProvider'
-import { formatFullExpiry, makeEtherscanLink } from '@app/utils/utils'
-
 import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
-import { RecordsSection } from '../../../RecordsSection'
-import SubgraphResults from '../../../SubgraphQuery'
 import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
-import PluginsTab from './tabs/PluginsTab'
-import RegulatoryTab from './tabs/Regulatory'
-import StarRating from '@app/components/StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
-import axios from "axios";
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
 import { useEnsHistory } from '@app/hooks/useEnsHistory'
 import { Outlink } from '@app/components/Outlink'
 import { Card } from '@app/components/Card'
 import { HistoryBox } from '@app/components/HistoryBox'
 
-
-const TransactionSectionContainer = styled.div<{
-  $height: string
-}>(
-  ({ $height }) => css`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    overflow: hidden;
-    height: ${$height};
-    transition: 0.2s all ease-in-out;
-    justify-content: flex-end;
-    background-color: transparent;
-  `,
-)
-
-const TransactionSectionInner = styled.div(
-  () => css`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-  `,
-)
-
-const RecentTransactionsMessage = styled(Typography)(
-  ({ theme }) => css`
-    display: flex;
-    justify-content: center;
-    color: ${theme.colors.textTertiary};
-    padding: ${theme.space['4']};
-  `,
-)
-
-const TransactionContainer = styled(Card)(
-  ({ theme, onClick }) => css`
-    width: 100%;
-    min-height: ${theme.space['18']};
-    padding: ${theme.space['3']} 0;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: ${theme.space['3']};
-    flex-gap: ${theme.space['3']};
-    border: none;
-    border-bottom: 1px solid ${theme.colors.border};
-    border-radius: ${theme.radii.none};
-
-    ${onClick &&
-    css`
-      cursor: pointer;
-    `}
-
-    &:last-of-type {
-      border: none;
-    }
-  `,
-)
-
-const TransactionInfoContainer = styled.div(
-  ({ theme }) => css`
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: ${theme.space['0.5']};
-  `,
-)
-
-const StyledOutlink = styled(Outlink)<{ $error: boolean }>(
-  ({ theme, $error }) =>
-    $error &&
-    css`
-      > div {
-        color: ${theme.colors.red};
-      }
-      color: ${theme.colors.red};
-    `,
-)
-
-
-const InfoContainer = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: ${theme.space['2']};
-  `,
-)
 
 const VideoContainer = styled.div`
   width: 100%;
@@ -161,42 +61,42 @@ const Iframe = styled.iframe`
 // AIzaSyBbOljkviE9BZD9KNSyh4QD2EIvUNem3is
 
 
-const VideoEmbed = ({ searchQuery = "" }: {
-  searchQuery: string
+const VideoEmbed = ({ videoId = "" }: {
+  videoId: string
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [videoId, setVideoId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [videoId, setVideoId] = useState(null);
   const API_KEY = "AIzaSyCMBV3jBclsfPq7ZDHqOfg59fJFU0cLRd8";
 
   useEffect(() => {
     const fetchVideo = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get(
-          `https://www.googleapis.com/youtube/v3/search`,
-          {
-            params: {
-              part: "snippet",
-              q: searchQuery,
-              maxResults: 1,
-              type: "video",
-              key: API_KEY,
-            },
-          }
-        );
+      // setIsLoading(true);
+      // try {
+      //   const response = await axios.get(
+      //     `https://www.googleapis.com/youtube/v3/search`,
+      //     {
+      //       params: {
+      //         part: "snippet",
+      //         q: searchQuery,
+      //         maxResults: 1,
+      //         type: "video",
+      //         key: API_KEY,
+      //       },
+      //     }
+      //   );
 
-        if (response.data.items.length > 0) {
-          setVideoId(response.data.items[0].id.videoId);
-        }
-      } catch (error) {
-        console.error("Error fetching video:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      //   if (response.data.items.length > 0) {
+      //     setVideoId(response.data.items[0].id.videoId);
+      //   }
+      // } catch (error) {
+      //   console.error("Error fetching video:", error);
+      // } finally {
+      //   setIsLoading(false);
+      // }
     };
 
     fetchVideo();
-  }, [searchQuery]);
+  }, []);
 
   if (isLoading) return <p>Loading video...</p>;
   if (!videoId) return <p>No video for this agent was found</p>;
@@ -252,7 +152,6 @@ const MessageContainer = styled.div(
 )
 
 const tabs = ['entity', 'actions', 'regulatory', 'plugins'] as const
-type Tab = (typeof tabs)[number]
 
 
 const ProfileContent = ({
@@ -278,6 +177,7 @@ const ProfileContent = ({
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
+  const [tab, setTab] = useState("details")
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const { rating, getRating } = useGetRating()
@@ -461,15 +361,11 @@ const ProfileContent = ({
       try {
         ownerAddress = await registry.read.owner([namehash(normalise(domain))])
         setOnChainOwner(ownerAddress)
-        setOwner(ownerAddress)
+        if (owner === zeroAddress || ownerAddress !== zeroAddress) {
+          setOwner(ownerAddress)
+        }
       } catch (e) {
         console.log(e)
-      }
-      try {
-        const multisig = await getMultisig(ownerAddress)
-        setMultisigAddress(ownerAddress)
-      } catch (err) {
-        console.log(err)
       }
     }
   }
@@ -544,10 +440,6 @@ const ProfileContent = ({
 
   const registrarType = registrars[registrarKey || '']?.type
 
-  const [tab, setTab_] = useQueryParameterState<Tab>('tab', 'entity')
-  const setTab: typeof setTab_ = (value) => {
-    setTab_(value)
-  }
 
   const demoMessage = (
     <MessageContainer>
@@ -586,6 +478,84 @@ const ProfileContent = ({
       title = nameRecord + ' on V3K'
     }
   }
+
+  let tabContent: any = null
+  if (tab === "details") {
+    tabContent = <>
+      <Box
+        py={2}
+        style={{ borderBottom: '1px solid #E5E5E5' }}>
+        <Box py={1} mb={2}>
+          <VideoEmbed videoId={records.video} />
+        </Box>
+        <Typography color="greyDim">{records.description}</Typography>
+        {records.entity__purpose}
+      </Box>
+      <Box
+        display='flex'
+        gap={2}
+        py={2} style={{
+          borderBottom: '1px solid #E5E5E5',
+        }}>
+        <Box minWidth={200}>
+          <Typography weight='bold'>Capabilities</Typography>
+        </Box>
+        <Box>
+          <ul>
+            <li>iOS</li>
+            <li>Android</li>
+            <li>Desktop</li>
+          </ul>
+        </Box>
+      </Box>
+
+      <Box
+        display='flex'
+        gap={2}
+        py={2} style={{
+          borderBottom: '1px solid #E5E5E5',
+        }}>
+        <Box minWidth={200}>
+          <Typography weight='bold'>Languages</Typography>
+        </Box>
+        <Box>
+          <Typography>English</Typography>
+        </Box>
+      </Box>
+
+      <Box
+        display='flex'
+        gap={2}
+        py={2} style={{
+          borderBottom: '1px solid #E5E5E5',
+        }}>
+        <Box minWidth={200}>
+          <Typography weight='bold'>Categories</Typography>
+        </Box>
+        <Box>
+          {/* TODO: add real categories */}
+          <Typography>{records.entity__type}</Typography>
+        </Box>
+      </Box></>
+  } else if (tab === "actions" && records && domain && address) {
+    tabContent = <ActionsTab
+      refreshRecords={getRecords}
+      registrar={records?.entity__registrar || 'public'}
+      claimEntity={claimEntity}
+      partners={records.partners}
+      onChainOwner={onChainOwner}
+      owner={owner}
+      multisigAddress={multisigAddress}
+      entityMemberManager={zeroAddress}
+      client={publicClient}
+      name={domain}
+      makeAmendment={makeAmendment}
+      checkEntityStatus={() => checkEntityStatus()}
+      wallet={wallet}
+      setWallet={setWallet}
+    />
+  }
+
   return (
     <>
       <Head>
@@ -634,6 +604,8 @@ const ProfileContent = ({
                     records={{ ...records, subgraph: subgraphResults }}
                     status={status}
                     withRating={false}
+                    owner={owner}
+                    makeAmendment={makeAmendment}
                   />
                 </Box>
                 <Box py={2}>
@@ -691,63 +663,14 @@ const ProfileContent = ({
                 container
                 spacing={6}>
                 <Box py={2}>
-                  <Box
-                    py={2}
-                    style={{ borderBottom: '1px solid #E5E5E5' }}>
-                    <Box py={1} mb={2}>
-                      <VideoEmbed searchQuery={nameRecord} />
-                    </Box>
-                    <Typography color="greyDim">{records.description}</Typography>
-                    {records.entity__purpose}
+                  {owner === address ?
+                    <Box display='flex'>
+                      <div onClick={() => setTab("details")} style={tab === "details" ? { borderBottom: "black 1px solid", marginRight: "16px" } : { marginRight: "16px", cursor: "pointer" }}><span>Details</span></div>
+                      <div onClick={() => setTab("actions")} style={tab === "actions" ? { borderBottom: "black 1px solid" } : { cursor: "pointer" }}><span>Actions</span></div>
+                    </Box> : null
+                  }
+                  {tabContent}
 
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Capabilities</Typography>
-                    </Box>
-                    <Box>
-                      <ul>
-                        <li>iOS</li>
-                        <li>Android</li>
-                        <li>Desktop</li>
-                      </ul>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Languages</Typography>
-                    </Box>
-                    <Box>
-                      <Typography>English</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Categories</Typography>
-                    </Box>
-                    <Box>
-                      {/* TODO: add real categories */}
-                      <Typography>{records.entity__type}, {records.entity__platform}</Typography>
-                    </Box>
-                  </Box>
 
                 </Box>
               </Grid>
@@ -758,13 +681,13 @@ const ProfileContent = ({
                 <Typography>
                   {records.entity__name} is a {records.entity__type} agent on the {records.entity__platform} platform. It is a {records.entity__purpose} agent with the following features:
                 </Typography>
-                <Box py={2}>
+                {/* <Box py={2}>
                   <ul>
                     <li>Feature 1</li>
                     <li>Feature 2</li>
                     <li>Feature 3</li>
                   </ul>
-                </Box>
+                </Box> */}
               </Box>
             </BgBox>
 
@@ -848,7 +771,7 @@ const ProfileContent = ({
                     <Box display={'flex'} gap={0.5}>
                       {verification !== 'not verified' ? <CheckmarkSymbol tooltipText={verification} /> : null}
                       <Typography>
-                        {records.owner}
+                        {owner}
                       </Typography>
                     </Box>
                   </Box>
@@ -856,174 +779,10 @@ const ProfileContent = ({
                 <HistoryBox record={records} />
               </Grid>
 
-              {/*TODO: Possible actions, double check what should be displayed for owner only */}
-              {/* show to agent developer only */}
-              {/* <Grid container spacing={6}>
-                <Grid size={{
-                  xs: 12,
-                  sm: 4
-                }}>
-                  <Box py={2}>
-                    <Typography weight='bold'>Actions</Typography>
-                  </Box>
-
-                </Grid>
-                <Grid size={{
-                  xs: 12,
-                  sm: 7
-                }}>
-                  {domain && records && address ? (
-                    <ActionsTab
-                      refreshRecords={() => getRecords()}
-                      registrar={records?.entity__registrar || 'public'}
-                      claimEntity={claimEntity}
-                      partners={records.partners}
-                      onChainOwner={onChainOwner}
-                      owner={owner}
-                      multisigAddress={multisigAddress}
-                      entityMemberManager={entityMemberManager}
-                      client={publicClient}
-                      name={domain}
-                      makeAmendment={makeAmendment}
-                      checkEntityStatus={() => checkEntityStatus()}
-                      wallet={wallet}
-                      setWallet={setWallet}
-                    />
-                  ) : null}
-                </Grid>
-              </Grid> */}
             </Box>
           </Box >)
         ))}
 
-      {/* <Content noTitle={true} title={nameRecord} loading={parentIsLoading} copyValue={domain}>
-        {{
-          header: (
-            <>
-              <EntityViewTab
-                domainName={domain}
-                multisigAddress={multisigAddress}
-                records={{ ...records, subgraph: subgraphResults }}
-                status={status}
-              />
-              {breakpoints.xs && !breakpoints.sm ? (
-                <LegacyDropdown
-                  style={{ maxWidth: '50%', textAlign: 'left' }}
-                  inheritContentWidth={true}
-                  size={'medium'}
-                  label={tab}
-                  items={tabs.map((tabItem: any) => ({
-                    key: tabItem,
-                    label: tabItem,
-                    color: 'blue',
-                    onClick: () => setTab(tabItem),
-                  }))}
-                />
-              ) : (
-                <TabButtonContainer>
-                  {tabs.map((tabItem: any) => (
-                    <TabButton
-                      key={tabItem}
-                      data-testid={`${tabItem}-tab`}
-                      $selected={tabItem === tab}
-                      onClick={() => setTab(tabItem)}
-                    >
-                      <Typography fontVariant="extraLargeBold" color="inherit">
-                        {t(`tabs.${tabItem}.name`)}
-                      </Typography>
-                    </TabButton>
-                  ))}
-                </TabButtonContainer>
-              )}
-            </>
-          ),
-          trailing: match(tab)
-            .with('entity', () => {
-              if (loadingRecords)
-                return (
-                  <Box>
-                    <Spinner color="accent" size="medium" />
-                  </Box>
-                )
-
-              return (
-                <>
-                  <RecordsSection
-                    fields={records}
-                    compareToOldValues={false}
-                    domainName={domain}
-                    owner={owner}
-                    addressesObj={[
-                      {
-                        key: 'Agent Treasury',
-                        value: records?.address || zeroAddress,
-                      },
-                      { key: 'Owner Address', value: owner }, // TODO: change placeholder address
-                      {
-                        key: 'Token Address',
-                        value: records?.entity__token__address || zeroAddress,
-                      },
-                    ]}
-                  />
-                </>
-              )
-            })
-            .with('actions', () => {
-              if (records) {
-                return (
-                  <ActionsTab
-                    refreshRecords={() => getRecords()}
-                    registrar={records?.entity__registrar || 'public'}
-                    claimEntity={claimEntity}
-                    partners={records.partners}
-                    onChainOwner={onChainOwner}
-                    owner={owner}
-                    multisigAddress={multisigAddress}
-                    entityMemberManager={entityMemberManager}
-                    client={publicClient}
-                    name={domain}
-                    makeAmendment={makeAmendment}
-                    checkEntityStatus={() => checkEntityStatus()}
-                    wallet={wallet}
-                    setWallet={setWallet}
-                  />
-                )
-              } else {
-                return (
-                  <MessageContainer>
-                    Entity not found. Actions are available for entities with drafted or submitted
-                    data.
-                  </MessageContainer>
-                )
-              }
-            })
-            .with('plugins', () => (
-              <>
-                <PluginsTab
-                  registrarType={registrarType}
-                  name={normalise(domain)}
-                  nameDetails={{}}
-                  breakpoints={breakpoints}
-                />
-              </>
-            ))
-            .with('regulatory', () => (
-              <>
-                <RegulatoryTab
-                  registrarType={registrarType}
-                  domain={normalise(domain)}
-                  setErrorMessage={setErrorMessage}
-                  nameDetails={{}}
-                  partners={records.partners}
-                  breakpoints={breakpoints}
-                  wallet={wallet}
-                  setWallet={setWallet}
-                />
-              </>
-            ))
-            .exhaustive(),
-        }}
-      </Content> */}
     </>
   )
 }

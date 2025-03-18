@@ -2,6 +2,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
 import { ProfileSnippet } from '@app/components/ProfileSnippet'
+import { Address } from 'viem'
 
 const DetailsWrapper = styled.div(
   ({ theme }) => css`
@@ -20,9 +21,11 @@ interface EntityViewTabProps {
   records: any
   status: string
   withRating?: boolean
+  makeAmendment: any
+  owner: Address
 }
 
-const EntityViewTab = ({ domainName, multisigAddress, records, status, withRating }: EntityViewTabProps) => {
+const EntityViewTab = ({ domainName, multisigAddress, records, status, withRating, makeAmendment, owner }: EntityViewTabProps) => {
   const { t } = useTranslation('profile')
 
   const nameRecord = records?.entity__name
@@ -36,6 +39,8 @@ const EntityViewTab = ({ domainName, multisigAddress, records, status, withRatin
         status={status}
         domainName={domainName}
         withRating={withRating}
+        makeAmendment={makeAmendment}
+        owner={owner}
       />
     </DetailsWrapper>
   )
