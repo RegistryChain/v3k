@@ -9,6 +9,7 @@ import {
   Address,
   encodeAbiParameters,
   encodeFunctionData,
+  getContract,
   isAddressEqual,
   labelhash,
   namehash,
@@ -20,7 +21,7 @@ import { normalize, packetToBytes } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
 import { checkOwner } from '@app/hooks/useCheckOwner'
-import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
   getChangedRecords,
@@ -43,9 +44,7 @@ import {
   ButtonWrapper,
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
-import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
-import { lightGreen } from '@mui/material/colors'
 
 type FormState = {
   name: string
@@ -272,7 +271,9 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       // setFormState(formState)
     } catch (e) {
       console.log(e);
-      alert("Trouble uploading file");
+      if (!formState.avatar) {
+        alert("Trouble uploading file");
+      }
     }
   };
   const registerEntity = async (entityDomain: string) => {
@@ -336,6 +337,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       { key: 'entity__code', value: '0002' },
     ]
     let stateCopy = { ...formState }
+    delete stateCopy.imageFile
 
     if (formState.parentEntityId) {
       const label = normalizeLabel(formState.parentEntityId.split('.')[0])
@@ -345,7 +347,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
     return [
       ...baseRecords,
-      ...Object.entries(formState)
+      ...Object.entries(stateCopy)
         .filter(([key, value]) => value)
         .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
     ]
@@ -362,11 +364,22 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       throw Error('Permission denied for domain registration')
     }
 
-    const formationPrep = createFormationPrep(texts)
+    const formationPrep = await createFormationPrep(texts)
 
     // Pass in amendment formationPrep as multicall(setText())
+    const wallet = getWalletClient(address as Address)
+    if (isAddressEqual(formationPrep.address, contractAddressesObj["DatabaseResolver"] as Address)) {
+      await executeWriteToResolver(wallet, formationPrep, null)
+    } else {
+      try {
+        const contract: any = getContract({ client: wallet, ...formationPrep })
+        await contract.write?.[formationPrep.functionName]([...formationPrep.args])
+      } catch (err) {
+        console.log(err)
+      }
+    }
 
-    await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
+
   }
 
   const handleFieldChange = (field: keyof typeof formState) => (value: string | File | undefined) =>
@@ -378,7 +391,6 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       await uploadFile()
     } catch (err) {
       console.log(err, 'error in submitting agent data, uploading ipfs image')
-      return
     }
 
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
@@ -403,15 +415,16 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       return
     }
     setFormState(originalForm)
-    router.push(`/agent/${formState.name}.ai.${tld}`)
+    window.location.href = (`/agent/${formState.name}.ai.${tld}`)
     onClose()
   }
 
-  const createFormationPrep = (texts: any[]) => {
+  const createFormationPrep = async (texts: any[]) => {
     if (agentModalPrepopulate) {
       if (Object.keys(agentModalPrepopulate)?.length > 0) {
         const nodeHash = namehash(agentModalPrepopulate.domain)
         const changedRecords = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord)
+        const resolverAddress = await getResolverAddress(publicClient, agentModalPrepopulate.domain)
         const multicalls: string[] = []
         changedRecords.forEach((x: any) => {
           multicalls.push(
@@ -427,7 +440,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           functionName: 'multicall',
           args: [multicalls],
           abi: l1abi,
-          address: contractAddresses['DatabaseResolver'],
+          address: resolverAddress,
         }
         return formationPrep
       }

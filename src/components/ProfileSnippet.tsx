@@ -16,13 +16,11 @@ import { useAccount } from 'wagmi'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
-import { infuraUrl } from '@app/utils/query/wagmi'
-
-import contractAddressesObj from '../constants/contractAddresses.json'
 import { ExclamationSymbol } from './ExclamationSymbol'
 import StarRating from './StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
 import { FaPencilAlt } from 'react-icons/fa'
+import { Link } from '@mui/material'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -181,9 +179,9 @@ export const ProfileSnippet = ({
               {domainName && (
                 <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                   <Typography>
-                    <a href={'https://app.ens.domains/' + domainName}>
+                    <Link target="_blank" href={'https://app.ens.domains/' + domainName}>
                       <i>{normalize(domainName)}</i>
-                    </a>
+                    </Link>
                   </Typography>
                 </SectionTitle>
               )}

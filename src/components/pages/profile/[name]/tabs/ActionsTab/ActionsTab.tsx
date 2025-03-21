@@ -84,8 +84,7 @@ const ActionsTab = ({
   const [txs, setTxs]: any[] = useState([])
 
   const refresh = async () => {
-    readTransactions()
-    checkEntityStatus()
+    window.location.href = "/agent/" + name
   }
 
   const readTransactions = async () => {
@@ -124,57 +123,57 @@ const ActionsTab = ({
       return
     }
 
+    if (onChainOwner === zeroAddress && owner === address) {
+      await migrateToOnchainRecords()
+    }
+
     try {
-
-      const saltNonce = BigInt(Date.now()); // Use timestamp as nonce for uniqueness
-      // Instantiate the Safe Proxy Factory contract
-      const safeFactory: any = getContract({
-        address: contractAddressesObj["SepoliaSafeFactory"],
-        abi: l1abi,
-        client: wallet,
-      });
-
-      const initializerBytes = encodeFunctionData({
-        abi: l1abi,
-        functionName: 'setup',
-        args: [
-          [owner],
-          BigInt(1),
-          zeroAddress,
-          "0x",
-          contractAddresses["SepoliaFallbackHandler"],
-          zeroAddress,
-          BigInt(0),
-          zeroAddress,
-        ],
-      });
-
-      // Write to contract (deploy Safe multisig)
-      const txHash = await safeFactory.write.createProxyWithNonce([
-        contractAddressesObj["SingletonAddress"],
-        initializerBytes,
-        saltNonce,
-      ]);
+      if (onChainOwner === address || (onChainOwner === zeroAddress && owner === address)) {
 
 
-      // Wait for transaction confirmation
-      const receipt = await client.waitForTransactionReceipt({ hash: txHash });
+        const saltNonce = BigInt(Date.now()); // Use timestamp as nonce for uniqueness
+        // Instantiate the Safe Proxy Factory contract
+        const safeFactory: any = getContract({
+          address: contractAddressesObj["SepoliaSafeFactory"],
+          abi: l1abi,
+          client: wallet,
+        });
 
-      // Extract Safe contract address from logs
-      const safeAddress = receipt.logs[0]?.address;
+        const initializerBytes = encodeFunctionData({
+          abi: l1abi,
+          functionName: 'setup',
+          args: [
+            [owner],
+            BigInt(1),
+            zeroAddress,
+            "0x",
+            contractAddressesObj["SepoliaFallbackHandler"],
+            zeroAddress,
+            BigInt(0),
+            zeroAddress,
+          ],
+        });
 
-      if (!safeAddress || safeAddress === zeroAddress) {
-        setErrorMessage("No safe address detected")
-        return
-      }
+        // Write to contract (deploy Safe multisig)
+        const txHash = await safeFactory.write.createProxyWithNonce([
+          contractAddressesObj["SingletonAddress"],
+          initializerBytes,
+          saltNonce,
+        ]);
 
-      console.log('Safe Multisig Deployed at:', safeAddress);
 
-      if (onChainOwner === zeroAddress && owner === address) {
-        // bring ownership on chain
-        await claimEntity(safeAddress)
-      }
-      if (onChainOwner === address) {
+        // Wait for transaction confirmation
+        const txReceipt = await client.waitForTransactionReceipt({ hash: txHash });
+
+        // Extract Safe contract address from logs
+        const safeAddress = txReceipt.logs[0]?.address;
+
+        if (!safeAddress || safeAddress === zeroAddress) {
+          setErrorMessage("No safe address detected")
+          return
+        }
+
+
         // transfer ownership to the safe
         const registry: any = getContract({
           abi: l1abi,
@@ -183,7 +182,9 @@ const ActionsTab = ({
         })
 
         const txHash2 = await registry.write.setOwner([namehash(normalize(name)), safeAddress], { gas: 6000000n })
-        const receipt = await client.waitForTransactionReceipt({ hash: txHash2 });
+        await client.waitForTransactionReceipt({ hash: txHash2 });
+        // https://app.safe.global/home?safe=sep: + safeAddress
+        refresh()
 
       }
     } catch (err: any) {
@@ -344,20 +345,22 @@ const ActionsTab = ({
           />
         </div>
       ) : null}
-      <div style={{ width: '100%', margin: '16px 0' }}>
-
+      < div style={{ width: '100%', margin: '16px 0' }}>
         <Button style={{ width: "100%" }} variant="outlined" onClick={() => deploySafeMultisig()}>Deploy Safe CA</Button>
       </div>
       {amendmentElement}
       <div style={{ width: '100%', margin: '16px 0' }}>
-        <Button onClick={() => migrateToOnchainRecords()} style={{ width: "100%" }} variant="outlined">
+        <Button onClick={async () => {
+          await migrateToOnchainRecords()
+          refresh()
+        }} style={{ width: "100%" }} variant="outlined">
           Migrate Onchain
         </Button>
       </div>
       <div style={{ width: '100%', margin: '16px 0' }}>
         <Button style={{ width: "100%" }} variant="outlined">KYC verification</Button>
       </div>
-    </div>
+    </div >
   )
 }
 

@@ -1,6 +1,6 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useEffect, useMemo, useState } from 'react'
-import { createPublicClient, createWalletClient, custom, http, namehash } from 'viem'
+import { createPublicClient, createWalletClient, custom, http, isAddress, isAddressEqual, namehash } from 'viem'
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
@@ -53,8 +53,8 @@ export default function Page() {
   const claimEntity = async (newOwner: any = address) => {
     await openConnect()
     try {
-      const resolverAddress = getResolverAddress(publicClient, normalize(records?.domain || domain))
-      if (address && resolverAddress === contractAddressesObj['DatebaseResolver']) {
+      const resolverAddress = await getResolverAddress(publicClient, normalize(records?.domain || domain))
+      if (address && isAddressEqual(resolverAddress, contractAddressesObj['DatabaseResolver'])) {
         const formationPrep: any = {
           functionName: 'transfer',
           args: [namehash(normalize(records?.domain || domain)), newOwner],

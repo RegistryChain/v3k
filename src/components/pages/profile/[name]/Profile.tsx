@@ -23,8 +23,6 @@ import { Spinner, Typography } from '@ensdomains/thorin'
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 
-import BaseLink from '@app/components/@atoms/BaseLink'
-import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { ModalContext } from '@app/layouts/Basic'
 import contractAddresses from '../../../../constants/contractAddresses.json'
@@ -38,6 +36,8 @@ import { useEnsHistory } from '@app/hooks/useEnsHistory'
 import { Outlink } from '@app/components/Outlink'
 import { Card } from '@app/components/Card'
 import { HistoryBox } from '@app/components/HistoryBox'
+import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
+import l1abi from '../../../../constants/l1abi.json'
 
 
 const VideoContainer = styled.div`
@@ -99,7 +99,7 @@ const VideoEmbed = ({ videoId = "" }: {
   }, []);
 
   if (isLoading) return <p>Loading video...</p>;
-  if (!videoId) return <p>No video for this agent was found</p>;
+  if (!videoId) return null
 
   return (
     <VideoContainer>
@@ -174,6 +174,7 @@ const ProfileContent = ({
 }: any) => {
   const { t } = useTranslation('profile')
   const [multisigAddress, setMultisigAddress] = useState('')
+  const [multisigOwners, setMultisigOwners] = useState<any[]>([])
   const [status, setStatus] = useState('')
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
@@ -184,6 +185,8 @@ const ProfileContent = ({
   const { history, fetchEnsHistory } = useEnsHistory()
   const [verification, setVerification] = useState<string | undefined>()
   const ref = useRef<HTMLDivElement>(null)
+
+  const primary = usePrimaryName({ address: owner })
 
   const registrars: any = registrarsObj
 
@@ -241,6 +244,35 @@ const ProfileContent = ({
     console.log("verification " + verification)
   }
 
+  const checkOwnerIsMultisig = async () => {
+    try {
+      // Check if the address is a contract (EOAs have code size 0)
+      const code = await publicClient.getBytecode({ address: onChainOwner });
+      if (!code || code === '0x') return false; // It's an EOA
+
+      // Try calling `getOwners()`, which only exists on Safe contracts
+      const safeContract = getContract({
+        address: onChainOwner,
+        abi: l1abi,
+        client: publicClient,
+      });
+
+      const owners: any = (await safeContract.read.getOwners()) || [];
+      setMultisigAddress(onChainOwner)
+      setMultisigOwners(owners)
+    } catch (err: any) {
+      console.log(err.message)
+    }
+  }
+
+
+  useEffect(() => {
+    if (onChainOwner) {
+      checkOwnerIsMultisig()
+    }
+  }, [address, onChainOwner])
+
+
   useEffect(() => {
     fetchEnsHistory(namehash(domain))
   }, [])
@@ -263,7 +295,7 @@ const ProfileContent = ({
       abi: parseAbi(['function owner(bytes32) view returns (address)']),
       client: publicClient,
     })
-    getMultisigAddr(registry)
+    getOwner(registry)
   }, [publicClient, domain])
 
   useEffect(() => {
@@ -273,41 +305,32 @@ const ProfileContent = ({
     }
   }, [domain])
 
-  useEffect(() => {
-    if (multisigAddress) {
-      checkEntityStatus()
-    }
-  }, [multisigAddress])
-
-  const onOffChainHistory = useMemo(() => {
-    return [...(records?.changeLogs || []), ...history].sort((a, b) => a.timestamp - b.timestamp)
-  }, [records, history])
 
   const checkEntityStatus = async () => {
-    const multisig: any = await getMultisig(multisigAddress)
+    // const multisig: any = await getMultisig(multisigAddress)
 
-    const multisigState: any = getContract({
-      address: contractAddresses.MultisigState as Address,
-      abi: parseAbi(['function entityToTransactionNonce(address) view returns (uint256)']),
-      client: publicClient,
-    })
+    // const multisigState: any = getContract({
+    //   address: contractAddresses.MultisigState as Address,
+    //   abi: parseAbi(['function entityToTransactionNonce(address) view returns (uint256)']),
+    //   client: publicClient,
+    // })
 
-    try {
-      const localApproval = await multisig.read.localApproval()
-      const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
-      // if localApproval is false and txNonce = 1, drafted
-      let status = 'DRAFT'
-      if (localApproval && operationApprovedByRegistrar) {
-        status = 'APPROVED'
-      } else if (localApproval) {
-        status = 'SUBMITTED'
-      }
-      setStatus(status)
-      setRecords((prev: { [x: string]: any }) => ({
-        ...prev,
-        status,
-      }))
-    } catch (e) { }
+    // try {
+    //   const localApproval = await multisig.read.localApproval()
+    //   const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
+    //   // if localApproval is false and txNonce = 1, drafted
+    //   let status = 'DRAFT'
+    //   if (localApproval && operationApprovedByRegistrar) {
+    //     status = 'APPROVED'
+    //   } else if (localApproval) {
+    //     status = 'SUBMITTED'
+    //   }
+    //   setStatus(status)
+    //   setRecords((prev: { [x: string]: any }) => ({
+    //     ...prev,
+    //     status,
+    //   }))
+    // } catch (e) { }
   }
 
   useEffect(() => {
@@ -342,20 +365,7 @@ const ProfileContent = ({
     }
   }, [records, domain])
 
-  const getMultisig = async (multisig: any) => {
-    return getContract({
-      address: multisig as Address,
-      abi: parseAbi([
-        'function entityMemberManager() view returns (address)',
-        'function localApproval() view returns (bool)',
-        'function multisigState() view returns (address)',
-        'function checkEntityOperational() view returns (bool)',
-      ]),
-      client: publicClient,
-    })
-  }
-
-  const getMultisigAddr = async (registry: any) => {
+  const getOwner = async (registry: any) => {
     if (domain) {
       let ownerAddress = zeroAddress
       try {
@@ -644,13 +654,15 @@ const ProfileContent = ({
                         <Typography weight='bold'>Developer</Typography>
                       </dt>
                       <dd>
-                        {records.address && (
-                          <Link title="tooltip" href={`https://etherscan.io/address/${records.address}`} target='_blank' style={{
+                        {/* if owner has no primary, use addr and etherscan */}
+                        {/* if owner has primary, link to dev profile and show */}
+                        {owner ? (
+                          <Link title="tooltip" href={`/developer/` + owner} target='_blank' style={{
                             textDecoration: 'none',
                           }}>
-                            {truncateEthAddress(records.address)}
+                            {primary?.data?.name ?? truncateEthAddress(owner)}
                           </Link>
-                        )}
+                        ) : null}
                       </dd>
                     </Box>
                   </dl>
@@ -663,7 +675,7 @@ const ProfileContent = ({
                 container
                 spacing={6}>
                 <Box py={2}>
-                  {owner === address ?
+                  {owner === address || multisigAddress && (multisigOwners.includes(address)) ?
                     <Box display='flex'>
                       <div onClick={() => setTab("details")} style={tab === "details" ? { borderBottom: "black 1px solid", marginRight: "16px" } : { marginRight: "16px", cursor: "pointer" }}><span>Details</span></div>
                       <div onClick={() => setTab("actions")} style={tab === "actions" ? { borderBottom: "black 1px solid" } : { cursor: "pointer" }}><span>Actions</span></div>
