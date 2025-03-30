@@ -25,7 +25,7 @@ const ResetPrimaryName = ({ data: { address }, dispatch, onDismiss }: Props) => 
       payload: [
         createTransactionItem('resetPrimaryName', {
           address,
-        }),
+        } as any),
       ],
     })
     dispatch({

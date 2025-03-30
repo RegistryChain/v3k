@@ -118,7 +118,7 @@ export const RecordsSection = ({
 }) => {
   const { t } = useTranslation('profile')
   const filteredCompanyData = useMemo(() => {
-    const allowedFields = ['description', 'avatar', 'location', 'purpose', 'url', 'domain']
+    const allowedFields = ['description', 'avatar', 'location', 'purpose', 'url', 'entityid']
     return Object.keys(fields)?.filter(
       (field) => (field.includes('entity') || allowedFields.includes(field)) && fields[field],
     )

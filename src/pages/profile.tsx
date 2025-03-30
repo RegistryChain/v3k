@@ -1,6 +1,6 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useEffect, useMemo, useState } from 'react'
-import { createPublicClient, createWalletClient, custom, http, namehash } from 'viem'
+import { createPublicClient, createWalletClient, custom, http, isAddress, isAddressEqual, namehash } from 'viem'
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
@@ -10,6 +10,7 @@ import ProfileContent from '@app/components/pages/profile/[name]/Profile'
 import {
   executeWriteToResolver,
   getRecordData,
+  getResolverAddress,
   useRecordData,
 } from '@app/hooks/useExecuteWriteToResolver'
 import { useInitial } from '@app/hooks/useInitial'
@@ -38,10 +39,7 @@ export default function Page() {
   const initial = useInitial()
 
   const { address, isConnected } = useAccount()
-
-  const { data: fields, loading, error, refetch } = useRecordData({ domain })
-
-  const publicClient = useMemo(
+  const publicClient: any = useMemo(
     () =>
       createPublicClient({
         chain: sepolia,
@@ -49,15 +47,19 @@ export default function Page() {
       }),
     [],
   )
-  const claimEntity = async () => {
+
+  const { data: fields, loading, error, refetch } = useRecordData({ entityid: domain, wallet, publicClient })
+
+  const claimEntity = async (newOwner: any = address) => {
     await openConnect()
     try {
-      if (address) {
+      const resolverAddress = await getResolverAddress(publicClient, normalize(records?.entityid || domain))
+      if (address && isAddressEqual(resolverAddress, contractAddressesObj['DatabaseResolver'])) {
         const formationPrep: any = {
           functionName: 'transfer',
-          args: [namehash(normalize(records?.domain || domain)), address],
+          args: [namehash(normalize(records?.entityid || domain)), newOwner],
           abi: l1abi,
-          address: contractAddressesObj['DatabaseResolver'],
+          address: resolverAddress,
         }
         let registrarAddress = contractAddressesObj['ai' + tld]
         const formationCallback: any = {
@@ -111,7 +113,7 @@ export default function Page() {
     if (fields) {
       const fieldsOverride: any = fields
       fieldsOverride.partners = fieldsOverride.partners?.filter(
-        (partner: any) => partner?.wallet__address || partner?.name,
+        (partner: any) => partner?.walletaddress || partner?.name,
       )
       setRecords(fieldsOverride)
     }

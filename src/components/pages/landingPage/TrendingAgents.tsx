@@ -117,9 +117,10 @@ const TrendingAgents = () => {
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',
-        sortType: 'creationDate',
+        sortType: 'birthdate',
         limit: 18,
-        params: { avatar: 'https', featured: 'false' },
+        address,
+        params: { avatar: 'https', "v3k__featured": 'false' },
       })
 
       const ratings = await repTokenBalance(
@@ -153,7 +154,7 @@ const TrendingAgents = () => {
         tokenAddress={agents.map((x: any) => x.address)}
         onResults={setSubgraphResults}
       />
-      <AgentGrid boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
+      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
     </>
   )
 }

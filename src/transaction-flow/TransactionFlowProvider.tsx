@@ -14,6 +14,7 @@ import { useLocalStorageReducer } from '@app/hooks/useLocalStorage'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { UpdateCallback, useCallbackOnTransaction } from '@app/utils/SyncProvider/SyncProvider'
 
+import { TransactionDialogManager } from '../components/@molecules/TransactionDialogManager/TransactionDialogManager'
 import { DataInputComponent, DataInputComponents } from './input'
 import { helpers, initialState, reducer } from './reducer'
 import { GenericTransaction, InternalTransactionFlow, TransactionFlowItem } from './types'
@@ -34,6 +35,7 @@ type ProviderValue = {
   usePreparedDataInput: UsePreparedDataInput
   createTransactionFlow: CreateTransactionFlow
   resumeTransactionFlow: (key: string) => void
+  getSelectedKey: () => string | null
   getTransactionIndex: (key: string) => number
   getResumable: (key: string) => boolean
   getTransactionFlowStage: (
@@ -49,6 +51,7 @@ const TransactionContext = React.createContext<ProviderValue>({
   usePreparedDataInput: () => () => {},
   createTransactionFlow: () => {},
   resumeTransactionFlow: () => {},
+  getSelectedKey: () => null,
   getTransactionIndex: () => 0,
   getResumable: () => false,
   getTransactionFlowStage: () => 'undefined',
@@ -81,6 +84,8 @@ export const TransactionFlowProvider = ({ children }: { children: ReactNode }) =
       }
     },
   )
+
+  const getSelectedKey = useCallback(() => state.selectedKey, [state.selectedKey])
 
   const getTransactionIndex = useCallback(
     (key: string) => state.items[key]?.currentTransaction || 0,
@@ -186,6 +191,7 @@ export const TransactionFlowProvider = ({ children }: { children: ReactNode }) =
           payload: flow,
         })) as CreateTransactionFlow,
       resumeTransactionFlow,
+      getSelectedKey,
       getTransactionIndex,
       getTransaction,
       getResumable,
@@ -199,6 +205,7 @@ export const TransactionFlowProvider = ({ children }: { children: ReactNode }) =
     dispatch,
     resumeTransactionFlow,
     getResumable,
+    getSelectedKey,
     getTransactionIndex,
     getLatestTransaction,
     getTransactionFlowStage,
@@ -225,7 +232,12 @@ export const TransactionFlowProvider = ({ children }: { children: ReactNode }) =
     }
   }, [state.selectedKey, dispatch])
 
-  return <TransactionContext.Provider value={providerValue}>{children}</TransactionContext.Provider>
+  return (
+    <TransactionContext.Provider value={providerValue}>
+      {children}
+      <TransactionDialogManager {...{ state, dispatch, selectedKey }} />
+    </TransactionContext.Provider>
+  )
 }
 
 export const useTransactionFlow = () => {

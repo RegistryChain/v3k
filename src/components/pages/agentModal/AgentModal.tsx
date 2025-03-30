@@ -1,10 +1,15 @@
 // components/AgentModal.tsx (updated)
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { TextField, Select, FormControl, InputLabel, MenuItem } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import styled, { css } from 'styled-components'
+
+import { PinataSDK } from 'pinata'
 import {
   Address,
   encodeAbiParameters,
   encodeFunctionData,
+  getContract,
   isAddressEqual,
   labelhash,
   namehash,
@@ -16,7 +21,7 @@ import { normalize, packetToBytes } from 'viem/ens'
 import { useAccount } from 'wagmi'
 
 import { checkOwner } from '@app/hooks/useCheckOwner'
-import { executeWriteToResolver } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
   getChangedRecords,
@@ -39,7 +44,6 @@ import {
   ButtonWrapper,
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
-import { ParentEntitySection } from './ParentEntitySection'
 import { CustomizedSteppers } from './Stepper'
 
 type FormState = {
@@ -47,7 +51,6 @@ type FormState = {
   avatar: string
   category: string
   platform: string
-  purpose: string
   github: string
   endpoint: string
   parentEntityId: string
@@ -56,33 +59,51 @@ type FormState = {
   twitterHandle: string
   tokenAddress: string
   telegramHandle: string
+  imageFile: File | undefined
 }
 
 interface StepProps {
   isVisible: boolean
+  prepopulate: { [x: string]: any }
   formState: FormState
-  handleFieldChange: (field: keyof FormState) => (value: string) => void
+  handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
-
-const Step1 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+export const pinata = new PinataSDK({
+  pinataJwt: `${process.env.NEXT_PUBLIC_PINATA_JWT}`,
+  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
+})
+const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
       {/* Core Inputs */}
-      <FormInput
-        label="Name"
-        value={formState.name}
-        onChange={handleFieldChange('name')}
-        placeholder="Enter agent name"
-        required
-      />
-
-      <FormInput
-        label="Image URL"
-        value={formState.avatar}
-        onChange={handleFieldChange('avatar')}
-        placeholder="Enter image URL"
-        required
-      />
+      {prepopulate.name ? null :
+        <FormInput
+          label="Name"
+          value={formState.name}
+          onChange={handleFieldChange('name')}
+          placeholder="Enter agent name"
+          required
+        />}
+      <FormControl required>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            handleFieldChange('imageFile')(file)
+          }}
+          style={{
+            color: '#616661',
+            display: "inline - block",
+            cursor: "pointer",
+            paddingLeft: "12px",
+            paddingTop: "10px",
+            paddingBottom: "10px",
+            outline: "10px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </FormControl>
 
       <FormInput
         label="Category"
@@ -114,12 +135,7 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
         placeholder="Enter platform"
       />
 
-      <FormInput
-        label="Purpose"
-        value={formState.purpose}
-        onChange={handleFieldChange('purpose')}
-        placeholder="Enter Purpose"
-      />
+
 
       <FormInput
         label="Github"
@@ -195,7 +211,6 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     avatar: '',
     category: '',
     platform: '',
-    purpose: '',
     github: '',
     endpoint: '',
     parentEntityId: '',
@@ -204,21 +219,21 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     twitterHandle: '',
     tokenAddress: '',
     telegramHandle: '',
+    imageFile: undefined
   }
   // Text record key mapping
   const mapKeyToRecord = (formKey: string) => {
     const mapping: Record<string, string> = {
       platform: 'location',
       description: 'description',
-      twitterHandle: 'entity__twitter',
-      tokenAddress: 'entity__token__address',
-      telegramHandle: 'entity__telegram',
-      purpose: 'entity__purpose',
-      github: 'entity__github',
-      endpoint: 'entity__endpoint',
+      twitterHandle: 'com.twitter',
+      tokenAddress: 'token__utility',
+      telegramHandle: 'org.telegram',
+      github: 'com.github',
+      endpoint: 'aiagent__entrypoint__url',
       parentEntityId: 'partner__[0]__domain',
       parentName: 'partner__[0]__name',
-      category: 'entity__type',
+      category: 'keywords',
     }
     return mapping[formKey] || formKey
   }
@@ -238,6 +253,22 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const [formState, setFormState] = useState(originalFormToSet)
   const publicClient = useMemo(getPublicClient, [])
 
+  const uploadFile = async () => {
+    try {
+      if (!formState.imageFile) {
+        return;
+      }
+      const { cid } = await pinata.upload.public.file(formState.imageFile)
+      const url = await pinata.gateways.public.convert(cid);
+      formState.avatar = url
+      // setFormState(formState)
+    } catch (e) {
+      console.log(e);
+      if (!formState.avatar) {
+        alert("Trouble uploading file");
+      }
+    }
+  };
   const registerEntity = async (entityDomain: string) => {
     // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
     const registrarContract: any = getContractInstance(
@@ -294,11 +325,10 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
   const createTextRecords = () => {
     const baseRecords = [
-      { key: 'entity__name', value: formState.name },
-      { key: 'entity__registrar', value: 'ai' },
-      { key: 'entity__code', value: '0002' },
+      { key: 'registrar', value: 'ai' },
     ]
     let stateCopy = { ...formState }
+    delete stateCopy.imageFile
 
     if (formState.parentEntityId) {
       const label = normalizeLabel(formState.parentEntityId.split('.')[0])
@@ -308,7 +338,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
     return [
       ...baseRecords,
-      ...Object.entries(formState)
+      ...Object.entries(stateCopy)
         .filter(([key, value]) => value)
         .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
     ]
@@ -325,17 +355,35 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       throw Error('Permission denied for domain registration')
     }
 
-    const formationPrep = createFormationPrep(texts)
+    const formationPrep = await createFormationPrep(texts)
 
     // Pass in amendment formationPrep as multicall(setText())
+    const wallet = getWalletClient(address as Address)
+    if (isAddressEqual(formationPrep.address, contractAddressesObj["DatabaseResolver"] as Address)) {
+      await executeWriteToResolver(wallet, formationPrep, null)
+    } else {
+      try {
+        const contract: any = getContract({ client: wallet, ...formationPrep })
+        await contract.write?.[formationPrep.functionName]([...formationPrep.args])
+      } catch (err) {
+        console.log(err)
+      }
+    }
 
-    await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
+
   }
 
-  const handleFieldChange = (field: keyof typeof formState) => (value: string) =>
+  const handleFieldChange = (field: keyof typeof formState) => (value: string | File | undefined) =>
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
+
+    try {
+      await uploadFile()
+    } catch (err) {
+      console.log(err, 'error in submitting agent data, uploading ipfs image')
+    }
+
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
@@ -358,22 +406,23 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       return
     }
     setFormState(originalForm)
-    router.push(`/agent/${formState.name}.ai.${tld}`)
+    window.location.href = (`/agent/${formState.name}.ai.${tld}`)
     onClose()
   }
 
-  const createFormationPrep = (texts: any[]) => {
+  const createFormationPrep = async (texts: any[]) => {
     if (agentModalPrepopulate) {
       if (Object.keys(agentModalPrepopulate)?.length > 0) {
-        const nodeHash = namehash(agentModalPrepopulate.domain)
+        const nodehash = namehash(agentModalPrepopulate.entityid)
         const changedRecords = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord)
+        const resolverAddress = await getResolverAddress(publicClient, agentModalPrepopulate.entityid)
         const multicalls: string[] = []
         changedRecords.forEach((x: any) => {
           multicalls.push(
             encodeFunctionData({
               abi: l1abi,
               functionName: 'setText',
-              args: [nodeHash, x.key, x.value],
+              args: [nodehash, x.key, x.value],
             }),
           )
         })
@@ -382,7 +431,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           functionName: 'multicall',
           args: [multicalls],
           abi: l1abi,
-          address: contractAddresses['DatabaseResolver'],
+          address: resolverAddress,
         }
         return formationPrep
       }
@@ -453,6 +502,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
               <Step1
                 isVisible={actionStep === 0}
                 formState={formState}
+                prepopulate={agentModalPrepopulate}
                 handleFieldChange={handleFieldChange}
               />
             )}
@@ -460,6 +510,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
               <Step2
                 isVisible={actionStep === 1}
                 formState={formState}
+                prepopulate={agentModalPrepopulate}
+
                 handleFieldChange={handleFieldChange}
               />
             )}
@@ -467,6 +519,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
               <Step3
                 isVisible={actionStep === 2}
                 formState={formState}
+                prepopulate={agentModalPrepopulate}
+
                 handleFieldChange={handleFieldChange}
               />
             )}
@@ -475,7 +529,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
         <ButtonWrapper>
           <SubmitButton
-            disabled={!formState.name || !formState.avatar || !formState.category}
+            disabled={!formState.name || !formState.category}
             onClick={handleRegistration}
           >
             {actions[0]}
@@ -486,3 +540,11 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   )
 }
 export default AgentModal
+
+/* Add this CSS to your styles */
+export const sds = `::file-selector-button{
+  border: 2px solid black;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: lightgreen;
+}`

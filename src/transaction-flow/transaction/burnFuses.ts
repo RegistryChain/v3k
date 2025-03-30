@@ -31,7 +31,7 @@ const displayItems = (
   },
 ]
 
-const transaction = ({ connectorClient, data }: TransactionFunctionParameters<Data>) => {
+const transaction = ({ connectorClient, data }: any) => {
   return setFuses.makeFunctionData(connectorClient, {
     name: data.name,
     fuses: {

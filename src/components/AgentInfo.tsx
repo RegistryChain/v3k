@@ -53,7 +53,7 @@ const AgentInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
             .split('__')
             .map((x) => x[0]?.toUpperCase() + x?.slice(1))
             .join(' ')
-          if (field === 'domain') {
+          if (field === 'entityid') {
             label = 'Entity.ID'
           }
           let key = label || field

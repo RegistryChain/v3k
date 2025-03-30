@@ -32,7 +32,7 @@ export const makeTransferNameOrSubnameTransactionItem = ({
           newOwnerAddress,
           sendType: 'sendOwner',
           contract,
-        }),
+        } as any),
       )
       .with([true, 'sendManager', 'registrar'], () =>
         createTransactionItem('transferName', {
@@ -41,7 +41,7 @@ export const makeTransferNameOrSubnameTransactionItem = ({
           sendType: 'sendManager',
           contract: 'registrar',
           reclaim: abilities?.sendNameFunctionCallDetails?.sendManager?.method === 'reclaim',
-        }),
+        } as any),
       )
       .with([true, 'sendManager', P.union('registry', 'nameWrapper')], ([, , contract]) =>
         createTransactionItem('transferName', {
@@ -49,7 +49,7 @@ export const makeTransferNameOrSubnameTransactionItem = ({
           newOwnerAddress,
           sendType: 'sendManager',
           contract,
-        }),
+        } as any),
       )
       // A parent name can only transfer the manager
       .with([false, 'sendManager', P.union('registry', 'nameWrapper')], ([, , contract]) =>
@@ -57,7 +57,7 @@ export const makeTransferNameOrSubnameTransactionItem = ({
           name,
           newOwnerAddress,
           contract,
-        }),
+        } as any),
       )
       .otherwise(() => null)
   )

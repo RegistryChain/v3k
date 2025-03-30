@@ -5,7 +5,7 @@ import useTransition, { TransitionState } from 'react-transition-state'
 import styled, { css, useTheme } from 'styled-components'
 import { useAccount } from 'wagmi'
 
-import { mq } from '@ensdomains/thorin'
+import { Input, MagnifyingGlassSimpleSVG, mq } from '@ensdomains/thorin'
 
 import { useRecentTransactions } from '@app/hooks/transactions/useRecentTransactions'
 import { useInitial } from '@app/hooks/useInitial'
@@ -17,16 +17,42 @@ import v3kLogo from '../assets/v3k_logo.png'
 import { RouteItem } from './@atoms/RouteItem/RouteItem'
 import Hamburger from './@molecules/Hamburger/Hamburger'
 import { HeaderConnect } from './ConnectButton'
+import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+
+
+// 👇 Result dropdown styles
+const SearchResultsDropdown = styled.ul`
+  position: absolute;
+  top: 48px; /* Adjust depending on your Input height */
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  z-index: 1000;
+  max-height: 220px;
+  padding: 0;
+  margin: 4px 0 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  list-style: none;
+`;
+
+const SearchResultItem = styled.li`
+  padding: 10px 14px;
+  cursor: pointer;
+  &:hover {
+    background-color: #f4f4f4;
+  }
+`;
 
 const HeaderWrapper = styled.header(
   ({ theme }) => css`
     --padding-size: ${theme.space['4']};
     padding: var(--padding-size);
-    overflow: hidden; /* Ensure hidden content doesn't cause layout shifts */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     position: sticky;
     top: 0;
-    z-index: 1000;
+  z-index: 9999;
     background-color: white;
     ${mq.sm.max(css`
       display: none;
@@ -102,31 +128,16 @@ const RouteContainer = styled.div<{ $state: TransitionState }>(
 const RouteWrapper = styled.div(
   () => css`
     position: relative;
+    display: flex;
   `,
 )
 
-const SearchWrapper = styled.div<{ $state: TransitionState }>(
-  ({ theme, $state }) => css`
-    width: ${theme.space.full};
-    max-width: ${theme.space['80']};
-    & > div > div {
-      max-width: ${theme.space.full};
-      ${mq.lg.min(css`
-        max-width: ${theme.space['80']};
-      `)}
-    }
-
-    transition: margin 0.15s ease-in-out;
-    margin-right: ${theme.space['24']};
-    ${$state !== 'entered' &&
-    css`
-      margin-right: 0;
-    `}
-    ${mq.lg.min(css`
-      margin-right: 0;
-    `)}
-  `,
-)
+// 👇 Wrap the input and result dropdown
+const SearchWrapper = styled.div`
+  position: relative;
+  width: 350px;
+  margin: 0 18px;
+`;
 
 const AddAgentButton = styled.button(
   ({ theme }) => css`
@@ -156,10 +167,12 @@ export const Header = () => {
   const breakpoints = useBreakpoint()
   const transactions = useRecentTransactions()
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')
-  const { setIsModalOpen } = useContext<any>(ModalContext)
-
+  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState([])
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const routeContainerRef = useRef<HTMLDivElement>(null)
+
   const [state, toggle] = useTransition({
     timeout: {
       enter: 0,
@@ -169,6 +182,25 @@ export const Header = () => {
     unmountOnExit: true,
     initialEntered: true,
   })
+
+  const getAgents = async () => {
+    const results = await getEntitiesList({
+      registrar: 'ai',
+      nameSubstring: searchQuery,
+      limit: 5
+    })
+    setSearchResults(results)
+  }
+
+  useEffect(() => {
+    // Debounce effect: Wait 1 second after typing stops before calling API
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.length > 0)
+        getAgents()
+    }, 500) // 1000ms = 1 second
+
+    return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
+  }, [searchQuery])
 
   let RouteItems: ReactNode
 
@@ -216,6 +248,7 @@ export const Header = () => {
   return (
     <HeaderWrapper id="header">
       <NavContainer>
+
         <div
           style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer', display: 'flex' }}
           onClick={() => router.push('/')}
@@ -226,8 +259,34 @@ export const Header = () => {
           </span>
         </div>
         <div style={{ flexGrow: 1 }} />
-
         <RouteWrapper>
+          <SearchWrapper>
+            <Input
+              style={{ width: "100%" }}
+              data-testid="name-table-header-search"
+              size="medium"
+              label="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery?.(e.target.value)}
+              hideLabel
+              icon={<MagnifyingGlassSimpleSVG />}
+              placeholder={"search"}
+            />
+            {searchResults.length > 0 && (
+              <SearchResultsDropdown>
+                {searchResults.slice(0, 5).map((result: any, index: any) => (
+                  <SearchResultItem
+                    key={index}
+                    onClick={() => {
+                      window.location.href = "/agent/" + result.entityid
+                    }}
+                  >
+                    {result.name}
+                  </SearchResultItem>
+                ))}
+              </SearchResultsDropdown>
+            )}
+          </SearchWrapper>
           <RouteContainer
             data-testid="route-container"
             ref={routeContainerRef}
@@ -235,7 +294,10 @@ export const Header = () => {
           >
             {RouteItems}
             <AddAgentButton
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setAgentModalPrepopulate({})
+                setIsModalOpen(true)
+              }}
             >
               Add Agent
             </AddAgentButton>

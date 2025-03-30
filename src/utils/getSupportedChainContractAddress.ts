@@ -18,4 +18,4 @@ export const getSupportedChainContractAddress = <
     chain: client.chain,
     contract,
     blockNumber,
-  }) as TContractObject['address']
+  }) as any

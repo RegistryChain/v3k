@@ -90,7 +90,7 @@ mockUseProfile.mockReturnValue({
 const mockUseGetPrimaryNameTransactionItem = mockFunction(useGetPrimaryNameTransactionFlowItem)
 mockUseGetPrimaryNameTransactionItem.mockReturnValue({
   callBack: () => ({
-    transactions: [createTransactionItem('setPrimaryName', { name: 'test.eth', address: '0x123' })],
+    transactions: [createTransactionItem('setPrimaryName', { name: 'test.eth', address: '0x123' } as any)],
   }),
   isLoading: false,
 })
@@ -177,7 +177,7 @@ describe('SelectPrimaryName', () => {
       <SelectPrimaryName
         data={{ address: '0x123' }}
         dispatch={mockDispatch}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     )
     await waitFor(() => expect(screen.getByText('loading')).toBeInTheDocument())
@@ -191,7 +191,7 @@ describe('SelectPrimaryName', () => {
       isLoading: false,
     })
     render(
-      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => {}} onDismiss={() => {}} />,
+      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => { }} onDismiss={() => { }} />,
     )
     await waitFor(() =>
       expect(
@@ -202,7 +202,7 @@ describe('SelectPrimaryName', () => {
 
   it('should show names', async () => {
     render(
-      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => {}} onDismiss={() => {}} />,
+      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => { }} onDismiss={() => { }} />,
     )
     await waitFor(() => {
       expect(screen.getByText('test1.eth')).toBeInTheDocument()
@@ -221,7 +221,7 @@ describe('SelectPrimaryName', () => {
       status: 'success',
     })
     render(
-      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => {}} onDismiss={() => {}} />,
+      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => { }} onDismiss={() => { }} />,
     )
     await waitFor(() => {
       expect(screen.getByText('test1.eth')).toBeInTheDocument()
@@ -232,7 +232,7 @@ describe('SelectPrimaryName', () => {
 
   it('should only enable next button if name selected', async () => {
     render(
-      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => {}} onDismiss={() => {}} />,
+      <SelectPrimaryName data={{ address: '0x123' }} dispatch={() => { }} onDismiss={() => { }} />,
     )
     expect(screen.getByTestId('primary-next')).toBeDisabled()
     await userEvent.click(screen.getByText('test1.eth'))
@@ -244,7 +244,7 @@ describe('SelectPrimaryName', () => {
       <SelectPrimaryName
         data={{ address: '0x123' }}
         dispatch={mockDispatch}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     )
     await userEvent.click(screen.getByText('test1.eth'))
@@ -272,7 +272,7 @@ describe('SelectPrimaryName', () => {
       <SelectPrimaryName
         data={{ address: '0x123' }}
         dispatch={mockDispatch}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     )
     await userEvent.click(screen.getByText(`${encodeLabel('test')}.eth`))
@@ -300,7 +300,7 @@ describe('SelectPrimaryName', () => {
       <SelectPrimaryName
         data={{ address: '0x123' }}
         dispatch={mockDispatch}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     )
     expect(screen.getByTestId('primary-next')).toBeDisabled()

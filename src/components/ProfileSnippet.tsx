@@ -16,110 +16,11 @@ import { useAccount } from 'wagmi'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
-import { infuraUrl } from '@app/utils/query/wagmi'
-
-import contractAddressesObj from '../constants/contractAddresses.json'
 import { ExclamationSymbol } from './ExclamationSymbol'
 import StarRating from './StarRating'
-
-const RepTokenABI = [
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'target',
-        type: 'address',
-      },
-    ],
-    name: 'getSenderRatingsListForTarget',
-    outputs: [
-      {
-        internalType: 'address[]',
-        name: '',
-        type: 'address[]',
-      },
-      {
-        internalType: 'uint256[]',
-        name: '',
-        type: 'uint256[]',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'to',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'value',
-        type: 'uint256',
-      },
-    ],
-    name: 'transfer',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'to',
-        type: 'address',
-      },
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-]
-
-const BasicABI = [
-  {
-    inputs: [],
-    name: 'mintFromFaucet',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    name: 'faucetMinted',
-    inputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-]
+import { useGetRating } from '@app/hooks/useGetRating'
+import { FaPencilAlt } from 'react-icons/fa'
+import { Link } from '@mui/material'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -173,6 +74,16 @@ export const getUserDefinedUrl = (url?: string) => {
   }
   return ``
 }
+interface ProfileSnippetProps {
+  name: string
+  multisigAddress: string
+  records: any
+  status?: string
+  domainName?: string
+  withRating?: boolean
+  makeAmendment: any
+  owner: Address
+}
 
 export const ProfileSnippet = ({
   name,
@@ -180,23 +91,17 @@ export const ProfileSnippet = ({
   records,
   status,
   domainName,
-  children,
-}: any) => {
+  withRating = true,
+  owner,
+  makeAmendment
+}: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
 
-  const [rating, setRating] = useState<any>(0)
+  const { rating, getRating, sendStars } = useGetRating()
+
   const { address } = useAccount()
 
   const [wallet, setWallet] = useState<any>(null)
-
-  const publicClient = useMemo(
-    () =>
-      createPublicClient({
-        chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
-      }),
-    [],
-  )
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum && !wallet) {
@@ -213,74 +118,9 @@ export const ProfileSnippet = ({
     }
   }, [address])
 
-  const getRating = async () => {
-    const rate = await repTokenBalance(records.address)
-    setRating(rate)
-  }
-
-  const mintOrimmoTokens = async () => {
-    if (address && wallet) {
-      try {
-        const orimmoController: any = getContract({
-          abi: BasicABI,
-          address: contractAddressesObj.orimmoController as Address,
-          client: wallet,
-        })
-
-        const tx = await orimmoController.write.mintFromFaucet([])
-        const txReceipt = await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-        })
-      } catch (err) {
-        console.log('mint err', err)
-      }
-    }
-  }
-
-  const sendStars = async (to: any, amount: any) => {
-    console.log(address, to)
-    try {
-      const contract: any = getContract({
-        address: contractAddressesObj.starToken as Address,
-        abi: RepTokenABI,
-        client: wallet,
-      })
-
-      const bal = await contract.read.balanceOf([address])
-      console.log('user balance', address, bal)
-      if (bal === 0n) {
-        await mintOrimmoTokens()
-      }
-
-      const tx = await contract.write.transfer([to, amount * 10 ** 18])
-      await publicClient?.waitForTransactionReceipt({
-        hash: tx,
-      })
-    } catch (err) {
-      console.log('error sending stars', err)
-    }
-    return
-  }
-
-  const repTokenBalance = async (addressToCheck: any) => {
-    const contract = getContract({
-      address: contractAddressesObj.starToken as any,
-      abi: RepTokenABI,
-      client: publicClient,
-    })
-
-    const result: any = await contract.read.getSenderRatingsListForTarget([addressToCheck])
-    let ratingScore = 0
-    result?.[1]?.forEach((rating: any) => (ratingScore += Number(rating)))
-    ratingScore /= result?.[1]?.length
-    ratingScore = ratingScore / 1000000000000000000 || 0
-    console.log(ratingScore)
-    return ratingScore
-  }
-
   useEffect(() => {
     if (records?.address) {
-      getRating()
+      getRating(records?.addres)
     }
   }, [records])
 
@@ -309,9 +149,9 @@ export const ProfileSnippet = ({
             {status}
           </span>
         </SectionTitle>
-        {records.entity__registrar?.oldValue !== 'public' &&
-        records.sourceActive &&
-        records.sourceActive === false ? (
+        {records.registrar?.oldValue !== 'public' &&
+          records.sourceActive &&
+          records.sourceActive === false ? (
           <ExclamationSymbol
             tooltipText={
               'This entity is not active according to the jurisdictional registrar source.'
@@ -330,21 +170,31 @@ export const ProfileSnippet = ({
           <div style={{ display: 'flex' }}>
             <Image src={records.avatar} alt="e" height={88} />
             <div>
-              <NameRecord fontVariant="headingTwo" data-testid="profile-snippet-nickname">
-                {name}
+              <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
+                <div style={{ display: "flex", gap: "5px" }}>
+                  <span>{name}</span>
+                  {owner === address ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
+                </div>
               </NameRecord>
-              <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                <Typography>
-                  <a href={'https://app.ens.domains/' + domainName}>
-                    <i>{normalize(domainName)}</i>
-                  </a>
-                </Typography>
-              </SectionTitle>
+              {domainName && (
+                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                  <Typography>
+                    <Link target="_blank" href={'https://app.ens.domains/' + domainName}>
+                      <i>{normalize(domainName)}</i>
+                    </Link>
+                  </Typography>
+                </SectionTitle>
+              )}
+
               {/* {statusSection} */}
-              <StarRating
-                rating={rating}
-                onRate={(val: any) => sendStars(records?.address || zeroAddress, val + 1)}
-              />
+
+              {withRating && (
+                <StarRating
+                  rating={rating}
+                  onRate={(val: any) => sendStars(records?.address, records?.address || zeroAddress, val + 1, wallet)}
+                />
+              )}
+
             </div>
           </div>
         </>

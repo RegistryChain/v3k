@@ -6,7 +6,7 @@ import styled, { css } from 'styled-components'
 import { match } from 'ts-pattern'
 import { useChainId } from 'wagmi'
 
-import { Button, Dialog, mq, PlusSVG } from '@ensdomains/thorin'
+import { Button, Dialog, PlusSVG } from '@ensdomains/thorin'
 
 import { DisabledButtonWithTooltip } from '@app/components/@molecules/DisabledButtonWithTooltip'
 import { AvatarViewManager } from '@app/components/@molecules/ProfileEditor/Avatar/AvatarViewManager'
@@ -48,14 +48,14 @@ const ButtonContainer = styled.div(
   `,
 )
 
-const ButtonWrapper = styled.div(({ theme }) => [
-  css`
+const ButtonWrapper = styled.div(
+  ({ theme }) => css`
     width: ${theme.space.full};
+    @media (min-width: 360px) {
+      width: max-content;
+    }
   `,
-  mq.xs.min(css`
-    width: max-content;
-  `),
-])
+)
 
 type Data = {
   name?: string
@@ -146,7 +146,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
   const [isRecordsUpdated, setIsRecordsUpdated] = useState(false)
   useEffect(() => {
     const updateProfileRecordsWithTransactionData = () => {
-      const transaction = transactions.find(
+      const transaction: any = transactions.find(
         (item: TransactionItem) => item.name === 'updateProfileRecords',
       ) as TransactionItem<'updateProfileRecords'>
       if (!transaction) return
@@ -180,7 +180,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
     name,
   })
 
-  const chainId: any = useChainId()
+  const chainId = useChainId()
 
   const handleCreateTransaction = useCallback(
     async (form: ProfileEditorForm) => {
@@ -195,7 +195,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
             records,
             previousRecords: existingRecords,
             clearRecords: false,
-          }),
+          } as any),
         ],
       })
       dispatch({ name: 'setFlowStage', payload: 'transaction' })
@@ -275,7 +275,9 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
                     validator={validatorForRecord(field)}
                     validated={isDirtyForRecordAtIndex(index)}
                     error={errorForRecordAtIndex(index, 'key')}
-                    onDelete={() => handleDeleteRecord(field, index)}
+                    onDelete={() => {
+                      handleDeleteRecord(field, index)
+                    }}
                   />
                 ) : field.key === 'description' ? (
                   <ProfileRecordTextarea
@@ -286,7 +288,9 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
                     placeholder={placeholderForRecord(field)}
                     error={errorForRecordAtIndex(index)}
                     validated={isDirtyForRecordAtIndex(index)}
-                    onDelete={() => handleDeleteRecord(field, index)}
+                    onDelete={() => {
+                      handleDeleteRecord(field, index)
+                    }}
                     {...register(`records.${index}.value`, {
                       validate: validatorForRecord(field),
                     })}
@@ -301,7 +305,10 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
                     placeholder={placeholderForRecord(field)}
                     error={errorForRecordAtIndex(index)}
                     validated={isDirtyForRecordAtIndex(index)}
-                    onDelete={() => handleDeleteRecord(field, index)}
+                    onDelete={() => {
+
+                      handleDeleteRecord(field, index)
+                    }}
                     {...register(`records.${index}.value`, {
                       validate: validatorForRecord(field),
                     })}
@@ -314,7 +321,7 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
                     size="medium"
                     onClick={handleShowAddRecordModal}
                     data-testid="show-add-profile-records-modal-button"
-                    prefix={<PlusSVG />}
+                    prefix={PlusSVG}
                   >
                     {t('steps.profile.addMore')}
                   </Button>
@@ -378,27 +385,13 @@ const ProfileEditor = ({ data = {}, transactions = [], dispatch, onDismiss }: Pr
             onDismissOverlay={() => setView('editor')}
           />
         ))
-        .with('upload', () => (
+        .with('upload', 'nft', (type) => (
           <AvatarViewManager
             name={name}
             avatarFile={avatarFile}
             handleCancel={() => setView('editor')}
-            type="upload"
-            handleSubmit={(type: 'upload' | 'nft', uri: string, display?: string) => {
-              setAvatar(uri)
-              setAvatarSrc(display)
-              setView('editor')
-              trigger()
-            }}
-          />
-        ))
-        .with('nft', () => (
-          <AvatarViewManager
-            name={name}
-            avatarFile={avatarFile}
-            handleCancel={() => setView('editor')}
-            type="nft"
-            handleSubmit={(type: 'upload' | 'nft', uri: string, display?: string) => {
+            type={type}
+            handleSubmit={(_, uri, display) => {
               setAvatar(uri)
               setAvatarSrc(display)
               setView('editor')

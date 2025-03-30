@@ -69,17 +69,13 @@ const Page = () => {
         {{
           warning: error
             ? {
-                type: 'warning',
-                message: error,
-              }
+              type: 'warning',
+              message: error,
+            }
             : undefined,
           leading: (
             <DetailsContainer>
-              {primaryProfile?.name ? (
-                <ProfileSnippet name={primaryProfile.name} multisigAddress={address} records={[]} />
-              ) : (
-                <NoProfileSnippet />
-              )}
+              <NoProfileSnippet />
             </DetailsContainer>
           ),
           titleExtra: (

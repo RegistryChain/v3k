@@ -303,6 +303,7 @@ export function createTransactionStore(config_: ConfigWithEns) {
   }
 
   function getTransactions(account: string, chainId: SupportedChain['id']): Transaction[] {
+    console.log('GET TRANSACTIONS:', data)
     return data[account]?.[chainId] ?? []
   }
 
@@ -473,6 +474,8 @@ export function createTransactionStore(config_: ConfigWithEns) {
           ? true
           : completedTransactionCount++ <= MAX_COMPLETED_TRANSACTIONS
       })
+
+    console.log('UPDATE TX ', transactions)
 
     data[account][chainId] = transactions.length > 0 ? transactions : undefined
 

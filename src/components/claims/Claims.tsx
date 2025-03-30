@@ -68,7 +68,7 @@ const Claims = ({
   setRecords,
   getRecords,
 }: any) => {
-  const [fields, setField] = useState({ name: '', address: '', DOB: '' })
+  const [fields, setField] = useState({ name: '', address: '', birthdate: '' })
   // const [businessDoc, setBusinessDoc] = useState<any>(null)
   const router = useRouterWithHistory()
   const [step, setStep] = useState(0)
@@ -125,9 +125,9 @@ const Claims = ({
     address: contractAddresses['DatabaseResolver'],
   }
   let registrarAddress = contractAddresses['public.' + tld]
-  if (records.entity__registrar?.setValue) {
+  if (records.registrar?.setValue) {
     registrarAddress =
-      contractAddresses[records.entity__registrar?.setValue?.toLowerCase() + '.' + tld]
+      contractAddresses[records.registrar?.setValue?.toLowerCase() + '.' + tld]
   }
   const formationCallback: any = {
     functionName: 'registerEntityClaim',
@@ -161,12 +161,12 @@ const Claims = ({
         const body = JSON.stringify({
           KYCuserData: {
             ...fields,
-            wallet__address: address,
+            walletaddress: address,
           },
         })
         const response = await fetch(
           process.env.NEXT_PUBLIC_RESOLVER_URL +
-            `/direct/handleKYCIntake/nodeHash=${namehash(normalise(domain))}.json`,
+          `/direct/handleKYCIntake/nodehash=${namehash(normalise(domain))}.json`,
           {
             body,
             method: 'POST',
@@ -198,7 +198,7 @@ const Claims = ({
       //     formData.append('document', businessDoc)
 
       //     const response = await fetch(
-      //       process.env.NEXT_PUBLIC_RESOLVER_URL + `/doc?operation=handleBusinessDoc&nodeHash=${namehash(
+      //       process.env.NEXT_PUBLIC_RESOLVER_URL + `/doc?operation=handleBusinessDoc&nodehash=${namehash(
       //         name,
       //       )}`,
       //       {

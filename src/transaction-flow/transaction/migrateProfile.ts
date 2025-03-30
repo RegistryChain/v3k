@@ -33,11 +33,7 @@ const displayItems = (
   },
 ]
 
-const transaction = async ({
-  client,
-  connectorClient,
-  data,
-}: TransactionFunctionParameters<Data>) => {
+const transaction = async ({ client, connectorClient, data }: any) => {
   const subgraphRecords = await getSubgraphRecords(client, data)
   if (!subgraphRecords) throw new Error('No subgraph records found')
   const profile = await getRecords(connectorClient, {

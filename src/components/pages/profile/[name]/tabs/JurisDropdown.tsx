@@ -17,9 +17,6 @@ import { normalize } from 'viem/ens'
 
 import { Button, Dropdown, Input, mq, Typography } from '@ensdomains/thorin'
 
-import { EntityInput } from '@app/components/@molecules/EntityInput/EntityInput'
-import FaucetBanner from '@app/components/@molecules/FaucetBanner'
-import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { LegacyDropdown } from '@app/components/@molecules/LegacyDropdown/LegacyDropdown'
 import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { LeadingHeading } from '@app/components/LeadingHeading'
@@ -179,14 +176,14 @@ export default function JurisDropdown({ domain, setErrorMessage, partners, walle
     try {
       const returnVal = await executeWriteToResolver(wallet, formationPrep, null)
       if (returnVal) {
-        const existingRecord = await getRecordData({ domain: parentDomain, needsSchema: false })
+        const existingRecord = await getRecordData({ entityid: parentDomain, needsSchema: false })
         if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
           if (entityName && entityJurisdiction && entityType?.entityTypeName) {
             router.replace(
               'https://morula.registrychain.com/entity?name=' +
-                entityName +
-                '&type=' +
-                entityType.ELF,
+              entityName +
+              '&type=' +
+              entityType.ELF,
             )
           }
         }

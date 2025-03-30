@@ -39,7 +39,7 @@ export const EditResolver = ({ data, dispatch, onDismiss }: Props) => {
             name,
             contract: isWrapped ? 'nameWrapper' : 'registry',
             resolverAddress: newResolver,
-          }),
+          } as any),
         ],
       })
       dispatch({ name: 'setFlowStage', payload: 'transaction' })

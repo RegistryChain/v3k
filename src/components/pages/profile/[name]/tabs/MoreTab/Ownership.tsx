@@ -233,11 +233,11 @@ const DNSOwnerSection = ({
         content: makeIntroItem('SyncManager', { isWrapped, manager: currentManager!.address }),
       },
       transactions: [
-        createTransactionItem('syncManager', {
-          address: address!,
-          name,
-          dnsImportData: dnsImportData!,
-        }),
+        // createTransactionItem('syncManager', {
+        //   address: address!,
+        //   name,
+        //   dnsImportData: dnsImportData!,
+        // }),
       ],
     })
   }

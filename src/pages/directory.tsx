@@ -31,7 +31,7 @@ export default function Page() {
       {{
         trailing: (
           <ContentContainer>
-            <SubnameListView />
+            <SubnameListView address={address} />
           </ContentContainer>
         ),
       }}

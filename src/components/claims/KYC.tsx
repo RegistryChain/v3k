@@ -40,7 +40,7 @@ const KYC = ({ records, fields, setField }: any) => {
           onClick: () =>
             setField({
               name: x.name.setValue,
-              DOB: x.DOB.setValue,
+              birthdate: x.birthdate.setValue,
               address: x.physical__address?.setValue,
             }),
           value: x.name?.setValue,

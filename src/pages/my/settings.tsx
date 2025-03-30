@@ -9,6 +9,8 @@ import { useSubgraphMeta } from '@app/hooks/ensjs/subgraph/useSubgraphMeta'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { Content } from '@app/layouts/Content'
 import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
+import { PrimarySection } from '@app/components/pages/profile/settings/PrimarySection'
+import DeveloperAgents from '@app/components/pages/profile/settings/DeveloperAgents'
 
 const OtherWrapper = styled.div(
   ({ theme }) => css`
@@ -34,12 +36,14 @@ export default function Page() {
   const isLoading = !router.isReady || isConnecting || isReconnecting || subgraphMeta.isLoading
 
   useProtectedRoute('/', isLoading ? true : address)
-
+  console.log(address)
   return (
     <Content singleColumnContent title={t('title')}>
       {{
         trailing: (
           <OtherWrapper>
+            <PrimarySection address={address} />
+            <DeveloperAgents data={{ address }} />
             <TransactionSection />
             {IS_DEV_ENVIRONMENT && <DevSection />}
           </OtherWrapper>

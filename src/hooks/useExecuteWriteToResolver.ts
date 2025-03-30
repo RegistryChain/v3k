@@ -3,14 +3,19 @@ import {
   Address,
   BaseError,
   decodeAbiParameters,
+  decodeFunctionResult,
   defineChain,
   encodeAbiParameters,
+  encodeFunctionData,
   getContract,
   Hex,
+  isAddress,
   namehash,
+  parseAbi,
   PrivateKeyAccount,
   RawContractError,
   WalletClient,
+  zeroAddress,
   zeroHash,
 } from 'viem'
 import { simulateContract } from 'viem/actions'
@@ -18,8 +23,10 @@ import * as chains from 'viem/chains'
 
 import { normalise } from '@ensdomains/ensjs/utils'
 
+import contractAddresses from '../constants/contractAddresses.json'
+import l1abi from '../constants/l1abi.json'
+
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
-  // IMPORTANT: Change made to gateway witout test. Should be handling POST with :{sender}/:{calldata}.json with server/this.handleRequest
   try {
     await simulateContract(wallet, calldata)
   } catch (err) {
@@ -85,13 +92,13 @@ export type CcipRequestParameters = {
   url: string
 }
 
-export async function getRecordData({ domain = '', needsSchema = true }: any) {
-  const nodeHash = namehash(normalise(domain))
-  const registrar = domain.split('.')[1]
-  const name = domain.split('.')[0]
+export async function getRecordData({ entityid = '', needsSchema = true }: any) {
+  const nodehash = namehash(normalise(entityid))
+  const registrar = entityid.split('.')[1]
+  const name = entityid.split('.')[0]
   try {
     const res = await fetch(
-      process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodehash=${nodehash}.json`,
       {
         method: 'GET',
         headers: {
@@ -106,7 +113,7 @@ export async function getRecordData({ domain = '', needsSchema = true }: any) {
     return existingRecord.data
   } catch (err) {
     console.log('getRecordData err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
@@ -128,17 +135,18 @@ export async function importEntity({ filingID, name, registrar }: any) {
     return importedRecord.data
   } catch (err) {
     console.log('importEntity err', err)
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return {}
   }
 }
 
 export async function getEntitiesList({
   registrar = 'ai',
   nameSubstring = '',
-  sortType,
-  sortDirection,
+  sortType = '',
+  sortDirection = '',
   page = 0,
   limit = 25,
+  address = zeroAddress,
   params = {},
 }: any) {
   try {
@@ -146,12 +154,22 @@ export async function getEntitiesList({
     if (params) {
       if (Object.keys(params)?.length > 0) {
         const fields = Object.keys(params)
-        paramsQuery = '&' + fields.map((x) => x + '=' + params[x]).join('&')
+        paramsQuery =
+          '&' +
+          fields
+            .map((x) => {
+              if (typeof params[x] === 'object') {
+                return x + '=' + JSON.stringify(params[x])
+              }
+
+              return x + '=' + params[x]
+            })
+            .join('&')
       }
     }
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
+        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
       {
         method: 'GET',
         headers: {
@@ -162,15 +180,15 @@ export async function getEntitiesList({
     const entitiesList = await res.json()
     return entitiesList.data
   } catch (err) {
-    throw new Error('Failed to fetch entities list')
+    return []
   }
 }
 
-export async function getTransactions({ nodeHash = zeroHash, address }: any) {
+export async function getTransactions({ nodehash = zeroHash, address }: any) {
   try {
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
+        `/direct/getTransactions/nodehash=${nodehash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {
@@ -178,9 +196,9 @@ export async function getTransactions({ nodeHash = zeroHash, address }: any) {
         },
       },
     )
-    return await res.json()
+    return (await res.json())?.data || []
   } catch (err) {
-    return Promise.resolve(new Response(null, { status: 204 }))
+    return []
   }
 }
 
@@ -213,6 +231,8 @@ export async function handleDBStorage({
   message: any
   wallet: WalletClient
 }) {
+  domain.chainId += ''
+  message.expirationTimestamp += ''
   const signature = await wallet.signTypedData({
     account: wallet.account?.address as any,
     domain,
@@ -237,40 +257,146 @@ export async function handleDBStorage({
   return requestResponse
 }
 
-export function useRecordData({ domain = '' }) {
+export async function readResolverData(resolverAddress: any, client: any, nodehash: any) {
+  let results: any = {}
+  try {
+    const calls = displayKeys.map((key) =>
+      encodeFunctionData({
+        abi: parseAbi(['function text(bytes32,string) view returns (string)']),
+        functionName: 'text',
+        args: [nodehash, key],
+      }),
+    )
+
+    const resolverContract: any = await getContract({
+      client,
+      abi: [
+        ...l1abi,
+        ...parseAbi(['function multicallView(bytes[] calldata) view returns (bytes calldata)']),
+      ],
+      address: resolverAddress as Address,
+    })
+
+    const multicallResponse = await resolverContract.read.multicallView([calls])
+
+    const encodedTexts = decodeAbiParameters([{ type: 'bytes[]' }], multicallResponse)[0]
+
+    const decodedResults: any[] = encodedTexts.map((result: any, index: number) => {
+      try {
+        return decodeAbiParameters([{ type: 'string' }], result)?.[0]
+      } catch (error) {
+        console.error(`Failed to decode text(${displayKeys[index]})`, error)
+        return ''
+      }
+    })
+
+    // Convert results into a key-value object
+    results = displayKeys.reduce(
+      (acc, key, index) => {
+        acc[key] = decodedResults[index] || '' // Assign null if decoding failed
+        return acc
+      },
+      {} as Record<string, string | null>,
+    )
+  } catch (err: any) {
+    console.log('Error reading resolver data ', err.message)
+  }
+
+  //hardcodes or derived fields
+  results.entityid = results.name + '.' + results?.registrar + '.entity.id'
+  return results
+}
+
+export const getResolverAddress = async (client: any, domain: any) => {
+  let resolverAddr = zeroAddress
+  // Check resolver type
+  const registry: any = await getContract({
+    client,
+    abi: [...parseAbi(['function resolver(bytes32) view returns (address)'])],
+    address: contractAddresses.ENSRegistry as Address,
+  })
+  try {
+    resolverAddr = await registry.read.resolver([namehash(domain)])
+  } catch (err: any) {
+    console.log('ERROR GETTING CURRENT RESOLVER ADDRESS: ', err.message)
+  }
+
+  if (resolverAddr === zeroAddress) {
+    try {
+      resolverAddr = await registry.read.resolver([namehash(domain.split('.').slice(1).join('.'))])
+    } catch (err: any) {
+      console.log('ERROR GETTING CURRENT PARENT RESOLVER ADDRESS: ', err.message)
+    }
+  }
+
+  return resolverAddr
+}
+
+export function useRecordData({ entityid = '', wallet = null, publicClient = null }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const nodeHash = namehash(normalise(domain))
+  const [resolverAddress, setResolverAddress] = useState('')
+  const nodehash = namehash(normalise(entityid))
+
+  const getRes = async () => {
+    if (publicClient) {
+      try {
+        const res = await getResolverAddress(publicClient, normalise(entityid))
+        if (isAddress(res) && res !== zeroAddress) {
+          setResolverAddress(res)
+          return
+        }
+      } catch (e) {}
+    }
+  }
+  useEffect(() => {
+    if (publicClient && entityid) {
+      getRes()
+    }
+  }, [publicClient, entityid])
+
   const fetchRecordData = useCallback(async () => {
-    if (!domain) return
+    if (!entityid) return
 
     setLoading(true)
     setError(null)
 
-    const registrar = domain.split('.')[1]
-    const name = domain.split('.')[0]
+    const registrar = entityid.split('.')[1]
+    const name = entityid.split('.')[0]
 
     try {
-      const res = await fetch(
-        process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
+      if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
+        const returnObj = await readResolverData(
+          resolverAddress || zeroAddress,
+          publicClient,
+          nodehash,
+        )
 
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-
-      const existingRecord = (await res.json()).data
-
-      if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
-        const newRecord = await importEntity({ filingID: '', name, registrar })
-        setData(newRecord)
+        setData(returnObj)
       } else {
-        setData(existingRecord)
+        const res = await fetch(
+          process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodehash=${nodehash}.json`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        )
+
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
+
+        const existingRecord = await res.json()
+        if (existingRecord?.data) {
+          const formatted = existingRecord?.data
+          setData(formatted)
+        } else if (!existingRecord?.data || JSON.stringify(existingRecord?.data) === '{}') {
+          const newRecord = await importEntity({ filingID: '', name, registrar })
+          setData(newRecord)
+        } else {
+          setData(null)
+        }
       }
     } catch (err: any) {
       console.error('getRecordData error:', err)
@@ -278,13 +404,18 @@ export function useRecordData({ domain = '' }) {
     } finally {
       setLoading(false)
     }
-  }, [domain])
+  }, [entityid, resolverAddress])
 
   useEffect(() => {
-    if (domain) {
+    if (
+      entityid &&
+      (wallet || publicClient) &&
+      resolverAddress &&
+      resolverAddress !== zeroAddress
+    ) {
       fetchRecordData()
     }
-  }, [domain])
+  }, [entityid, wallet, publicClient, resolverAddress])
 
   return { data, loading, error, refetch: fetchRecordData }
 }
@@ -320,3 +451,74 @@ export function extractParentFromName(name: string): string {
   const [, parent] = /\w*\.(.*)$/.exec(name) || []
   return parent
 }
+
+export const displayKeys = [
+  'legalentity__lei',
+  'name',
+  'address',
+  'description',
+  'url',
+  'location',
+  'avatar',
+  'registrar',
+  'keywords',
+  'birthdate',
+  'arbitrator__name',
+]
+
+const partnerDisplayKeys = [
+  'partner__[0]__name',
+  'partner__[0]__type',
+  'partner__[0]__walletaddress',
+  'partner__[0]__location',
+  'partner__[0]__birthdate',
+  'partner__[0]__is__manager',
+  'partner__[0]__is__signer',
+  'partner__[0]__lockup',
+  'partner__[0]__shares',
+  'partner__[1]__name',
+  'partner__[1]__type',
+  'partner__[1]__walletaddress',
+  'partner__[1]__location',
+  'partner__[1]__birthdate',
+  'partner__[1]__is__manager',
+  'partner__[1]__is__signer',
+  'partner__[1]__lockup',
+  'partner__[1]__shares',
+  'partner__[2]__name',
+  'partner__[2]__type',
+  'partner__[2]__walletaddress',
+  'partner__[2]__location',
+  'partner__[2]__birthdate',
+  'partner__[2]__is__manager',
+  'partner__[2]__is__signer',
+  'partner__[2]__lockup',
+  'partner__[2]__shares',
+  'partner__[3]__name',
+  'partner__[3]__type',
+  'partner__[3]__walletaddress',
+  'partner__[3]__location',
+  'partner__[3]__birthdate',
+  'partner__[3]__is__manager',
+  'partner__[3]__is__signer',
+  'partner__[3]__lockup',
+  'partner__[3]__shares',
+  'partner__[4]__name',
+  'partner__[4]__type',
+  'partner__[4]__walletaddress',
+  'partner__[4]__location',
+  'partner__[4]__birthdate',
+  'partner__[4]__is__manager',
+  'partner__[4]__is__signer',
+  'partner__[4]__lockup',
+  'partner__[4]__shares',
+  'partner__[5]__name',
+  'partner__[5]__type',
+  'partner__[5]__walletaddress',
+  'partner__[5]__location',
+  'partner__[5]__birthdate',
+  'partner__[5]__is__manager',
+  'partner__[5]__is__signer',
+  'partner__[5]__lockup',
+  'partner__[5]__shares',
+]
