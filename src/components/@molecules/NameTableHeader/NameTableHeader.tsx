@@ -175,7 +175,7 @@ export const NameTableHeader = ({
 
   const inSelectMode = selectable && mode === 'select'
 
-  const fieldToLabelMap: any = { entity__formation__date: 'Formation Date', name: 'name' }
+  const fieldToLabelMap: any = { birthdate: 'Formation Date', name: 'name' }
   const sortTypeOptions = sortTypeOptionValues.map((value) => ({
     label: fieldToLabelMap[value],
     value,

@@ -1,6 +1,6 @@
 import contractAddressesObj from '../constants/contractAddresses.json'
 
-export const checkOwner = async (client, nodeHash) => {
+export const checkOwner = async (client, nodehash) => {
   const readData = {
     functionName: 'owner',
     address: contractAddressesObj.ENSRegistry,
@@ -25,7 +25,7 @@ export const checkOwner = async (client, nodeHash) => {
         type: 'function',
       },
     ],
-    args: [nodeHash],
+    args: [nodehash],
   }
   const onchainOwner = await client.readContract(readData)
 

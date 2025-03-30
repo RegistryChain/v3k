@@ -1,6 +1,6 @@
 import { encodeFunctionData, Hex, namehash } from 'viem'
 
-export const useTextResolverReadBytes = async (nodeHash: Hex) => {
+export const useTextResolverReadBytes = async (nodehash: Hex) => {
   const keys = ['name']
 
   const encodes = keys.map((text) => {
@@ -33,7 +33,7 @@ export const useTextResolverReadBytes = async (nodeHash: Hex) => {
           },
         ],
         functionName: 'text',
-        args: [nodeHash, text],
+        args: [nodehash, text],
       }),
       key: text,
     }

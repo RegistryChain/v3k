@@ -46,16 +46,16 @@ export function useEnsHistory() {
 
   /**
    * Get ResolverChanged logs for a given ENS node
-   * @param {string} nodeHash - ENS domain node hash (bytes32)
+   * @param {string} nodehash - ENS domain node hash (bytes32)
    * @returns {Promise<Array>} - List of resolver addresses
    */
-  const getResolvers = async (nodeHash: any) => {
+  const getResolvers = async (nodehash: any) => {
     const params = {
       module: 'logs',
       action: 'getLogs',
       address: ENS_REGISTRY_ADDRESS,
       topic0: RESOLVER_CHANGED_TOPIC,
-      topic1: nodeHash,
+      topic1: nodehash,
       fromBlock: '0',
       toBlock: 'latest',
       apikey: ETHERSCAN_API_KEY,
@@ -71,18 +71,18 @@ export function useEnsHistory() {
   }
 
   /**
-   * Get TextChanged logs for a given resolver and nodeHash
+   * Get TextChanged logs for a given resolver and nodehash
    * @param {string} resolver - Resolver contract address
-   * @param {string} nodeHash - ENS domain node hash (bytes32)
+   * @param {string} nodehash - ENS domain node hash (bytes32)
    * @returns {Promise<Array>} - List of decoded text records grouped by transaction hash
    */
-  const getTextRecords = async (resolver: any, nodeHash: any) => {
+  const getTextRecords = async (resolver: any, nodehash: any) => {
     const params = {
       module: 'logs',
       action: 'getLogs',
       address: resolver,
       topic0: TEXT_CHANGED_TOPIC,
-      topic1: nodeHash,
+      topic1: nodehash,
       fromBlock: '0',
       toBlock: 'latest',
       apikey: ETHERSCAN_API_KEY,
@@ -100,7 +100,7 @@ export function useEnsHistory() {
 
         if (!transactions[transactionHash]) {
           transactions[transactionHash] = {
-            nodeHash,
+            nodehash,
             changedProperties: {},
             sourceFunction: 'setText',
             timestamp: new Date(timestamp * 1000), // Convert UNIX timestamp to Date object
@@ -118,24 +118,24 @@ export function useEnsHistory() {
 
   /**
    * Fetch ENS subdomain history
-   * @param {string} nodeHash - ENS domain node hash (bytes32)
+   * @param {string} nodehash - ENS domain node hash (bytes32)
    */
-  const fetchEnsHistory = useCallback(async (nodeHash: any) => {
-    if (!nodeHash) return
+  const fetchEnsHistory = useCallback(async (nodehash: any) => {
+    if (!nodehash) return
 
     setLoading(true)
     setError(null)
 
     try {
-      console.log(`Fetching resolver history for node: ${nodeHash}`)
-      const resolvers = await getResolvers(nodeHash)
+      console.log(`Fetching resolver history for node: ${nodehash}`)
+      const resolvers = await getResolvers(nodehash)
       console.log(`Resolvers found: ${resolvers.length}`)
 
       let historyData: any[] = []
 
       for (let resolver of resolvers) {
         console.log(`Fetching text records for resolver: ${resolver}`)
-        const textRecords = await getTextRecords(resolver, nodeHash)
+        const textRecords = await getTextRecords(resolver, nodehash)
         historyData = historyData.concat(textRecords)
       }
 

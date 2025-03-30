@@ -186,9 +186,6 @@ export const PrimarySection = ({ address, primary, record }: any) => {
               <Typography fontVariant="body">
                 {(record?.description || "")}
               </Typography>
-              <Typography fontVariant="body">
-                {(record?.entity__purpose || "")}
-              </Typography>
             </PrimaryNameInfo>
             <AvatarContainer>
               <AvatarWithLink name={primary.data?.name} label="primary name avatar" />
@@ -278,7 +275,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                     <Typography weight='bold'>Entity Type:</Typography>
                   </dt>
                   <dd>
-                    {record.entity__type}
+                    {record.keywords}
                   </dd>
                 </div>
                 <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>

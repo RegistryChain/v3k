@@ -119,7 +119,7 @@ const ActionsExecution = ({
     const args: any[] = []
     try {
       if (transaction.method === '0x10f13a8c') {
-        // On setText, I just need to separate from tx bytes the key, value, and prepend the nodeHash
+        // On setText, I just need to separate from tx bytes the key, value, and prepend the nodehash
         args.push(
           decodeAbiParameters(
             [{ type: 'bytes32' }, { type: 'string' }, { type: 'string' }],

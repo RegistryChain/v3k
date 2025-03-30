@@ -151,7 +151,7 @@ export default function Page() {
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
 
-      const fields = await getRecordData({ domain: name })
+      const fields = await getRecordData({ entityid: name })
 
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
       setSchemaFields({ ...fields, partners: fields.partners.slice(0, fields.partners.length - 1) })
@@ -198,7 +198,7 @@ export default function Page() {
           const dateValue = partner[field].setValue
           failedCheck = !dateRegex.test(dateValue)
         }
-        if (trueType === 'address' || field === 'wallet__address') {
+        if (trueType === 'address' || field === 'walletaddress') {
           failedCheck =
             !isAddress(partner[field].setValue) ||
             (partner[field].setValue === zeroAddress && !isOptional)
@@ -331,8 +331,8 @@ export default function Page() {
         blockAdvance = validatePartners([
           'name',
           'type',
-          'wallet__address',
-          'DOB',
+          'walletaddress',
+          'birthdate',
           'physical__address',
         ])
       }
@@ -399,7 +399,7 @@ export default function Page() {
             // updateMemberData
             sharesChanges.forEach((change: any) => {
               const memberIndex = change.key.split('partner__[').join('').split(']')[0]
-              const partnerAddress = schemaFields.partners[Number(memberIndex)].wallet__address
+              const partnerAddress = schemaFields.partners[Number(memberIndex)].walletaddress
               if (change.value > Number(change.oldValue)) {
                 const tokensToMint: any = change.value - Number(change.oldValue)
                 const mintCall = encodeFunctionData({
@@ -423,7 +423,7 @@ export default function Page() {
             // Update resolver data
             roleChanges.forEach((change: any) => {
               const memberIndex = change.key.split('partner__[').join('').split(']')[0]
-              const partnerAddress = schemaFields.partners[Number(memberIndex)].wallet__address
+              const partnerAddress = schemaFields.partners[Number(memberIndex)].walletaddress
 
               schemaFields.partners[memberIndex].roles.setValue.forEach((role: any) => {
                 if (!schemaFields.partners.roles.oldValue.includes(role)) {
@@ -563,7 +563,7 @@ export default function Page() {
   let changedRecords: any = {}
   if (registrationStep === 5) {
     const entityRegistrarDomain = normalize(
-      entityName + '.' + schemaFields?.entity__registrar?.setValue + '.' + tld,
+      entityName + '.' + schemaFields?.registrar?.setValue + '.' + tld,
     )
 
     changedRecords = getChangedRecords(false)

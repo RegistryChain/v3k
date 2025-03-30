@@ -90,7 +90,7 @@ const buildConstitutionView = (profileData: any, userData: any, modelId: any, me
   const constitutionHeader = (
     <div key="constheader" style={styles.constitutionHeader}>
       <div style={styles.headerTitle}>
-        {profileData.entity__name}, {profileData.entity__type}
+        {profileData.name}, {profileData.entity__type}
       </div>
       <div style={styles.headerSubtitle}>{constitutionModel[modelId].title}</div>
     </div>
@@ -141,10 +141,10 @@ const buildConstitutionView = (profileData: any, userData: any, modelId: any, me
       </div>,
     )
   }
-  if (metadata.LEI) {
+  if (metadata.legalentity__lei) {
     constitutionFooter.push(
       <div style={{ textAlign: 'right', fontSize: '12px', marginLeft: '12px' }}>
-        {metadata.LEI}
+        {metadata.legalentity__lei}
       </div>,
     )
   }
@@ -252,10 +252,10 @@ const buildConstitution = (profileData: any, userData: any, modelId: any, metada
       </Text>,
     )
   }
-  if (metadata.LEI) {
+  if (metadata.legalentity__lei) {
     constitutionFooter.push(
       <Text style={{ textAlign: 'right', fontSize: '10px', marginLeft: '12px' }} fixed>
-        {metadata.LEI}
+        {metadata.legalentity__lei}
       </Text>,
     )
   }
@@ -283,49 +283,43 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.entity__type || 'N/A'} is ${
-            profileData?.entity__name || 'N/A'
+          `The name of the ${profileData?.entity__type || 'N/A'} is ${profileData?.name || 'N/A'
           }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.entity__type || 'N/A'}’s activities begin on ${
-            profileData?.entity__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.entity__type || 'N/A'}’s activities begin on ${profileData?.birthdate?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
       {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
-          `The purpose of this ${
-            profileData?.entity__type || 'N/A'
+          `The purpose of this ${profileData?.entity__type || 'N/A'
           } is to engage in the following activities: ${profileData?.entity__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
-          `Principal Office: The principal office of the ${
-            profileData?.entity__type || 'N/A'
-          } is located at ${profileData?.entity__address || 'N/A'}`,
+          `Principal Office: The principal office of the ${profileData?.entity__type || 'N/A'
+          } is located at ${profileData?.location || 'N/A'}`,
         ],
       },
       {
         header: 'Members',
         content: (profileData: any, userData: any) => [
-          `The initial member(s) of this ${
-            profileData?.entity__type || 'N/A'
+          `The initial member(s) of this ${profileData?.entity__type || 'N/A'
           } are (as Name, ID, Role)`,
           userData?.map((user: any, idx: any) => {
             const roles = [...user.roles]
             if (user.shares > 0) {
               roles.push('shareholder')
             }
-            return `${user.name} (ID: ${user.wallet__address})${
-              roles.length > 0 ? ' - ' : ''
-            }${roles.join(', ')}`
+            return `${user.name} (ID: ${user.walletaddress})${roles.length > 0 ? ' - ' : ''
+              }${roles.join(', ')}`
           }),
         ],
       },
@@ -364,9 +358,8 @@ const constitutionModel: any = {
             `Initial Contributions: The initial capital contributions of the members are as follows:`,
             userData?.map((user: any) => {
               const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
+              return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'
+                }`
             }),
           ]
         },
@@ -380,10 +373,8 @@ const constitutionModel: any = {
       {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
-          `The members of the ${
-            profileData?.entity__type || 'N/A'
-          } are not personally liable for the acts or debts of the  ${
-            profileData?.entity__type || 'N/A'
+          `The members of the ${profileData?.entity__type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${profileData?.entity__type || 'N/A'
           }. The ${profileData?.entity__type || 'N/A'} shall indemnify its members and managers.`,
         ],
       },
@@ -416,7 +407,7 @@ const constitutionModel: any = {
           if (byAddress) {
             return [
               'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
-                profileData.entity__arbitrator,
+              profileData.entity__arbitrator,
             ]
           }
           return [profileData.entity__arbitrator]
@@ -435,40 +426,35 @@ const constitutionModel: any = {
       {
         header: 'Name',
         content: (profileData: any, userData: any) => [
-          `The name of the ${profileData?.entity__type || 'N/A'} is ${
-            profileData?.entity__name || 'N/A'
+          `The name of the ${profileData?.entity__type || 'N/A'} is ${profileData?.name || 'N/A'
           }.`,
         ],
       },
       {
         header: 'Duration',
         content: (profileData: any, userData: any) => [
-          `The ${profileData?.entity__type || 'N/A'}’s activities begin on ${
-            profileData?.entity__formation__date?.split('/')?.reverse()?.join('-') || 'N/A'
+          `The ${profileData?.entity__type || 'N/A'}’s activities begin on ${profileData?.birthdate?.split('/')?.reverse()?.join('-') || 'N/A'
           }, and its duration shall be perpetual.`,
         ],
       },
       {
         header: 'Purpose',
         content: (profileData: any, userData: any) => [
-          `The purpose of this ${
-            profileData?.entity__type || 'N/A'
+          `The purpose of this ${profileData?.entity__type || 'N/A'
           } is to engage in the following activities: ${profileData?.entity__purpose || 'N/A'}.`,
         ],
       },
       {
         header: 'Address',
         content: (profileData: any, userData: any) => [
-          `Main Office: The main office of the ${
-            profileData?.entity__type || 'N/A'
-          } is located at ${profileData?.entity__address || 'N/A'}`,
+          `Main Office: The main office of the ${profileData?.entity__type || 'N/A'
+          } is located at ${profileData?.location || 'N/A'}`,
         ],
       },
       {
         header: 'Quotaholder',
         content: (profileData: any, userData: any) => [
-          `The initial quotaholders of this ${
-            profileData?.entity__type || 'N/A'
+          `The initial quotaholders of this ${profileData?.entity__type || 'N/A'
           } are (as Name, ID, Role)`,
 
           userData?.map((user: any) => {
@@ -476,9 +462,8 @@ const constitutionModel: any = {
             if (user.shares > 0) {
               roles.push('quotaholder')
             }
-            return `${user.name} (ID: ${user.wallet__address})${
-              roles.length > 0 ? ' - ' : ''
-            }${roles.join(', ')}`
+            return `${user.name} (ID: ${user.walletaddress})${roles.length > 0 ? ' - ' : ''
+              }${roles.join(', ')}`
           }),
         ],
       },
@@ -517,9 +502,8 @@ const constitutionModel: any = {
 
             userData?.map((user: any) => {
               const ownership = (user.shares / totalShares) * 100
-              return `${user.name} - ${user?.capital || '0'} ${
-                profileData?.capitalCurrency || 'USD'
-              }`
+              return `${user.name} - ${user?.capital || '0'} ${profileData?.capitalCurrency || 'USD'
+                }`
             }),
           ]
         },
@@ -533,12 +517,9 @@ const constitutionModel: any = {
       {
         header: 'Indemnification',
         content: (profileData: any, userData: any) => [
-          `The quotaholders of the ${
-            profileData?.entity__type || 'N/A'
-          } are not personally liable for the acts or debts of the  ${
-            profileData?.entity__type || 'N/A'
-          }. The ${
-            profileData?.entity__type || 'N/A'
+          `The quotaholders of the ${profileData?.entity__type || 'N/A'
+          } are not personally liable for the acts or debts of the  ${profileData?.entity__type || 'N/A'
+          }. The ${profileData?.entity__type || 'N/A'
           } shall indemnify its quotaholders and administrators.`,
         ],
       },
@@ -571,7 +552,7 @@ const constitutionModel: any = {
           if (byAddress) {
             return [
               'Arbitration for any internal and external disputes regarding this entity and its assets is to be resolved by external contract logic, by calling functions on Ethereum Mainnet address ' +
-                profileData.entity__arbitrator,
+              profileData.entity__arbitrator,
             ]
           }
           return [profileData.entity__arbitrator]

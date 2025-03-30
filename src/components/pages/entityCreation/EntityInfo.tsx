@@ -56,7 +56,7 @@ const EntityInfo = ({ data, fields, setField }: any) => {
     <>
       <NameContainer>{name}</NameContainer>
       {fields?.map((field: any) => {
-        if (field.key === 'entity__arbitrator') {
+        if (field.key === 'arbitrator__name') {
           return (
             <div style={{ marginTop: '32px' }}>
               <Typography

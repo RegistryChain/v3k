@@ -117,10 +117,10 @@ const FeaturedAgents = () => {
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',
-        sortType: 'creationDate',
+        sortType: 'birthdate',
         limit: 6,
         address,
-        params: { avatar: 'https', featured: 'true' },
+        params: { avatar: 'https', "v3k__featured": 'true' },
       })
 
       const ratings = await repTokenBalance(

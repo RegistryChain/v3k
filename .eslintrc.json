@@ -34,6 +34,7 @@
     "playwright/**/*.ts"
   ],
   "rules": {
+    "react/no-unused-prop-types": "off",
     "@typescript-eslint/return-await": "off",
     "no-alert": "off",
     "no-param-reassign": "off",

@@ -191,7 +191,7 @@ const DeveloperAgents = ({ address, record }: any) => {
         if (offchainEntities) {
 
             const formattedEntities = offchainEntities.map((entity: any) => {
-                return { id: entity.nodeHash, isMigrated: true, labelName: entity.name, truncatedName: entity.domain, labelHash: labelhash(normalizeLabel(entity.domain.split('.')[0])), name: entity.domain, owner: entity.owner, parent: "ai.entity.id", resolvedAddress: entity.address }
+                return { id: entity.nodehash, isMigrated: true, labelName: entity.name, truncatedName: entity.entityid, labelHash: labelhash(normalizeLabel(entity.entityid.split('.')[0])), name: entity.entityid, owner: entity.owner, parent: "ai.entity.id", resolvedAddress: entity.address }
             })
             maps = [...maps, formattedEntities]
         }
@@ -207,7 +207,7 @@ const DeveloperAgents = ({ address, record }: any) => {
             params: {
                 $or: [
                     { owner: address },
-                    { partners: { $elemMatch: { wallet__address: address } } }
+                    { partners: { $elemMatch: { walletaddress: address } } }
                 ]
             },
             address

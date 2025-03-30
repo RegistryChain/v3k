@@ -52,63 +52,63 @@ const CompanyPartners = ({
       <PartnerTable>
         {partners?.length > 0
           ? partners.map((partner, idx) => {
-              let domain = partner?.domain?.setValue || ''
+            let domain = partner?.domain?.setValue || ''
 
-              return Object.keys(partner)
-                .filter(
-                  (key) => !['DOB', 'physical__address', 'lockup', 'shares', 'roles'].includes(key),
-                )
-                .map((key, subIdx) => {
-                  const partnerValue = partner[key] as
-                    | {
-                        label?: string
-                        oldValue?: string | string[]
-                        setValue?: string | string[]
-                      }
-                    | string
-                    | undefined
+            return Object.keys(partner)
+              .filter(
+                (key) => !['birthdate', 'physical__address', 'lockup', 'shares', 'roles'].includes(key),
+              )
+              .map((key, subIdx) => {
+                const partnerValue = partner[key] as
+                  | {
+                    label?: string
+                    oldValue?: string | string[]
+                    setValue?: string | string[]
+                  }
+                  | string
+                  | undefined
 
-                  const isHeader =
-                    partnerValue && typeof partnerValue !== 'string'
-                      ? partnerValue.label || key
-                      : key
-                  const oldValue =
-                    partnerValue &&
+                const isHeader =
+                  partnerValue && typeof partnerValue !== 'string'
+                    ? partnerValue.label || key
+                    : key
+                const oldValue =
+                  partnerValue &&
                     typeof partnerValue !== 'string' &&
                     partnerValue.oldValue &&
                     compareToOldValues ? (
-                      <span style={{ color: 'red', textDecoration: 'line-through' }}>
-                        {Array.isArray(partnerValue.oldValue)
-                          ? partnerValue.oldValue.join(', ')
-                          : partnerValue.oldValue}
-                      </span>
-                    ) : null
+                    <span style={{ color: 'red', textDecoration: 'line-through' }}>
+                      {Array.isArray(partnerValue.oldValue)
+                        ? partnerValue.oldValue.join(', ')
+                        : partnerValue.oldValue}
+                    </span>
+                  ) : null
 
-                  let setValue = ''
-                  if (partnerValue && typeof partnerValue !== 'string') {
-                    if (Array.isArray(partnerValue.setValue)) {
-                      setValue = partnerValue.setValue.join(', ')
-                    } else {
-                      setValue = partnerValue.setValue ?? ''
-                    }
+                let setValue = ''
+                if (partnerValue && typeof partnerValue !== 'string') {
+                  if (Array.isArray(partnerValue.setValue)) {
+                    setValue = partnerValue.setValue.join(', ')
+                  } else {
+                    setValue = partnerValue.setValue ?? ''
                   }
+                }
 
-                  return (
-                    <PartnerRow
-                      key={subIdx}
-                      onClick={() => {
-                        if (!domain.includes('.ai.')) return 'https://entity.id/entity/' + domain
-                        return (window.location.href = '/agent/' + domain)
-                      }}
-                    >
-                      <PartnerCell isHeader>{isHeader}</PartnerCell>
-                      <PartnerCell>
-                        {oldValue} {setValue}
-                      </PartnerCell>
-                    </PartnerRow>
-                  )
-                })
-            })
+                return (
+                  <PartnerRow
+                    key={subIdx}
+                    onClick={() => {
+                      if (!domain.includes('.ai.')) return 'https://entity.id/entity/' + domain
+                      return (window.location.href = '/agent/' + domain)
+                    }}
+                  >
+                    <PartnerCell isHeader>{isHeader}</PartnerCell>
+                    <PartnerCell>
+                      {oldValue} {setValue}
+                    </PartnerCell>
+                  </PartnerRow>
+                )
+              })
+          })
           : null}
       </PartnerTable>
     </PartnerContainer>

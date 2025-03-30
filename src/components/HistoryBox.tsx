@@ -100,15 +100,15 @@ const InfoContainer = styled.div(
 export const HistoryBox = ({ record }: any) => {
   const { history, fetchEnsHistory } = useEnsHistory()
   const onOffChainHistory = useMemo(() => {
-    return [...(record?.changeLogs || []), ...history].sort((a, b) => a.timestamp - b.timestamp)
+    return [...(record?.changelogs || []), ...history].sort((a, b) => a.timestamp - b.timestamp)
   }, [record, history])
 
   const [historyOpenIndex, setHistoryOpenIndex] = useState<any>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (record?.domain) {
-      fetchEnsHistory(namehash(record?.domain))
+    if (record?.entityid) {
+      fetchEnsHistory(namehash(record?.entityid))
     }
   }, [record])
 

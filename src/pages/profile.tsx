@@ -48,16 +48,16 @@ export default function Page() {
     [],
   )
 
-  const { data: fields, loading, error, refetch } = useRecordData({ domain, wallet, publicClient })
+  const { data: fields, loading, error, refetch } = useRecordData({ entityid: domain, wallet, publicClient })
 
   const claimEntity = async (newOwner: any = address) => {
     await openConnect()
     try {
-      const resolverAddress = await getResolverAddress(publicClient, normalize(records?.domain || domain))
+      const resolverAddress = await getResolverAddress(publicClient, normalize(records?.entityid || domain))
       if (address && isAddressEqual(resolverAddress, contractAddressesObj['DatabaseResolver'])) {
         const formationPrep: any = {
           functionName: 'transfer',
-          args: [namehash(normalize(records?.domain || domain)), newOwner],
+          args: [namehash(normalize(records?.entityid || domain)), newOwner],
           abi: l1abi,
           address: resolverAddress,
         }
@@ -113,7 +113,7 @@ export default function Page() {
     if (fields) {
       const fieldsOverride: any = fields
       fieldsOverride.partners = fieldsOverride.partners?.filter(
-        (partner: any) => partner?.wallet__address || partner?.name,
+        (partner: any) => partner?.walletaddress || partner?.name,
       )
       setRecords(fieldsOverride)
     }

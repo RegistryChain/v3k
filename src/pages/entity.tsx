@@ -141,8 +141,8 @@ export default function Page() {
     const y = new Date().getFullYear()
     setSchemaFields((prevState: any) => ({
       ...prevState,
-      entity__formation__date: {
-        ...prevState.entity__formation__date,
+      birthdate: {
+        ...prevState.birthdate,
         setValue: y + '-' + m + '-' + d,
       },
     }))
@@ -151,7 +151,7 @@ export default function Page() {
 
   const getSchemaFields = async () => {
     try {
-      const fields = await getRecordData({ domain: entityRegistrarDomain })
+      const fields = await getRecordData({ entityid: entityRegistrarDomain })
       setSchemaFields({
         ...fields,
         partners:
@@ -159,13 +159,8 @@ export default function Page() {
             ? fields.partners.slice(0, fields.partners.length - 1)
             : fields.partners,
         name: { ...fields.name, setValue: fields?.name?.setValue || entityName },
-        entity__name: {
-          ...fields.entity__name,
-          setValue: fields?.entity__name?.setValue || entityName,
-        },
-        entity__registrar: { ...fields.entity__registrar, setValue: companyRegistrar },
-        entity__type: { ...fields.entity__type, setValue: entityTypeObj?.entityTypeName },
-        entity__code: { ...fields.entity__code, setValue: entityType },
+        registrar: { ...fields.registrar, setValue: companyRegistrar },
+        keywords: { ...fields.keywords, setValue: entityTypeObj?.entityTypeName },
         entity__selected__model: { ...fields.entity__selected__model, setValue: 'Model 1' },
       })
       setEmptyPartner(fields.partners?.[fields.partners.length - 1])
@@ -226,7 +221,7 @@ export default function Page() {
       })
 
       return transactionRes
-    } catch (err) {}
+    } catch (err) { }
   }
 
   const registerEntity = async () => {
@@ -370,7 +365,7 @@ export default function Page() {
           const dateValue = partner[field].setValue
           failedCheck = !dateRegex.test(dateValue)
         }
-        if (trueType === 'address' || field === 'wallet__address') {
+        if (trueType === 'address' || field === 'walletaddress') {
           failedCheck =
             !isAddress(partner[field].setValue) ||
             (partner[field].setValue === zeroAddress && !isOptional)
@@ -444,8 +439,8 @@ export default function Page() {
         blockAdvance = validatePartners([
           'name',
           'type',
-          'wallet__address',
-          'DOB',
+          'walletaddress',
+          'birthdate',
           'physical__address',
         ])
       }
@@ -540,7 +535,7 @@ export default function Page() {
       const stepKeys = Object.keys(schemaFields).filter((x) => schema.corpFields.includes(x))
       content = (
         <EntityInfo
-          data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
+          data={{ name, registrarKey: code }}
           step={registrationStep}
           fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
           setField={(key: string, value: any) =>
@@ -561,7 +556,7 @@ export default function Page() {
   if (registrationStep === 2) {
     content = (
       <AddPartners
-        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
+        data={{ name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         partnerTypes={schema.partnerTypes}
@@ -579,7 +574,7 @@ export default function Page() {
   if (registrationStep === 3) {
     content = (
       <Roles
-        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
+        data={{ name, registrarKey: code }}
         breakpoints={breakpoints}
         canChange={true}
         intakeType={intakeType}
@@ -599,7 +594,7 @@ export default function Page() {
     )
     content = (
       <EntityInfo
-        data={{ name: schemaFields?.entity__name?.setValue || name, registrarKey: code }}
+        data={{ name, registrarKey: code }}
         fields={stepKeys.map((key) => ({ key, ...schemaFields[key] }))}
         setField={(key: string, value: any) =>
           setSchemaFields({ ...schemaFields, [key]: { ...schemaFields[key], setValue: value } })
@@ -615,7 +610,7 @@ export default function Page() {
     content = (
       <div>
         <Typography fontVariant="headingTwo" style={{ marginBottom: '12px' }}>
-          {schemaFields?.entity__name?.setValue || name}
+          {name}
         </Typography>
         <Constitution
           breakpoints={breakpoints}
@@ -665,7 +660,7 @@ const generateTexts = (fields: any) => {
   fields.partners.forEach((partner: any, idx: any) => {
     const partnerKey = 'partner__[' + idx + ']__'
     Object.keys(partner).forEach((field) => {
-      if (partner[field].type === 'address' || field === 'wallet__address') {
+      if (partner[field].type === 'address' || field === 'walletaddress') {
         if (!isAddress(partner[field]?.setValue)) {
           texts.push({ key: partnerKey + field, value: zeroAddress })
         } else {

@@ -11,21 +11,20 @@ export const AgentGrid = ({ rowHeight = 120, connectedIsAdmin = false, moderateE
     }
     rows.push(rowBoxes)
   }
-
   return (
     <Container>
       {rows.map((row, rowIndex) => (
         <Row key={rowIndex}>
           {row.map((box: any, boxIndex: any) => (
             <AgentBox
-              key={boxIndex + 'row' + rowIndex + 'do' + box.domain}
-              hidden={box.hidden}
+              key={boxIndex + 'row' + rowIndex + 'do' + box.entityid}
+              hidden={box?.v3k__hidden}
               onRate={(x: any) => onRate(box.address, x + 1)}
               index={rowIndex * 3 + boxIndex + 1}
               rowHeight={rowHeight}
               imageUrl={box.avatar}
               agentName={box.name}
-              agentDomain={box.domain}
+              agentDomain={box.entityid}
               agentDesc={
                 box.description ? (box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')) : ""
               }

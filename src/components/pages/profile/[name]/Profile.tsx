@@ -462,7 +462,7 @@ const ProfileContent = ({
     return (
       <>
         <Head>
-          <title>{records?.entity__name}</title>
+          <title>{records?.name}</title>
           <meta name="description" content={domain + ' RegistryChain'} />
           <meta property="og:title" content={domain} />
           <meta property="og:description" content={domain + ' RegistryChain'} />
@@ -483,7 +483,7 @@ const ProfileContent = ({
 
   let nameRecord = title
   if (Object.keys(records)?.length > 0) {
-    nameRecord = records?.entity__name
+    nameRecord = records?.name
     if (nameRecord) {
       title = nameRecord + ' on V3K'
     }
@@ -499,7 +499,6 @@ const ProfileContent = ({
           <VideoEmbed videoId={records.video} />
         </Box>
         <Typography color="greyDim">{records.description}</Typography>
-        {records.entity__purpose}
       </Box>
       <Box
         display='flex'
@@ -544,13 +543,13 @@ const ProfileContent = ({
         </Box>
         <Box>
           {/* TODO: add real categories */}
-          <Typography>{records.entity__type}</Typography>
+          <Typography>{records.keywords}</Typography>
         </Box>
       </Box></>
   } else if (tab === "actions" && records && domain && address) {
     tabContent = <ActionsTab
       refreshRecords={getRecords}
-      registrar={records?.entity__registrar || 'public'}
+      registrar={records?.registrar || 'public'}
       claimEntity={claimEntity}
       partners={records.partners}
       onChainOwner={onChainOwner}
@@ -577,7 +576,7 @@ const ProfileContent = ({
         <meta property="twitter:description" content={title} />
       </Head>
       {/* <SubgraphResults
-        tokenAddresses={[records.address, records.entity__token__address]}
+        tokenAddresses={[records.address, records.token__utility]}
         onResults={() => setSubgraphResults([...subgraphResults])}
       /> */}
 
@@ -633,7 +632,7 @@ const ProfileContent = ({
                         <Typography weight='bold'>Agent type</Typography>
                       </dt>
                       <dd>
-                        {records.entity__type}
+                        {records.keywords}
                       </dd>
                     </Box>
                     <Box py={1}>
@@ -691,7 +690,7 @@ const ProfileContent = ({
             <BgBox py={3}>
               <Box style={{ position: 'relative', zIndex: 1 }}>
                 <Typography>
-                  {records.entity__name} is a {records.entity__type} agent on the {records.entity__platform} platform. It is a {records.entity__purpose} agent with the following features:
+                  {records.name} is a {records.keywords} agent on the {records.aiagent__runtimeplatform} platform. It is an agent with the following features:
                 </Typography>
                 {/* <Box py={2}>
                   <ul>
@@ -734,7 +733,7 @@ const ProfileContent = ({
                     </Box>
                     <Box>
                       <Typography>
-                        <Link href={records.entity__endpoint} target='_blank'>
+                        <Link href={records.url} target='_blank'>
                           Link to agent
                         </Link>
                       </Typography>
@@ -751,7 +750,7 @@ const ProfileContent = ({
                       <Typography weight='bold'>Registrar</Typography>
                     </Box>
                     <Box>
-                      <Typography>{records.entity__registrar}</Typography>
+                      <Typography>{records.registrar}</Typography>
                     </Box>
                   </Box>
 
@@ -767,7 +766,7 @@ const ProfileContent = ({
                     </Box>
                     <Box>
                       {/* TODO: add real categories */}
-                      <Typography>{records.entity__token__address}</Typography>
+                      <Typography>{records.token__utility}</Typography>
                     </Box>
                   </Box>
 

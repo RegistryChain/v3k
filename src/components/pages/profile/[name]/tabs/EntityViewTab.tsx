@@ -28,7 +28,7 @@ interface EntityViewTabProps {
 const EntityViewTab = ({ domainName, multisigAddress, records, status, withRating, makeAmendment, owner }: EntityViewTabProps) => {
   const { t } = useTranslation('profile')
 
-  const nameRecord = records?.entity__name
+  const nameRecord = records?.name
 
   return (
     <DetailsWrapper>

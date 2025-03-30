@@ -187,11 +187,11 @@ export async function claimEntity(
   domain: any,
 ) {
   try {
-    const resolverAddress = await getResolverAddress(client, normalize(records?.domain || domain))
+    const resolverAddress = await getResolverAddress(client, normalize(records?.entityid || domain))
     if (address && isAddressEqual(resolverAddress, contractAddresses['DatabaseResolver'])) {
       const formationPrep: any = {
         functionName: 'transfer',
-        args: [namehash(normalize(records?.domain || domain)), newOwner],
+        args: [namehash(normalize(records?.entityid || domain)), newOwner],
         abi: l1abi,
         address: resolverAddress,
       }

@@ -149,7 +149,7 @@ export const ProfileSnippet = ({
             {status}
           </span>
         </SectionTitle>
-        {records.entity__registrar?.oldValue !== 'public' &&
+        {records.registrar?.oldValue !== 'public' &&
           records.sourceActive &&
           records.sourceActive === false ? (
           <ExclamationSymbol

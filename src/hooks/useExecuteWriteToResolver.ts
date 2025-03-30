@@ -92,13 +92,13 @@ export type CcipRequestParameters = {
   url: string
 }
 
-export async function getRecordData({ domain = '', needsSchema = true }: any) {
-  const nodeHash = namehash(normalise(domain))
-  const registrar = domain.split('.')[1]
-  const name = domain.split('.')[0]
+export async function getRecordData({ entityid = '', needsSchema = true }: any) {
+  const nodehash = namehash(normalise(entityid))
+  const registrar = entityid.split('.')[1]
+  const name = entityid.split('.')[0]
   try {
     const res = await fetch(
-      process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
+      process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodehash=${nodehash}.json`,
       {
         method: 'GET',
         headers: {
@@ -184,11 +184,11 @@ export async function getEntitiesList({
   }
 }
 
-export async function getTransactions({ nodeHash = zeroHash, address }: any) {
+export async function getTransactions({ nodehash = zeroHash, address }: any) {
   try {
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getTransactions/nodeHash=${nodeHash}&memberAddress=${address}.json`,
+        `/direct/getTransactions/nodehash=${nodehash}&memberAddress=${address}.json`,
       {
         method: 'GET',
         headers: {
@@ -257,14 +257,14 @@ export async function handleDBStorage({
   return requestResponse
 }
 
-export async function readResolverData(resolverAddress: any, client: any, nodeHash: any) {
+export async function readResolverData(resolverAddress: any, client: any, nodehash: any) {
   let results: any = {}
   try {
     const calls = displayKeys.map((key) =>
       encodeFunctionData({
         abi: parseAbi(['function text(bytes32,string) view returns (string)']),
         functionName: 'text',
-        args: [nodeHash, key],
+        args: [nodehash, key],
       }),
     )
 
@@ -303,7 +303,7 @@ export async function readResolverData(resolverAddress: any, client: any, nodeHa
   }
 
   //hardcodes or derived fields
-  results.domain = results.name + '.' + results?.entity__registrar + '.entity.id'
+  results.entityid = results.name + '.' + results?.registrar + '.entity.id'
   return results
 }
 
@@ -332,17 +332,17 @@ export const getResolverAddress = async (client: any, domain: any) => {
   return resolverAddr
 }
 
-export function useRecordData({ domain = '', wallet = null, publicClient = null }) {
+export function useRecordData({ entityid = '', wallet = null, publicClient = null }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [resolverAddress, setResolverAddress] = useState('')
-  const nodeHash = namehash(normalise(domain))
+  const nodehash = namehash(normalise(entityid))
 
   const getRes = async () => {
     if (publicClient) {
       try {
-        const res = await getResolverAddress(publicClient, normalise(domain))
+        const res = await getResolverAddress(publicClient, normalise(entityid))
         if (isAddress(res) && res !== zeroAddress) {
           setResolverAddress(res)
           return
@@ -351,32 +351,32 @@ export function useRecordData({ domain = '', wallet = null, publicClient = null 
     }
   }
   useEffect(() => {
-    if (publicClient && domain) {
+    if (publicClient && entityid) {
       getRes()
     }
-  }, [publicClient, domain])
+  }, [publicClient, entityid])
 
   const fetchRecordData = useCallback(async () => {
-    if (!domain) return
+    if (!entityid) return
 
     setLoading(true)
     setError(null)
 
-    const registrar = domain.split('.')[1]
-    const name = domain.split('.')[0]
+    const registrar = entityid.split('.')[1]
+    const name = entityid.split('.')[0]
 
     try {
       if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
         const returnObj = await readResolverData(
           resolverAddress || zeroAddress,
           publicClient,
-          nodeHash,
+          nodehash,
         )
 
         setData(returnObj)
       } else {
         const res = await fetch(
-          process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodeHash=${nodeHash}.json`,
+          process.env.NEXT_PUBLIC_RESOLVER_URL + `/direct/getRecord/nodehash=${nodehash}.json`,
           {
             method: 'GET',
             headers: {
@@ -404,13 +404,18 @@ export function useRecordData({ domain = '', wallet = null, publicClient = null 
     } finally {
       setLoading(false)
     }
-  }, [domain, resolverAddress])
+  }, [entityid, resolverAddress])
 
   useEffect(() => {
-    if (domain && (wallet || publicClient) && resolverAddress && resolverAddress !== zeroAddress) {
+    if (
+      entityid &&
+      (wallet || publicClient) &&
+      resolverAddress &&
+      resolverAddress !== zeroAddress
+    ) {
       fetchRecordData()
     }
-  }, [domain, wallet, publicClient, resolverAddress])
+  }, [entityid, wallet, publicClient, resolverAddress])
 
   return { data, loading, error, refetch: fetchRecordData }
 }
@@ -448,79 +453,70 @@ export function extractParentFromName(name: string): string {
 }
 
 export const displayKeys = [
-  'LEI',
+  'legalentity__lei',
   'name',
   'address',
   'description',
   'url',
   'location',
   'avatar',
-  'entity__name',
-  'entity__address',
-  'entity__registrar',
-  'entity__type',
-  'entity__description',
-  'entity__purpose',
-  'entity__formation__date',
-  'entity__lockup__days',
-  'entity__additional__terms',
-  'entity__selected__model',
-  'entity__lookup__number',
-  'entity__code',
-  'entity__arbitrator',
+  'registrar',
+  'keywords',
+  'birthdate',
+  'arbitrator__name',
 ]
 
 const partnerDisplayKeys = [
   'partner__[0]__name',
   'partner__[0]__type',
-  'partner__[0]__wallet__address',
-  'partner__[0]__physical__address',
-  'partner__[0]__DOB',
+  'partner__[0]__walletaddress',
+  'partner__[0]__location',
+  'partner__[0]__birthdate',
   'partner__[0]__is__manager',
   'partner__[0]__is__signer',
   'partner__[0]__lockup',
   'partner__[0]__shares',
   'partner__[1]__name',
   'partner__[1]__type',
-  'partner__[1]__wallet__address',
-  'partner__[1]__physical__address',
-  'partner__[1]__DOB',
+  'partner__[1]__walletaddress',
+  'partner__[1]__location',
+  'partner__[1]__birthdate',
   'partner__[1]__is__manager',
   'partner__[1]__is__signer',
   'partner__[1]__lockup',
   'partner__[1]__shares',
   'partner__[2]__name',
   'partner__[2]__type',
-  'partner__[2]__wallet__address',
-  'partner__[2]__physical__address',
-  'partner__[2]__DOB',
+  'partner__[2]__walletaddress',
+  'partner__[2]__location',
+  'partner__[2]__birthdate',
   'partner__[2]__is__manager',
   'partner__[2]__is__signer',
   'partner__[2]__lockup',
   'partner__[2]__shares',
   'partner__[3]__name',
   'partner__[3]__type',
-  'partner__[3]__wallet__address',
-  'partner__[3]__physical__address',
-  'partner__[3]__DOB',
+  'partner__[3]__walletaddress',
+  'partner__[3]__location',
+  'partner__[3]__birthdate',
   'partner__[3]__is__manager',
   'partner__[3]__is__signer',
   'partner__[3]__lockup',
   'partner__[3]__shares',
   'partner__[4]__name',
   'partner__[4]__type',
-  'partner__[4]__wallet__address',
-  'partner__[4]__physical__address',
-  'partner__[4]__DOB',
+  'partner__[4]__walletaddress',
+  'partner__[4]__location',
+  'partner__[4]__birthdate',
   'partner__[4]__is__manager',
   'partner__[4]__is__signer',
   'partner__[4]__lockup',
   'partner__[4]__shares',
   'partner__[5]__name',
   'partner__[5]__type',
-  'partner__[5]__wallet__address',
-  'partner__[5]__physical__address',
-  'partner__[5]__DOB',
+  'partner__[5]__walletaddress',
+  'partner__[5]__location',
+  'partner__[5]__birthdate',
   'partner__[5]__is__manager',
   'partner__[5]__is__signer',
   'partner__[5]__lockup',

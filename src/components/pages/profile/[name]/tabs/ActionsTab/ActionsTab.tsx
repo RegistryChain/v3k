@@ -89,7 +89,7 @@ const ActionsTab = ({
 
   const readTransactions = async () => {
     const txArray = await getTransactions({
-      nodeHash: namehash(normalise(name)),
+      nodehash: namehash(normalise(name)),
       address: (address as any) || (zeroAddress as any),
     })
     setTxs(txArray)
@@ -208,7 +208,6 @@ const ActionsTab = ({
         // Attempt to call to the safe at the pregenerated address. If not deployed yet, proceed
         const bc = await client.getBytecode({ address: generatedSafe })
         if (bc && bc !== '0x') {
-          console.log(bc, generatedSafe)
           throw new Error('This safe has already been claimed')
         }
 
@@ -290,7 +289,7 @@ const ActionsTab = ({
   // if on chain owner is zeroAddress but record.owner || partner.walletAddress is equal to account
   const hasOwnerOnchain = isAddress(onChainOwner) && onChainOwner !== zeroAddress
   const isOwnerOperatorOffchain =
-    owner === address || partners?.map((x: any) => x?.wallet__address)?.includes(address)
+    owner === address || partners?.map((x: any) => x?.walletaddress)?.includes(address)
   if (!hasOwnerOnchain && isOwnerOperatorOffchain) {
     claimOnChainElement = (
       <div style={{ width: '100%', margin: '16px 0' }}>
@@ -352,7 +351,7 @@ const ActionsTab = ({
       <div style={{ width: '100%', margin: '16px 0' }}>
         <Button onClick={async () => {
           await migrateToOnchainRecords()
-          refresh()
+          // refresh()
         }} style={{ width: "100%" }} variant="outlined">
           Migrate Onchain
         </Button>

@@ -278,7 +278,7 @@ export const Header = () => {
                   <SearchResultItem
                     key={index}
                     onClick={() => {
-                      window.location.href = "/agent/" + result.domain
+                      window.location.href = "/agent/" + result.entityid
                     }}
                   >
                     {result.name}

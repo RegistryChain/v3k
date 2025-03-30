@@ -1,20 +1,18 @@
 export interface Entity {
-  entity__address: string
-  entity__code: string
-  entity__formation__date: string
-  entity__name: string
+  birthdate: string
+  name: string
   description: string
   id: string
   location: string
   partners: Partner[]
-  entity__type: string
+  keywords: string
   address: string
-  LEI: string
-  entity__registrar: string
+  legalentity__lei: string
+  registrar: string
 }
 
 export interface Partner {
-  wallet__address: string
+  walletaddress: string
   name: string
   [key: string]:
     | {

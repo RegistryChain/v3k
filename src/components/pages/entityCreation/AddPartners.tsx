@@ -59,13 +59,13 @@ const AddPartners = ({
   const { address } = useAccount()
 
   useEffect(() => {
-    const firstPartnerWallet = partners[0]?.wallet__address?.setValue
+    const firstPartnerWallet = partners[0]?.walletaddress?.setValue
     if (!firstPartnerWallet || !isAddress(firstPartnerWallet)) {
       const updatedPartners = [...partners]
       const updatedPartner = {
         ...updatedPartners[0],
-        wallet__address: {
-          ...updatedPartners[0].wallet__address,
+        walletaddress: {
+          ...updatedPartners[0].walletaddress,
           setValue: address,
         },
       }
@@ -214,7 +214,7 @@ const AddPartners = ({
             }
             let focusOnFunction: any = () => null
             let focusOffFunction: any = () => null
-            if (field === 'wallet__address') {
+            if (field === 'walletaddress') {
               focusOnFunction = () => {
                 if (
                   !isAddress(partner?.[field]?.setValue) ||

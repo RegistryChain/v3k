@@ -35,7 +35,7 @@ const TabWrapperWithButtons = styled(TabWrapper)(
 export const SubnameListView = ({ address }: any) => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
 
-  const [sortType, setSortType] = useState<any>('creationDate')
+  const [sortType, setSortType] = useState<any>('birthdate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [registrar, setRegistrarSelected] = useState<string>('ai')
 
@@ -84,9 +84,9 @@ export const SubnameListView = ({ address }: any) => {
     let status = {}
     if (connectedIsAdmin) {
       if (selectedStatus === "true") {
-        status = { hidden: true }
+        status = { "v3k__hidden": true }
       } else if (selectedStatus === "false") {
-        status = { hidden: false }
+        status = { "v3k__hidden": false }
       }
     }
     try {
@@ -169,7 +169,7 @@ export const SubnameListView = ({ address }: any) => {
       <NameTableHeader
         mode={'view'}
         sortType={sortType}
-        sortTypeOptionValues={['entity__formation__date', 'name']}
+        sortTypeOptionValues={['birthdate', 'name']}
         sortDirection={sortDirection}
         registrar={registrar}
         registrarOptionValues={jurisList}
