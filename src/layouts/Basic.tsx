@@ -112,12 +112,19 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [agentModalPrepopulate, setAgentModalPrepopulate] = useState({})
 
+  const darkthemeRoutes = ["/about"]
+  const containerStyle: any = {}
+
+  if (darkthemeRoutes.includes(router.pathname)) {
+    containerStyle.backgroundColor = "black";
+  }
+
   return (
     // <LayoutContext.Provider value={{ testMode }}>
     <ModalContext.Provider
       value={{ isModalOpen, setIsModalOpen, agentModalPrepopulate, setAgentModalPrepopulate }}
     >
-      <Container className="min-safe">
+      <Container style={containerStyle} className="min-safe">
         <Navigation />
         <ContentWrapper>
           {isModalOpen && (

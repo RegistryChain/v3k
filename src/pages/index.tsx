@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
@@ -20,34 +19,6 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 
 import entityTypesObj from '../constants/entityTypes.json'
 
-const GradientTitle = styled.h1(
-  ({ theme }) => css`
-    font-size: ${theme.fontSizes.headingTwo};
-    text-align: center;
-    font-weight: 800;
-    background-image: ${theme.colors.gradients.accent};
-    background-repeat: no-repeat;
-    background-size: 110%;
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin: 0;
-
-    ${mq.sm.min(css`
-      font-size: ${theme.fontSizes.headingOne};
-    `)}
-  `,
-)
-
-const SubtitleWrapper = styled.div(
-  ({ theme }) => css`
-    max-width: calc(${theme.space['72']} * 2 - ${theme.space['4']});
-    line-height: 150%;
-    text-align: center;
-    margin-bottom: ${theme.space['3']};
-  `,
-)
 
 const AddAgentButton = styled.button(
   ({ theme }) => css`

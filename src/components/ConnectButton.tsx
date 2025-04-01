@@ -167,9 +167,8 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
             label: t('navigation.profile'),
             color: 'text',
             wrapper: (children: ReactNode, key: Key) => {
-              console.log(children)
               return (
-                <BaseLink href={"/developer/" + address} key={key}>
+                <BaseLink href={"/developer/" + (primary?.data?.name || address)} key={key}>
                   {children}
                 </BaseLink>
               )

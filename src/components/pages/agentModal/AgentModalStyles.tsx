@@ -20,9 +20,9 @@ export const ModalContent = styled.div<{ isExpanded: boolean }>`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 24px 24px 0;
   width: ${({ isExpanded }) => (isExpanded ? '90%' : '60%')};
-  height: 500px;
+  height: 620px;
   min-width: 600px;
-  overflow-y: auto;
+  overflow-y: none;
   transition:
     width 0.3s ease,
     max-height 0.3s ease;
@@ -124,7 +124,7 @@ export const StepContainer = styled.div`
   flex-direction: column;
   padding: 24px;
   width: 100%;
-  min-height: 250px;
+  min-height: 400px;
 `;
 
 

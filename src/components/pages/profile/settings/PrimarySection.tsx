@@ -270,14 +270,15 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                     <a href={record.url} >{record.url}</a>
                   </dd>
                 </div>
-                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
-                  <dt>
-                    <Typography weight='bold'>Entity Type:</Typography>
-                  </dt>
-                  <dd>
-                    {record.keywords}
-                  </dd>
-                </div>
+                {record.legalentity__type || record.keywords?.length > 0 ?
+                  <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
+                    <dt>
+                      <Typography weight='bold'>Entity Type:</Typography>
+                    </dt>
+                    <dd>
+                      {record.legalentity__type || record.keywords}
+                    </dd>
+                  </div> : null}
                 <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
                   <dt>
                     <Typography weight='bold'>Location:</Typography>

@@ -655,13 +655,19 @@ const ProfileContent = ({
                       <dd>
                         {/* if owner has no primary, use addr and etherscan */}
                         {/* if owner has primary, link to dev profile and show */}
-                        {owner ? (
+                        {primary?.data?.name ? (
+                          <Link title="tooltip" href={`/developer/` + primary?.data?.name} target='_blank' style={{
+                            textDecoration: 'none',
+                          }}>
+                            {primary?.data?.name}
+                          </Link>
+                        ) : (
                           <Link title="tooltip" href={`/developer/` + owner} target='_blank' style={{
                             textDecoration: 'none',
                           }}>
-                            {primary?.data?.name ?? truncateEthAddress(owner)}
+                            {truncateEthAddress(owner)}
                           </Link>
-                        ) : null}
+                        )}
                       </dd>
                     </Box>
                   </dl>
