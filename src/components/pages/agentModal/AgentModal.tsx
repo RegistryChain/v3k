@@ -1,6 +1,6 @@
 // components/AgentModal.tsx (updated)
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { TextField, Select, FormControl, InputLabel, MenuItem } from '@mui/material'
+import { FormControl } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 
@@ -45,6 +45,7 @@ import {
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { CustomizedSteppers } from './Stepper'
+import { Tooltip } from '@ensdomains/thorin'
 
 type FormState = {
   name: string
@@ -60,6 +61,8 @@ type FormState = {
   tokenAddress: string
   telegramHandle: string
   imageFile: File | undefined
+  video: string
+  youtubeChannel: string
 }
 
 interface StepProps {
@@ -84,6 +87,15 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
           placeholder="Enter agent name"
           required
         />}
+      <FormInput
+        label="Category"
+        type="select"
+        value={formState.category}
+        onChange={handleFieldChange('category')}
+        options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
+        placeholder="Select a category"
+        required
+      />
       <FormControl required>
         <input
           type="file"
@@ -104,15 +116,11 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
           }}
         />
       </FormControl>
-
       <FormInput
-        label="Category"
-        type="select"
-        value={formState.category}
-        onChange={handleFieldChange('category')}
-        options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
-        placeholder="Select a category"
-        required
+        label="Description"
+        value={formState.description}
+        onChange={handleFieldChange('description')}
+        placeholder="Enter description"
       />
     </StepWrapper>
   )
@@ -129,27 +137,38 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
       />
 
       <FormInput
-        label="Platform"
+        label="Agent Framework"
         value={formState.platform}
         onChange={handleFieldChange('platform')}
-        placeholder="Enter platform"
-      />
-
-
-
-      <FormInput
-        label="Github"
-        value={formState.github}
-        onChange={handleFieldChange('github')}
-        placeholder="Github"
+        placeholder="Enter Agent Framework"
       />
 
       <FormInput
-        label="Endpoint"
+        label="Chat Endpoint"
         value={formState.endpoint}
         onChange={handleFieldChange('endpoint')}
-        placeholder="Enter Endpoint"
+        placeholder="Enter Chatbot Endpoint"
       />
+      <FormInput
+        label="Github Repo"
+        value={formState.github}
+        onChange={handleFieldChange('github')}
+        placeholder="Github Repo"
+      />
+    </StepWrapper>
+  )
+}
+const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+  return (
+    <StepWrapper isVisible={isVisible}>
+
+      <FormInput
+        label="Explainer Video"
+        value={formState.video}
+        onChange={handleFieldChange('video')}
+        placeholder="Add URL to Youtube Video"
+      />
+
 
       <FormInput
         label="X (Twitter) Handle"
@@ -166,29 +185,29 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
       />
 
       <FormInput
-        label="Description"
-        value={formState.description}
-        onChange={handleFieldChange('description')}
-        placeholder="Enter description"
+        label="Youtube Channel"
+        value={formState.youtubeChannel}
+        onChange={handleFieldChange('youtubeChannel')}
+        placeholder="Enter Agent Youtube Channel"
       />
     </StepWrapper>
   )
 }
 
-const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+const Step4 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
+      <FormInput
+        label="Entity ID"
+        value={formState.parentEntityId}
+        onChange={handleFieldChange('parentEntityId')}
+        placeholder="Enter a entity.id domain"
+      />
       <FormInput
         label="Name"
         value={formState.parentName}
         onChange={handleFieldChange('parentName')}
         placeholder="Enter Developer Name"
-      />
-      <FormInput
-        label="Entity ID"
-        value={formState.parentEntityId}
-        onChange={handleFieldChange('parentEntityId')}
-        placeholder="Enter an entity.id domain"
       />
     </StepWrapper>
   )
@@ -219,12 +238,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     twitterHandle: '',
     tokenAddress: '',
     telegramHandle: '',
+    youtubeChannel: '',
+    video: '',
     imageFile: undefined
   }
   // Text record key mapping
   const mapKeyToRecord = (formKey: string) => {
     const mapping: Record<string, string> = {
-      platform: 'location',
+      platform: 'aiagent__runtimeplatform',
       description: 'description',
       twitterHandle: 'com.twitter',
       tokenAddress: 'token__utility',
@@ -234,6 +255,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       parentEntityId: 'partner__[0]__domain',
       parentName: 'partner__[0]__name',
       category: 'keywords',
+      video: 'video',
+      youtubeChannel: 'com.youtube'
     }
     return mapping[formKey] || formKey
   }
@@ -475,6 +498,38 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   // })
 
   if (!isOpen) return null
+  let disabled = actionStep === 3 && !formState.name
+  let submitButton = <SubmitButton
+    disabled={disabled}
+    onClick={() => {
+      if (actionStep < 3) {
+        setActionStep(actionStep + 1)
+      } else {
+        handleRegistration()
+      }
+    }}
+  >
+    {actionStep < 3 ? "Next" : actions[0]}
+  </SubmitButton>
+
+  if (disabled) {
+    submitButton = <Tooltip content={"Registration requires agent name"}>
+      <SubmitButton
+        disabled={disabled}
+        onClick={() => {
+          if (actionStep < 3) {
+            setActionStep(actionStep + 1)
+          } else {
+            handleRegistration()
+          }
+        }}
+      >
+        {actionStep < 3 ? "Next" : actions[0]}
+      </SubmitButton>
+    </Tooltip>
+  }
+
+
 
   return (
     <Overlay>
@@ -524,16 +579,20 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
                 handleFieldChange={handleFieldChange}
               />
             )}
+            {actionStep === 3 && (
+              <Step4
+                isVisible={actionStep === 3}
+                formState={formState}
+                prepopulate={agentModalPrepopulate}
+
+                handleFieldChange={handleFieldChange}
+              />
+            )}
           </>
         </StepContainer>
 
         <ButtonWrapper>
-          <SubmitButton
-            disabled={!formState.name || !formState.category}
-            onClick={handleRegistration}
-          >
-            {actions[0]}
-          </SubmitButton>
+          {submitButton}
         </ButtonWrapper>
       </ModalContent>
     </Overlay>

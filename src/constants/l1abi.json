@@ -87,16 +87,6 @@
   },
   {
     "type": "function",
-    "name": "transfer",
-    "inputs": [
-      { "type": "bytes32", "name": "node" },
-      { "type": "address", "name": "owner" }
-    ],
-    "stateMutability": "view",
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "addrCallback",
     "inputs": [
       { "name": "values", "type": "bytes[]", "internalType": "bytes[]" },

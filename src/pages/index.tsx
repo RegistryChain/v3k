@@ -1,9 +1,8 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { Address, createPublicClient, getContract, http } from 'viem'
+import { Address, createPublicClient, getContract, http, zeroHash } from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
@@ -19,35 +18,8 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import entityTypesObj from '../constants/entityTypes.json'
+import { useGetRating } from '@app/hooks/useGetRating'
 
-const GradientTitle = styled.h1(
-  ({ theme }) => css`
-    font-size: ${theme.fontSizes.headingTwo};
-    text-align: center;
-    font-weight: 800;
-    background-image: ${theme.colors.gradients.accent};
-    background-repeat: no-repeat;
-    background-size: 110%;
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin: 0;
-
-    ${mq.sm.min(css`
-      font-size: ${theme.fontSizes.headingOne};
-    `)}
-  `,
-)
-
-const SubtitleWrapper = styled.div(
-  ({ theme }) => css`
-    max-width: calc(${theme.space['72']} * 2 - ${theme.space['4']});
-    line-height: 150%;
-    text-align: center;
-    margin-bottom: ${theme.space['3']};
-  `,
-)
 
 const AddAgentButton = styled.button(
   ({ theme }) => css`
@@ -131,6 +103,9 @@ export default function Page() {
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
+  const { recipientAverages } = useGetRating(zeroHash)
+
+
   let nameAvailableElement = null
   if (entityName.length >= 2 && entityJurisdiction.length > 0) {
     nameAvailableElement = nameAvailable ? (
@@ -189,8 +164,8 @@ export default function Page() {
 
       <Container>
         <Stack>
-          <FeaturedAgents />
-          <TrendingAgents />
+          <FeaturedAgents recipientAverages={recipientAverages} />
+          <TrendingAgents recipientAverages={recipientAverages} />
           <AddAgentButton
             onClick={() => setIsModalOpen(true)}
           >

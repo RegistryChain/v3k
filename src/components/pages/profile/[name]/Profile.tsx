@@ -181,7 +181,6 @@ const ProfileContent = ({
   const [tab, setTab] = useState("details")
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
-  const { rating, getRating } = useGetRating()
   const { history, fetchEnsHistory } = useEnsHistory()
   const [verification, setVerification] = useState<string | undefined>()
   const ref = useRef<HTMLDivElement>(null)
@@ -276,12 +275,6 @@ const ProfileContent = ({
   useEffect(() => {
     fetchEnsHistory(namehash(domain))
   }, [])
-
-  useEffect(() => {
-    if (records?.address) {
-      getRating(records?.address)
-    }
-  }, [records])
 
   useEffect(() => {
     if (isSelf && domain) {
@@ -612,7 +605,6 @@ const ProfileContent = ({
                     multisigAddress={multisigAddress}
                     records={{ ...records, subgraph: subgraphResults }}
                     status={status}
-                    withRating={false}
                     owner={owner}
                     makeAmendment={makeAmendment}
                   />
@@ -637,31 +629,24 @@ const ProfileContent = ({
                     </Box>
                     <Box py={1}>
                       <dt>
-                        <Typography weight='bold'>Rating</Typography>
-                      </dt>
-                      <dd style={{ display: 'flex', alignItems: 'center' }}>
-                        {rating.toFixed(2)}&nbsp;
-                        {
-                          rating > 4 ? (<StarIcon style={{ fontSize: '15px' }} />) : (
-                            <StarHalfIcon style={{ fontSize: '15px' }} />
-                          )
-                        }
-                      </dd>
-                    </Box>
-                    <Box py={1}>
-                      <dt>
                         <Typography weight='bold'>Developer</Typography>
                       </dt>
                       <dd>
                         {/* if owner has no primary, use addr and etherscan */}
                         {/* if owner has primary, link to dev profile and show */}
-                        {owner ? (
+                        {primary?.data?.name ? (
+                          <Link title="tooltip" href={`/developer/` + primary?.data?.name} target='_blank' style={{
+                            textDecoration: 'none',
+                          }}>
+                            {primary?.data?.name}
+                          </Link>
+                        ) : (
                           <Link title="tooltip" href={`/developer/` + owner} target='_blank' style={{
                             textDecoration: 'none',
                           }}>
-                            {primary?.data?.name ?? truncateEthAddress(owner)}
+                            {truncateEthAddress(owner)}
                           </Link>
-                        ) : null}
+                        )}
                       </dd>
                     </Box>
                   </dl>

@@ -8,6 +8,7 @@ import {
   custom,
   getContract,
   http,
+  namehash,
   zeroAddress,
 } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -19,8 +20,11 @@ import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 import { ExclamationSymbol } from './ExclamationSymbol'
 import StarRating from './StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
+import contractAddresses from '../constants/contractAddresses.json'
+
 import { FaPencilAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
+import { getContractInstance } from '@app/utils/utils'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -80,7 +84,6 @@ interface ProfileSnippetProps {
   records: any
   status?: string
   domainName?: string
-  withRating?: boolean
   makeAmendment: any
   owner: Address
 }
@@ -91,13 +94,46 @@ export const ProfileSnippet = ({
   records,
   status,
   domainName,
-  withRating = true,
   owner,
   makeAmendment
 }: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
 
-  const { rating, getRating, sendStars } = useGetRating()
+  const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
+
+  const sendRating = async (stars: number) => {
+    try {
+      const LOCAL_STORAGE_KEY = 'orimmo_token_added-' + address;
+
+      if (localStorage.getItem(LOCAL_STORAGE_KEY) !== 'true') {
+        const wasAdded = await window.ethereum?.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: contractAddresses.ORIMMO,
+              symbol: 'OR',
+              decimals: 18,
+
+            },
+          },
+        });
+        if (wasAdded) {
+          localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+        }
+      }
+
+    } catch (err) {
+      console.log(err)
+    }
+    try {
+      const recipientHash = "0x" + records.nodehash.slice(-40)
+      const orimmoToken: any = getContractInstance(wallet, 'ORIMMO')
+      const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"])
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const { address } = useAccount()
 
@@ -118,11 +154,6 @@ export const ProfileSnippet = ({
     }
   }, [address])
 
-  useEffect(() => {
-    if (records?.address) {
-      getRating(records?.addres)
-    }
-  }, [records])
 
   let entityUnavailable = null
   if (records.length > 0) {
@@ -188,12 +219,10 @@ export const ProfileSnippet = ({
 
               {/* {statusSection} */}
 
-              {withRating && (
-                <StarRating
-                  rating={rating}
-                  onRate={(val: any) => sendStars(records?.address, records?.address || zeroAddress, val + 1, wallet)}
-                />
-              )}
+              <StarRating
+                rating={recipientAverages["0x" + namehash(domainName as string).slice(-40)]}
+                onRate={(val: any) => sendRating(val)}
+              />
 
             </div>
           </div>

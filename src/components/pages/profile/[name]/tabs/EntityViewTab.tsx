@@ -20,12 +20,11 @@ interface EntityViewTabProps {
   multisigAddress: string
   records: any
   status: string
-  withRating?: boolean
   makeAmendment: any
   owner: Address
 }
 
-const EntityViewTab = ({ domainName, multisigAddress, records, status, withRating, makeAmendment, owner }: EntityViewTabProps) => {
+const EntityViewTab = ({ domainName, multisigAddress, records, status, makeAmendment, owner }: EntityViewTabProps) => {
   const { t } = useTranslation('profile')
 
   const nameRecord = records?.name
@@ -38,7 +37,6 @@ const EntityViewTab = ({ domainName, multisigAddress, records, status, withRatin
         multisigAddress={multisigAddress}
         status={status}
         domainName={domainName}
-        withRating={withRating}
         makeAmendment={makeAmendment}
         owner={owner}
       />

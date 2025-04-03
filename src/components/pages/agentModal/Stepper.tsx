@@ -6,6 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import CheckIcon from '@mui/icons-material/Check';
 import SettingsIcon from '@mui/icons-material/Settings';
+import CodeIcon from '@mui/icons-material/Code';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import InfoIcon from '@mui/icons-material/Info';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
@@ -82,8 +83,9 @@ function ColorlibStepIcon({ ...props }: StepIconProps) {
 
   const icons: { [index: string]: React.ReactElement<unknown> } = {
     1: <SettingsIcon />,
-    2: <InfoIcon />,
-    3: <PersonOutlineIcon />,
+    2: <CodeIcon />,
+    3: <InfoIcon />,
+    4: <PersonOutlineIcon />,
   };
 
   return (
@@ -96,7 +98,7 @@ function ColorlibStepIcon({ ...props }: StepIconProps) {
   );
 }
 
-const steps = ['General Info', 'Socials', 'Developer Info'];
+const steps = ['General Info', 'Environment Configs', 'Socials', 'Developer Info'];
 
 export const CustomizedSteppers = ({
   activeStep,
