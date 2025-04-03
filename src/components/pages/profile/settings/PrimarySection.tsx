@@ -139,7 +139,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const showResetPrimaryNameInput = usePreparedDataInput('ResetPrimaryName')
-  const { rating, getRating } = useGetRating()
+  const { recipientAverages } = useGetRating(record.nodehash)
 
 
   const { truncatedName, isLoading: basicLoading } = useBasicName({
@@ -165,11 +165,6 @@ export const PrimarySection = ({ address, primary, record }: any) => {
     })
   }
 
-  useEffect(() => {
-    if (record?.address) {
-      getRating(record?.address)
-    }
-  }, [record])
 
   return (
     <Skeleton loading={isLoading} as={SkeletonFiller as any}>
@@ -292,9 +287,9 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                     <Typography weight='bold'>Rating:</Typography>
                   </dt>
                   <dd style={{ display: 'flex', alignItems: 'center' }}>
-                    {rating.toFixed(2)}&nbsp;
+                    {recipientAverages['0x' + record.nodehash(-40)].toFixed(2)}&nbsp;
                     {
-                      rating > 4 ? (<StarIcon style={{ fontSize: '15px' }} />) : (
+                      recipientAverages['0x' + record.nodehash(-40)] > 4 ? (<StarIcon style={{ fontSize: '15px' }} />) : (
                         <StarHalfIcon style={{ fontSize: '15px' }} />
                       )
                     }

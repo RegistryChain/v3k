@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
-import { Address, createPublicClient, getContract, http } from 'viem'
+import { Address, createPublicClient, getContract, http, zeroHash } from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { Button, Dropdown, mq, Typography } from '@ensdomains/thorin'
@@ -18,6 +18,7 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import entityTypesObj from '../constants/entityTypes.json'
+import { useGetRating } from '@app/hooks/useGetRating'
 
 
 const AddAgentButton = styled.button(
@@ -102,6 +103,9 @@ export default function Page() {
   const [entityType, setEntityType] = useState<any>({})
   const [nameAvailable, setNameAvailable] = useState<Boolean>(false)
 
+  const { recipientAverages } = useGetRating(zeroHash)
+
+
   let nameAvailableElement = null
   if (entityName.length >= 2 && entityJurisdiction.length > 0) {
     nameAvailableElement = nameAvailable ? (
@@ -160,8 +164,8 @@ export default function Page() {
 
       <Container>
         <Stack>
-          <FeaturedAgents />
-          <TrendingAgents />
+          <FeaturedAgents recipientAverages={recipientAverages} />
+          <TrendingAgents recipientAverages={recipientAverages} />
           <AddAgentButton
             onClick={() => setIsModalOpen(true)}
           >

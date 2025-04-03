@@ -1,183 +1,101 @@
-import { useMemo, useState } from "react"
-import contractAddressesObj from '../constants/contractAddresses.json'
-import { Address, createPublicClient, getContract, http } from "viem"
-import { infuraUrl } from "@app/utils/query/wagmi"
-import { sepolia } from 'viem/chains'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { decodeEventLog, parseAbiItem, zeroHash } from 'viem';
+import contractAddressesObj from '../constants/contractAddresses.json';
 
-const RepTokenABI = [
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'target',
-        type: 'address',
-      },
-    ],
-    name: 'getSenderRatingsListForTarget',
-    outputs: [
-      {
-        internalType: 'address[]',
-        name: '',
-        type: 'address[]',
-      },
-      {
-        internalType: 'uint256[]',
-        name: '',
-        type: 'uint256[]',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'to',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'value',
-        type: 'uint256',
-      },
-    ],
-    name: 'transfer',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'to',
-        type: 'address',
-      },
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-]
+const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
+const ETHERSCAN_BASE_URL = 'https://api-sepolia.etherscan.io/api';
 
-const BasicABI = [
-  {
-    inputs: [],
-    name: 'mintFromFaucet',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    name: 'faucetMinted',
-    inputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-]
+const CONTRACT_ADDRESS = contractAddressesObj.ORIMMO;
 
-export const useGetRating = () => {
-  const [rating, setRating] = useState<any>(0)
+const ratingEventAbi = parseAbiItem(
+  'event RatingSubmitted(address indexed from, address indexed recipientNode, uint256 rating)'
+);
 
-  const publicClient = useMemo(
-    () =>
-      createPublicClient({
-        chain: sepolia,
-        transport: http(infuraUrl('sepolia')),
-      }),
-    [],
-  )
+const TOPIC0 = "0xdcba9448b55b807611f7e3ece24acdc6afaec1d8c5a16f3e70c571758f606654";
 
-  const getRating = async (address: string) => {
-    if (!address) return
-    const rate = await repTokenBalance(address)
-    setRating(rate)
-  }
+export const useGetRating = (nodehash: `0x${string}`) => {
+  const [ratings, setRatings] = useState<{ from: string; rating: bigint }[]>([]);
+  const [recipientAverages, setRecipientAverages] = useState<Record<string, number>>({});
 
-  const repTokenBalance = async (addressToCheck: any) => {
-    const contract = getContract({
-      address: contractAddressesObj.starToken as any,
-      abi: RepTokenABI,
-      client: publicClient,
-    })
+  const [loading, setLoading] = useState(true);
 
-    const result: any = await contract.read.getSenderRatingsListForTarget([addressToCheck])
-    let ratingScore = 0
-    result?.[1]?.forEach((rating: any) => (ratingScore += Number(rating)))
-    ratingScore /= result?.[1]?.length
-    ratingScore = ratingScore / 1000000000000000000 || 0
-    return ratingScore
-  }
+  useEffect(() => {
+    if (!nodehash) return;
 
-  const mintOrimmoTokens = async (address: string, wallet: any) => {
-    if (address && wallet) {
+    const recipientTopic = `0x${nodehash.slice(-40).padStart(64, '0')}`;
+
+    const fetchRatings = async () => {
+      setLoading(true);
+
+      const params: any = {
+        module: 'logs',
+        action: 'getLogs',
+        address: CONTRACT_ADDRESS,
+        topic0: TOPIC0,
+        offset: 1000,
+        fromBlock: '0',
+        toBlock: 'latest',
+        apikey: ETHERSCAN_API_KEY,
+      };
+
+      if (recipientTopic && recipientTopic !== zeroHash) {
+        params.topic2 = recipientTopic
+      }
       try {
-        const orimmoController: any = getContract({
-          abi: BasicABI,
-          address: contractAddressesObj.orimmoController as Address,
-          client: wallet,
-        })
+        const response = await axios.get(ETHERSCAN_BASE_URL, { params });
 
-        const tx = await orimmoController.write.mintFromFaucet([])
-        const txReceipt = await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-        })
+        if (response.data.status !== '1') {
+          console.warn('No logs found:', response.data.message);
+          setRatings([]);
+          setRecipientAverages({});
+          return;
+        }
+
+        const logs = response.data.result;
+
+        const parsed = logs.map((log: any) => {
+          const { args } = decodeEventLog({
+            abi: [ratingEventAbi],
+            data: log.data,
+            topics: log.topics,
+          });
+
+          return {
+            from: args.from as string,
+            recipient: args.recipientNode?.toUpperCase() as string,
+            rating: args.rating as bigint,
+          };
+        });
+
+        setRatings(parsed);
+
+        // Aggregate averages by recipient
+        const totals: Record<string, bigint> = {};
+        const counts: Record<string, number> = {};
+
+        for (const r of parsed) {
+          totals[r.recipient] = (totals[r.recipient] || 0n) + r.rating;
+          counts[r.recipient] = (counts[r.recipient] || 0) + 1;
+        }
+
+        const avgMap: Record<string, number> = {};
+        for (const key in totals) {
+          avgMap[key] = Number(totals[key] / BigInt(counts[key])) / 1e18;
+        }
+
+        setRecipientAverages(avgMap);
       } catch (err) {
-        console.log('mint err', err)
+        console.error('Failed to fetch logs from Etherscan:', err);
+        setRatings([]);
+        setRecipientAverages({});
+      } finally {
+        setLoading(false);
       }
-    }
-  }
+    };
 
-  const sendStars = async (address: string, to: string, amount: any, wallet: any) => {
-    try {
-      const contract: any = getContract({
-        address: contractAddressesObj.starToken as Address,
-        abi: RepTokenABI,
-        client: wallet,
-      })
+    fetchRatings();
+  }, [nodehash]);
 
-      const bal = await contract.read.balanceOf([address])
-      console.log('user balance', address, bal)
-      if (bal === 0n) {
-        await mintOrimmoTokens(address, wallet)
-      }
-
-      const tx = await contract.write.transfer([to, amount * 10 ** 18])
-      await publicClient?.waitForTransactionReceipt({
-        hash: tx,
-      })
-    } catch (err) {
-      console.log('error sending stars', err)
-    }
-    return
-  }
-
-  return { rating, getRating, sendStars }
-}
+  return { ratings, recipientAverages, loading };
+};

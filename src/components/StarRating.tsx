@@ -15,13 +15,25 @@ export default function StarRating({ rating, onRate }: any) {
     onRate(index)
   }
 
+  const offHover = <div style={{ display: "flex" }} onMouseEnter={() => setHoverIndex(rating)}>
+    <FaStar
+      key={'FaStar'}
+      style={{
+        fontSize: '16px',
+        margin: '3px 2px',
+        color: 'yellow',
+        transition: 'color 0.2s ease, transform 0.2s ease',
+      }}
+    />
+    <span style={{ fontSize: '15px' }}>{rating?.toFixed(2)}</span>
+  </div>
+
   return (
     <div
       style={{
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        width: '90px',
+        width: '100px',
         height: '50px',
         cursor: 'pointer',
       }}
@@ -31,7 +43,7 @@ export default function StarRating({ rating, onRate }: any) {
       }}
       onClick={(event) => event.stopPropagation()}
     >
-      {[1,2, 3, 4, 5].map((index) => {
+      {hoverIndex === null ? offHover : [1, 2, 3, 4, 5].map((index) => {
         return (
           <FaStar
             key={index}

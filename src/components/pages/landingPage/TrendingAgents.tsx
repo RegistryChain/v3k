@@ -11,8 +11,6 @@ import SubgraphResults from '@app/components/SubgraphQuery'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { getContractInstance, getPublicClient, getWalletClient } from '@app/utils/utils'
 
-import contractAddressesObj from '../../../constants/contractAddresses.json'
-import l1abi from '../../../constants/l1abi.json'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -37,8 +35,8 @@ const SubtitleWrapper = styled.div(
   `,
 )
 
-const TrendingAgents = () => {
-  const [agents, setAgents] = useState([])
+const TrendingAgents = ({ recipientAverages }: any) => {
+  const [agents, setAgents] = useState<any>([])
   const { address } = useAccount()
   const [wallet, setWallet] = useState<any>(null)
   const [subgraphResults, setSubgraphResults] = useState<any>(null)
@@ -55,59 +53,6 @@ const TrendingAgents = () => {
     }
   }, [address])
 
-  // Token operations
-  const sendStars = async (to: Address, amount: number) => {
-    if (!wallet || !address) return
-
-    try {
-      const starTokenContract: any = getContractInstance(wallet, 'starToken')
-      const bal = await starTokenContract.read.balanceOf([address])
-
-      if (bal === 0n) {
-        await mintOrimmoTokens()
-      }
-
-      const tx = await starTokenContract.write.transfer([to, amount * 10 ** 18])
-      await publicClient?.waitForTransactionReceipt({ hash: tx })
-    } catch (err) {
-      console.log('error sending stars', err)
-    }
-  }
-
-  const repTokenBalance = async (addressesToCheck: Address[], res: any) => {
-    const contract = {
-      address: contractAddressesObj.starToken,
-      abi: l1abi,
-    }
-
-    const results = await publicClient.multicall({
-      contracts: addressesToCheck.map((x) => ({
-        ...contract,
-        functionName: 'getSenderRatingsListForTarget',
-        args: [x],
-      })) as any[],
-    })
-
-    return results.reduce((acc: Record<Address, number>, x: any, idx: number) => {
-      const ratingScore =
-        x?.result?.[1]?.reduce((sum: number, rating: bigint) => sum + Number(rating), 0) || 0
-      acc[addressesToCheck[idx]] = ratingScore / (x?.result?.[1]?.length || 1) / 1e18
-      return acc
-    }, {})
-  }
-
-  const mintOrimmoTokens = async () => {
-    if (!address || !wallet) return
-
-    try {
-      const orimmoController: any = getContractInstance(wallet, 'orimmoController')
-      const tx = await orimmoController.write.mintFromFaucet([])
-      await publicClient?.waitForTransactionReceipt({ hash: tx })
-    } catch (err) {
-      console.log('mint error', err)
-    }
-  }
-
   // Data fetching
   const getAgents = async () => {
     try {
@@ -123,15 +68,10 @@ const TrendingAgents = () => {
         params: { avatar: 'https', "v3k__featured": 'false' },
       })
 
-      const ratings = await repTokenBalance(
-        entities.map((x: any) => x.address),
-        subgraphResults,
-      )
 
       setAgents(
         entities.map((x: any) => ({
           ...x,
-          rating: ratings[x.address] || 0,
           description: x.description?.slice(0, 50) + (x.description?.length > 50 ? '...' : ''),
         })),
       )
@@ -139,6 +79,13 @@ const TrendingAgents = () => {
       console.error('Error fetching agents:', error)
     }
   }
+
+  useEffect(() => {
+    if (agents.find((x: any) => !x.rating && x.rating === 0) && Object.keys(recipientAverages)?.length > 0) {
+
+      setAgents((a: any) => ([...a.map((x: any) => ({ ...x, rating: recipientAverages["0X" + x.nodehash?.toUpperCase()?.slice(-40)] || 0 }))]))
+    }
+  }, [agents, recipientAverages])
 
   useEffect(() => {
     getAgents()
@@ -154,7 +101,7 @@ const TrendingAgents = () => {
         tokenAddress={agents.map((x: any) => x.address)}
         onResults={setSubgraphResults}
       />
-      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={(addr: Address, val: number) => sendStars(addr, val)} />
+      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={() => null} />
     </>
   )
 }
