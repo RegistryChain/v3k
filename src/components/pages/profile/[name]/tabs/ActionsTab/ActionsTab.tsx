@@ -188,9 +188,11 @@ const ActionsTab = ({
 
       }
     } catch (err: any) {
-      console.log(err.message)
-      setErrorMessage(err.message)
-      return
+      if (err.shortMessage === 'User rejected the request.') return
+      let errMsg = err?.details
+      if (!errMsg) errMsg = err?.shortMessage
+      if (!errMsg) errMsg = err.message
+      setErrorMessage(errMsg)
     }
   }
 
@@ -230,8 +232,11 @@ const ActionsTab = ({
         ])
       }
     } catch (err: any) {
-      console.log(err.message)
-      setErrorMessage(err.message)
+      if (err.shortMessage === 'User rejected the request.') return
+      let errMsg = err?.details
+      if (!errMsg) errMsg = err?.shortMessage
+      if (!errMsg) errMsg = err.message
+      setErrorMessage(errMsg)
     }
   }
 
@@ -258,7 +263,11 @@ const ActionsTab = ({
       console.log('Transaction Hash:', tx)
       return tx
     } catch (err: any) {
-      setErrorMessage(err.message)
+      if (err.shortMessage === 'User rejected the request.') return
+      let errMsg = err?.details
+      if (!errMsg) errMsg = err?.shortMessage
+      if (!errMsg) errMsg = err.message
+      setErrorMessage(errMsg)
     }
   }
 

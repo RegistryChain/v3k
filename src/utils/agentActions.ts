@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { encodeFunctionData, getContract, isAddressEqual, zeroAddress } from 'viem'
+import { encodeFunctionData, getContract, isAddressEqual, zeroAddress, zeroHash } from 'viem'
 import { normalize } from 'viem/ens'
 
 import { namehash } from '@ensdomains/ensjs/utils'
@@ -47,24 +47,29 @@ export async function withdrawFromSafe({
   decimals,
   wallet,
 }: any) {
-  const tokenContract: any = getContract({
-    abi: [
-      {
-        inputs: [
-          { internalType: 'address', name: 'tokenAddress', type: 'address' },
-          { internalType: 'uint256', name: 'value', type: 'uint256' },
-        ],
-        name: 'withdrawERC20',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-      },
-    ],
-    address: generatedSafe,
-    client: wallet,
-  })
+  try {
+    const tokenContract: any = getContract({
+      abi: [
+        {
+          inputs: [
+            { internalType: 'address', name: 'tokenAddress', type: 'address' },
+            { internalType: 'uint256', name: 'value', type: 'uint256' },
+          ],
+          name: 'withdrawERC20',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ],
+      address: generatedSafe,
+      client: wallet,
+    })
 
-  return await tokenContract.write.withdrawERC20([tokenAddress, balance * 10 ** decimals])
+    return await tokenContract.write.withdrawERC20([tokenAddress, balance * 10 ** decimals])
+  } catch (err) {
+    console.log(err.message)
+    return zeroHash
+  }
 }
 
 export async function deploySafeMultisig({

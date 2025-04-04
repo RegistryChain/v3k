@@ -19,9 +19,7 @@ import { sepolia, baseSepolia, bsc } from 'viem/chains'
 import { CheckmarkSymbol } from '@app/components/CheckmarkSymbol'
 
 import { normalise } from '@ensdomains/ensjs/utils'
-import { Spinner, Typography } from '@ensdomains/thorin'
-import StarIcon from '@mui/icons-material/Star';
-import StarHalfIcon from '@mui/icons-material/StarHalf';
+import { Spinner, Tooltip, Typography } from '@ensdomains/thorin'
 
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { ModalContext } from '@app/layouts/Basic'
@@ -29,15 +27,15 @@ import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
-import { useGetRating } from '@app/hooks/useGetRating'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
 import { useEnsHistory } from '@app/hooks/useEnsHistory'
-import { Outlink } from '@app/components/Outlink'
-import { Card } from '@app/components/Card'
 import { HistoryBox } from '@app/components/HistoryBox'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import l1abi from '../../../../constants/l1abi.json'
+import { useVerificationStatus } from '@app/hooks/useVerificationStatus'
+import Coinbase from '../../../../assets/Coinbase.svg'
+
 
 
 const VideoContainer = styled.div`
@@ -182,8 +180,11 @@ const ProfileContent = ({
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const { history, fetchEnsHistory } = useEnsHistory()
-  const [verification, setVerification] = useState<string | undefined>()
+  const [verifications, setVerifications] = useState<string[]>([])
   const ref = useRef<HTMLDivElement>(null)
+
+  const { getVerificationStatus } = useVerificationStatus()
+
 
   const primary = usePrimaryName({ address: owner })
 
@@ -224,24 +225,6 @@ const ProfileContent = ({
     setAgentModalPrepopulate(recordsToPopulate)
     setIsModalOpen(true)
   }
-  const checkAddressVerification = async (_ownerAddress: string) => {
-
-    const coinbaseContract = getContract({
-      address: contractAddresses.BaseSepoliaCoinbaseIndexer as Address,
-      abi: parseAbi(['function getAttestationUid(address,bytes32) view returns (bytes32)']),
-      client: basePublicClient,
-    })
-
-    const binanceContract = getContract({
-      address: contractAddresses.BinanceMainnetContract as Address,
-      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
-      client: binancePublicClient,
-    })
-    const verification = await getVerificationStatus(coinbaseContract, binanceContract, _ownerAddress)
-
-    setVerification(verification)
-    console.log("verification " + verification)
-  }
 
   const checkOwnerIsMultisig = async () => {
     try {
@@ -264,6 +247,16 @@ const ProfileContent = ({
     }
   }
 
+  const getVerifications = async () => {
+    const vers = await getVerificationStatus(owner)
+    setVerifications(vers)
+  }
+
+  useEffect(() => {
+    if (isAddress(owner) && owner !== zeroAddress) {
+      getVerifications()
+    }
+  }, [owner])
 
   useEffect(() => {
     if (onChainOwner) {
@@ -333,13 +326,11 @@ const ProfileContent = ({
       //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
       //   const fields = await useConvertFlatResolverToFull(records)
       // }
-      checkAddressVerification(records.owner)
       if (
         isAddress(records?.owner) &&
         records?.owner !== zeroAddress &&
         (!owner || owner === zeroAddress)
       ) {
-        checkAddressVerification(records.owner)
         setOwner(records.owner)
       }
 
@@ -371,62 +362,6 @@ const ProfileContent = ({
         console.log(e)
       }
     }
-  }
-
-
-
-
-
-  const getVerificationStatus = async (coinbaseIndexerContract: any, binanceContract: any, _ownerAddress: string): Promise<string> => {
-    // _ownerAddress = "0xa4d5877767a2221f22f6d15254a0e951f1c40a7d"
-    console.log("ownerAddress" + _ownerAddress)
-    // Check GitCoin Passport
-
-    // const passportResponse = await fetch(`https://api.passport.xyz/v2/stamps/${process.env.NEXT_PUBLIC_SCORE_ID_API_KEY}/score/${_ownerAddress}`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'X-API-KEY': process.env.NEXT_PUBLIC_PASSPORT_API_KEY,
-    //   },
-    // })
-
-    // const passportData = await passportResponse.json()
-    const isGitcoinVerified = false
-    //'0.00000' !== '0.00000'
-
-    let attestationUid = zeroAddress
-    try {
-      attestationUid = await coinbaseIndexerContract.read.getAttestationUid([_ownerAddress as Address, contractAddresses.BaseSepoliaCoinbaseAccountVerifiedSchema])
-    } catch (e) {
-      console.log(e)
-    }
-    const isCoinbaseVerified = BigInt(attestationUid) !== 0n
-
-    let balance = 0
-    try {
-      balance = await binanceContract.read.balanceOf([_ownerAddress as Address])
-    } catch (e) {
-      console.log(e)
-    }
-    const isBinanceVerified = balance !== 0
-
-    // Construct verification status
-    const statuses: string[] = []
-
-    if (isGitcoinVerified) {
-      statuses.push('GitCoin Passport')
-    }
-    if (isCoinbaseVerified) {
-      statuses.push('Coinbase')
-    }
-    if (isBinanceVerified) {
-      statuses.push('Binance')
-    }
-
-    if (statuses.length === 0) {
-      return 'not verified'
-    }
-
-    return `verified on ${statuses.join(', ')}`
   }
 
   useProtectedRoute(
@@ -631,7 +566,7 @@ const ProfileContent = ({
                       <dt>
                         <Typography weight='bold'>Developer</Typography>
                       </dt>
-                      <dd>
+                      <dd style={{ display: "flex" }}>
                         {/* if owner has no primary, use addr and etherscan */}
                         {/* if owner has primary, link to dev profile and show */}
                         {primary?.data?.name ? (
@@ -647,6 +582,8 @@ const ProfileContent = ({
                             {truncateEthAddress(owner)}
                           </Link>
                         )}
+                        {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><Coinbase height={20} width={20} /></Tooltip></div> : null}
+
                       </dd>
                     </Box>
                   </dl>
@@ -765,7 +702,6 @@ const ProfileContent = ({
                       <Typography weight='bold'>Owner address</Typography>
                     </Box>
                     <Box display={'flex'} gap={0.5}>
-                      {verification !== 'not verified' ? <CheckmarkSymbol tooltipText={verification} /> : null}
                       <Typography>
                         {owner}
                       </Typography>

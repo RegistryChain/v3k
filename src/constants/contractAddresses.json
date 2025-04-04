@@ -13,9 +13,9 @@
   "ai.entity.id": "0xc5de3f2da8f635e743a57c572d420837d32446cd",
   "starToken": "0x7e6671dbaf5e54f01c6da871addbc3595e325fdd",
   "orimmoController": "0xe084bc03c99a41172a02cd7b4549fc39ccdf5806",
-  "BaseSepoliaCoinbaseIndexer": "0xd147a19c3B085Fb9B0c15D2EAAFC6CB086ea849B",
-  "BaseSepoliaCoinbaseAttester": "0xB5644397a9733f86Cacd928478B29b4cD6041C45",
-  "BaseSepoliaCoinbaseAccountVerifiedSchema": "0x2f34a2ffe5f87b2f45fbc7c784896b768d77261e2f24f77341ae43751c765a69",
+
+  "BaseCoinbaseIndexer": "0x2c7eE1E5f416dfF40054c27A62f7B357C4E8619C",
+  "BaseCoinbaseAccountVerifiedSchema": "0xF8B05C79F090979BF4A80270ABA232DFF11A10D9CA55C4F88DE95317970F0DE9",
   "BinanceMainnetContract": "0x2B09d47D550061f995A3b5C6F0Fd58005215D7c8",
   "SepoliaSafeFactory": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
   "SepoliaFallbackHandler": "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804",

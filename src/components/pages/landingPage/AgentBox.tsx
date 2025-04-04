@@ -23,15 +23,16 @@ export const AgentBox = ({
   index,
   rowHeight,
   imageUrl,
-  agentName,
-  agentDesc,
+  agentName = "",
+  agentDesc = "",
   agentDomain,
-  rating,
-  location,
+  rating = 0,
+  location = "",
   isPlaceholder,
   connectedIsAdmin,
   moderateEntity
 }: any) => {
+  console.log(typeof location, location)
   const router = useRouterWithHistory()
   const [imgSrcValid, setImgSrcValid] = useState(true)
   const agentContent = <Box onClick={() => router.push('/agent/' + agentDomain)} style={{ width: "100%", backgroundColor: hidden ? "#ff000047" : "" }} isPlaceholder={isPlaceholder} >

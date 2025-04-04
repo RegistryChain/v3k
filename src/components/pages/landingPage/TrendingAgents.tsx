@@ -1,16 +1,15 @@
-// pages/TrendingAgents.tsx
 import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { Address } from 'viem'
 import { useAccount } from 'wagmi'
 
-import { mq } from '@ensdomains/thorin'
+import { mq, Button, Spinner } from '@ensdomains/thorin'
 
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
 import SubgraphResults from '@app/components/SubgraphQuery'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
-import { getContractInstance, getPublicClient, getWalletClient } from '@app/utils/utils'
-
+import { getWalletClient, getPublicClient } from '@app/utils/utils'
+import { ErrorModal } from '@app/components/ErrorModal'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -19,7 +18,6 @@ const GradientTitle = styled.h1(
     font-weight: 800;
     margin: 0;
     color: ${theme.colors.accent};
-
     ${mq.sm.min(css`
       font-size: ${theme.fontSizes.headingOne};
     `)}
@@ -35,14 +33,30 @@ const SubtitleWrapper = styled.div(
   `,
 )
 
+const EmptyState = styled.div`
+  text-align: center;
+  margin-top: 2rem;
+  color: #665;
+`
+
+const RetryButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+`
+
 const TrendingAgents = ({ recipientAverages }: any) => {
   const [agents, setAgents] = useState<any>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
   const { address } = useAccount()
   const [wallet, setWallet] = useState<any>(null)
   const [subgraphResults, setSubgraphResults] = useState<any>(null)
+  const breakpoints = useBreakpoint()
   const publicClient = useMemo(() => getPublicClient(), [])
 
-  // Wallet initialization
+  // Wallet init
   useEffect(() => {
     if (address && !wallet) {
       try {
@@ -53,10 +67,11 @@ const TrendingAgents = ({ recipientAverages }: any) => {
     }
   }, [address])
 
-  // Data fetching
+  // Data fetch
   const getAgents = async () => {
+    setLoading(true)
+    setErrorMessage(null)
     try {
-      // We only want agents with an imageURL, a name, a twitter
       const entities = await getEntitiesList({
         registrar: 'ai',
         nameSubstring: '',
@@ -68,22 +83,31 @@ const TrendingAgents = ({ recipientAverages }: any) => {
         params: { avatar: 'https', "v3k__featured": 'false' },
       })
 
-
       setAgents(
         entities.map((x: any) => ({
           ...x,
-          description: x.description?.slice(0, 50) + (x.description?.length > 50 ? '...' : ''),
+          description: x?.description?.slice(0, 50) || "" + (x.description?.length > 50 ? '...' : ''),
         })),
       )
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching agents:', error)
+      setErrorMessage('There was a problem loading the agent list. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (agents.find((x: any) => !x.rating && x.rating === 0) && Object.keys(recipientAverages)?.length > 0) {
-
-      setAgents((a: any) => ([...a.map((x: any) => ({ ...x, rating: recipientAverages["0X" + x.nodehash?.toUpperCase()?.slice(-40)] || 0 }))]))
+    if (
+      agents.find((x: any) => !x.rating && x.rating === 0) &&
+      Object.keys(recipientAverages)?.length > 0
+    ) {
+      setAgents((a: any) =>
+        a.map((x: any) => ({
+          ...x,
+          rating: recipientAverages['0X' + x.nodehash?.toUpperCase()?.slice(-40)] || 0,
+        })),
+      )
     }
   }, [agents, recipientAverages])
 
@@ -94,14 +118,41 @@ const TrendingAgents = ({ recipientAverages }: any) => {
   return (
     <>
       <GradientTitle>Trending Agents</GradientTitle>
-
       <SubtitleWrapper />
 
-      <SubgraphResults
-        tokenAddress={agents.map((x: any) => x.address)}
-        onResults={setSubgraphResults}
-      />
-      <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={() => null} />
+      {errorMessage && (
+        <>
+          <ErrorModal
+            errorMessage={errorMessage}
+            setErrorMessage={setErrorMessage}
+            breakpoints={breakpoints}
+          />
+          <RetryButtonWrapper>
+            <Button onClick={getAgents} size="small">Retry</Button>
+          </RetryButtonWrapper>
+        </>
+      )}
+
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Spinner color="accent" size="large" />
+        </div>
+      ) : (
+        <>
+          {agents.length === 0 && !errorMessage && (
+            <EmptyState>No agents found. Please check back later.</EmptyState>
+          )}
+          {agents.length > 0 && (
+            <>
+              <SubgraphResults
+                tokenAddress={agents.map((x: any) => x.address)}
+                onResults={setSubgraphResults}
+              />
+              <AgentGrid connectedIsAdmin={false} boxes={agents} onRate={() => null} />
+            </>
+          )}
+        </>
+      )}
     </>
   )
 }

@@ -21,11 +21,11 @@ export default function StarRating({ rating, onRate }: any) {
       style={{
         fontSize: '16px',
         margin: '3px 2px',
-        color: 'yellow',
+        color: rating > 0 ? 'yellow' : "grey",
         transition: 'color 0.2s ease, transform 0.2s ease',
       }}
     />
-    <span style={{ fontSize: '15px' }}>{rating?.toFixed(2)}</span>
+    <span style={{ fontSize: '15px' }}>{rating > 0 ? rating?.toFixed(2) : "0.00"}</span>
   </div>
 
   return (

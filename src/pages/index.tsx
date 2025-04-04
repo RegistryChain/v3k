@@ -166,11 +166,6 @@ export default function Page() {
         <Stack>
           <FeaturedAgents recipientAverages={recipientAverages} />
           <TrendingAgents recipientAverages={recipientAverages} />
-          <AddAgentButton
-            onClick={() => setIsModalOpen(true)}
-          >
-            Add Agent
-          </AddAgentButton>
         </Stack>
       </Container>
     </>

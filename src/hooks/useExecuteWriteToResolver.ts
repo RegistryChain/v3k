@@ -73,12 +73,16 @@ export async function resolverCallback(
     args: [...callbackData.args, resBytes, req],
     ...callbackData,
   })
-  const tx = await callbackContract.write[callbackData.functionName]([
-    ...callbackData.args,
-    resBytes,
-    req,
-  ])
-  return tx.hash
+  try {
+    const tx = await callbackContract.write[callbackData.functionName]([
+      ...callbackData.args,
+      resBytes,
+      req,
+    ])
+    return tx.hash
+  } catch (err) {
+    return zeroHash
+  }
 }
 
 export function getRevertErrorData(err: unknown) {
@@ -357,7 +361,7 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
   }, [publicClient, entityid])
 
   const fetchRecordData = useCallback(async () => {
-    if (!entityid) return
+    if (!entityid || !resolverAddress) return
 
     setLoading(true)
     setError(null)

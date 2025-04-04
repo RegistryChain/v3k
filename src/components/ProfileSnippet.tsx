@@ -220,7 +220,7 @@ export const ProfileSnippet = ({
               {/* {statusSection} */}
 
               <StarRating
-                rating={recipientAverages["0x" + namehash(domainName as string).slice(-40)]}
+                rating={recipientAverages["0X" + namehash(domainName as string)?.toUpperCase()?.slice(-40)]}
                 onRate={(val: any) => sendRating(val)}
               />
 

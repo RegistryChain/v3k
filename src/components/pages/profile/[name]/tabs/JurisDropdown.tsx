@@ -29,7 +29,7 @@ import { normalizeLabel } from '@app/utils/utils'
 import contractAddresses from '../../../../../constants/contractAddresses.json'
 import entityTypesObj from '../../../../../constants/entityTypes.json'
 import l1abi from '../../../../../constants/l1abi.json'
-import RegistryChainLogoFull from '../assets/RegistryChainLogoFull.svg'
+import { ErrorModal } from '@app/components/ErrorModal'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -112,6 +112,7 @@ const tld = '.entity.id'
 export default function JurisDropdown({ domain, setErrorMessage, partners, wallet }: any) {
   const { t } = useTranslation('common')
   const router = useRouterWithHistory()
+  const [errorMessage, setLocalErrorMessage] = useState<string>('')
 
   const publicClient = createPublicClient({
     chain: sepolia,
@@ -189,7 +190,7 @@ export default function JurisDropdown({ domain, setErrorMessage, partners, walle
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.message)
+      handleError(err)
     }
   }
 
@@ -272,8 +273,22 @@ export default function JurisDropdown({ domain, setErrorMessage, partners, walle
     )
   }
 
+  const handleError = (err: any) => {
+    if (err.shortMessage === 'User rejected the request.') return
+    let errMsg = err?.details
+    if (!errMsg) errMsg = err?.shortMessage
+    if (!errMsg) errMsg = err.message
+    setLocalErrorMessage(errMsg)
+    setErrorMessage(errMsg)
+  }
+
   return (
     <>
+      <ErrorModal
+        errorMessage={errorMessage || ''}
+        setErrorMessage={setLocalErrorMessage}
+        breakpoints={breakpoints}
+      />
       <Container>
         <Stack>
           <div style={{ width: '100%', padding: '0 48px' }}>

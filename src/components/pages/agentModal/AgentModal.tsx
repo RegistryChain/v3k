@@ -46,6 +46,8 @@ import {
 import { FormInput } from './FormInput'
 import { CustomizedSteppers } from './Stepper'
 import { Tooltip } from '@ensdomains/thorin'
+import { ErrorModal } from '@app/components/ErrorModal'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 type FormState = {
   name: string
@@ -223,6 +225,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const { openConnectModal } = useConnectModal()
   const modalRef = useRef(null)
   const [actionStep, setActionStep] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const breakpoints = useBreakpoint()
 
   // Complete form state
   const originalForm: FormState = {
@@ -388,8 +392,12 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       try {
         const contract: any = getContract({ client: wallet, ...formationPrep })
         await contract.write?.[formationPrep.functionName]([...formationPrep.args])
-      } catch (err) {
-        console.log(err)
+      } catch (err: any) {
+        if (err.shortMessage === 'User rejected the request.') return
+        let errMsg = err?.details
+        if (!errMsg) errMsg = err?.shortMessage 
+        if (!errMsg) errMsg = err.message
+        setErrorMessage(errMsg)
       }
     }
 
@@ -403,8 +411,10 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
     try {
       await uploadFile()
-    } catch (err) {
-      console.log(err, 'error in submitting agent data, uploading ipfs image')
+    } catch (err: any) {
+      let errMsg = err?.details || err?.shortMessage || err.message
+      setErrorMessage(errMsg)
+      return
     }
 
     const entityRegistrarDomain = `${formState.name}.ai.${tld}`
@@ -533,6 +543,11 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
   return (
     <Overlay>
+      <ErrorModal
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        breakpoints={breakpoints}
+      />
       <ModalContent ref={modalRef} isExpanded={false}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <h2

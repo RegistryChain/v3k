@@ -32,8 +32,8 @@ const NameItemWrapper = styled.div<{ $highlight: boolean; $disabled: boolean }>(
     cursor: ${$disabled ? 'not-allowed' : 'pointer'};
     &:hover {
       background: ${$highlight
-        ? theme.colors.backgroundSecondary
-        : theme.colors.backgroundSecondary};
+      ? theme.colors.backgroundSecondary
+      : theme.colors.backgroundSecondary};
     }
     &:last-of-type {
       border: none;

@@ -12,6 +12,7 @@ import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
 
 import { Navigation } from './Navigation'
+import Link from 'next/link'
 
 const Container = styled.div(
   ({ theme }) => css`
@@ -112,7 +113,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [agentModalPrepopulate, setAgentModalPrepopulate] = useState({})
 
-  const darkthemeRoutes = ["/about"]
+  const darkthemeRoutes = ["/about", '/faq', '/instructions']
   const containerStyle: any = {}
 
   if (darkthemeRoutes.includes(router.pathname)) {
@@ -139,17 +140,29 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
         <BottomPlaceholder>
-          <Typography
+          <div
             style={{
-              textAlign: 'right',
-              fontWeight: '700',
-              color: 'rgb(115 111 111)',
-              fontSize: '16px',
-              fontStyle: 'italic',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0 1rem',
             }}
           >
-            Powered by RegistryChain Universal Entity.ID
-          </Typography>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <Link href="/about" style={{ color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)", textDecoration: 'none' }}>About</Link>
+              <Link href="/faq" style={{ color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)", textDecoration: 'none' }}>FAQ</Link>
+            </div>
+            <Typography
+              style={{
+                fontWeight: '700',
+                color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)",
+                fontSize: '16px',
+                fontStyle: 'italic',
+              }}
+            >
+              Powered by RegistryChain Universal Entity.ID
+            </Typography>
+          </div>
         </BottomPlaceholder>
       </Container>
     </ModalContext.Provider>

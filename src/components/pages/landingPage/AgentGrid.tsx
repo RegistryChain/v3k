@@ -28,8 +28,8 @@ export const AgentGrid = ({ rowHeight = 120, connectedIsAdmin = false, moderateE
               agentDesc={
                 box.description ? (box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')) : ""
               }
-              location={box.location}
-              rating={box.rating}
+              location={box?.location || ""}
+              rating={box.rating || 0}
               isPlaceholder={box.isPlaceholder}
               connectedIsAdmin={connectedIsAdmin}
               moderateEntity={moderateEntity}
