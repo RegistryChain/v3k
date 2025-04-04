@@ -2,9 +2,8 @@ import { useRouter } from 'next/router'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { http, useAccount } from 'wagmi'
-
-import { DevSection } from '@app/components/pages/profile/settings/DevSection'
-import { TransactionSection } from '@app/components/pages/profile/settings/TransactionSection/TransactionSection'
+import { isAddress, zeroAddress } from 'viem'
+import { useEffect, useMemo, useState } from 'react'
 import { useSubgraphMeta } from '@app/hooks/ensjs/subgraph/useSubgraphMeta'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
 import { Content } from '@app/layouts/Content'
@@ -16,8 +15,7 @@ import { useRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { sepolia } from 'viem/chains'
-import { createPublicClient, isAddress, namehash, zeroAddress } from 'viem'
-import { useEffect, useMemo, useState } from 'react'
+import { createPublicClient, namehash } from 'viem'
 import { HistoryBox } from '@app/components/HistoryBox'
 import { checkOwner } from '@app/hooks/useCheckOwner'
 import { LoadingContainer, SpinnerRow } from '@app/components/@molecules/ScrollBoxWithSpinner'
@@ -88,6 +86,7 @@ export default function Page() {
     const isLoading = !router.isReady || isConnecting || isReconnecting || subgraphMeta.isLoading
 
     useProtectedRoute('/', isLoading ? true : address)
+
     return (
         <Content singleColumnContent title={t('title')}>
             {{

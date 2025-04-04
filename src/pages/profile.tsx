@@ -9,7 +9,6 @@ import { ErrorModal } from '@app/components/ErrorModal'
 import ProfileContent from '@app/components/pages/profile/[name]/Profile'
 import {
   executeWriteToResolver,
-  getRecordData,
   getResolverAddress,
   useRecordData,
 } from '@app/hooks/useExecuteWriteToResolver'

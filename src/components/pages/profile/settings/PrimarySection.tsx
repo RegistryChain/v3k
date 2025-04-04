@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 
-import { Button, Card, CrossSVG, mq, PersonPlusSVG, Skeleton, Typography } from '@ensdomains/thorin'
+import { Button, Card, CrossSVG, mq, PersonPlusSVG, Skeleton, Tooltip, Typography } from '@ensdomains/thorin'
 
 import { AvatarWithLink } from '@app/components/@molecules/AvatarWithLink/AvatarWithLink'
 import { DisabledButtonWithTooltip } from '@app/components/@molecules/DisabledButtonWithTooltip'
@@ -9,10 +9,13 @@ import { useAccountSafely } from '@app/hooks/account/useAccountSafely'
 import { useBasicName } from '@app/hooks/useBasicName'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 import { useHasGraphError } from '@app/utils/SyncProvider/SyncProvider'
-import { useEffect, useMemo } from 'react'
 import { useGetRating } from '@app/hooks/useGetRating'
-import StarIcon from '@mui/icons-material/Star';
-import StarHalfIcon from '@mui/icons-material/StarHalf';
+import StarRating from '@app/components/StarRating'
+import Coinbase from '../../../../assets/Coinbase.svg'
+
+import { useEffect, useState } from 'react'
+import { isAddress, zeroAddress } from 'viem'
+import { useVerificationStatus } from '@app/hooks/useVerificationStatus'
 
 const SkeletonFiller = styled.div(
   ({ theme }) => css`
@@ -139,7 +142,10 @@ export const PrimarySection = ({ address, primary, record }: any) => {
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const showResetPrimaryNameInput = usePreparedDataInput('ResetPrimaryName')
-  const { recipientAverages } = useGetRating(record.nodehash)
+  const [verifications, setVerifications] = useState<any>([])
+  const { getVerificationStatus } = useVerificationStatus()
+
+  const { recipientAverages } = useGetRating(record?.nodehash || null)
 
 
   const { truncatedName, isLoading: basicLoading } = useBasicName({
@@ -165,6 +171,16 @@ export const PrimarySection = ({ address, primary, record }: any) => {
     })
   }
 
+  const getVerifications = async () => {
+    const vers = await getVerificationStatus(address)
+    setVerifications(vers)
+  }
+
+  useEffect(() => {
+    if (isAddress(address) && address !== zeroAddress) {
+      getVerifications()
+    }
+  }, [address])
 
   return (
     <Skeleton loading={isLoading} as={SkeletonFiller as any}>
@@ -181,6 +197,10 @@ export const PrimarySection = ({ address, primary, record }: any) => {
               <Typography fontVariant="body">
                 {(record?.description || "")}
               </Typography>
+              <StarRating
+                rating={recipientAverages["0X" + record?.nodehash?.toUpperCase()?.slice(-40)]}
+                onRate={() => null}
+              />
             </PrimaryNameInfo>
             <AvatarContainer>
               <AvatarWithLink name={primary.data?.name} label="primary name avatar" />
@@ -253,8 +273,9 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                   <dt>
                     <Typography weight='bold'>Address:</Typography>
                   </dt>
-                  <dd>
+                  <dd style={{ height: "24px", display: "flex" }}>
                     <a href={"https://etherscan.io/address/" + record.address} >{record.address}</a>
+                    {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><Coinbase height={20} width={20} /></Tooltip></div> : null}
                   </dd>
                 </div>
                 <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
@@ -280,19 +301,6 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                   </dt>
                   <dd>
                     {record.location}
-                  </dd>
-                </div>
-                <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>
-                  <dt>
-                    <Typography weight='bold'>Rating:</Typography>
-                  </dt>
-                  <dd style={{ display: 'flex', alignItems: 'center' }}>
-                    {recipientAverages['0x' + record.nodehash(-40)].toFixed(2)}&nbsp;
-                    {
-                      recipientAverages['0x' + record.nodehash(-40)] > 4 ? (<StarIcon style={{ fontSize: '15px' }} />) : (
-                        <StarHalfIcon style={{ fontSize: '15px' }} />
-                      )
-                    }
                   </dd>
                 </div>
               </dl>

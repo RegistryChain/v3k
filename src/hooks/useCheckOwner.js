@@ -1,3 +1,5 @@
+import { zeroAddress } from 'viem'
+
 import contractAddressesObj from '../constants/contractAddresses.json'
 
 export const checkOwner = async (client, nodehash) => {
@@ -27,8 +29,12 @@ export const checkOwner = async (client, nodehash) => {
     ],
     args: [nodehash],
   }
-  const onchainOwner = await client.readContract(readData)
-
-  console.log(onchainOwner)
-  return onchainOwner
+  try {
+    const onchainOwner = await client.readContract(readData)
+    console.log(onchainOwner)
+    return onchainOwner
+  } catch (err) {
+    console.log(err.message)
+    return zeroAddress
+  }
 }
