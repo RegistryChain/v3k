@@ -5,6 +5,7 @@ import { sepolia } from 'viem/chains'
 
 import { createEnsPublicClient } from '@ensdomains/ensjs'
 import { Name } from '@ensdomains/ensjs/subgraph'
+import { mq, Spinner, Button } from '@ensdomains/thorin'
 
 import { DirectoryTable } from '@app/components/@molecules/DirectoryTable/DirectoryTable'
 import {
@@ -143,7 +144,7 @@ export const SubnameListView = ({ address }: any) => {
     const delayDebounceFn = setTimeout(() => {
       setPageNumber(0)
       getSubs(0, true)
-    }, 1000) // 1000ms = 1 second
+    }, 600) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
   }, [searchInput, registrar, sortType, sortDirection, selectedStatus])
@@ -188,17 +189,20 @@ export const SubnameListView = ({ address }: any) => {
         setSelectedStatus={setSelectedStatus}
         connectedIsAdmin={connectedIsAdmin}
       />
-      <DirectoryTable
-        sortDirection={sortDirection}
-        onSortDirectionChange={setSortDirection}
-        data={filteredSet}
-        isLoadingNextPage={isLoadingNextPage}
-        fetchData={getSubs}
-        page={pageNumber}
-        setPage={setPageNumber}
-        connectedIsAdmin={connectedIsAdmin}
-        moderateEntity={moderateEntity}
-      />
+      {isLoadingNextPage ? <div style={{ display: 'flex', justifyContent: 'center', marginTop: "18px" }}>
+        <Spinner color="accent" size="large" />
+      </div> :
+        <DirectoryTable
+          sortDirection={sortDirection}
+          onSortDirectionChange={setSortDirection}
+          data={filteredSet}
+          isLoadingNextPage={isLoadingNextPage}
+          fetchData={getSubs}
+          page={pageNumber}
+          setPage={setPageNumber}
+          connectedIsAdmin={connectedIsAdmin}
+          moderateEntity={moderateEntity}
+        />}
     </TabWrapperWithButtons>
   )
 }

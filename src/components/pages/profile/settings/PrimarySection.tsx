@@ -236,17 +236,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
           <NoNameContainer data-testid="no-primary-name-section">
             <NoNameTitle fontVariant="headingFour">{t('section.primary.title')}</NoNameTitle>
             {hasGraphError ? (
-              <NoNameDisabledButtonContainer>
-                <DisabledButtonWithTooltip
-                  buttonId="disabled-set-primary-name-button"
-                  buttonText={t('section.primary.choosePrimaryName')}
-                  size="small"
-                  content={t('errors.networkError.blurb', { ns: 'common' })}
-                  prefix={<PersonPlusSVG />}
-                  mobilePlacement="top"
-                  loading={hasGraphErrorLoading}
-                />
-              </NoNameDisabledButtonContainer>
+              null
             ) : (
               <>
                 <NoNameButton

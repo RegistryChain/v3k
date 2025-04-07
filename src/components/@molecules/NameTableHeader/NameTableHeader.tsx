@@ -228,21 +228,7 @@ export const NameTableHeader = ({
       </TableHeaderTrailing>
 
       <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
-        {registrar ? (
-          <><Label>Sort by registrar type</Label>
-            <Select
-              value={registrar}
-              size="small"
-              label="Sort by"
-              hideLabel
-              placeholder={t('action.sort')}
-              onChange={(e) => {
-                onRegistrarChange?.(e.target.value as any)
-              }}
-              options={registrarOptions}
-              id="sort-by"
-            /></>
-        ) : null}
+
         <SearchInput
           data-testid="name-table-header-search"
           size="small"

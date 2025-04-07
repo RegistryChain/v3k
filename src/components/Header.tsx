@@ -15,7 +15,6 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 import v3kLogo from '../assets/v3k_logo.png'
 import { RouteItem } from './@atoms/RouteItem/RouteItem'
-import Hamburger from './@molecules/Hamburger/Hamburger'
 import { HeaderConnect } from './ConnectButton'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 
@@ -303,7 +302,6 @@ export const Header = () => {
             </AddAgentButton>
           </RouteContainer>
         </RouteWrapper>
-        <Hamburger />
         <HeaderConnect />
       </NavContainer>
     </HeaderWrapper>
