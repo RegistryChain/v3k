@@ -188,6 +188,25 @@ export async function getEntitiesList({
   }
 }
 
+export async function handleEmail({ email, address }: any) {
+  try {
+    const res = await fetch(
+      process.env.NEXT_PUBLIC_RESOLVER_URL +
+        `/direct/handleEmail/email=${email}&address=${address}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    const entitiesList = await res.json()
+    return entitiesList.data.sucess
+  } catch (err) {
+    return false
+  }
+}
+
 export async function getTransactions({ nodehash = zeroHash, address }: any) {
   try {
     const res = await fetch(
@@ -237,28 +256,32 @@ export async function handleDBStorage({
 }) {
   domain.chainId += ''
   message.expirationTimestamp += ''
-  const signature = await wallet.signTypedData({
-    account: wallet.account?.address as any,
-    domain,
-    message,
-    types: {
-      Message: [
-        { name: 'callData', type: 'bytes' },
-        { name: 'sender', type: 'address' },
-        { name: 'expirationTimestamp', type: 'uint256' },
-      ],
-    },
-    primaryType: 'Message',
-  })
-  const requestResponse = await ccipRequest({
-    body: {
-      data: message.callData,
-      signature: { message, domain, signature },
-      sender: message.sender,
-    },
-    url,
-  })
-  return requestResponse
+  try {
+    const signature = await wallet.signTypedData({
+      account: wallet.account?.address as any,
+      domain,
+      message,
+      types: {
+        Message: [
+          { name: 'callData', type: 'bytes' },
+          { name: 'sender', type: 'address' },
+          { name: 'expirationTimestamp', type: 'uint256' },
+        ],
+      },
+      primaryType: 'Message',
+    })
+    const requestResponse = await ccipRequest({
+      body: {
+        data: message.callData,
+        signature: { message, domain, signature },
+        sender: message.sender,
+      },
+      url,
+    })
+    return requestResponse
+  } catch (err) {
+    console.log('DB handler error', err)
+  }
 }
 
 export async function readResolverData(resolverAddress: any, client: any, nodehash: any) {

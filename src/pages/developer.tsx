@@ -11,7 +11,7 @@ import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
 import { PrimarySection } from '@app/components/pages/profile/settings/PrimarySection'
 import DeveloperAgents from '@app/components/pages/profile/settings/DeveloperAgents'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
-import { useRecordData } from '@app/hooks/useExecuteWriteToResolver'
+import { handleEmail, useRecordData } from '@app/hooks/useExecuteWriteToResolver'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { infuraUrl } from '@app/utils/query/wagmi'
 import { sepolia } from 'viem/chains'
@@ -20,6 +20,7 @@ import { HistoryBox } from '@app/components/HistoryBox'
 import { checkOwner } from '@app/hooks/useCheckOwner'
 import { LoadingContainer, SpinnerRow } from '@app/components/@molecules/ScrollBoxWithSpinner'
 import { Heading } from '@ensdomains/thorin'
+import EmailModal from '@app/components/pages/profile/EmailModal'
 
 const OtherWrapper = styled.div(
     ({ theme }) => css`
@@ -37,6 +38,9 @@ export default function Page() {
     const { t } = useTranslation('developer')
     const { address, isConnecting, isReconnecting } = useAccount()
     const [owner, setOwner] = useState<any>(zeroAddress)
+    const [showEmailModal, setShowEmailModal] = useState(false)
+    const EMAIL_SUBMITTED_KEY = 'v3k_user_email_submitted'
+
     const router = useRouterWithHistory()
 
     const publicClient: any = useMemo(
@@ -87,24 +91,59 @@ export default function Page() {
 
     useProtectedRoute('/', isLoading ? true : address)
 
+    useEffect(() => {
+        const hasSubmittedEmail = localStorage.getItem(EMAIL_SUBMITTED_KEY)
+        const hasSubmittedEmailConnectedAddress = localStorage.getItem(EMAIL_SUBMITTED_KEY + '-' + address)
+
+        if (!hasSubmittedEmail) {
+            setShowEmailModal(true)
+        }
+
+        if (hasSubmittedEmail && !hasSubmittedEmailConnectedAddress) {
+            pushEmailToList(hasSubmittedEmail)
+        }
+    }, [address])
+
+    const pushEmailToList = async (email: any) => {
+        // Send email and connected account to DB
+        localStorage.setItem(EMAIL_SUBMITTED_KEY + '-' + address, email)
+        // direct/handleEmail/email=michaeltest@gmail.com&address=0x456.json
+        await handleEmail({ email, address })
+
+    }
+
+
     return (
-        <Content singleColumnContent title={t('title')}>
-            {{
-                trailing: (
-                    <OtherWrapper>
-                        {isAddress(owner) && owner !== zeroAddress ? <>
-                            <PrimarySection address={owner} record={record} primary={primary} />
-                            <DeveloperAgents address={owner} record={record} />
-                            <HistoryBox record={record} />
-                        </> :
-                            <LoadingContainer>
-                                <Heading>{t('loading', { ns: 'common' })}</Heading>
-                                <SpinnerRow />
-                            </LoadingContainer>
-                        }
-                    </OtherWrapper>
-                ),
-            }}
-        </Content>
+        <>
+            <EmailModal
+                isOpen={showEmailModal && isAddress(address as any) && address !== zeroAddress}
+                onClose={() => setShowEmailModal(false)}
+                onSubmit={(email) => {
+                    localStorage.setItem(EMAIL_SUBMITTED_KEY, email)
+
+                    pushEmailToList(email)
+                    setShowEmailModal(false)
+                }}
+            />
+            <Content singleColumnContent title={t('title')}>
+
+                {{
+                    trailing: (
+                        <OtherWrapper>
+                            {isAddress(owner) && owner !== zeroAddress ? <>
+                                <PrimarySection address={owner} record={record} primary={primary} />
+                                <DeveloperAgents address={owner} record={record} />
+                                <HistoryBox record={record} />
+                            </> :
+                                <LoadingContainer>
+                                    <Heading>{t('loading', { ns: 'common' })}</Heading>
+                                    <SpinnerRow />
+                                </LoadingContainer>
+                            }
+                        </OtherWrapper>
+                    ),
+                }}
+            </Content>
+        </>
     )
 }

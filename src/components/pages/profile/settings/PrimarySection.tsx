@@ -236,17 +236,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
           <NoNameContainer data-testid="no-primary-name-section">
             <NoNameTitle fontVariant="headingFour">{t('section.primary.title')}</NoNameTitle>
             {hasGraphError ? (
-              <NoNameDisabledButtonContainer>
-                <DisabledButtonWithTooltip
-                  buttonId="disabled-set-primary-name-button"
-                  buttonText={t('section.primary.choosePrimaryName')}
-                  size="small"
-                  content={t('errors.networkError.blurb', { ns: 'common' })}
-                  prefix={<PersonPlusSVG />}
-                  mobilePlacement="top"
-                  loading={hasGraphErrorLoading}
-                />
-              </NoNameDisabledButtonContainer>
+              null
             ) : (
               <>
                 <NoNameButton
@@ -275,7 +265,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
                   </dt>
                   <dd style={{ height: "24px", display: "flex" }}>
                     <a href={"https://etherscan.io/address/" + record.address} >{record.address}</a>
-                    {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><Coinbase height={20} width={20} /></Tooltip></div> : null}
+                    {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><div><Coinbase height={20} width={20} /></div></Tooltip></div> : null}
                   </dd>
                 </div>
                 <div style={{ display: "flex", margin: "6px 0", gap: "8px" }}>

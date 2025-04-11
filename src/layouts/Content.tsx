@@ -4,10 +4,8 @@ import styled, { css } from 'styled-components'
 
 import { Banner, Button, mq, Skeleton, Typography } from '@ensdomains/thorin'
 
-import Hamburger from '@app/components/@molecules/Hamburger/Hamburger'
 import { IconCopyAnimated } from '@app/components/IconCopyAnimated'
 import { LeadingHeading } from '@app/components/LeadingHeading'
-import { useContentWarning } from '@app/hooks/useContentWarning'
 import { useCopied } from '@app/hooks/useCopied'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -16,10 +14,10 @@ type BannerProps = ComponentProps<typeof Banner>
 
 export type ContentWarning =
   | {
-      type: BannerProps['alert']
-      title?: BannerProps['title']
-      message: BannerProps['children']
-    }
+    type: BannerProps['alert']
+    title?: BannerProps['title']
+    message: BannerProps['children']
+  }
   | undefined
 
 const HeadingItems = styled.div(
@@ -258,14 +256,7 @@ export const Content = ({
   const breakpoints = useBreakpoint()
   const isDesktopMode = breakpoints.sm
 
-  const warning = useContentWarning([children.warning])
-  const WarningComponent = !loading && warning && (
-    <WarningWrapper>
-      <Banner title={warning.title} alert={warning.type}>
-        {warning.message}
-      </Banner>
-    </WarningWrapper>
-  )
+
 
   const InfoComponent = !loading && children.info && (
     <WarningWrapper>{children.info}</WarningWrapper>
@@ -292,7 +283,6 @@ export const Content = ({
         </Head>
       )}
 
-      {isDesktopMode && WarningComponent}
 
       {isDesktopMode && InfoComponent}
 
@@ -316,14 +306,12 @@ export const Content = ({
                   <Skeleton loading={loading}>{children.header}</Skeleton>
                 </ContentContainer>
               )}
-              {!isDesktopMode && <Hamburger />}
             </CustomLeadingHeading>
             {!isDesktopMode && children.titleExtra}
           </Skeleton>
         </HeadingItems>
       )}
 
-      {!isDesktopMode && WarningComponent}
       {!isDesktopMode && InfoComponent}
       {LeadingComponent}
 

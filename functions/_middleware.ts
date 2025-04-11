@@ -145,14 +145,14 @@ const pathRewriter: PagesFunction = async ({ request, next }) => {
 
     if (url.pathname === '/profile') {
       const decodedName = decodeURIComponent(isTLD ? paths[2] : paths[1])
-      let newTitle = 'Invalid Name - ENS'
+      let newTitle = 'Invalid Name'
       let newDescription = 'An error occurred'
       let normalisedName: string | null = null
       try {
         const { normalize } = await import('viem/ens')
         normalisedName = normalize(decodedName)
-        newTitle = `${normalisedName} on ENS`
-        newDescription = `${normalisedName}'s profile on the Ethereum Name Service`
+        newTitle = `${normalisedName}`
+        newDescription = `${normalisedName}'s profile`
       } catch {
         console.error('Name could not be normalised')
       }

@@ -110,7 +110,6 @@ const StyledLeadingHeading = styled(LeadingHeading)(
 const tld = '.entity.id'
 
 export default function JurisDropdown({ domain, setErrorMessage, partners, wallet }: any) {
-  const { t } = useTranslation('common')
   const router = useRouterWithHistory()
   const [errorMessage, setLocalErrorMessage] = useState<string>('')
 
@@ -151,8 +150,8 @@ export default function JurisDropdown({ domain, setErrorMessage, partners, walle
 
     const textsToChange = [
       { key: `partner__[${partnerIdx}]__name`, value: entityName },
-      { key: `partner__[${partnerIdx}]__domain`, value: parentDomain },
-      { key: `partner__[${partnerIdx}]__nodeHash`, value: parentNodeHash },
+      { key: `partner__[${partnerIdx}]__entityid`, value: parentDomain },
+      { key: `partner__[${partnerIdx}]__nodehash`, value: parentNodeHash },
       { key: `partner__[${partnerIdx}]__type`, value: entityType?.entityTypeName || 'company' },
     ]
 
@@ -180,12 +179,12 @@ export default function JurisDropdown({ domain, setErrorMessage, partners, walle
         const existingRecord = await getRecordData({ entityid: parentDomain, needsSchema: false })
         if (!existingRecord || JSON.stringify(existingRecord) === '{}') {
           if (entityName && entityJurisdiction && entityType?.entityTypeName) {
-            router.replace(
-              'https://morula.registrychain.com/entity?name=' +
-              entityName +
-              '&type=' +
-              entityType.ELF,
+            // ADD A MESSAGE HERE: YOU WILL NOW BE TAKEN TO REGISTRYCHAIN TO FORM YOUR NEW ENTITY
+            window.open(
+              `https://entity.id/entity?name=${entityName}&type=${entityType.ELF}`,
+              '_blank'
             )
+            window.location.reload() // Should this reload? or bring user to the Developer page for profile selection?
           }
         }
       }

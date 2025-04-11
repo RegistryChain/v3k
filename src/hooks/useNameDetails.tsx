@@ -67,15 +67,7 @@ export const useNameDetails = ({ name, subgraphEnabled = true }: UseNameDetailsP
     if (registrationStatus === 'gracePeriod') {
       return `${t('errors.expiringSoon', { date: formatFullExpiry(gracePeriodEndDate) })}`
     }
-    if (
-      // bypass unknown error for root name
-      !!normalisedName &&
-      normalisedName !== '[root]' &&
-      !profile &&
-      !isProfileLoading
-    ) {
-      return t('errors.networkError.message', { ns: 'common' })
-    }
+
     return null
   }, [
     gracePeriodEndDate,
@@ -91,9 +83,7 @@ export const useNameDetails = ({ name, subgraphEnabled = true }: UseNameDetailsP
     if (registrationStatus === 'gracePeriod') {
       return t('errors.hasExpired', { name: normalisedName })
     }
-    if (normalisedName !== '[root]' && !profile && !isProfileLoading) {
-      return t('errors.networkError.title', { ns: 'common' })
-    }
+
   }, [registrationStatus, t, profile, isProfileLoading, normalisedName])
 
   const isLoading = isProfileLoading || isBasicLoading || isDnsOwnerLoading
