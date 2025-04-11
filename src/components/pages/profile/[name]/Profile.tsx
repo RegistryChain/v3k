@@ -35,6 +35,9 @@ import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import l1abi from '../../../../constants/l1abi.json'
 import { useVerificationStatus } from '@app/hooks/useVerificationStatus'
 import Coinbase from '../../../../assets/Coinbase.svg'
+import EmailModal from '../EmailModal'
+import { handleEmail } from '@app/hooks/useExecuteWriteToResolver'
+import DeveloperRegisterModal from '../DeveloperModal'
 
 
 
@@ -179,6 +182,10 @@ const ProfileContent = ({
   const [tab, setTab] = useState("details")
   const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [showDevelopersModal, setShowDevelopersModal] = useState(false)
+  const EMAIL_SUBMITTED_KEY = 'v3k_user_email_submitted'
+
   const { history, fetchEnsHistory } = useEnsHistory()
   const [verifications, setVerifications] = useState<string[]>([])
   const ref = useRef<HTMLDivElement>(null)
@@ -201,22 +208,7 @@ const ProfileContent = ({
       }),
     [],
   )
-  const basePublicClient = useMemo(
-    () =>
-      createPublicClient({
-        chain: baseSepolia,
-        transport: http(),
-      }),
-    [],
-  )
-  const binancePublicClient = useMemo(
-    () =>
-      createPublicClient({
-        chain: bsc,
-        transport: http(),
-      }),
-    [],
-  )
+
   const makeAmendment = async () => {
     const recordsToPopulate: any = {}
     Object.keys(records).forEach((field) => {
@@ -251,6 +243,19 @@ const ProfileContent = ({
     const vers = await getVerificationStatus(owner)
     setVerifications(vers)
   }
+
+  useEffect(() => {
+    const hasSubmittedEmail = localStorage.getItem(EMAIL_SUBMITTED_KEY)
+    const hasSubmittedEmailConnectedAddress = localStorage.getItem(EMAIL_SUBMITTED_KEY + '-' + address)
+
+    if (!hasSubmittedEmail) {
+      setShowEmailModal(true)
+    }
+
+    if (hasSubmittedEmail && !hasSubmittedEmailConnectedAddress && isAddress(address)) {
+      pushEmailToList(hasSubmittedEmail)
+    }
+  }, [address])
 
   useEffect(() => {
     if (isAddress(owner) && owner !== zeroAddress) {
@@ -292,40 +297,14 @@ const ProfileContent = ({
   }, [domain])
 
 
-  const checkEntityStatus = async () => {
-    // const multisig: any = await getMultisig(multisigAddress)
-
-    // const multisigState: any = getContract({
-    //   address: contractAddresses.MultisigState as Address,
-    //   abi: parseAbi(['function entityToTransactionNonce(address) view returns (uint256)']),
-    //   client: publicClient,
-    // })
-
-    // try {
-    //   const localApproval = await multisig.read.localApproval()
-    //   const operationApprovedByRegistrar = await multisig.read.checkEntityOperational([])
-    //   // if localApproval is false and txNonce = 1, drafted
-    //   let status = 'DRAFT'
-    //   if (localApproval && operationApprovedByRegistrar) {
-    //     status = 'APPROVED'
-    //   } else if (localApproval) {
-    //     status = 'SUBMITTED'
-    //   }
-    //   setStatus(status)
-    //   setRecords((prev: { [x: string]: any }) => ({
-    //     ...prev,
-    //     status,
-    //   }))
-    // } catch (e) { }
-  }
+  useEffect(() => {
+    if (records?.partners?.length === 0 && primary && !primary.data && address === owner) {
+      setShowDevelopersModal(true)
+    }
+  }, [records, owner])
 
   useEffect(() => {
     try {
-      // if (resolver === 'textResolver') {
-      //   const encodes = await useTextResolverReadBytes(namehash(name))
-      //   const records = await useTextResolverResultsDecoded(publicClient, zeroAddress, encodes)
-      //   const fields = await useConvertFlatResolverToFull(records)
-      // }
       if (
         isAddress(records?.owner) &&
         records?.owner !== zeroAddress &&
@@ -348,6 +327,13 @@ const ProfileContent = ({
       console.log('AXIOS CATCH ERROR', err)
     }
   }, [records, domain])
+
+  const pushEmailToList = async (email: string) => {
+    // Send email and connected account to DB
+    localStorage.setItem(EMAIL_SUBMITTED_KEY + '-' + address, email)
+    await handleEmail({ email, address })
+    // direct/handleEmail/email=michaeltest@gmail.com&address=0x456.json
+  }
 
   const getOwner = async (registry: any) => {
     if (domain) {
@@ -487,7 +473,7 @@ const ProfileContent = ({
       client={publicClient}
       name={domain}
       makeAmendment={makeAmendment}
-      checkEntityStatus={() => checkEntityStatus()}
+      checkEntityStatus={() => null}
       wallet={wallet}
       setWallet={setWallet}
     />
@@ -507,6 +493,25 @@ const ProfileContent = ({
         tokenAddresses={[records.address, records.token__utility]}
         onResults={() => setSubgraphResults([...subgraphResults])}
       /> */}
+      <EmailModal
+        isOpen={showEmailModal && isAddress(address) && address !== zeroAddress}
+        onClose={() => setShowEmailModal(false)}
+        onSubmit={(email) => {
+          console.log('Email submitted:', email)
+          localStorage.setItem(EMAIL_SUBMITTED_KEY, email)
+
+          pushEmailToList(email)
+          setShowEmailModal(false)
+        }}
+      />
+      <DeveloperRegisterModal
+        isOpen={showDevelopersModal}
+        onClose={() => setShowDevelopersModal(false)}
+        wallet={wallet}
+        domain={domain}
+        partners={records.partners}
+        setErrorMessage={setErrorMessage}
+      />
 
       {loadingRecords ? (
         <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} minHeight='50vh'>
@@ -582,7 +587,7 @@ const ProfileContent = ({
                             {truncateEthAddress(owner)}
                           </Link>
                         )}
-                        {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><Coinbase height={20} width={20} /></Tooltip></div> : null}
+                        {verifications.includes("Coinbase") ? <div style={{ marginLeft: "6px", marginTop: "2px" }}><Tooltip content={"Developer has Coinbase KYC attestation"}><div><Coinbase height={20} width={20} /></div></Tooltip></div> : null}
 
                       </dd>
                     </Box>

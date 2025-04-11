@@ -98,7 +98,12 @@ function ColorlibStepIcon({ ...props }: StepIconProps) {
   );
 }
 
-const steps = ['General Info', 'Environment Configs', 'Socials', 'Developer Info'];
+const steps = [
+  'General Info',
+  'Environment Configs',
+  'Socials',
+  // 'Developer Info'
+];
 
 export const CustomizedSteppers = ({
   activeStep,

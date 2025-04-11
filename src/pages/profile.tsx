@@ -112,7 +112,7 @@ export default function Page() {
     if (fields) {
       const fieldsOverride: any = fields
       fieldsOverride.partners = fieldsOverride.partners?.filter(
-        (partner: any) => partner?.walletaddress || partner?.name,
+        (partner: any) => partner?.walletaddress || partner?.name || partner?.entityid,
       )
       setRecords(fieldsOverride)
     }

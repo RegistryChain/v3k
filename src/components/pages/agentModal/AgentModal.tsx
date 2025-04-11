@@ -32,8 +32,8 @@ import {
 } from '@app/utils/utils'
 
 import contractAddressesObj from '../../../constants/contractAddresses.json'
+import { keywords } from '../../../constants/keywords.js'
 import l1abi from '../../../constants/l1abi.json'
-import { AdvancedConfiguration } from './AdvancedConfiguration'
 import {
   CloseButton,
   ModalContent,
@@ -42,12 +42,17 @@ import {
   StepWrapper,
   SubmitButton,
   ButtonWrapper,
+  Input,
+  HiddenFileInput,
+  StyledFileLabel,
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { CustomizedSteppers } from './Stepper'
 import { Tooltip } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
+import { SearchableDropdown } from './SearchableDropdown'
 
 type FormState = {
   name: string
@@ -65,6 +70,7 @@ type FormState = {
   imageFile: File | undefined
   video: string
   youtubeChannel: string
+  keywords: string[]
 }
 
 interface StepProps {
@@ -78,6 +84,7 @@ export const pinata = new PinataSDK({
   pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
 })
 const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepProps) => {
+  console.log(formState.imageFile)
   return (
     <StepWrapper isVisible={isVisible}>
       {/* Core Inputs */}
@@ -89,41 +96,63 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
           placeholder="Enter agent name"
           required
         />}
-      <FormInput
-        label="Category"
-        type="select"
-        value={formState.category}
-        onChange={handleFieldChange('category')}
-        options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
-        placeholder="Select a category"
-        required
-      />
-      <FormControl required>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            handleFieldChange('imageFile')(file)
-          }}
-          style={{
-            color: '#616661',
-            display: "inline - block",
-            cursor: "pointer",
-            paddingLeft: "12px",
-            paddingTop: "10px",
-            paddingBottom: "10px",
-            outline: "10px",
-            border: "1px solid #ccc",
-          }}
-        />
-      </FormControl>
-      <FormInput
-        label="Description"
-        value={formState.description}
-        onChange={handleFieldChange('description')}
-        placeholder="Enter description"
-      />
+      <Tooltip content={"This will be the image shown for your agent. ENS compatible"}>
+        <FormControl required>
+          <HiddenFileInput
+            id="avatar-upload"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              handleFieldChange('imageFile')(file);
+            }}
+          />
+
+          <StyledFileLabel htmlFor="avatar-upload">
+            {formState.imageFile?.name
+              ? `Selected: ${formState.imageFile.name}`
+              : 'Select Avatar'}
+          </StyledFileLabel>
+        </FormControl>
+      </Tooltip>
+      <Tooltip content={"Describe your agent and present its features to potential users"}>
+        <div>
+
+          <FormInput
+            label="Description"
+            value={formState.description}
+            onChange={handleFieldChange('description')}
+            placeholder="Enter description"
+            required
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Select the category that your agent functionality is most related to"}>
+        <div>
+          <FormInput
+            label="Category"
+            type="select"
+            value={formState.category}
+            onChange={handleFieldChange('category')}
+            options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
+            placeholder="Select a category"
+            required
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Select keywords that best apply to your agent's composition and functionality. Think of these keywords as tags that help your agent's discoverability."}>
+        <div>
+          <SearchableDropdown
+            data={keywords}
+            label={"Keywords"}
+            onChange={(x: any) => {
+              handleFieldChange('keywords')(x)
+            }}
+            value={formState.keywords}
+
+          />
+        </div>
+      </Tooltip>
     </StepWrapper>
   )
 }
@@ -131,32 +160,48 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
 const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
-      <FormInput
-        label="Token Address"
-        value={formState.tokenAddress}
-        onChange={handleFieldChange('tokenAddress')}
-        placeholder="Enter Token Address"
-      />
-
-      <FormInput
-        label="Agent Framework"
-        value={formState.platform}
-        onChange={handleFieldChange('platform')}
-        placeholder="Enter Agent Framework"
-      />
-
-      <FormInput
-        label="Chat Endpoint"
-        value={formState.endpoint}
-        onChange={handleFieldChange('endpoint')}
-        placeholder="Enter Chatbot Endpoint"
-      />
-      <FormInput
-        label="Github Repo"
-        value={formState.github}
-        onChange={handleFieldChange('github')}
-        placeholder="Github Repo"
-      />
+      <Tooltip content={"Add the address of your agent's token. This could be an ownership token, a utility token, or whatever other token that is most relevant to your agent's identity"}>
+        <div>
+          <FormInput
+            label="Token Address"
+            value={formState.tokenAddress}
+            onChange={handleFieldChange('tokenAddress')}
+            placeholder="Enter Token Address"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Select the framework or platform that your Agent was developed with"}>
+        <div>
+          <FormInput
+            label="Agent Framework"
+            type="select"
+            value={formState.platform}
+            onChange={handleFieldChange('platform')}
+            options={['Eliza', 'GAME', 'Crew AI', 'Fine', 'LangGraph']}
+            placeholder="Select an agent framework"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Add the endpoint URI that is used to communicate or interact with your agent."}>
+        <div>
+          <FormInput
+            label="Chat Endpoint"
+            value={formState.endpoint}
+            onChange={handleFieldChange('endpoint')}
+            placeholder="Enter Chatbot Endpoint"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Add a link to the Github Repo that contains your agent source code."}>
+        <div>
+          <FormInput
+            label="Github Repo"
+            value={formState.github}
+            onChange={handleFieldChange('github')}
+            placeholder="Github Repo"
+          />
+        </div>
+      </Tooltip>
     </StepWrapper>
   )
 }
@@ -164,56 +209,69 @@ const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
 
-      <FormInput
-        label="Explainer Video"
-        value={formState.video}
-        onChange={handleFieldChange('video')}
-        placeholder="Add URL to Youtube Video"
-      />
+      <Tooltip content={"Add a link to a Youtube video for your agent."}>
+        <div>
+          <FormInput
+            label="Explainer Video"
+            value={formState.video}
+            onChange={handleFieldChange('video')}
+            placeholder="Add URL to Youtube Video"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Add your agent's X (Twitter) handle"}>
+        <div>
 
-
-      <FormInput
-        label="X (Twitter) Handle"
-        value={formState.twitterHandle}
-        onChange={handleFieldChange('twitterHandle')}
-        placeholder="Enter Twitter Handle"
-      />
-
-      <FormInput
-        label="Telegram Handle"
-        value={formState.telegramHandle}
-        onChange={handleFieldChange('telegramHandle')}
-        placeholder="Enter Telegram Handle"
-      />
-
-      <FormInput
-        label="Youtube Channel"
-        value={formState.youtubeChannel}
-        onChange={handleFieldChange('youtubeChannel')}
-        placeholder="Enter Agent Youtube Channel"
-      />
+          <FormInput
+            label="X (Twitter) Handle"
+            value={formState.twitterHandle}
+            onChange={handleFieldChange('twitterHandle')}
+            placeholder="Enter Twitter Handle"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Add your agent's Telegram username"}>
+        <div>
+          <FormInput
+            label="Telegram Handle"
+            value={formState.telegramHandle}
+            onChange={handleFieldChange('telegramHandle')}
+            placeholder="Enter Telegram Handle"
+          />
+        </div>
+      </Tooltip>
+      <Tooltip content={"Add a your agent's Youtube Channel"}>
+        <div>
+          <FormInput
+            label="Youtube Channel"
+            value={formState.youtubeChannel}
+            onChange={handleFieldChange('youtubeChannel')}
+            placeholder="Enter Agent Youtube Channel"
+          />
+        </div>
+      </Tooltip>
     </StepWrapper>
   )
 }
 
-const Step4 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
-  return (
-    <StepWrapper isVisible={isVisible}>
-      <FormInput
-        label="Entity ID"
-        value={formState.parentEntityId}
-        onChange={handleFieldChange('parentEntityId')}
-        placeholder="Enter a entity.id domain"
-      />
-      <FormInput
-        label="Name"
-        value={formState.parentName}
-        onChange={handleFieldChange('parentName')}
-        placeholder="Enter Developer Name"
-      />
-    </StepWrapper>
-  )
-}
+// const Step4 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+//   return (
+//     <StepWrapper isVisible={isVisible}>
+//       <FormInput
+//         label="Entity ID"
+//         value={formState.parentEntityId}
+//         onChange={handleFieldChange('parentEntityId')}
+//         placeholder="Enter a entity.id domain"
+//       />
+//       <FormInput
+//         label="Name"
+//         value={formState.parentName}
+//         onChange={handleFieldChange('parentName')}
+//         placeholder="Enter Developer Name"
+//       />
+//     </StepWrapper>
+//   )
+// }
 
 const tld = 'entity.id'
 const contractAddresses = contractAddressesObj as Record<string, Address>
@@ -226,7 +284,8 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const modalRef = useRef(null)
   const [actionStep, setActionStep] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const breakpoints = useBreakpoint()
+  const breakpoints: any = useBreakpoint()
+
 
   // Complete form state
   const originalForm: FormState = {
@@ -244,6 +303,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     telegramHandle: '',
     youtubeChannel: '',
     video: '',
+    keywords: [],
     imageFile: undefined
   }
   // Text record key mapping
@@ -258,7 +318,6 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       endpoint: 'aiagent__entrypoint__url',
       parentEntityId: 'partner__[0]__domain',
       parentName: 'partner__[0]__name',
-      category: 'keywords',
       video: 'video',
       youtubeChannel: 'com.youtube'
     }
@@ -333,23 +392,18 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isOpen])
+  const handleClickOutside = (event: MouseEvent) => {
+    const path = event.composedPath()
+    const modalEl = modalRef.current
+    const muiMenu = document.querySelector('.MuiPopover-root') // or '.MuiPaper-root'
 
-  // Close modal when clicking outside of it
-  const handleClickOutside = (event: any) => {
-    const cur: any = modalRef.current
-    // Select elements are part of the select dropdown and should not close the modal
-    const selectElements = document.querySelectorAll(
-      '.MuiSelect-root, .MuiSelect-root, .MuiList-root, .MuiMenu-root *',
-    )
-    if (
-      modalRef.current &&
-      !cur.contains(event.target) &&
-      !Array.from(selectElements).some((el) => el.contains(event.target))
-    ) {
+    const isInModal = modalEl && path.includes(modalEl)
+    const isInMUI = muiMenu && path.includes(muiMenu)
+
+    if (!isInModal && !isInMUI) {
       onClose()
     }
   }
-
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'registrar', value: 'ai' },
@@ -367,13 +421,18 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       ...baseRecords,
       ...Object.entries(stateCopy)
         .filter(([key, value]) => value)
-        .map(([key, value]) => ({ key: mapKeyToRecord(key), value })),
+        .map(([key, value]) => {
+          if (Array.isArray(value)) {
+            value = value.join(", ")
+          }
+          return ({ key: mapKeyToRecord(key), value })
+        }),
     ]
   }
 
   const submitEntityData = async (entityDomain: string, currentEntityOwner: Address) => {
     const texts = createTextRecords()
-
+    console.log(texts)
     if (
       !isAddressEqual(currentEntityOwner, address as Address) &&
       !isAddressEqual(currentEntityOwner, contractAddresses[`ai.${tld}`]) &&
@@ -395,7 +454,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       } catch (err: any) {
         if (err.shortMessage === 'User rejected the request.') return
         let errMsg = err?.details
-        if (!errMsg) errMsg = err?.shortMessage 
+        if (!errMsg) errMsg = err?.shortMessage
         if (!errMsg) errMsg = err.message
         setErrorMessage(errMsg)
       }
@@ -408,6 +467,26 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     setFormState((prev: any) => ({ ...prev, [field]: value }))
 
   const handleRegistration = async () => {
+
+    if (!formState.name) {
+      setErrorMessage("Agent needs a name to be registered")
+      return
+    }
+
+    if (!formState.description) {
+      setErrorMessage("Agent needs a description to be registered")
+      return
+    }
+
+    if (!formState.imageFile) {
+      setErrorMessage("Agent needs an Avatar image to be registered")
+      return
+    }
+
+    if (!formState.category) {
+      setErrorMessage("Agent needs a category to be registered")
+      return
+    }
 
     try {
       await uploadFile()
@@ -508,18 +587,18 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   // })
 
   if (!isOpen) return null
-  let disabled = actionStep === 3 && !formState.name
+  let disabled = actionStep === 2 && !formState.name
   let submitButton = <SubmitButton
     disabled={disabled}
     onClick={() => {
-      if (actionStep < 3) {
+      if (actionStep < 2) {
         setActionStep(actionStep + 1)
       } else {
         handleRegistration()
       }
     }}
   >
-    {actionStep < 3 ? "Next" : actions[0]}
+    {actionStep < 2 ? "Next" : actions[0]}
   </SubmitButton>
 
   if (disabled) {
@@ -527,14 +606,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       <SubmitButton
         disabled={disabled}
         onClick={() => {
-          if (actionStep < 3) {
+          if (actionStep < 2) {
             setActionStep(actionStep + 1)
           } else {
             handleRegistration()
           }
         }}
       >
-        {actionStep < 3 ? "Next" : actions[0]}
+        {actionStep < 2 ? "Next" : actions[0]}
       </SubmitButton>
     </Tooltip>
   }
@@ -548,7 +627,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
         setErrorMessage={setErrorMessage}
         breakpoints={breakpoints}
       />
-      <ModalContent ref={modalRef} isExpanded={false}>
+      <ModalContent ref={modalRef} isExpanded={!breakpoints.isMobile}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <h2
           style={{
@@ -594,7 +673,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
                 handleFieldChange={handleFieldChange}
               />
             )}
-            {actionStep === 3 && (
+            {/* {actionStep === 3 && (
               <Step4
                 isVisible={actionStep === 3}
                 formState={formState}
@@ -602,7 +681,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
                 handleFieldChange={handleFieldChange}
               />
-            )}
+            )} */}
           </>
         </StepContainer>
 
