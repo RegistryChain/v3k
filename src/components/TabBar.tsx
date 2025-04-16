@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from 'next/router'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { zeroAddress } from 'viem'
 import { useEnsAvatar } from 'wagmi'
 
-import { CrossSVG, LeftChevronSVG, mq, PersonSVG } from '@ensdomains/thorin'
+import { CogSVG, CrossSVG, LeftChevronSVG, mq, PersonSVG, PlusCircleSVG } from '@ensdomains/thorin'
 
 import { useAccountSafely } from '@app/hooks/account/useAccountSafely'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
@@ -15,6 +15,8 @@ import { ensAvatarConfig } from '@app/utils/query/ipfsGateway'
 
 import { DisconnectButton, RouteItem } from './@atoms/RouteItem/RouteItem'
 import { ConnectButton } from './ConnectButton'
+import { ModalContext } from '@app/layouts/Basic'
+
 
 const ExtraNavWrapper = styled.div<{ $isOpen: boolean }>(
   ({ theme, $isOpen }) => css`
@@ -72,7 +74,7 @@ const TabWrapper = styled.div(
       ${theme.colors.backgroundSecondary} 60%
     );
     padding: ${theme.space['4']};
-    ${mq.sm.min(css`
+    ${mq.md.min(css`
       display: none;
     `)}
   `,
@@ -80,7 +82,7 @@ const TabWrapper = styled.div(
 
 const TabContainer = styled.div<{ $shrink: boolean }>(
   ({ theme, $shrink }) => css`
-    --tab-container-width: ${theme.space['56']};
+    --tab-container-width: ${theme.space['112']};
 
     width: var(--tab-container-width);
     height: ${theme.space['14']};
@@ -185,6 +187,7 @@ const TabBarProfile = ({
   const router = useRouter()
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name })
   const hasPendingTransactions = useHasPendingTransactions()
+  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
 
   return (
     <ExtraNavWrapper $isOpen={isOpen}>
@@ -204,7 +207,13 @@ const TabBarProfile = ({
           active={router.asPath === getDestination(`/profile/${name}`)}
         />
       )}
-      <RouteItem route={getRoute('settings')} hasNotification={hasPendingTransactions} />
+      <PlusCircleSVG height={"24px"} width={"24px"} onClick={() => {
+        setAgentModalPrepopulate({})
+        setIsModalOpen(true)
+      }}>
+
+      </PlusCircleSVG>
+      <CogSVG height={"24px"} width={"24px"} onClick={() => router.push("/developer/" + address)} />
       <DisconnectButton />
     </ExtraNavWrapper>
   )
@@ -220,6 +229,8 @@ export const TabBar = () => {
   const hasBack = !!router.query.from
 
   const [isOpen, setIsOpen] = useState(false)
+
+
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -247,6 +258,7 @@ export const TabBar = () => {
         )}
         <TabContainer $shrink={!!(address && ((isOpen && !hasPrimary) || !isOpen))}>
           <TabItems $isConnected={!!address}>
+
             <RouteItem route={getRoute('search')} />
             <RouteItem route={getRoute('names')} />
             {globalThis?.localStorage?.getItem('ensFavourites') && (

@@ -53,7 +53,7 @@ const HeaderWrapper = styled.header(
     top: 0;
   z-index: 9999;
     background-color: white;
-    ${mq.sm.max(css`
+    ${mq.md.max(css`
       display: none;
     `)}
   `,
@@ -86,8 +86,8 @@ const NavContainer = styled.div(
     height: ${theme.space['12']};
 
     ${mq.lg.min(css`
-      flex-gap: ${theme.space['6']};
-      gap: ${theme.space['6']};
+      flex-gap: ${theme.space['2']};
+      gap: ${theme.space['2']};
     `)}
   `,
 )
@@ -134,8 +134,11 @@ const RouteWrapper = styled.div(
 // 👇 Wrap the input and result dropdown
 const SearchWrapper = styled.div`
   position: relative;
-  width: 350px;
+  width: 280px;
   margin: 0 18px;
+  ${mq.xl.min(css`
+    width: 350px;
+  `)}
 `;
 
 const AddAgentButton = styled.button(
@@ -153,6 +156,38 @@ const AddAgentButton = styled.button(
     }
     `
 )
+
+const HeaderTitleText = styled.span`
+  font-weight: 400;
+  margin-top: 10px;
+  font-size: 20px; 
+  ${mq.lg.min(css`
+    font-size: 26px; 
+  `)}
+  ${mq.xl.min(css`
+    font-size: 32px; 
+  `)}`
+
+
+const MobileHeaderWrapper = styled.div`
+
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+  
+`
+
+const MobileLogoText = styled.span`
+  font-size: 28px;
+  font-weight: 600;
+  margin-left: 12px;
+  
+`
 
 const routesNoSearch = routes.filter(
   (route) => route.name !== 'search' && route.icon && !route.onlyDropdown && !route.disabled,
@@ -243,23 +278,30 @@ export const Header = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchWrapperRef.current])
+  return (<>
+    {breakpoints.xs && !breakpoints.md ? <MobileHeaderWrapper onClick={() => router.push('/')}>
+      <Image alt="V3K" width={70} height={70} src={v3kLogo} />
+      <MobileLogoText>AGENT STORE</MobileLogoText>
+    </MobileHeaderWrapper> : null}
 
-  return (
     <HeaderWrapper id="header">
       <NavContainer>
 
         <div
-          style={{ fontSize: '36px', fontWeight: '800', cursor: 'pointer', display: 'flex' }}
+          style={{ fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex' }}
           onClick={() => router.push('/')}
         >
-          <Image alt="" width={70} height={70} src={v3kLogo} />
-          <span style={{ fontSize: '36px', fontWeight: '400', marginTop: '10px' }}>
+          <div style={{ maxHeight: "70px" }}>
+            <Image alt="" width={70} height={70} src={v3kLogo} />
+          </div>
+          {breakpoints.md && !breakpoints.lg ? null : <HeaderTitleText>
             AGENT STORE
-          </span>
+          </HeaderTitleText>}
+
         </div>
         <div style={{ flexGrow: 1 }} />
         <RouteWrapper>
-          <SearchWrapper>
+          {breakpoints.lg ? <SearchWrapper>
             <Input
               style={{ width: "100%" }}
               data-testid="name-table-header-search"
@@ -285,7 +327,7 @@ export const Header = () => {
                 ))}
               </SearchResultsDropdown>
             )}
-          </SearchWrapper>
+          </SearchWrapper> : null}
           <RouteContainer
             data-testid="route-container"
             ref={routeContainerRef}
@@ -305,5 +347,5 @@ export const Header = () => {
         <HeaderConnect />
       </NavContainer>
     </HeaderWrapper>
-  )
+  </>)
 }

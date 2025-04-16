@@ -154,9 +154,10 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
             </div>
             <Typography
               style={{
+                paddingLeft: "20px",
                 fontWeight: '700',
                 color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)",
-                fontSize: '16px',
+                fontSize: '12px',
                 fontStyle: 'italic',
               }}
             >

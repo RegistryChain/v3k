@@ -83,13 +83,13 @@ const reviews = [
 const ReviewsPlaceholder = () => {
   return (
     <Box>
-      <Title>What customers think ✨</Title>
+      <Title>What the community thinks ✨</Title>
       <Description>
-        Customers praise the agent for its easy setup and user-friendly interface, noting its seamless integration...
+        Here is a feed of reviews and discussion about this agent...
       </Description>
-      {reviews.map((review, index) => (
+      {/* {reviews.map((review, index) => (
         <Review key={index} review={review} />
-      ))}
+      ))} */}
     </Box>
   );
 };
