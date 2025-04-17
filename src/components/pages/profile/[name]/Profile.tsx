@@ -100,17 +100,54 @@ const VideoEmbed = ({ videoId = "" }: {
   }, []);
 
   if (isLoading) return <p>Loading video...</p>;
-  if (!videoId) return null
-
+  // if (!videoId) return null
+  if (!videoId?.split("?v=")?.[1]) {
+    return null
+  }
   return (
     <VideoContainer>
       <Iframe
-        src={`https://www.youtube.com/embed/${videoId}`}
+        src={`https://www.youtube.com/embed/` + videoId.split("?v=")[1]?.split("&")[0]}
         allowFullScreen
       ></Iframe>
     </VideoContainer>
   );
 };
+
+// Styled components
+const Section = styled.div`
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid #E5E5E5;
+`
+
+const LabelRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`
+
+const Label = styled.div`
+  min-width: 200px;
+  font-weight: 700;
+
+  @media (max-width: 768px) {
+    min-width: unset;
+  }
+`
+
+const Content = styled.div`
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+`
 
 const BgBox = styled(Box)`
   position: relative;
@@ -405,61 +442,58 @@ const ProfileContent = ({
 
   let tabContent: any = null
   if (tab === "details") {
-    tabContent = <>
-      <Box
-        py={2}
-        style={{ borderBottom: '1px solid #E5E5E5' }}>
-        <Box py={1} mb={2}>
-          <VideoEmbed videoId={records.video} />
-        </Box>
-        <Typography color="greyDim">{records.description}</Typography>
-      </Box>
-      <Box
-        display='flex'
-        gap={2}
-        py={2} style={{
-          borderBottom: '1px solid #E5E5E5',
-        }}>
-        <Box minWidth={200}>
-          <Typography weight='bold'>Capabilities</Typography>
-        </Box>
-        <Box>
-          <ul>
-            <li>iOS</li>
-            <li>Android</li>
-            <li>Desktop</li>
-          </ul>
-        </Box>
-      </Box>
+    tabContent = (
+      <>
+        <Section>
+          <div style={{ marginBottom: '16px' }}>
+            <VideoEmbed videoId={records.video} />
+          </div>
+          <Typography color="greyDim">{records.description}</Typography>
+        </Section>
 
-      <Box
-        display='flex'
-        gap={2}
-        py={2} style={{
-          borderBottom: '1px solid #E5E5E5',
-        }}>
-        <Box minWidth={200}>
-          <Typography weight='bold'>Languages</Typography>
-        </Box>
-        <Box>
-          <Typography>English</Typography>
-        </Box>
-      </Box>
+        <Section>
+          <LabelRow>
+            <Label>Github Repo</Label>
+            <Content>{records["com.github"]}</Content>
+          </LabelRow>
+        </Section>
 
-      <Box
-        display='flex'
-        gap={2}
-        py={2} style={{
-          borderBottom: '1px solid #E5E5E5',
-        }}>
-        <Box minWidth={200}>
-          <Typography weight='bold'>Categories</Typography>
-        </Box>
-        <Box>
-          {/* TODO: add real categories */}
-          <Typography>{records.keywords}</Typography>
-        </Box>
-      </Box></>
+        <Section>
+          <LabelRow>
+            <Label>Twitter</Label>
+            <Content>{records["com.twitter"]}</Content>
+          </LabelRow>
+        </Section>
+
+        <Section>
+          <LabelRow>
+            <Label>Telegram</Label>
+            <Content>{records["org.telegram"]}</Content>
+          </LabelRow>
+        </Section>
+
+        <Section>
+          <LabelRow>
+            <Label>Youtube Channel</Label>
+            <Content>{records["com.youtube"]}</Content>
+          </LabelRow>
+        </Section>
+
+        <Section>
+          <LabelRow>
+            <Label>API Endpoint</Label>
+            <Content>{records["aiagent__entrypoint__url"]}</Content>
+          </LabelRow>
+        </Section>
+
+        <Section>
+          <LabelRow>
+            <Label>Categories</Label>
+            <Content>{records.keywords}</Content>
+          </LabelRow>
+        </Section>
+      </>
+    )
   } else if (tab === "actions" && records && domain && address) {
     tabContent = <ActionsTab
       refreshRecords={getRecords}
@@ -524,7 +558,7 @@ const ProfileContent = ({
           </MessageContainer>
         )).otherwise(() => (
           <Box>
-            <Grid container spacing={8} minHeight={'calc(100vh - 350px)'}>
+            <Grid container spacing={8} maxWidth={"100%"} minHeight={'calc(100vh - 350px)'}>
               {/* Sidebar */}
               <Grid
                 size={{
@@ -553,20 +587,40 @@ const ProfileContent = ({
                   <dl>
                     <Box py={1}>
                       <dt>
-                        <Typography weight='bold'>Pricing</Typography>
+                        <Typography weight='bold'>Agent Type</Typography>
                       </dt>
                       <dd>
-                        Free to install. Additional charges may apply.
+                        {records.category}
                       </dd>
                     </Box>
                     <Box py={1}>
                       <dt>
-                        <Typography weight='bold'>Agent type</Typography>
+                        <Typography weight='bold'>Framework</Typography>
+                      </dt>
+                      <dd>
+                        {records.aiagent__runtimeplatform}
+                      </dd>
+                    </Box>
+                    <Box py={1}>
+                      <dt>
+                        <Typography weight='bold'>Tags</Typography>
                       </dt>
                       <dd>
                         {records.keywords}
                       </dd>
                     </Box>
+                    {isAddress(records.token__utility) ? <Box py={1}>
+                      <dt>
+                        <Typography weight='bold'>Agent Token</Typography>
+                      </dt>
+                      {(
+                        <Link title="tooltip" href={`https://etherscan.io/address/` + records.token__utility} target='_blank' style={{
+                          textDecoration: 'none',
+                        }}>
+                          {truncateEthAddress(records.token__utility)}
+                        </Link>
+                      )}
+                    </Box> : null}
                     <Box py={1}>
                       <dt>
                         <Typography weight='bold'>Developer</Typography>
@@ -614,107 +668,16 @@ const ProfileContent = ({
               </Grid>
             </Grid>
 
-            <BgBox py={3}>
-              <Box style={{ position: 'relative', zIndex: 1 }}>
-                <Typography>
-                  {records.name} is a {records.keywords} agent on the {records.aiagent__runtimeplatform} platform. It is an agent with the following features:
-                </Typography>
-                {/* <Box py={2}>
-                  <ul>
-                    <li>Feature 1</li>
-                    <li>Feature 2</li>
-                    <li>Feature 3</li>
-                  </ul>
-                </Box> */}
-              </Box>
-            </BgBox>
 
             <Box>
               {/* TODO: use reviews from the database */}
-              <ReviewsPlaceholder />
+              {/* <ReviewsPlaceholder /> */}
 
               <StyledBox py={3}></StyledBox>
 
               <Grid container spacing={6} mb={2}>
-                <Grid size={{
-                  xs: 12,
-                  sm: 4
-                }}>
-                  <Box py={2}>
-                    <Typography weight='bold'>Additional Information</Typography>
-                  </Box>
-                </Grid>
-
-                <Grid size={{
-                  xs: 12,
-                  sm: 6
-                }}>
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Agent endpoint</Typography>
-                    </Box>
-                    <Box>
-                      <Typography>
-                        <Link href={records.url} target='_blank'>
-                          Link to agent
-                        </Link>
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Registrar</Typography>
-                    </Box>
-                    <Box>
-                      <Typography>{records.registrar}</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2}
-                    style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Agent token address</Typography>
-                    </Box>
-                    <Box>
-                      {/* TODO: add real categories */}
-                      <Typography>{records.token__utility}</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    display='flex'
-                    gap={2}
-                    py={2} style={{
-                      borderBottom: '1px solid #E5E5E5',
-                    }}>
-                    <Box minWidth={200}>
-                      <Typography weight='bold'>Owner address</Typography>
-                    </Box>
-                    <Box display={'flex'} gap={0.5}>
-                      <Typography>
-                        {owner}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <HistoryBox record={records} />
               </Grid>
+              <HistoryBox record={records} />
 
             </Box>
           </Box >)

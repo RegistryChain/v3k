@@ -21,14 +21,15 @@ export const ModalContent = styled.div<{ isExpanded: boolean }>`
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 24px 24px 0;
-  width: ${({ isExpanded }) => (isExpanded ? '90%' : '60%')};
-  height: 620px;
-  overflow-y: hidden;
+  width: 80%;
+  height: 660px;
+  overflow-y: visible;
   transition:
     width 0.3s ease,
     max-height 0.3s ease;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
+    margin-top: 165px;
     width: 100%;
     height: 100%;
     border-radius: 0;
@@ -158,7 +159,7 @@ export const StepContainer = styled.div`
   flex-direction: column;
   padding: 24px;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: visible;
 `;
 
 

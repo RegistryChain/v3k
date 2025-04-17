@@ -50,12 +50,13 @@ const anim = keyframes`
 `
 
 const GlobalStyle = createGlobalStyle`
-  html,
-  body {
-    padding: 0;
-    margin: 0;
-  }
-
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
   *,
   ::before,
   ::after {
@@ -157,26 +158,26 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryProviders>
-          <RainbowKitProvider theme={rainbowKitTheme}>
-            <TransactionStoreProvider>
-              <MuiThemeProvider theme={muiTheme}>
-                <ThemeProvider theme={theme}>
-                  <BreakpointProvider queries={breakpoints}>
-                    <GlobalStyle />
-                    <SyncProvider>
-                      <TransactionFlowProvider>
-                        <SyncDroppedTransaction>
-                          <Notifications />
-                          {/* <TestnetWarning /> */}
-                          <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                        </SyncDroppedTransaction>
-                      </TransactionFlowProvider>
-                    </SyncProvider>
-                  </BreakpointProvider>
-                </ThemeProvider>
-              </MuiThemeProvider>
-            </TransactionStoreProvider>
-          </RainbowKitProvider>
+        <RainbowKitProvider theme={rainbowKitTheme}>
+          <TransactionStoreProvider>
+            <MuiThemeProvider theme={muiTheme}>
+              <ThemeProvider theme={theme}>
+                <BreakpointProvider queries={breakpoints}>
+                  <GlobalStyle />
+                  <SyncProvider>
+                    <TransactionFlowProvider>
+                      <SyncDroppedTransaction>
+                        <Notifications />
+                        {/* <TestnetWarning /> */}
+                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                      </SyncDroppedTransaction>
+                    </TransactionFlowProvider>
+                  </SyncProvider>
+                </BreakpointProvider>
+              </ThemeProvider>
+            </MuiThemeProvider>
+          </TransactionStoreProvider>
+        </RainbowKitProvider>
       </QueryProviders>
     </I18nextProvider>
   )

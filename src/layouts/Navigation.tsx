@@ -21,24 +21,12 @@ export const Navigation = () => {
   const isInitial = useInitial()
   const breakpoints = useBreakpoint()
 
-  if (!isInitial) {
-    if (breakpoints.sm) {
-      return (
-        <>
-          {' '}
-          <Header key="header-nav" /> <Hero />
-        </>
-      )
-    }
-    return <TabBar key="tab-bar-nav" />
-  }
 
   return (
     <>
+      <TabBar key="tab-bar-nav" />
       <Header key="header-nav" />
       <Hero />
-
-      <TabBar key="tab-bar-nav" />
     </>
   )
 }
