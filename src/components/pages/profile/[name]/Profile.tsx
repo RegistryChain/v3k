@@ -451,47 +451,54 @@ const ProfileContent = ({
           <Typography color="greyDim">{records.description}</Typography>
         </Section>
 
-        <Section>
+        {records["url"] ? <Section>
+          <LabelRow>
+            <Label>Website</Label>
+            <Content><u><a href={records["url"]}>{records["url"]}</a></u></Content>
+          </LabelRow>
+        </Section> : null}
+
+        {records["com.github"] ? <Section>
           <LabelRow>
             <Label>Github Repo</Label>
-            <Content>{records["com.github"]}</Content>
+            <Content><u><a href={"https://github.com/" + records["com.github"]}>{records["com.github"]}</a></u></Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
 
-        <Section>
+        {records["com.twitter"] ? <Section>
           <LabelRow>
-            <Label>Twitter</Label>
-            <Content>{records["com.twitter"]}</Content>
+            <Label>X (Twitter)</Label>
+            <Content><u><a href={"https://x.com/" + records["com.twitter"]}>{records["com.twitter"]}</a></u></Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
 
-        <Section>
+        {records["org.telegram"] ? <Section>
           <LabelRow>
             <Label>Telegram</Label>
-            <Content>{records["org.telegram"]}</Content>
+            <Content><u><a href={"https://t.me/" + records["org.telegram"]}>{records["org.telegram"]}</a></u></Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
 
-        <Section>
+        {records["com.youtube"] ? <Section>
           <LabelRow>
             <Label>Youtube Channel</Label>
-            <Content>{records["com.youtube"]}</Content>
+            <Content><u><a href={"https://youtube.com/@" + records["com.youtube"]}>{records["com.youtube"]}</a></u></Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
 
-        <Section>
+        {records["aiagent__entrypoint__url"] ? <Section>
           <LabelRow>
             <Label>API Endpoint</Label>
-            <Content>{records["aiagent__entrypoint__url"]}</Content>
+            <Content><u><a href={records["aiagent__entrypoint__url"]}>{records["aiagent__entrypoint__url"]}</a></u></Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
 
-        <Section>
+        {records.keywords ? <Section>
           <LabelRow>
             <Label>Categories</Label>
             <Content>{records.keywords}</Content>
           </LabelRow>
-        </Section>
+        </Section> : null}
       </>
     )
   } else if (tab === "actions" && records && domain && address) {

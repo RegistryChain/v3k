@@ -21,23 +21,6 @@ import entityTypesObj from '../constants/entityTypes.json'
 import { useGetRating } from '@app/hooks/useGetRating'
 
 
-const AddAgentButton = styled.button(
-  ({ theme }) => css`
-    font-weight: 700;
-    min-width: 200px;
-    background-color: ${theme.colors.accent};
-    border: none;
-    border-radius: 12px;
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.1s ease-in;
-    padding: ${theme.space['2']} ${theme.space['4']};
-    color: white;
-    &:hover {
-      background-color: #8f58e3;
-    }
-    `
-)
 
 const Container = styled.div(
   () => css`
@@ -60,43 +43,10 @@ const Stack = styled.div(
   `,
 )
 
-const StyledENS = styled.div(
-  ({ theme }) => css`
-    height: ${theme.space['8.5']};
-  `,
-)
-
-const LogoAndLanguage = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: ${theme.space['4']};
-    flex-gap: ${theme.space['4']};
-  `,
-)
-
-const StyledLeadingHeading = styled(LeadingHeading)(
-  () => css`
-    ${mq.sm.min(css`
-      display: none;
-    `)}
-  `,
-)
 
 export default function Page() {
-  const { t } = useTranslation('common')
-  const router = useRouterWithHistory()
-  const [project, setProject] = useState('V3K')
   const tld = '.entity.id'
 
-  const publicClient = createPublicClient({
-    chain: sepolia,
-    transport: http(infuraUrl('sepolia')),
-  })
-  const breakpoints = useBreakpoint()
-  const { setIsModalOpen } = useContext<any>(ModalContext)
 
   const [entityName, setEntityName] = useState<string>('')
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')

@@ -159,7 +159,7 @@ const ActionsConfirmation = ({
                     } else {
                       signAction(x.txIndex, x.method)
                     }
-                  } catch (err) {}
+                  } catch (err) { }
                 }}
               >
                 Sign

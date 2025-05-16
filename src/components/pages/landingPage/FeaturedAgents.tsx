@@ -13,7 +13,9 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 const GradientTitle = styled.h1(
   ({ theme }) => css`
     font-size: ${theme.fontSizes.headingTwo};
-    text-align: center;
+    text-align: left;
+    width:100%;
+    padding-left: 16px;
     font-weight: 800;
     color: ${theme.colors.accent};
     margin: 0;

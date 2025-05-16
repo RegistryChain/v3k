@@ -25,6 +25,7 @@ import contractAddresses from '../constants/contractAddresses.json'
 import { FaPencilAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
 import { getContractInstance } from '@app/utils/utils'
+import { CachedImage } from '@app/hooks/CachedImage'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -199,7 +200,9 @@ export const ProfileSnippet = ({
       ) : (
         <>
           <div style={{ display: 'flex' }}>
-            <Image src={records.avatar} alt="e" height={88} />
+            <div style={{ padding: "8px" }}>
+              <CachedImage src={records.avatar} alt="e" height={88} />
+            </div>
             <div>
               <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
                 <div style={{ display: "flex", gap: "5px" }}>

@@ -69,7 +69,7 @@ type FormState = {
   telegramHandle: string
   imageFile: File | undefined
   video: string
-  youtubeChannel: string
+  website: string
   keywords: string[]
 }
 
@@ -85,6 +85,14 @@ export const pinata = new PinataSDK({
 })
 const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepProps) => {
   console.log(formState.imageFile)
+  let keywordValue = []
+  if (Array.isArray(formState.keywords)) {
+    keywordValue = formState.keywords
+  } else if (typeof formState.keywords === 'string' && formState.keywords) {
+    // @ts-ignore
+    keywordValue = formState.keywords.split(", ")
+  }
+
   return (
     <StepWrapper isVisible={isVisible}>
       {/* Core Inputs */}
@@ -148,7 +156,7 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
             onChange={(x: any) => {
               handleFieldChange('keywords')(x)
             }}
-            value={formState.keywords}
+            value={keywordValue}
 
           />
         </div>
@@ -208,7 +216,16 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
 const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
-
+      <Tooltip content={"Add a your agent's website"}>
+        <div>
+          <FormInput
+            label="Website"
+            value={formState.website}
+            onChange={handleFieldChange('website')}
+            placeholder="Enter Agent Website"
+          />
+        </div>
+      </Tooltip>
       <Tooltip content={"Add a link to a Youtube video for your agent."}>
         <div>
           <FormInput
@@ -240,16 +257,7 @@ const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
           />
         </div>
       </Tooltip>
-      <Tooltip content={"Add a your agent's Youtube Channel"}>
-        <div>
-          <FormInput
-            label="Youtube Channel"
-            value={formState.youtubeChannel}
-            onChange={handleFieldChange('youtubeChannel')}
-            placeholder="Enter Agent Youtube Channel"
-          />
-        </div>
-      </Tooltip>
+
     </StepWrapper>
   )
 }
@@ -301,7 +309,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     twitterHandle: '',
     tokenAddress: '',
     telegramHandle: '',
-    youtubeChannel: '',
+    website: '',
     video: '',
     keywords: [],
     imageFile: undefined
@@ -319,7 +327,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       parentEntityId: 'partner__[0]__domain',
       parentName: 'partner__[0]__name',
       video: 'video',
-      youtubeChannel: 'com.youtube'
+      website: 'url'
     }
     return mapping[formKey] || formKey
   }
@@ -478,7 +486,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       return
     }
 
-    if (!formState.imageFile) {
+    if (!formState.imageFile && !formState.avatar) {
       setErrorMessage("Agent needs an Avatar image to be registered")
       return
     }
