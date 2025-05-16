@@ -14,8 +14,10 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 const GradientTitle = styled.h1(
   ({ theme }) => css`
     font-size: ${theme.fontSizes.headingTwo};
-    text-align: center;
+    text-align: left;
+    width:100%; 
     font-weight: 800;
+    padding-left: 16px;
     margin: 0;
     color: ${theme.colors.accent};
     ${mq.sm.min(css`
@@ -80,7 +82,7 @@ const TrendingAgents = ({ recipientAverages }: any) => {
         sortType: 'birthdate',
         limit: 18,
         address,
-        params: { avatar: 'https', "v3k__featured": 'false' },
+        params: { avatar: 'https', "v3k__featured": 'false', 'v3k__trending': 'true' },
       })
 
       setAgents(

@@ -1,6 +1,6 @@
 // components/AgentBox.tsx
 import { useState } from 'react'
-import { FaStar, FaTrash } from 'react-icons/fa'
+import { FaLevelUpAlt, FaRegArrowAltCircleUp, FaRegThumbsUp, FaStar, FaTrash } from 'react-icons/fa'
 
 import AppPlaceholderImage from '@app/assets/app-2.svg'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
@@ -16,6 +16,7 @@ import {
   Title,
 } from './AgentGridStyles'
 import { CheckCircleSVG, DisabledSVG, Tooltip } from '@ensdomains/thorin'
+import { CachedImage } from '@app/hooks/CachedImage'
 
 export const AgentBox = ({
   onRate,
@@ -32,18 +33,16 @@ export const AgentBox = ({
   connectedIsAdmin,
   moderateEntity
 }: any) => {
-  console.log(typeof location, location)
   const router = useRouterWithHistory()
   const [imgSrcValid, setImgSrcValid] = useState(true)
   const agentContent = <Box onClick={() => router.push('/agent/' + agentDomain)} style={{ width: "100%", backgroundColor: hidden ? "#ff000047" : "" }} isPlaceholder={isPlaceholder} >
     {!isPlaceholder && (<>
       <div style={{ width: "100%" }}>
         {imgSrcValid ? (
-          <Image
+          <CachedImage
             src={imageUrl}
             height={rowHeight - 32}
             alt="Placeholder"
-            onError={() => setImgSrcValid(false)}
           />
         ) : (
           <ImgContainer height={rowHeight - 32}>
@@ -62,7 +61,7 @@ export const AgentBox = ({
                   style={{
                     fontSize: '17px',
                     margin: '0 2px',
-                    color: 'rgb(231, 215, 71)',
+                    color: '#6a24d6',
                     transition: 'color 0.2s ease, transform 0.2s ease',
                   }}
                 />
@@ -76,6 +75,8 @@ export const AgentBox = ({
         <DisabledSVG style={{ color: "blue", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 1)} />
         <CheckCircleSVG style={{ color: "lime", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 2)} />
         <FaTrash style={{ color: "red", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 3)} />
+        <FaRegArrowAltCircleUp style={{ color: "black", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 4)} />
+        <FaRegThumbsUp style={{ color: "gold", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 5)} />
       </div>) : null}
     </>
     )}
