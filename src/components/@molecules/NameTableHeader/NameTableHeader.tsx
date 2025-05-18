@@ -4,6 +4,7 @@ import styled, { css } from 'styled-components'
 
 import { GetNamesForAddressParameters } from '@ensdomains/ensjs/subgraph'
 import { Input, MagnifyingGlassSimpleSVG, mq, Select } from '@ensdomains/thorin'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 const SearchInput = styled(Input)`
   min-width: 200px;
@@ -146,6 +147,8 @@ type Props = {
   onSortTypeChange?: any
   onRegistrarChange?: (type: string) => void
   onSortDirectionChange?: (direction: SortDirection) => void
+  selectedCategory?: string
+  setSelectedCategory?: (type: string) => void
   selectedStatus?: string
   setSelectedStatus?: (type: string) => void
   connectedIsAdmin?: boolean
@@ -167,27 +170,16 @@ export const NameTableHeader = ({
   onRegistrarChange,
   onSortDirectionChange,
   onSearchChange,
+  selectedCategory = "",
+  setSelectedCategory,
   selectedStatus = "",
   setSelectedStatus,
   connectedIsAdmin = false
 }: PropsWithChildren<Props>) => {
   const { t } = useTranslation('common')
+  const breakpoints = useBreakpoint()
 
   const inSelectMode = selectable && mode === 'select'
-
-  const fieldToLabelMap: any = { birthdate: 'Formation Date', name: 'name' }
-  const sortTypeOptions = sortTypeOptionValues.map((value) => ({
-    label: fieldToLabelMap[value],
-    value,
-  }))
-
-  let registrarOptions: any[] = []
-  if (registrarOptionValues) {
-    registrarOptions = registrarOptionValues.map((value) => ({
-      label: value,
-      value,
-    }))
-  }
 
   let statusOptions: any[] = [
     { label: "all", value: "all" },
@@ -209,22 +201,43 @@ export const NameTableHeader = ({
         </TableHeaderLeadingLeft>
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>
       </TableHeaderLeading>
-      <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
-        {connectedIsAdmin ? (
-          <><Label>Sort by entity status</Label>
+      <TableHeaderTrailing style={{ justifyContent: "left" }} $isDesktopFlexibleWidth={!selectable}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: breakpoints.xs && !breakpoints.sm ? 'column' : 'row',
+            gap: '1rem',
+          }}
+        >
+          <><Label style={{ alignContent: 'center' }}>Category</Label>
             <Select
-              value={selectedStatus}
+              value={selectedCategory}
               size="small"
-              label="Status"
+              label="Category"
               hideLabel
-              placeholder={t('action.sort')}
+              placeholder={"category"}
               onChange={(e) => {
-                setSelectedStatus?.(e.target.value as any)
+                setSelectedCategory?.(e.target.value as any)
               }}
-              options={statusOptions}
+              options={[{ label: 'Social Media', value: 'Social Media' }, { label: 'Trading', value: 'Trading' }, { label: 'Scraper', value: 'Scraper' }, { label: 'Assistant', value: 'Assistant' }, { label: 'Coding', value: 'Coding' }, { label: 'Backend', value: 'Backend' }, { label: 'Conversational', value: 'Conversational' }]}
               id="sort-by"
             /></>
-        ) : null}
+          {connectedIsAdmin ? (
+            <><Label style={{ alignContent: 'center' }}>Entity Status</Label>
+              <Select
+                value={selectedStatus}
+                size="small"
+                label="Status"
+                hideLabel
+                placeholder={t('action.sort')}
+                onChange={(e) => {
+                  setSelectedStatus?.(e.target.value as any)
+                }}
+                options={statusOptions}
+                id="sort-by"
+              /></>
+          ) : null}
+        </div>
       </TableHeaderTrailing>
 
       <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>

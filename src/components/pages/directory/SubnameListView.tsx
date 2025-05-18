@@ -47,6 +47,7 @@ export const SubnameListView = ({ address }: any) => {
   const [finishedLoading, setFinishedLoading] = useState(false)
   const [connectedIsAdmin, setConnectedIsAdmin] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
 
@@ -83,12 +84,16 @@ export const SubnameListView = ({ address }: any) => {
   const getSubs = async (page: number = pageNumber, resetResults = false) => {
     setIsLoadingNextPage(true)
     let status = {}
+    let category = {}
     if (connectedIsAdmin) {
       if (selectedStatus === "true") {
         status = { "v3k__hidden": true }
       } else if (selectedStatus === "false") {
         status = { "v3k__hidden": false }
       }
+    }
+    if (selectedCategory) {
+      category = { category: selectedCategory }
     }
     try {
       let searchBase = searchInput ? {} : { avatar: 'https' }
@@ -99,7 +104,7 @@ export const SubnameListView = ({ address }: any) => {
         sortDirection,
         sortType,
         address,
-        params: { ...searchBase, ...status },
+        params: { ...searchBase, ...status, ...category },
       })
 
       setSubnameResults(results)
@@ -147,7 +152,7 @@ export const SubnameListView = ({ address }: any) => {
     }, 600) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
-  }, [searchInput, registrar, sortType, sortDirection, selectedStatus])
+  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory])
 
   const filteredSet = useMemo(
     () => {
@@ -185,6 +190,8 @@ export const SubnameListView = ({ address }: any) => {
         onSearchChange={(s) => {
           setSearchInput(s)
         }}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
         connectedIsAdmin={connectedIsAdmin}
