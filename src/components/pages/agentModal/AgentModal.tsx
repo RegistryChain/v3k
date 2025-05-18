@@ -142,7 +142,7 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
             type="select"
             value={formState.category}
             onChange={handleFieldChange('category')}
-            options={['Social Media', 'Trading', 'Scraper', 'Assistant']}
+            options={['Social Media', 'Trading', 'Scraper', 'Assistant', 'Coding', 'Backend', 'Conversational']}
             placeholder="Select a category"
             required
           />

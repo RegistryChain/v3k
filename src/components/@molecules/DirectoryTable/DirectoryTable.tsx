@@ -10,6 +10,7 @@ import { Entity, Partner } from '@app/types/directory'
 
 import * as Styles from './DirectoryTable.styles'
 import { Button } from '@mui/material'
+import { Typography } from '@ensdomains/thorin'
 
 const { ButtonContainer } = Styles
 
@@ -60,7 +61,8 @@ export const DirectoryTable = ({
 
   return (
     <div>
-      <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} />
+      {data?.length > 0 ? <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} /> : <Typography fontVariant="headingTwo">No agents found!</Typography>}
+
       <ButtonContainer>
         <Button disabled={page === 0} onClick={handlePrevPage}>
           Previous
