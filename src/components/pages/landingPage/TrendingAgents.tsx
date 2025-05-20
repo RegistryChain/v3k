@@ -80,9 +80,9 @@ const TrendingAgents = ({ recipientAverages }: any) => {
         page: 0,
         sortDirection: 'desc',
         sortType: 'birthdate',
-        limit: 18,
+        limit: 24,
         address,
-        params: { avatar: 'https', "v3k__featured": 'false', 'v3k__trending': 'true' },
+        params: { avatar: 'https', 'v3k__trending': 'true' },
       })
 
       setAgents(

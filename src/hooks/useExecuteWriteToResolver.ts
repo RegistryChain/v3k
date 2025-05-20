@@ -200,8 +200,27 @@ export async function handleEmail({ email, address }: any) {
         },
       },
     )
-    const entitiesList = await res.json()
-    return entitiesList.data.sucess
+    const emailReq = await res.json()
+    return emailReq.data.sucess
+  } catch (err) {
+    return false
+  }
+}
+
+export async function handleFeedback({ comment, mood, email }: any) {
+  try {
+    const res = await fetch(
+      process.env.NEXT_PUBLIC_RESOLVER_URL +
+        `/direct/handleFeedback/email=${email}&comment=${comment}&mood=${mood}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    const feedbackReq = await res.json()
+    return feedbackReq.data.sucess
   } catch (err) {
     return false
   }

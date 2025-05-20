@@ -13,6 +13,9 @@ import { IS_DEV_ENVIRONMENT } from '@app/utils/constants'
 
 import { Navigation } from './Navigation'
 import Link from 'next/link'
+import FeedbackModal from '@app/components/pages/feedbackModal/FeedbackModal'
+import FeedbackButton from '@app/components/FeedbackButton'
+import { handleFeedback } from '@app/hooks/useExecuteWriteToResolver'
 
 const Container = styled.div(
   ({ theme }) => css`
@@ -110,7 +113,9 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       router.push('/unsupportedNetwork')
     }
   }, [isConnected, chainId, router])
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false)
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
+
   const [agentModalPrepopulate, setAgentModalPrepopulate] = useState({})
 
   const darkthemeRoutes = ["/about", '/faq', '/instructions']
@@ -123,22 +128,31 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   return (
     // <LayoutContext.Provider value={{ testMode }}>
     <ModalContext.Provider
-      value={{ isModalOpen, setIsModalOpen, agentModalPrepopulate, setAgentModalPrepopulate }}
+      value={{ isModalOpen: isAgentModalOpen, setIsAgentModalOpen, agentModalPrepopulate, setAgentModalPrepopulate }}
     >
       <Container style={containerStyle} className="min-safe">
         <Navigation />
         <ContentWrapper>
-          {isModalOpen && (
+          {isAgentModalOpen && (
             <AgentModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
+              isOpen={isAgentModalOpen}
+              onClose={() => setIsAgentModalOpen(false)}
               agentModalPrepopulate={agentModalPrepopulate}
               setAgentModalPrepopulate={setAgentModalPrepopulate}
             />
           )}
+          <FeedbackModal
+            isOpen={isFeedbackModalOpen}
+            onClose={() => setIsFeedbackModalOpen(false)}
+            onSubmit={async (x) => {
+              await handleFeedback(x)
+              setIsFeedbackModalOpen(false)
+            }}
+          />
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
+        <FeedbackButton onClick={() => setIsFeedbackModalOpen(!isFeedbackModalOpen)} />
         <BottomPlaceholder>
           <div
             style={{
