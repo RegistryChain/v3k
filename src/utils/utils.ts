@@ -1,3 +1,4 @@
+import { PinataSDK } from 'pinata'
 import type { TFunction } from 'react-i18next'
 import {
   createPublicClient,
@@ -297,6 +298,11 @@ export function getDefaultValueByType(type: string) {
 
   return typeMap[type] !== undefined ? typeMap[type] : null // Return `null` if the type is not mapped
 }
+
+export const pinata = new PinataSDK({
+  pinataJwt: `${process.env.NEXT_PUBLIC_PINATA_JWT}`,
+  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`,
+})
 
 export const getChangedRecords = (agentPrepopulate: any, formState: any, fieldMapping: any) => {
   const changedRecords: any[] = []

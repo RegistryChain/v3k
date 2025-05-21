@@ -2,9 +2,6 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { FormControl } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import styled, { css } from 'styled-components'
-
-import { PinataSDK } from 'pinata'
 import {
   Address,
   encodeAbiParameters,
@@ -29,6 +26,7 @@ import {
   getPublicClient,
   getWalletClient,
   normalizeLabel,
+  pinata,
 } from '@app/utils/utils'
 
 import contractAddressesObj from '../../../constants/contractAddresses.json'
@@ -51,7 +49,6 @@ import { CustomizedSteppers } from './Stepper'
 import { Tooltip } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
-import { RegistrarInput } from '@app/components/@molecules/RegistrarInput/RegistrarInput'
 import { SearchableDropdown } from './SearchableDropdown'
 
 type FormState = {
@@ -79,10 +76,7 @@ interface StepProps {
   formState: FormState
   handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
-export const pinata = new PinataSDK({
-  pinataJwt: `${process.env.NEXT_PUBLIC_PINATA_JWT}`,
-  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
-})
+
 const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepProps) => {
   console.log(formState.imageFile)
   let keywordValue = []
