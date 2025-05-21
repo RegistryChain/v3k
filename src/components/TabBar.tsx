@@ -186,8 +186,7 @@ const TabBarProfile = ({
 }) => {
   const router = useRouter()
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name })
-  const hasPendingTransactions = useHasPendingTransactions()
-  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
+  const { setIsAgentModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
 
   return (
     <ExtraNavWrapper $isOpen={isOpen}>
@@ -209,7 +208,7 @@ const TabBarProfile = ({
       )}
       <PlusCircleSVG height={"24px"} width={"24px"} onClick={() => {
         setAgentModalPrepopulate({})
-        setIsModalOpen(true)
+        setIsAgentModalOpen(true)
       }}>
 
       </PlusCircleSVG>

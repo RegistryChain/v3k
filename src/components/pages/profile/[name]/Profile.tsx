@@ -38,6 +38,7 @@ import Coinbase from '../../../../assets/Coinbase.svg'
 import EmailModal from '../EmailModal'
 import { handleEmail } from '@app/hooks/useExecuteWriteToResolver'
 import DeveloperRegisterModal from '../DeveloperModal'
+import MediaGallery from './MediaGallery'
 
 
 
@@ -217,7 +218,7 @@ const ProfileContent = ({
   const [subgraphResults, setSubgraphResults] = useState<any>([])
   const [onChainOwner, setOnChainOwner] = useState(zeroAddress)
   const [tab, setTab] = useState("details")
-  const { setIsModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
+  const { setIsAgentModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
   const [recordsRequestPending, setRecordsRequestPending] = useState<any>(true)
   const [showEmailModal, setShowEmailModal] = useState(false)
   const [showDevelopersModal, setShowDevelopersModal] = useState(false)
@@ -252,7 +253,7 @@ const ProfileContent = ({
       recordsToPopulate[field] = records[field]
     })
     setAgentModalPrepopulate(recordsToPopulate)
-    setIsModalOpen(true)
+    setIsAgentModalOpen(true)
   }
 
   const checkOwnerIsMultisig = async () => {
@@ -446,7 +447,14 @@ const ProfileContent = ({
       <>
         <Section>
           <div style={{ marginBottom: '16px' }}>
-            <VideoEmbed videoId={records.video} />
+            <MediaGallery
+              isOwner={owner === address as any}
+              address={address}
+              entityId={records.entityid}
+              video={records.video}
+              images={records.image || []}
+              onUploadClick={() => console.log("open file input")}
+            />
           </div>
           <Typography color="greyDim">{records.description}</Typography>
         </Section>
