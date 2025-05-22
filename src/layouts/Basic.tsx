@@ -54,6 +54,8 @@ const ContentWrapper = styled.div(
 
 const BottomPlaceholder = styled.div(
   ({ theme }) => css`
+  background-color: black;
+  color: white;
     padding: 10px 5px;
     height: ${theme.space['14']};
     ${mq.sm.min(css`
@@ -163,14 +165,14 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
             }}
           >
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <Link href="/about" style={{ color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)", textDecoration: 'none' }}>About</Link>
-              <Link href="/faq" style={{ color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)", textDecoration: 'none' }}>FAQ</Link>
+              <Link href="/about" style={{ color: "white", textDecoration: 'none' }}>About</Link>
+              <Link href="/faq" style={{ color: "white", textDecoration: 'none' }}>FAQ</Link>
             </div>
             <Typography
               style={{
                 paddingLeft: "20px",
                 fontWeight: '700',
-                color: darkthemeRoutes.includes(router.pathname) ? 'rgb(61, 201, 117)' : "rgb(115 111 111)",
+                color: "white",
                 fontSize: '12px',
                 fontStyle: 'italic',
               }}

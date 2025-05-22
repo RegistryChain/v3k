@@ -34,11 +34,13 @@ interface DirectoryTableProps {
   setPage: React.Dispatch<React.SetStateAction<number>>
   connectedIsAdmin: boolean,
   moderateEntity: any
+  finishedLoading: boolean
 }
 
 export const DirectoryTable = ({
   data,
   isLoadingNextPage,
+  finishedLoading,
   fetchData,
   sortDirection,
   onSortDirectionChange,
@@ -61,7 +63,7 @@ export const DirectoryTable = ({
 
   return (
     <div>
-      {data?.length > 0 ? <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} /> : <Typography fontVariant="headingTwo">No agents found!</Typography>}
+      {data?.length > 0 || !finishedLoading ? <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} /> : <Typography fontVariant="headingTwo">No agents found!</Typography>}
 
       <ButtonContainer>
         <Button disabled={page === 0} onClick={handlePrevPage}>

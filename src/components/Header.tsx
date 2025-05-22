@@ -309,8 +309,14 @@ export const Header = () => {
               label="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery?.(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  router.push('/directory?search=' + searchQuery)
+                }
+              }}
               hideLabel
-              icon={<MagnifyingGlassSimpleSVG />}
+              onClickAction={() => router.push('/directory?search=' + searchQuery)}
+              actionIcon={<MagnifyingGlassSimpleSVG />}
               placeholder={"search"}
             />
             {searchResults.length > 0 && (

@@ -1,9 +1,10 @@
 import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
 import { getWalletClient, pinata } from '@app/utils/utils'
-import React, { useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Address, namehash } from 'viem'
 import l1abi from '../../../../constants/l1abi.json'
+import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 
 interface MediaGalleryProps {
     images: string[]
@@ -37,12 +38,39 @@ const SideColumn = styled.div`
   padding-left: 4px;
 `
 
-const Thumbnail = styled.img`
+const ThumbnailWrapper = styled.div`
+  position: relative;
   flex: 1;
   width: 100%;
-  object-fit: cover;
   border-radius: 8px;
+  overflow: hidden;
+
+  &:hover .overlay {
+    opacity: 1;
+  }
 `
+
+const Thumbnail = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`
+
+const ThumbnailOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+`
+
 
 const UploadBox = styled.div`
   flex: 1;
@@ -66,25 +94,28 @@ const Iframe = styled.iframe`
 const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick }: any) => {
     const hasMedia = video || images.length > 0
     const thumbnails = images.slice(video ? 0 : 1, video ? 3 : 4)
+    const [imageFile, setImageFile] = useState(null)
     const shouldShowUploadBox = thumbnails.length < 3 && isOwner
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            uploadFile(file) // your function to handle the file
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, imageIndex: number) => {
+        const file: any = e.target.files?.[0]
+        if (file && imageIndex) {
+            uploadFile(file, imageIndex) // your function to handle the file
+        } else if (file) {
+            setImageFile(file)
         }
     }
 
 
-    const uploadFile = async (imageFile: any) => {
+    const uploadFile = async (imageFile: any, imageIndex: number) => {
         let url = ""
         try {
 
-            const { cid } = await pinata.upload.public.file(imageFile)
-            url = await pinata.gateways.public.convert(cid);
+            if (imageFile) {
+                const { cid } = await pinata.upload.public.file(imageFile)
+                url = await pinata.gateways.public.convert(cid);
+            }
 
         } catch (e) {
             console.log(e);
@@ -98,7 +129,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
         // Use Resolver multicall(setText[])
         const formationPrep: any = {
             functionName: 'setText',
-            args: [namehash(entityId), 'image__[' + images.length + ']', url],
+            args: [namehash(entityId), 'image__[' + imageIndex + ']', url],
             abi: l1abi,
             address: resolverAddress,
         }
@@ -113,58 +144,97 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
         }
     };
 
+    if (!hasMedia && !isOwner) return null
 
     if (!hasMedia && isOwner) {
-        return (<>
-            <UploadBox style={{ width: '100%', height: '50vh', borderRadius: '16px' }} onClick={() => {
+        return (<MainMedia style={{ width: "250px", height: "250px", borderRadius: '16px' }}>
+            <UploadBox style={{ width: '100%', }} onClick={() => {
                 onUploadClick()
                 fileInputRef.current?.click()
             }}>
-                +
+                + Image
             </UploadBox>
             <input
                 type="file"
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 accept="image/*"
-                onChange={handleFileSelect}
+                onChange={(e) => handleFileSelect(e, images.length)}
             />
-        </>
-        )
+        </MainMedia>)
     }
 
-    return (
-        <GalleryContainer>
-            <MainMedia>
-                {video ? (
-                    <Iframe
-                        src={`https://www.youtube.com/embed/${video.split('?v=')[1]?.split('&')[0]}`}
-                        allowFullScreen
-                    />
-                ) : (
-                    <Thumbnail src={images[0]} style={{ height: '100%', width: '100%' }} />
-                )}
-            </MainMedia>
+    let imageOverlay = <ThumbnailOverlay className="overlay">
+        <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
+            onUploadClick()
+            fileInputRef.current?.click()
+            uploadFile(imageFile, 0)
+        }} >
+            <FaPencilAlt style={{ color: "gold" }} />
+        </div>
+        <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => uploadFile(null, 0)} >
+            <FaTrashAlt style={{ color: "red" }} />
 
-            <SideColumn>
-                {thumbnails.map((img: any, i: any) => (
-                    <Thumbnail key={i} src={img} />
-                ))}
-                {shouldShowUploadBox && <>
-                    <UploadBox onClick={() => {
-                        onUploadClick()
-                        fileInputRef.current?.click()
-                    }}>+</UploadBox>
+        </div>
+    </ThumbnailOverlay>
+
+    let mainContent = null
+    let sideContent: any = (
+        <SideColumn>
+            {thumbnails.map((img: string, i: number) => (
+                <ThumbnailWrapper key={i}>
+                    <Thumbnail src={img} />
+                    {isOwner && (
+                        imageOverlay
+                    )}
+                </ThumbnailWrapper>
+            ))}
+            {shouldShowUploadBox && (
+                <>
+                    <UploadBox
+                        onClick={() => {
+                            onUploadClick()
+                            fileInputRef.current?.click()
+                            uploadFile(imageFile, thumbnails.length)
+                        }}
+                    >
+                        +
+                    </UploadBox>
                     <input
                         type="file"
                         ref={fileInputRef}
                         style={{ display: 'none' }}
                         accept="image/*"
-                        onChange={handleFileSelect}
+                        onChange={(e) => handleFileSelect(e, images.length)}
                     />
                 </>
-                }
-            </SideColumn>
+            )}
+        </SideColumn>
+    )
+    if (video) {
+        mainContent = (<MainMedia>
+            <Iframe
+                src={`https://www.youtube.com/embed/${video.split('?v=')[1]?.split('&')[0]}`}
+                allowFullScreen
+            />
+        </MainMedia>)
+    } else if (images.length > 0) {
+        mainContent = (<MainMedia>
+            <ThumbnailWrapper key={'mainimage'}>
+                <Thumbnail src={images[0]} style={{ height: '100%', width: '100%' }} />
+                {isOwner && (
+                    imageOverlay
+                )}
+            </ThumbnailWrapper>
+        </MainMedia>)
+    } else {
+        sideContent = null
+    }
+
+    return (
+        <GalleryContainer>
+            {mainContent}
+            {sideContent}
         </GalleryContainer>
     )
 }

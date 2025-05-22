@@ -115,7 +115,7 @@ export default function Page() {
 
     return (
         <>
-            <EmailModal
+            {/* <EmailModal
                 isOpen={showEmailModal && isAddress(address as any) && address !== zeroAddress}
                 onClose={() => setShowEmailModal(false)}
                 onSubmit={(email) => {
@@ -124,7 +124,7 @@ export default function Page() {
                     pushEmailToList(email)
                     setShowEmailModal(false)
                 }}
-            />
+            /> */}
             <Content singleColumnContent title={t('title')}>
 
                 {{

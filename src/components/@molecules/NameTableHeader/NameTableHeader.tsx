@@ -133,6 +133,7 @@ export type SortValue = {
 export type NameTableMode = 'view' | 'select'
 
 type Props = {
+  displaySearch?: boolean
   sortType?: string
   sortTypeOptionValues: string[]
   sortDirection: SortDirection
@@ -155,6 +156,7 @@ type Props = {
 }
 
 export const NameTableHeader = ({
+  displaySearch = true,
   sortType,
   sortTypeOptionValues,
   sortDirection,
@@ -219,7 +221,7 @@ export const NameTableHeader = ({
               onChange={(e) => {
                 setSelectedCategory?.(e.target.value as any)
               }}
-              options={[{ label: 'Social Media', value: 'Social Media' }, { label: 'Trading', value: 'Trading' }, { label: 'Scraper', value: 'Scraper' }, { label: 'Assistant', value: 'Assistant' }, { label: 'Coding', value: 'Coding' }, { label: 'Backend', value: 'Backend' }, { label: 'Conversational', value: 'Conversational' }]}
+              options={[{ label: 'All', value: '' }, { label: 'Social Media', value: 'Social Media' }, { label: 'Trading', value: 'Trading' }, { label: 'Scraper', value: 'Scraper' }, { label: 'Assistant', value: 'Assistant' }, { label: 'Coding', value: 'Coding' }, { label: 'Backend', value: 'Backend' }, { label: 'Conversational', value: 'Conversational' }]}
               id="sort-by"
             /></>
           {connectedIsAdmin ? (
@@ -239,20 +241,20 @@ export const NameTableHeader = ({
           ) : null}
         </div>
       </TableHeaderTrailing>
+      {displaySearch ? <>
+        <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
 
-      <TableHeaderTrailing $isDesktopFlexibleWidth={!selectable}>
-
-        <SearchInput
-          data-testid="name-table-header-search"
-          size="small"
-          label="search"
-          value={searchQuery}
-          onChange={(e) => onSearchChange?.(e.target.value)}
-          hideLabel
-          icon={<MagnifyingGlassSimpleSVG />}
-          placeholder={t('action.search')}
-        />
-      </TableHeaderTrailing>
+          <SearchInput
+            data-testid="name-table-header-search"
+            size="small"
+            label="search"
+            value={searchQuery}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            hideLabel
+            icon={<MagnifyingGlassSimpleSVG />}
+            placeholder={t('action.search')}
+          />
+        </TableHeaderTrailing></> : null}
     </TableHeader>
   )
 }
