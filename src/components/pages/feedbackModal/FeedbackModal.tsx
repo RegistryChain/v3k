@@ -117,109 +117,109 @@ export const SubmitButton = styled.button`
 `
 
 interface FeedbackModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit: (feedback: { comment: string; mood: string; email?: string }) => void
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (feedback: { comment: string; mood: string; email?: string }) => void
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSubmit }) => {
-    const breakpoints: any = useBreakpoint()
-    const modalRef = useRef<HTMLDivElement>(null)
+  const breakpoints: any = useBreakpoint()
+  const modalRef = useRef<HTMLDivElement>(null)
 
-    const [comment, setComment] = useState('')
-    const [mood, setMood] = useState<string>('')
-    const [email, setEmail] = useState('')
-    const [showEmail, setShowEmail] = useState(false)
+  const [comment, setComment] = useState('')
+  const [mood, setMood] = useState<string>('')
+  const [email, setEmail] = useState('')
+  const [showEmail, setShowEmail] = useState(false)
 
-    useEffect(() => {
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside)
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-    }, [isOpen])
-
-    const handleClickOutside = (event: MouseEvent) => {
-        if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-            onClose()
-        }
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside)
     }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
-    if (!isOpen) return null
+  const handleClickOutside = (event: MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      onClose()
+    }
+  }
 
-    return (
-        <Overlay>
-            <ModalContent ref={modalRef} isMobile={breakpoints.xs && !breakpoints.md}>
-                <CloseButton onClick={onClose}>&times;</CloseButton>
-                <ContentContainer>
-                    <ModalTitle>Tell us what you think</ModalTitle>
-                    <ModalText>What happened or what could be better?</ModalText>
+  if (!isOpen) return null
 
-                    <MoodSelector>
-                        {['👍', '😐', '👎'].map((emoji) => (
-                            <Button
-                                type='button'
-                                key={emoji}
-                                onClick={() => setMood(emoji)}
-                                style={{
-                                    fontSize: '24px',
-                                    padding: '4px',
-                                    border: mood === emoji ? '2px solid #0070f3' : '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    background: 'white',
-                                    cursor: 'pointer',
-                                    marginRight: '8px'
-                                }}
-                            >
-                                {emoji}
-                            </Button>
-                        ))}
-                    </MoodSelector>
+  return (
+    <Overlay>
+      <ModalContent ref={modalRef} isMobile={breakpoints.xs && !breakpoints.md}>
+        <CloseButton onClick={onClose}>&times;</CloseButton>
+        <ContentContainer>
+          <ModalTitle>Tell us about your experience on V3K</ModalTitle>
+          <ModalText>What happened or what could be better?</ModalText>
 
-                    <Textarea
-                        rows={4}
-                        placeholder="Type your feedback here..."
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                    />
+          <MoodSelector>
+            {['👍', '😐', '👎'].map((emoji) => (
+              <Button
+                type='button'
+                key={emoji}
+                onClick={() => setMood(emoji)}
+                style={{
+                  fontSize: '24px',
+                  padding: '4px',
+                  border: mood === emoji ? '2px solid #0070f3' : '1px solid #ccc',
+                  borderRadius: '8px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  marginRight: '8px'
+                }}
+              >
+                {emoji}
+              </Button>
+            ))}
+          </MoodSelector>
 
-                    {showEmail ? (
-                        <Input
-                            type="email"
-                            placeholder="your@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    ) : (
-                        <Button
-                            type='button'
-                            style={{
-                                margin: '8px 0',
-                                background: 'none',
-                                color: '#0070f3',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
-                            onClick={() => setShowEmail(true)}
-                        >
-                            Want a reply?
-                        </Button>
-                    )}
+          <Textarea
+            rows={4}
+            placeholder="Type your feedback here..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
 
-                    <SubmitButton
-                        disabled={!comment || !mood}
-                        onClick={() => onSubmit({ comment, mood, email: email || '' })}
-                    >
-                        Submit
-                    </SubmitButton>
-                </ContentContainer>
-            </ModalContent>
-        </Overlay>
-    )
+          {showEmail ? (
+            <Input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          ) : (
+            <Button
+              type='button'
+              style={{
+                margin: '8px 0',
+                background: 'none',
+                color: '#0070f3',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+              onClick={() => setShowEmail(true)}
+            >
+              Want a reply?
+            </Button>
+          )}
+
+          <SubmitButton
+            disabled={!comment || !mood}
+            onClick={() => onSubmit({ comment, mood, email: email || '' })}
+          >
+            Submit
+          </SubmitButton>
+        </ContentContainer>
+      </ModalContent>
+    </Overlay>
+  )
 }
 
 export default FeedbackModal

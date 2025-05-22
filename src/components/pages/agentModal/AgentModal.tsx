@@ -74,11 +74,11 @@ interface StepProps {
   isVisible: boolean
   prepopulate: { [x: string]: any }
   formState: FormState
+  isAmendment: Boolean
   handleFieldChange: (field: keyof FormState) => (value: string | File | undefined) => void
 }
 
-const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepProps) => {
-  console.log(formState.imageFile)
+const Step1 = ({ isVisible, formState, isAmendment, prepopulate, handleFieldChange }: StepProps) => {
   let keywordValue = []
   if (Array.isArray(formState.keywords)) {
     keywordValue = formState.keywords
@@ -98,25 +98,28 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
           placeholder="Enter agent name"
           required
         />}
-      <Tooltip content={"This will be the image shown for your agent. ENS compatible"}>
-        <FormControl required>
-          <HiddenFileInput
-            id="avatar-upload"
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              handleFieldChange('imageFile')(file);
-            }}
-          />
+      {
+        isAmendment ? null :
+          <Tooltip content={"This will be the image shown for your agent. ENS compatible"}>
+            <FormControl required>
+              <HiddenFileInput
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  handleFieldChange('imageFile')(file);
+                }}
+              />
 
-          <StyledFileLabel htmlFor="avatar-upload">
-            {formState.imageFile?.name
-              ? `Selected: ${formState.imageFile.name}`
-              : 'Select Avatar'}
-          </StyledFileLabel>
-        </FormControl>
-      </Tooltip>
+              <StyledFileLabel htmlFor="avatar-upload">
+                {formState.imageFile?.name
+                  ? `Selected: ${formState.imageFile.name}`
+                  : 'Select Avatar'}
+              </StyledFileLabel>
+            </FormControl>
+          </Tooltip>
+      }
       <Tooltip content={"Describe your agent and present its features to potential users"}>
         <div>
 
@@ -136,7 +139,7 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
             type="select"
             value={formState.category}
             onChange={handleFieldChange('category')}
-            options={['Social Media', 'Trading', 'Scraper', 'Assistant', 'Coding', 'Backend', 'Conversational']}
+            options={['Social Media', 'Trading', 'Scraper', 'Assistant', 'Coding', 'Backend', 'Conversational', "Other"]}
             placeholder="Select a category"
             required
           />
@@ -159,7 +162,7 @@ const Step1 = ({ isVisible, formState, prepopulate, handleFieldChange }: StepPro
   )
 }
 
-const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+const Step2 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
       <Tooltip content={"Add the address of your agent's token. This could be an ownership token, a utility token, or whatever other token that is most relevant to your agent's identity"}>
@@ -179,7 +182,7 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
             type="select"
             value={formState.platform}
             onChange={handleFieldChange('platform')}
-            options={['Eliza', 'GAME', 'Crew AI', 'Fine', 'LangGraph']}
+            options={['Eliza', 'GAME', 'Crew AI', 'Fine', 'LangGraph', "Other"]}
             placeholder="Select an agent framework"
           />
         </div>
@@ -207,7 +210,7 @@ const Step2 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
     </StepWrapper>
   )
 }
-const Step3 = ({ isVisible, formState, handleFieldChange }: StepProps) => {
+const Step3 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepProps) => {
   return (
     <StepWrapper isVisible={isVisible}>
       <Tooltip content={"Add a your agent's website"}>
@@ -288,6 +291,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   const [errorMessage, setErrorMessage] = useState<string>('')
   const breakpoints: any = useBreakpoint()
 
+  const isAmendment = agentModalPrepopulate && Object.keys(agentModalPrepopulate)?.length > 0
 
   // Complete form state
   const originalForm: FormState = {
@@ -328,13 +332,11 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
   const originalFormToSet: any = originalForm
   useMemo(() => {
-    if (agentModalPrepopulate) {
-      if (Object.keys(agentModalPrepopulate)?.length > 0) {
-        Object.keys(originalForm).forEach((field: any) => {
-          const prepopField = mapKeyToRecord(field)
-          originalFormToSet[field] = agentModalPrepopulate[prepopField]
-        })
-      }
+    if (isAmendment) {
+      Object.keys(originalForm).forEach((field: any) => {
+        const prepopField = mapKeyToRecord(field)
+        originalFormToSet[field] = agentModalPrepopulate[prepopField]
+      })
     }
   }, [agentModalPrepopulate])
 
@@ -497,8 +499,9 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       setErrorMessage(errMsg)
       return
     }
+    const hashableName = getHashableName(formState.name)
 
-    const entityRegistrarDomain = `${formState.name}.ai.${tld}`
+    const entityRegistrarDomain = `${hashableName}.ai.${tld}`
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
     try {
@@ -520,8 +523,24 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       return
     }
     setFormState(originalForm)
-    window.location.href = (`/agent/${formState.name}.ai.${tld}`)
+    window.location.href = (`/agent/${hashableName}.ai.${tld}`)
     onClose()
+  }
+
+  const getHashableName = (name: string) => {
+    let hashableName = name;
+    try {
+      const regexed = name
+        .replace(/[()#"',.&\/]/g, '')
+        .replace(/ /g, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/[^A-Za-z0-9-]/g, '');
+      hashableName = normalize(regexed);
+    } catch (err) {
+      console.log('ERROR HASHING NAME', name);
+      hashableName = name;
+    }
+    return hashableName
   }
 
   const createFormationPrep = async (texts: any[]) => {
@@ -589,6 +608,10 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   // })
 
   if (!isOpen) return null
+  let submitText = actions[0]
+  if (isAmendment) {
+    submitText = "Submit Changes"
+  }
   let disabled = actionStep === 2 && !formState.name
   let submitButton = <SubmitButton
     disabled={disabled}
@@ -600,7 +623,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       }
     }}
   >
-    {actionStep < 2 ? "Next" : actions[0]}
+    {actionStep < 2 ? "Next" : submitText}
   </SubmitButton>
 
   if (disabled) {
@@ -615,7 +638,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           }
         }}
       >
-        {actionStep < 2 ? "Next" : actions[0]}
+        {actionStep < 2 ? "Next" : submitText}
       </SubmitButton>
     </Tooltip>
   }
@@ -639,9 +662,9 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
             fontWeight: 'bold',
           }}
         >
-          Add Agent{formState.name ? ': ' : ''}
+          Add Agent{(formState.name) ? ': ' : ''}
           <span style={{ fontWeight: '900', color: 'var(--color-accent)' }}>
-            {formState.name ? `${formState.name.toLowerCase()}.ai.entity.id` : ''}
+            {formState.name ? `${getHashableName(formState.name.toLowerCase())}.ai.entity.id` : ''}
           </span>
         </h2>
 
@@ -651,6 +674,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           <>
             {actionStep === 0 && (
               <Step1
+                isAmendment={isAmendment}
                 isVisible={actionStep === 0}
                 formState={formState}
                 prepopulate={agentModalPrepopulate}
@@ -659,6 +683,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
             )}
             {actionStep === 1 && (
               <Step2
+                isAmendment={isAmendment}
                 isVisible={actionStep === 1}
                 formState={formState}
                 prepopulate={agentModalPrepopulate}
@@ -671,7 +696,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
                 isVisible={actionStep === 2}
                 formState={formState}
                 prepopulate={agentModalPrepopulate}
-
+                isAmendment={isAmendment}
                 handleFieldChange={handleFieldChange}
               />
             )}

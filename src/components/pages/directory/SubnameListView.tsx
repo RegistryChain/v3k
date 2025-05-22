@@ -20,6 +20,7 @@ import contractAddresses from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 
 import { getWalletClient } from '@app/utils/utils'
+import { useRouter } from 'next/router'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -40,8 +41,8 @@ export const SubnameListView = ({ address }: any) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [registrar, setRegistrarSelected] = useState<string>('ai')
 
-  const [searchQuery, setSearchQuery] = useState<string>('')
-  const [searchInput, setSearchInput] = useState(searchQuery)
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [searchInput, setSearchInput] = useState("")
   const [pageNumber, setPageNumber] = useState(0)
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false)
   const [finishedLoading, setFinishedLoading] = useState(false)
@@ -108,13 +109,12 @@ export const SubnameListView = ({ address }: any) => {
       })
 
       setSubnameResults(results)
-      if (results.length !== 25) {
-        setFinishedLoading(true)
-      }
+      setFinishedLoading(true)
     } catch (err) {
       console.log(err)
     } finally {
       setIsLoadingNextPage(false)
+
     }
   }
 
@@ -133,6 +133,12 @@ export const SubnameListView = ({ address }: any) => {
       console.log('ERROR GETTING CONNECTED WALLET ADMIN LEVEL: ', err.message)
     }
   }
+  const router = useRouter()
+  useEffect(() => {
+    const search = typeof router.query.search === 'string' ? router.query.search : ''
+    setSearchQuery(search)
+    setSearchInput(search)
+  }, [router.query.search])
 
   useEffect(() => {
     checkConnectedAddressAdmin()
@@ -140,6 +146,7 @@ export const SubnameListView = ({ address }: any) => {
 
   useEffect(() => {
     if (pageNumber !== 0) {
+      setFinishedLoading(false)
       getSubs(pageNumber)
     }
   }, [pageNumber])
@@ -147,6 +154,7 @@ export const SubnameListView = ({ address }: any) => {
   // Debounce effect: Wait 1 second after typing stops before calling API
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
+      setFinishedLoading(false)
       setPageNumber(0)
       getSubs(0, true)
     }, 600) // 1000ms = 1 second
@@ -173,6 +181,7 @@ export const SubnameListView = ({ address }: any) => {
   return (
     <TabWrapperWithButtons>
       <NameTableHeader
+        displaySearch={false}
         mode={'view'}
         sortType={sortType}
         sortTypeOptionValues={['birthdate', 'name']}
@@ -204,6 +213,7 @@ export const SubnameListView = ({ address }: any) => {
           onSortDirectionChange={setSortDirection}
           data={filteredSet}
           isLoadingNextPage={isLoadingNextPage}
+          finishedLoading={finishedLoading}
           fetchData={getSubs}
           page={pageNumber}
           setPage={setPageNumber}

@@ -226,10 +226,8 @@ const ProfileContent = ({
 
   const { history, fetchEnsHistory } = useEnsHistory()
   const [verifications, setVerifications] = useState<string[]>([])
-  const ref = useRef<HTMLDivElement>(null)
 
   const { getVerificationStatus } = useVerificationStatus()
-
 
   const primary = usePrimaryName({ address: owner })
 
@@ -542,7 +540,7 @@ const ProfileContent = ({
         tokenAddresses={[records.address, records.token__utility]}
         onResults={() => setSubgraphResults([...subgraphResults])}
       /> */}
-      <EmailModal
+      {/* <EmailModal
         isOpen={showEmailModal && isAddress(address) && address !== zeroAddress}
         onClose={() => setShowEmailModal(false)}
         onSubmit={(email) => {
@@ -552,7 +550,7 @@ const ProfileContent = ({
           pushEmailToList(email)
           setShowEmailModal(false)
         }}
-      />
+      /> */}
       <DeveloperRegisterModal
         isOpen={showDevelopersModal}
         onClose={() => setShowDevelopersModal(false)}
