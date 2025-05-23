@@ -111,12 +111,17 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { t } = useTranslation('common')
   const breakpoints = useBreakpoint()
   const { connectOrCreateWallet } = useConnectOrCreateWallet();
+  const { sendCode, loginWithCode } = useLoginWithEmail()
+  const { connectWallet, logout } = usePrivy()
 
   return (
     <StyledButtonWrapper $large={large} $isTabBar={isTabBar}>
       <Button
         data-testid={calculateTestId(isTabBar, inHeader)}
-        onClick={connectOrCreateWallet}
+        onClick={() => {
+
+          connectOrCreateWallet()
+        }}
         size={breakpoints.sm || large ? 'medium' : 'small'}
         width={inHeader ? '45' : undefined}
         shape="rounded"
@@ -137,7 +142,6 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
   const { disconnect } = useDisconnect({})
   const { copy, copied } = useCopied(300)
   const { logout } = usePrivy()
-
 
   return (
     <Profile
@@ -206,6 +210,7 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
 
 export const HeaderConnect = () => {
   const { address } = useAccount()
+
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const { wallets } = useWallets();      // Privy hook

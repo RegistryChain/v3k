@@ -183,6 +183,7 @@ const DeveloperAgents = ({ address, record }: any) => {
         pageSize: DEFAULT_PAGE_SIZE,
     })
 
+
     // Filter out the primary name's data
     const filteredNamesPages = useMemo(() => {
 

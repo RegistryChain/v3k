@@ -285,6 +285,7 @@ const actions = ['Register Agent', 'Add Agent Information', 'Deploy Agent Contra
 const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepopulate }: any) => {
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
+
   const { connectOrCreateWallet } = useConnectOrCreateWallet();
 
   const modalRef = useRef(null)
