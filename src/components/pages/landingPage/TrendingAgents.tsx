@@ -7,7 +7,7 @@ import { mq, Button, Spinner } from '@ensdomains/thorin'
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
 import SubgraphResults from '@app/components/SubgraphQuery'
 import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
-import { getWalletClient, getPublicClient } from '@app/utils/utils'
+import { getPublicClient } from '@app/utils/utils'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
@@ -53,21 +53,9 @@ const TrendingAgents = ({ recipientAverages }: any) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const { address } = useAccount()
-  const [wallet, setWallet] = useState<any>(null)
   const [subgraphResults, setSubgraphResults] = useState<any>(null)
   const breakpoints = useBreakpoint()
   const publicClient = useMemo(() => getPublicClient(), [])
-
-  // Wallet init
-  useEffect(() => {
-    if (address && !wallet) {
-      try {
-        setWallet(getWalletClient(address))
-      } catch (err) {
-        console.error('Error setting wallet:', err)
-      }
-    }
-  }, [address])
 
   // Data fetch
   const getAgents = async () => {

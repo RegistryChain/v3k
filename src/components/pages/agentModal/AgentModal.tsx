@@ -1,5 +1,4 @@
 // components/AgentModal.tsx (updated)
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { FormControl } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -22,9 +21,8 @@ import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecut
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
   getChangedRecords,
-  getContractInstance,
+  getPrivyWalletClient,
   getPublicClient,
-  getWalletClient,
   normalizeLabel,
   pinata,
 } from '@app/utils/utils'
@@ -50,6 +48,7 @@ import { Tooltip } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { SearchableDropdown } from './SearchableDropdown'
+import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
 
 type FormState = {
   name: string
@@ -146,8 +145,9 @@ const Step1 = ({ isVisible, formState, isAmendment, prepopulate, handleFieldChan
         </div>
       </Tooltip>
       <Tooltip content={"Select keywords that best apply to your agent's composition and functionality. Think of these keywords as tags that help your agent's discoverability."}>
-        <div>
+        <div style={{ height: "56px" }}>
           <SearchableDropdown
+            // style={{ border: "1px solid #c3c1c1", borderRadius: "4px",    }}
             data={keywords}
             label={"Keywords"}
             onChange={(x: any) => {
@@ -285,7 +285,9 @@ const actions = ['Register Agent', 'Add Agent Information', 'Deploy Agent Contra
 const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepopulate }: any) => {
   const { address } = useAccount()
   const router = useRouterWithHistory()
-  const { openConnectModal } = useConnectModal()
+  const { connectOrCreateWallet } = useConnectOrCreateWallet();
+  const { wallets } = useWallets();      // Privy hook
+
   const modalRef = useRef(null)
   const [actionStep, setActionStep] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string>('')
@@ -359,29 +361,30 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       }
     }
   };
-  const registerEntity = async (entityDomain: string) => {
-    // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
-    const registrarContract: any = getContractInstance(
-      getWalletClient(address as Address),
-      `ai.${tld}`,
-    )
-    let owner = await checkOwner(publicClient, namehash(entityDomain))
 
-    if (!owner || owner === zeroAddress) {
-      const tx = await registrarContract.write.registerEntity([
-        labelhash(normalize(formState.name)),
-        address,
-      ])
-      const txReceipt = await publicClient.waitForTransactionReceipt({ hash: tx })
+  // const registerEntity = async (entityDomain: string) => {
+  //   // This function is for on chain ownership registration. The system currently uses gasless off chain ownership
+  //   const registrarContract: any = getContractInstance(
+  //     getWalletClient(address as Address),
+  //     `ai.${tld}`,
+  //   )
+  //   let owner = await checkOwner(publicClient, namehash(entityDomain))
 
-      if (txReceipt?.status === 'reverted') {
-        throw Error('Transaction failed - contract error')
-      } else {
-        owner = contractAddresses['ai.' + tld]
-      }
-    }
-    return owner
-  }
+  //   if (!owner || owner === zeroAddress) {
+  //     const tx = await registrarContract.write.registerEntity([
+  //       labelhash(normalize(formState.name)),
+  //       address,
+  //     ])
+  //     const txReceipt = await publicClient.waitForTransactionReceipt({ hash: tx })
+
+  //     if (txReceipt?.status === 'reverted') {
+  //       throw Error('Transaction failed - contract error')
+  //     } else {
+  //       owner = contractAddresses['ai.' + tld]
+  //     }
+  //   }
+  //   return owner
+  // }
 
   // Attach event listener when the modal is open
   useEffect(() => {
@@ -446,9 +449,10 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     }
 
     const formationPrep = await createFormationPrep(texts)
-
     // Pass in amendment formationPrep as multicall(setText())
-    const wallet = getWalletClient(address as Address)
+
+    const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
+
     if (isAddressEqual(formationPrep.address, contractAddressesObj["DatabaseResolver"] as Address)) {
       await executeWriteToResolver(wallet, formationPrep, null)
     } else {
@@ -505,7 +509,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
     let currentEntityOwner = await checkOwner(publicClient, namehash(entityRegistrarDomain))
     try {
-      if (openConnectModal && !address) return openConnectModal()
+      if (!address) return connectOrCreateWallet()
 
       // If there is no owner to the domain, make the register
       // if (!currentEntityOwner || currentEntityOwner === zeroAddress) {

@@ -1,4 +1,3 @@
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useEffect, useMemo, useState } from 'react'
 import { createPublicClient, createWalletClient, custom, http, isAddress, isAddressEqual, namehash } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -19,6 +18,7 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
+import { useConnectOrCreateWallet } from '@privy-io/react-auth'
 
 const contractAddressesObj: any = contractAddresses
 
@@ -33,7 +33,7 @@ export default function Page() {
   const [owner, setOwner] = useState('')
 
   const breakpoints = useBreakpoint()
-  const { openConnectModal } = useConnectModal()
+  const { connectOrCreateWallet } = useConnectOrCreateWallet();
 
   const initial = useInitial()
 
@@ -105,7 +105,7 @@ export default function Page() {
   }
 
   const openConnect = async () => {
-    if (openConnectModal && !address) await openConnectModal()
+    if (!address) connectOrCreateWallet();
   }
 
   useEffect(() => {
