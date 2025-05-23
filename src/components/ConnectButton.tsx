@@ -1,9 +1,9 @@
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { Key, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
 import { useDisconnect, useEnsAvatar } from 'wagmi'
+import { useConnectOrCreateWallet, usePrivy, useWallets } from '@privy-io/react-auth';
 
 import {
   Button,
@@ -110,13 +110,13 @@ const calculateTestId = (isTabBar: boolean | undefined, inHeader: boolean | unde
 export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { t } = useTranslation('common')
   const breakpoints = useBreakpoint()
-  const { openConnectModal } = useConnectModal()
+  const { connectOrCreateWallet } = useConnectOrCreateWallet();
 
   return (
     <StyledButtonWrapper $large={large} $isTabBar={isTabBar}>
       <Button
         data-testid={calculateTestId(isTabBar, inHeader)}
-        onClick={() => openConnectModal?.()}
+        onClick={connectOrCreateWallet}
         size={breakpoints.sm || large ? 'medium' : 'small'}
         width={inHeader ? '45' : undefined}
         shape="rounded"

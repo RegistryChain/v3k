@@ -19,8 +19,9 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import contractAddresses from '../../../constants/contractAddresses.json'
 import l1abi from '../../../constants/l1abi.json'
 
-import { getWalletClient } from '@app/utils/utils'
+import { getPrivyWalletClient } from '@app/utils/utils'
 import { useRouter } from 'next/router'
+import { useWallets } from '@privy-io/react-auth'
 
 const TabWrapperWithButtons = styled(TabWrapper)(
   ({ theme }) => css`
@@ -52,6 +53,8 @@ export const SubnameListView = ({ address }: any) => {
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
 
+  const { wallets } = useWallets();      // Privy hook
+
   const jurisList = ['ai']
 
   const publicClient: any = useMemo(
@@ -75,8 +78,9 @@ export const SubnameListView = ({ address }: any) => {
           abi: l1abi,
           address: contractAddresses['DatabaseResolver'],
         }
+        const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
 
-        await executeWriteToResolver(getWalletClient(address as Address), formationPrep, null)
+        await executeWriteToResolver(wallet, formationPrep, null)
         getSubs(pageNumber)
       }
     } catch (err) { }

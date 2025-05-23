@@ -33,9 +33,10 @@ import {
 import { TransactionDialogPassthrough } from '@app/transaction-flow/types'
 
 import { getEntitiesList, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
-import { getPublicClient, getWalletClient, normalizeLabel } from '@app/utils/utils'
+import { getPrivyWalletClient, getPublicClient, normalizeLabel } from '@app/utils/utils'
 import { useRouter } from 'next/navigation'
 import { TaggedNameItem } from '@app/components/@atoms/NameDetailItem/TaggedNameItem'
+import { useWallets } from '@privy-io/react-auth'
 
 const DEFAULT_PAGE_SIZE = 100
 
@@ -163,6 +164,7 @@ const DeveloperAgents = ({ address, record }: any) => {
     const [offchainEntities, setOffchainEntities] = useState([])
     const setSearchQuery = useDebouncedCallback(_setSearchQuery, 300, [])
     const router = useRouter()
+    const { wallets } = useWallets();      // Privy hook
 
     const currentPrimary = usePrimaryName({ address })
     const {
@@ -242,18 +244,12 @@ const DeveloperAgents = ({ address, record }: any) => {
         migratedRecordsMatch: { type: 'address', match: { id: 60, value: address } },
     })
 
-    const getPrimarynameTransactionFlowItem = useGetPrimaryNameTransactionFlowItem({
-        address,
-        isWrapped,
-        profileAddress: selectedNameProfile?.coins.find((c) => c.id === 60)?.value,
-        resolverAddress: selectedNameProfile?.resolverAddress,
-        resolverStatus: resolverStatus.data,
-    })
 
     const dispatchTransactions = async (name: string) => {
 
         const client = getPublicClient()
         let resolverToUse: any = await getResolverAddress(client, name)
+        const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
 
         const revRes: any = getContract({
             address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",
@@ -280,7 +276,7 @@ const DeveloperAgents = ({ address, record }: any) => {
                     type: 'function',
                 },
             ],
-            client: getWalletClient(address as Address),
+            client: wallet,
         })
 
         try {

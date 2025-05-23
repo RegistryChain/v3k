@@ -1,3 +1,4 @@
+import { ConnectedWallet } from '@privy-io/react-auth'
 import { PinataSDK } from 'pinata'
 import type { TFunction } from 'react-i18next'
 import {
@@ -261,6 +262,21 @@ export const getPublicClient = () => {
   return createPublicClient({
     chain: sepolia,
     transport: http(infuraUrl('sepolia')),
+  })
+}
+
+export async function getPrivyWalletClient(
+  wallet: ConnectedWallet, // ← a wallet object from `useWallets()`
+  chain = sepolia, //   or `mainnet`, etc.
+) {
+  // 1. Ask Privy for the wallet’s EIP-1193 provider
+  const provider = await wallet.getEthereumProvider()
+
+  // 2. Hand that provider to viem
+  return createWalletClient({
+    chain,
+    transport: custom(provider, { retryCount: 0 }),
+    account: wallet.address as Address,
   })
 }
 

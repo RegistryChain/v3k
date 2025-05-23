@@ -1,10 +1,11 @@
 import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
-import { getWalletClient, pinata } from '@app/utils/utils'
+import { getPrivyWalletClient, pinata } from '@app/utils/utils'
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Address, namehash } from 'viem'
 import l1abi from '../../../../constants/l1abi.json'
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
+import { useWallets } from '@privy-io/react-auth'
 
 interface MediaGalleryProps {
     images: string[]
@@ -95,6 +96,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
     const hasMedia = video || images.length > 0
     const thumbnails = images.slice(video ? 0 : 1, video ? 3 : 4)
     const [imageFile, setImageFile] = useState(null)
+    const { wallets } = useWallets();      // Privy hook
     const shouldShowUploadBox = thumbnails.length < 3 && isOwner
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -123,7 +125,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
                 alert("Trouble uploading file");
             }
         }
-        const wallet = getWalletClient(address as Address)
+        const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
         const resolverAddress = await getResolverAddress(wallet, entityId)
 
         // Use Resolver multicall(setText[])
