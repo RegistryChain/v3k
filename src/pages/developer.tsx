@@ -90,7 +90,6 @@ export default function Page() {
 
     const subgraphMeta = useSubgraphMeta()
 
-    const isLoading = !router.isReady || ready || subgraphMeta.isLoading
 
     useEffect(() => {
         const hasSubmittedEmail = localStorage.getItem(EMAIL_SUBMITTED_KEY)

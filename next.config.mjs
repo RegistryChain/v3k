@@ -36,6 +36,7 @@ const nextConfig = {
       },
     ],
   },
+  productionBrowserSourceMaps: true,
   async rewrites() {
     return [
       {

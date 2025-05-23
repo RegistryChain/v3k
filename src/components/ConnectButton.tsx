@@ -139,12 +139,9 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
   const { data: primary } = usePrimaryName({ address })
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name: primary?.name })
 
-  const router = useRouterWithHistory()
-
   const { disconnect } = useDisconnect({})
   const { copy, copied } = useCopied(300)
-  const { connectWallet, logout } = usePrivy()
-
+  const { logout } = usePrivy()
 
   return (
     <Profile
@@ -213,7 +210,7 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
 
 export const HeaderConnect = () => {
   const { address } = useAccount()
-  const { user } = usePrivy()
+
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const { wallets } = useWallets();      // Privy hook
