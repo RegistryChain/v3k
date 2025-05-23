@@ -13,9 +13,10 @@ import { useGetRating } from '@app/hooks/useGetRating'
 import StarRating from '@app/components/StarRating'
 import Coinbase from '../../../../assets/Coinbase.svg'
 
-import { useEffect, useState } from 'react'
-import { isAddress, zeroAddress } from 'viem'
+import { useEffect, useMemo, useState } from 'react'
+import { Address, isAddress, zeroAddress } from 'viem'
 import { useVerificationStatus } from '@app/hooks/useVerificationStatus'
+import { useWallets } from '@privy-io/react-auth'
 
 const SkeletonFiller = styled.div(
   ({ theme }) => css`
@@ -138,7 +139,8 @@ const ActionsContainer = styled.div(({ theme }) => [
 export const PrimarySection = ({ address, primary, record }: any) => {
   const { t } = useTranslation('developer')
 
-  const { address: connectedAddress } = useAccountSafely()
+  const { wallets, ready } = useWallets();      // Privy hook
+  const connectedAddress = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
   const showResetPrimaryNameInput = usePreparedDataInput('ResetPrimaryName')
@@ -235,7 +237,7 @@ export const PrimarySection = ({ address, primary, record }: any) => {
         ) : (
           <NoNameContainer data-testid="no-primary-name-section">
             <NoNameTitle fontVariant="headingFour">{t('section.primary.title')}</NoNameTitle>
-            {hasGraphError ? (
+            {hasGraphError || address !== connectedAddress ? (
               null
             ) : (
               <>

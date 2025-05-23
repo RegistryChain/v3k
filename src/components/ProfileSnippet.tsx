@@ -26,6 +26,7 @@ import { FaPencilAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
 import { getContractInstance } from '@app/utils/utils'
 import { CachedImage } from '@app/hooks/CachedImage'
+import { useWallets } from '@privy-io/react-auth'
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -136,7 +137,8 @@ export const ProfileSnippet = ({
     }
   }
 
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
 
   const [wallet, setWallet] = useState<any>(null)
 

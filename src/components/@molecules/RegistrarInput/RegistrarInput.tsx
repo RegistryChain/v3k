@@ -53,6 +53,7 @@ import { thread, yearsToSeconds } from '@app/utils/utils'
 
 import { getBoxNameStatus, SearchResult } from './SearchResult'
 import { HistoryItem, SearchHandler, SearchItem } from './types'
+import { useWallets } from '@privy-io/react-auth'
 
 const Container = styled.div<{ $size: 'medium' | 'extraLarge' }>(
   ({ $size }) => css`
@@ -116,26 +117,26 @@ const createCachedQueryDataGetter =
     chainId: SupportedChain['id']
     address: Address | undefined
   }) =>
-  <TData, TQueryKey extends GenericQueryKey<'standard'>>({
-    functionName,
-    params,
-  }: {
-    functionName: TQueryKey[4]
-    params: TQueryKey[0]
-  }) => {
-    return queryClient.getQueryData<
-      TData,
-      CreateQueryKey<typeof params, typeof functionName, 'standard'>
-    >(
-      createQueryKey({
-        address,
-        chainId,
-        functionName,
-        queryDependencyType: 'standard',
-        params,
-      }),
-    )
-  }
+    <TData, TQueryKey extends GenericQueryKey<'standard'>>({
+      functionName,
+      params,
+    }: {
+      functionName: TQueryKey[4]
+      params: TQueryKey[0]
+    }) => {
+      return queryClient.getQueryData<
+        TData,
+        CreateQueryKey<typeof params, typeof functionName, 'standard'>
+      >(
+        createQueryKey({
+          address,
+          chainId,
+          functionName,
+          queryDependencyType: 'standard',
+          params,
+        }),
+      )
+    }
 
 const getRouteForSearchItem = ({
   address,
@@ -233,23 +234,23 @@ const createSearchHandler =
     setInputVal,
     queryClient,
   }: CreateSearchHandlerProps): SearchHandler =>
-  (index: number) => {
-    if (index === -1) return
-    const selectedItem = dropdownItems[index]
-    if (!selectedItem?.text) return
-    const { text, nameType } = selectedItem
-    if (nameType === 'error' || nameType === 'text') return
+    (index: number) => {
+      if (index === -1) return
+      const selectedItem = dropdownItems[index]
+      if (!selectedItem?.text) return
+      const { text, nameType } = selectedItem
+      if (nameType === 'error' || nameType === 'text') return
 
-    setHistory((prev: HistoryItem[]) => [
-      ...prev.filter((item) => !(item.text === text && item.nameType === nameType)),
-      { lastAccessed: Date.now(), nameType, text, isValid: selectedItem.isValid },
-    ])
+      setHistory((prev: HistoryItem[]) => [
+        ...prev.filter((item) => !(item.text === text && item.nameType === nameType)),
+        { lastAccessed: Date.now(), nameType, text, isValid: selectedItem.isValid },
+      ])
 
-    const path = getRouteForSearchItem({ address, chainId, queryClient, selectedItem })
-    setInputVal('')
-    searchInputRef.current?.blur()
-    router.pushWithHistory(path)
-  }
+      const path = getRouteForSearchItem({ address, chainId, queryClient, selectedItem })
+      setInputVal('')
+      searchInputRef.current?.blur()
+      router.pushWithHistory(path)
+    }
 
 type UseAddEventListenersProps = {
   searchInputRef: RefObject<HTMLInputElement>
@@ -289,21 +290,21 @@ type HandleKeyDownProps = {
 
 const handleKeyDown =
   ({ dropdownItems, handleSearch, selected, setSelected }: HandleKeyDownProps) =>
-  (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch(selected)
-      return
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch(selected)
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelected((prev: number) => (prev - 1 + dropdownItems.length) % dropdownItems.length)
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelected((prev: number) => (prev + 1) % dropdownItems.length)
+      }
     }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelected((prev: number) => (prev - 1 + dropdownItems.length) % dropdownItems.length)
-      return
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelected((prev: number) => (prev + 1) % dropdownItems.length)
-    }
-  }
 
 const useSelectionManager = ({
   inputVal,
@@ -340,7 +341,8 @@ export const RegistrarInput = ({
   const router = useRouterWithHistory()
   const queryClient = useQueryClient()
   const breakpoints = useBreakpoint()
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const chainId: any = useChainId()
 
   const [project, setProject] = useState('REGISTRYCHAIN')

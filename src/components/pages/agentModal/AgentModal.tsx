@@ -283,10 +283,9 @@ const contractAddresses = contractAddressesObj as Record<string, Address>
 const actions = ['Register Agent', 'Add Agent Information', 'Deploy Agent Contract']
 
 const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepopulate }: any) => {
-  const { address } = useAccount()
-  const router = useRouterWithHistory()
-  const { connectOrCreateWallet } = useConnectOrCreateWallet();
   const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
+  const { connectOrCreateWallet } = useConnectOrCreateWallet();
 
   const modalRef = useRef(null)
   const [actionStep, setActionStep] = useState(0)
