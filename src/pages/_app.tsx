@@ -159,7 +159,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       {/* Google Analytics Scripts */}
-      <Script
+      {/* <Script
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN`}
       />
@@ -176,7 +176,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         });
       `,
         }}
-      />
+      /> */}
       <I18nextProvider i18n={i18n}>
         <QueryProviders>
           <RainbowKitProvider theme={rainbowKitTheme}>
