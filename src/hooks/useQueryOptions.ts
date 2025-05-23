@@ -3,6 +3,7 @@ import { useAccount, useChainId, useConfig } from 'wagmi'
 
 import { SupportedChain } from '@app/constants/chains'
 import { ConfigWithEns, CreateQueryKey, QueryDependencyType } from '@app/types'
+import { wagmiConfig } from '@app/utils/query/wagmi'
 
 export type QueryKeyConfig<
   TParams extends {},
@@ -145,7 +146,7 @@ export function useQueryOptions<
 }: QueryKeyConfig<TParams, TFunctionName, QueryDependencyType> & { queryFn?: TQueryFn }) {
   const chainId: any = useChainId()
   const { address } = useAccount()
-  const config: any = useConfig()
+  const config: any = wagmiConfig
 
   if (queryDependencyType === 'independent')
     return {

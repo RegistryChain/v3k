@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createPublicClient, createWalletClient, custom, http, isAddress, isAddressEqual, namehash } from 'viem'
+import { Address, createPublicClient, createWalletClient, custom, http, isAddress, isAddressEqual, namehash } from 'viem'
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
@@ -18,7 +18,7 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
-import { useConnectOrCreateWallet } from '@privy-io/react-auth'
+import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
 
 const contractAddressesObj: any = contractAddresses
 
@@ -37,7 +37,8 @@ export default function Page() {
 
   const initial = useInitial()
 
-  const { address, isConnected } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const publicClient: any = useMemo(
     () =>
       createPublicClient({
@@ -133,9 +134,6 @@ export default function Page() {
     }
   }, [address])
 
-  useEffect(() => {
-    openConnect()
-  }, [isConnected])
 
   const isLoading = initial || !router.isReady
 

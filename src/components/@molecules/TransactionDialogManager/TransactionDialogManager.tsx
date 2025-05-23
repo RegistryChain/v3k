@@ -13,9 +13,12 @@ import { DataInputComponents } from '../../../transaction-flow/input'
 import { InternalTransactionFlow, TransactionFlowAction } from '../../../transaction-flow/types'
 import { IntroStageModal } from './stage/Intro'
 import { TransactionStageModal } from './stage/TransactionStageModal'
+import { useWallets } from '@privy-io/react-auth'
+import { Address } from 'viem'
 
 export const useResetSelectedKey = (dispatch: any) => {
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const chainId = useChainId()
 
   const prevAddress = usePrevious(address)

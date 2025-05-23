@@ -2,8 +2,8 @@ import { Key, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
-import { useDisconnect, useEnsAvatar } from 'wagmi'
-import { useConnectOrCreateWallet, usePrivy, useWallets } from '@privy-io/react-auth';
+import { useAccount, useDisconnect, useEnsAvatar } from 'wagmi'
+import { useConnectOrCreateWallet, useLoginWithEmail, usePrivy, useWallets } from '@privy-io/react-auth';
 
 import {
   Button,
@@ -111,12 +111,17 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { t } = useTranslation('common')
   const breakpoints = useBreakpoint()
   const { connectOrCreateWallet } = useConnectOrCreateWallet();
+  const { sendCode, loginWithCode } = useLoginWithEmail()
+  const { connectWallet, logout } = usePrivy()
 
   return (
     <StyledButtonWrapper $large={large} $isTabBar={isTabBar}>
       <Button
         data-testid={calculateTestId(isTabBar, inHeader)}
-        onClick={connectOrCreateWallet}
+        onClick={() => {
+
+          connectOrCreateWallet()
+        }}
         size={breakpoints.sm || large ? 'medium' : 'small'}
         width={inHeader ? '45' : undefined}
         shape="rounded"
@@ -136,25 +141,10 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
 
   const router = useRouterWithHistory()
 
-  const { disconnect } = useDisconnect({
-    mutation: {
-      onSuccess: () => {
-        router.push('/')
-      },
-    },
-  })
+  const { disconnect } = useDisconnect({})
   const { copy, copied } = useCopied(300)
-  const hasPendingTransactions = useHasPendingTransactions()
+  const { connectWallet, logout } = usePrivy()
 
-
-  const toggleDarkMode = () => {
-    setDarkMode(!isDarkMode);
-    if (isDarkMode) {
-      document.documentElement.classList.remove("dark");
-    } else {
-      document.documentElement.classList.add("dark");
-    }
-  };
 
   return (
     <Profile
@@ -195,7 +185,10 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
           {
             label: t('wallet.disconnect'),
             color: 'red',
-            onClick: () => disconnect(),
+            onClick: async () => {
+              await logout()
+              disconnect()
+            },
             icon: <ExitSVG />,
           },
         ] as DropdownItem[]
@@ -219,13 +212,15 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
 }
 
 export const HeaderConnect = () => {
-  const { address } = useAccountSafely()
+  const { address } = useAccount()
+  const { user } = usePrivy()
   const { usePreparedDataInput } = useTransactionFlow()
   const showSelectPrimaryNameInput = usePreparedDataInput('SelectPrimaryName')
-
-  if (!address) {
+  const { wallets } = useWallets();      // Privy hook
+  const walletToUse = wallets[0]
+  if (!address && !walletToUse?.address) {
     return <ConnectButton inHeader />
+  } else {
+    return <HeaderProfile address={(walletToUse?.address || address) as any} showSelectPrimaryNameInput={showSelectPrimaryNameInput} />
   }
-
-  return <HeaderProfile address={address} showSelectPrimaryNameInput={showSelectPrimaryNameInput} />
 }

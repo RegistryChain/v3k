@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { BaseSyntheticEvent, useEffect, useRef, useState } from 'react'
+import { BaseSyntheticEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Control, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
@@ -23,6 +23,8 @@ import { ProfileRecordInput } from './ProfileRecordInput'
 import { ProfileRecordTextarea } from './ProfileRecordTextarea'
 import { profileEditorFormToProfileRecords } from './profileRecordUtils'
 import { WrappedAvatarButton } from './WrappedAvatarButton'
+import { useWallets } from '@privy-io/react-auth'
+import { Address } from 'viem'
 
 const StyledCard = styled.form(({ theme }) => [
   css`
@@ -77,7 +79,8 @@ const SubmitButton = ({
   control: Control<ProfileEditorForm>
   disabled: boolean
 }) => {
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const { t } = useTranslation('register')
 
   const records = useWatch({

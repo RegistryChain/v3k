@@ -23,6 +23,7 @@ import i18n from '../i18n'
 
 import '../styles.css'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
+import Script from 'next/script'
 
 const rainbowKitTheme: Theme = {
   ...lightTheme({
@@ -156,30 +157,51 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page)
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <QueryProviders>
-        <RainbowKitProvider theme={rainbowKitTheme}>
-          <TransactionStoreProvider>
-            <MuiThemeProvider theme={muiTheme}>
-              <ThemeProvider theme={theme}>
-                <BreakpointProvider queries={breakpoints}>
-                  <GlobalStyle />
-                  <SyncProvider>
-                    <TransactionFlowProvider>
-                      <SyncDroppedTransaction>
-                        <Notifications />
-                        {/* <TestnetWarning /> */}
-                        <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
-                      </SyncDroppedTransaction>
-                    </TransactionFlowProvider>
-                  </SyncProvider>
-                </BreakpointProvider>
-              </ThemeProvider>
-            </MuiThemeProvider>
-          </TransactionStoreProvider>
-        </RainbowKitProvider>
-      </QueryProviders>
-    </I18nextProvider>
+    <>
+      {/* Google Analytics Scripts */}
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN`}
+      />
+      <Script
+        id="gtag-init"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-LT2WCF51SN', {
+          page_path: window.location.pathname,
+        });
+      `,
+        }}
+      />
+      <I18nextProvider i18n={i18n}>
+        <QueryProviders>
+          <RainbowKitProvider theme={rainbowKitTheme}>
+            <TransactionStoreProvider>
+              <MuiThemeProvider theme={muiTheme}>
+                <ThemeProvider theme={theme}>
+                  <BreakpointProvider queries={breakpoints}>
+                    <GlobalStyle />
+                    <SyncProvider>
+                      <TransactionFlowProvider>
+                        <SyncDroppedTransaction>
+                          <Notifications />
+                          {/* <TestnetWarning /> */}
+                          <Basic>{getLayout(<Component {...pageProps} />)}</Basic>
+                        </SyncDroppedTransaction>
+                      </TransactionFlowProvider>
+                    </SyncProvider>
+                  </BreakpointProvider>
+                </ThemeProvider>
+              </MuiThemeProvider>
+            </TransactionStoreProvider>
+          </RainbowKitProvider>
+        </QueryProviders>
+      </I18nextProvider>
+    </>
   )
 }
 

@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { http, useAccount } from 'wagmi'
-import { isAddress, zeroAddress } from 'viem'
+import { Address, isAddress, zeroAddress } from 'viem'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubgraphMeta } from '@app/hooks/ensjs/subgraph/useSubgraphMeta'
 import { useProtectedRoute } from '@app/hooks/useProtectedRoute'
@@ -21,6 +21,7 @@ import { checkOwner } from '@app/hooks/useCheckOwner'
 import { LoadingContainer, SpinnerRow } from '@app/components/@molecules/ScrollBoxWithSpinner'
 import { Heading } from '@ensdomains/thorin'
 import EmailModal from '@app/components/pages/profile/EmailModal'
+import { useWallets } from '@privy-io/react-auth'
 
 const OtherWrapper = styled.div(
     ({ theme }) => css`
@@ -36,7 +37,9 @@ const OtherWrapper = styled.div(
 
 export default function Page() {
     const { t } = useTranslation('developer')
-    const { address, isConnecting, isReconnecting } = useAccount()
+    const { wallets, ready } = useWallets();      // Privy hook
+    const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
+
     const [owner, setOwner] = useState<any>(zeroAddress)
     const [showEmailModal, setShowEmailModal] = useState(false)
     const EMAIL_SUBMITTED_KEY = 'v3k_user_email_submitted'
@@ -87,9 +90,7 @@ export default function Page() {
 
     const subgraphMeta = useSubgraphMeta()
 
-    const isLoading = !router.isReady || isConnecting || isReconnecting || subgraphMeta.isLoading
-
-    useProtectedRoute('/', isLoading ? true : address)
+    const isLoading = !router.isReady || ready || subgraphMeta.isLoading
 
     useEffect(() => {
         const hasSubmittedEmail = localStorage.getItem(EMAIL_SUBMITTED_KEY)

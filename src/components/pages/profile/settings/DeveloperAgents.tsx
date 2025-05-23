@@ -37,6 +37,7 @@ import { getPrivyWalletClient, getPublicClient, normalizeLabel } from '@app/util
 import { useRouter } from 'next/navigation'
 import { TaggedNameItem } from '@app/components/@atoms/NameDetailItem/TaggedNameItem'
 import { useWallets } from '@privy-io/react-auth'
+import { wagmiConfig } from '@app/utils/query/wagmi'
 
 const DEFAULT_PAGE_SIZE = 100
 
@@ -155,7 +156,7 @@ const DeveloperAgents = ({ address, record }: any) => {
     })
     const { handleSubmit, control, setValue } = form
 
-    const client: any = useClient()
+    const client: any = useClient({ config: wagmiConfig })
 
     const [sortType, setSortType] = useState<SortType>('labelName')
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
@@ -181,6 +182,7 @@ const DeveloperAgents = ({ address, record }: any) => {
         },
         pageSize: DEFAULT_PAGE_SIZE,
     })
+
 
     // Filter out the primary name's data
     const filteredNamesPages = useMemo(() => {

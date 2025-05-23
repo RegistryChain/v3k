@@ -9,6 +9,8 @@ import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
 import { getPublicClient } from '@app/utils/utils'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { useWallets } from '@privy-io/react-auth'
+import { Address } from 'viem'
 
 const GradientTitle = styled.h1(
   ({ theme }) => css`
@@ -52,7 +54,8 @@ const FeaturedAgents = ({ recipientAverages }: any) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const [subgraphResults, setSubgraphResults] = useState<any>(null)
   const publicClient = useMemo(() => getPublicClient(), [])
   const breakpoints = useBreakpoint()
