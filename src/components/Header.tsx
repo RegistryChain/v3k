@@ -197,7 +197,6 @@ export const Header = () => {
   const { space } = useTheme()
   const router = useRouter()
   const isInitial = useInitial()
-  const { isConnected } = useAccount()
   const breakpoints = useBreakpoint()
   const transactions = useRecentTransactions()
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')

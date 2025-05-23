@@ -49,6 +49,7 @@ import { thread, yearsToSeconds } from '@app/utils/utils'
 import { FakeSearchInputBox, SearchInputBox } from './SearchInputBox'
 import { getBoxNameStatus, SearchResult } from './SearchResult'
 import { HistoryItem, SearchHandler, SearchItem } from './types'
+import { useWallets } from '@privy-io/react-auth'
 
 const Container = styled.div<{ $size: 'medium' | 'extraLarge' }>(
   ({ $size }) => css`
@@ -211,26 +212,26 @@ const createCachedQueryDataGetter =
     chainId: any
     address: Address | undefined
   }) =>
-  <TData, TQueryKey extends GenericQueryKey<'standard'>>({
-    functionName,
-    params,
-  }: {
-    functionName: TQueryKey[4]
-    params: TQueryKey[0]
-  }) => {
-    return queryClient.getQueryData<
-      TData,
-      CreateQueryKey<typeof params, typeof functionName, 'standard'>
-    >(
-      createQueryKey({
-        address,
-        chainId,
-        functionName,
-        queryDependencyType: 'standard',
-        params,
-      }),
-    )
-  }
+    <TData, TQueryKey extends GenericQueryKey<'standard'>>({
+      functionName,
+      params,
+    }: {
+      functionName: TQueryKey[4]
+      params: TQueryKey[0]
+    }) => {
+      return queryClient.getQueryData<
+        TData,
+        CreateQueryKey<typeof params, typeof functionName, 'standard'>
+      >(
+        createQueryKey({
+          address,
+          chainId,
+          functionName,
+          queryDependencyType: 'standard',
+          params,
+        }),
+      )
+    }
 
 const getRouteForSearchItem = ({
   address,
@@ -324,25 +325,25 @@ const createSearchHandler =
     setInputVal,
     queryClient,
   }: CreateSearchHandlerProps): SearchHandler =>
-  (index: number) => {
-    if (index === -1) return
+    (index: number) => {
+      if (index === -1) return
 
-    const selectedItem = dropdownItems[index]
-    if (!selectedItem?.text) return
+      const selectedItem = dropdownItems[index]
+      if (!selectedItem?.text) return
 
-    const { text, nameType } = selectedItem
-    if (nameType === 'error' || nameType === 'text') return
+      const { text, nameType } = selectedItem
+      if (nameType === 'error' || nameType === 'text') return
 
-    setHistory((prev: HistoryItem[]) => [
-      ...prev.filter((item) => !(item.text === text && item.nameType === nameType)),
-      { lastAccessed: Date.now(), nameType, text, isValid: selectedItem.isValid },
-    ])
+      setHistory((prev: HistoryItem[]) => [
+        ...prev.filter((item) => !(item.text === text && item.nameType === nameType)),
+        { lastAccessed: Date.now(), nameType, text, isValid: selectedItem.isValid },
+      ])
 
-    const path = getRouteForSearchItem({ address, chainId, queryClient, selectedItem })
-    setInputVal('')
-    searchInputRef.current?.blur()
-    router.pushWithHistory(path)
-  }
+      const path = getRouteForSearchItem({ address, chainId, queryClient, selectedItem })
+      setInputVal('')
+      searchInputRef.current?.blur()
+      router.pushWithHistory(path)
+    }
 
 type UseAddEventListenersProps = {
   searchInputRef: RefObject<HTMLInputElement>
@@ -382,21 +383,21 @@ type HandleKeyDownProps = {
 
 const handleKeyDown =
   ({ dropdownItems, handleSearch, selected, setSelected }: HandleKeyDownProps) =>
-  (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch(selected)
-      return
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch(selected)
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelected((prev: number) => (prev - 1 + dropdownItems.length) % dropdownItems.length)
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelected((prev: number) => (prev + 1) % dropdownItems.length)
+      }
     }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelected((prev: number) => (prev - 1 + dropdownItems.length) % dropdownItems.length)
-      return
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelected((prev: number) => (prev + 1) % dropdownItems.length)
-    }
-  }
 
 const useSelectionManager = ({
   inputVal,
@@ -431,17 +432,17 @@ const formatEthText = ({ name, isETH }: { name: string; isETH: boolean | undefin
 }
 const addEthDropdownItem =
   ({ name, isETH }: { name: string; isETH: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedEthName = formatEthText({ name, isETH })
-    if (formattedEthName === '') return dropdownItems
-    return [
-      {
-        text: formattedEthName,
-        nameType: 'eth',
-      } as const,
-      ...dropdownItems,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      const formattedEthName = formatEthText({ name, isETH })
+      if (formattedEthName === '') return dropdownItems
+      return [
+        {
+          text: formattedEthName,
+          nameType: 'eth',
+        } as const,
+        ...dropdownItems,
+      ]
+    }
 
 const isBoxValid = (name: string) => {
   /*
@@ -468,18 +469,18 @@ const formatBoxText = (name: string) => {
 }
 const addBoxDropdownItem =
   ({ name, isValid }: { name: string; isValid: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedBoxName = formatBoxText(name)
-    if (!formattedBoxName) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedBoxName,
-        nameType: 'box',
-        isValid: isValid && isBoxValid(formattedBoxName),
-      } as const,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      const formattedBoxName = formatBoxText(name)
+      if (!formattedBoxName) return dropdownItems
+      return [
+        ...dropdownItems,
+        {
+          text: formattedBoxName,
+          nameType: 'box',
+          isValid: isValid && isBoxValid(formattedBoxName),
+        } as const,
+      ]
+    }
 
 const formatTldText = (name: string) => {
   if (!name) return ''
@@ -488,61 +489,61 @@ const formatTldText = (name: string) => {
 }
 const addTldDropdownItem =
   ({ name }: { name: string }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedTld = formatTldText(name)
-    if (!formattedTld) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedTld,
-        nameType: 'tld',
-      } as const,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      const formattedTld = formatTldText(name)
+      if (!formattedTld) return dropdownItems
+      return [
+        ...dropdownItems,
+        {
+          text: formattedTld,
+          nameType: 'tld',
+        } as const,
+      ]
+    }
 
 const addAddressItem =
   ({ name, inputIsAddress }: { name: string; inputIsAddress: boolean }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (!inputIsAddress) return dropdownItems
-    return [
-      {
-        text: name,
-        nameType: 'address',
-      } as const,
-      ...dropdownItems,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      if (!inputIsAddress) return dropdownItems
+      return [
+        {
+          text: name,
+          nameType: 'address',
+        } as const,
+        ...dropdownItems,
+      ]
+    }
 
 const MAX_DROPDOWN_ITEMS = 6
 const addHistoryDropdownItems =
   ({ name, history }: { name: string; history: HistoryItem[] }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const historyItemDrawCount = MAX_DROPDOWN_ITEMS - dropdownItems.length
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      const historyItemDrawCount = MAX_DROPDOWN_ITEMS - dropdownItems.length
 
-    if (historyItemDrawCount > 0) {
-      const filteredHistoryItems = history
-        .filter(
-          (historyItem: HistoryItem) =>
-            historyItem.text.includes(name) &&
-            dropdownItems.findIndex(
-              (dropdownItem) =>
-                dropdownItem.nameType === historyItem.nameType &&
-                dropdownItem.text === historyItem.text,
-            ) === -1,
-        )
-        .sort((a, b) => b.lastAccessed - a.lastAccessed)
+      if (historyItemDrawCount > 0) {
+        const filteredHistoryItems = history
+          .filter(
+            (historyItem: HistoryItem) =>
+              historyItem.text.includes(name) &&
+              dropdownItems.findIndex(
+                (dropdownItem) =>
+                  dropdownItem.nameType === historyItem.nameType &&
+                  dropdownItem.text === historyItem.text,
+              ) === -1,
+          )
+          .sort((a, b) => b.lastAccessed - a.lastAccessed)
 
-      const historyItems = filteredHistoryItems?.slice(0, historyItemDrawCount).map((item) => ({
-        nameType: item.nameType,
-        text: item.text,
-        isHistory: true,
-      }))
+        const historyItems = filteredHistoryItems?.slice(0, historyItemDrawCount).map((item) => ({
+          nameType: item.nameType,
+          text: item.text,
+          isHistory: true,
+        }))
 
-      return [...dropdownItems, ...historyItems]
+        return [...dropdownItems, ...historyItems]
+      }
+
+      return dropdownItems
     }
-
-    return dropdownItems
-  }
 
 const formatDnsText = ({ name, isETH }: { name: string; isETH: boolean | undefined }) => {
   if (!name) return ''
@@ -554,41 +555,41 @@ const formatDnsText = ({ name, isETH }: { name: string; isETH: boolean | undefin
 }
 const addDnsDropdownItem =
   ({ name, isETH }: { name: string; isETH: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    const formattedDnsName = formatDnsText({ name, isETH })
-    if (!formattedDnsName) return dropdownItems
-    return [
-      ...dropdownItems,
-      {
-        text: formattedDnsName,
-        nameType: 'dns',
-      } as const,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      const formattedDnsName = formatDnsText({ name, isETH })
+      if (!formattedDnsName) return dropdownItems
+      return [
+        ...dropdownItems,
+        {
+          text: formattedDnsName,
+          nameType: 'dns',
+        } as const,
+      ]
+    }
 
 const addErrorDropdownItem =
   ({ name, isValid }: { name: string; isValid: boolean | undefined }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (isValid || name === '') return dropdownItems
-    return [
-      {
-        text: 'Invalid name',
-        nameType: 'error',
-      } as const,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      if (isValid || name === '') return dropdownItems
+      return [
+        {
+          text: 'Invalid name',
+          nameType: 'error',
+        } as const,
+      ]
+    }
 
 const addInfoDropdownItem =
   ({ t }: { t: TFunction }) =>
-  (dropdownItems: SearchItem[]): SearchItem[] => {
-    if (dropdownItems.length) return dropdownItems
-    return [
-      {
-        text: t('search.emptyText'),
-        nameType: 'text',
-      } as const,
-    ]
-  }
+    (dropdownItems: SearchItem[]): SearchItem[] => {
+      if (dropdownItems.length) return dropdownItems
+      return [
+        {
+          text: t('search.emptyText'),
+          nameType: 'text',
+        } as const,
+      ]
+    }
 
 const useBuildDropdownItems = (inputVal: string, history: HistoryItem[]) => {
   const { t } = useTranslation('common')
@@ -623,7 +624,8 @@ export const SearchInput = ({ size = 'extraLarge' }: { size?: 'medium' | 'extraL
   const queryClient = useQueryClient()
   const breakpoints = useBreakpoint()
 
-  const { address } = useAccount()
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const chainId: any = useChainId()
 
   const [inputVal, setInputVal] = useState('')

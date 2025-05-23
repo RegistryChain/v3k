@@ -35,8 +35,6 @@ export default function Page() {
 
   const isLoading = !router.isReady || isConnecting || isReconnecting || subgraphMeta.isLoading
 
-  useProtectedRoute('/', isLoading ? true : address)
-  console.log(address)
   return (
     <Content singleColumnContent title={t('title')}>
       {{
