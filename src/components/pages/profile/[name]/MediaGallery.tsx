@@ -2,7 +2,7 @@ import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecut
 import { getPrivyWalletClient, pinata } from '@app/utils/utils'
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { Address, namehash } from 'viem'
+import { Address, namehash, zeroAddress } from 'viem'
 import l1abi from '../../../../constants/l1abi.json'
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { useWallets } from '@privy-io/react-auth'
@@ -96,18 +96,16 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
     const hasMedia = video || images.length > 0
     const thumbnails = images.slice(video ? 0 : 1, video ? 3 : 4)
     const [imageFile, setImageFile] = useState(null)
+    const [imageIndex, setImageIndex] = useState(0)
     const { wallets } = useWallets();      // Privy hook
     const shouldShowUploadBox = thumbnails.length < 3 && isOwner
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, imageIndex: number) => {
-        const file: any = e.target.files?.[0]
-        if (file && imageIndex) {
-            uploadFile(file, imageIndex) // your function to handle the file
-        } else if (file) {
-            setImageFile(file)
+    useEffect(() => {
+        if (imageFile && imageIndex >= 0) {
+            uploadFile(imageFile, imageIndex)
         }
-    }
+    }, [imageFile])
 
 
     const uploadFile = async (imageFile: any, imageIndex: number) => {
@@ -120,20 +118,30 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
             }
 
         } catch (e) {
-            console.log(e);
+            console.log('ERROR UPLOADING IMAGE', e);
             if (!url) {
                 alert("Trouble uploading file");
             }
         }
-        const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
-        const resolverAddress = await getResolverAddress(wallet, entityId)
+        let wallet = null
+        let resolverAddress = zeroAddress
+        let formationPrep = {}
+        try {
+            console.log(url, imageFile, imageIndex, wallets)
+            wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
+            resolverAddress = await getResolverAddress(wallet, entityId)
 
-        // Use Resolver multicall(setText[])
-        const formationPrep: any = {
-            functionName: 'setText',
-            args: [namehash(entityId), 'image__[' + imageIndex + ']', url],
-            abi: l1abi,
-            address: resolverAddress,
+            // Use Resolver multicall(setText[])
+            formationPrep = {
+                functionName: 'setText',
+                args: [namehash(entityId), 'image__[' + imageIndex + ']', url],
+                abi: l1abi,
+                address: resolverAddress,
+            }
+
+        } catch (err) {
+            console.log(err)
+            return
         }
 
         try {
@@ -152,6 +160,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
         return (<MainMedia style={{ width: "250px", height: "250px", borderRadius: '16px' }}>
             <UploadBox style={{ width: '100%', }} onClick={() => {
                 onUploadClick()
+                setImageIndex(images.length)
                 fileInputRef.current?.click()
             }}>
                 + Image
@@ -161,7 +170,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 accept="image/*"
-                onChange={(e) => handleFileSelect(e, images.length)}
+                onChange={(e) => setImageFile(e.target.files?.[0] as any)}
             />
         </MainMedia>)
     }
@@ -170,7 +179,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
         <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
             onUploadClick()
             fileInputRef.current?.click()
-            uploadFile(imageFile, 0)
+            setImageIndex(0)
         }} >
             <FaPencilAlt style={{ color: "gold" }} />
         </div>
@@ -187,7 +196,19 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
                 <ThumbnailWrapper key={i}>
                     <Thumbnail src={img} />
                     {isOwner && (
-                        imageOverlay
+                        <ThumbnailOverlay className="overlay">
+                            <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
+                                onUploadClick()
+                                setImageIndex(i)
+                                fileInputRef.current?.click()
+                            }} >
+                                <FaPencilAlt style={{ color: "gold" }} />
+                            </div>
+                            <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => uploadFile(null, i)} >
+                                <FaTrashAlt style={{ color: "red" }} />
+
+                            </div>
+                        </ThumbnailOverlay>
                     )}
                 </ThumbnailWrapper>
             ))}
@@ -196,8 +217,8 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
                     <UploadBox
                         onClick={() => {
                             onUploadClick()
+                            setImageIndex(images.length)
                             fileInputRef.current?.click()
-                            uploadFile(imageFile, thumbnails.length)
                         }}
                     >
                         +
@@ -207,7 +228,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
                         ref={fileInputRef}
                         style={{ display: 'none' }}
                         accept="image/*"
-                        onChange={(e) => handleFileSelect(e, images.length)}
+                        onChange={(e) => setImageFile(e.target.files?.[0] as any)}
                     />
                 </>
             )}
