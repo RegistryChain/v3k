@@ -527,7 +527,6 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     }
     setFormState(originalForm)
     window.location.href = (`/agent/${hashableName}.ai.${tld}`)
-    onClose()
   }
 
   const getHashableName = (name: string) => {
