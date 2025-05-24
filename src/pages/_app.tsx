@@ -3,7 +3,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { NextPage } from 'next'
 import type { AppProps } from 'next/app'
-import { ReactElement, ReactNode } from 'react'
+import React, { ReactElement, ReactNode } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { createGlobalStyle, keyframes, ThemeProvider } from 'styled-components'
 
@@ -158,8 +158,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <>
-      {/* Google Analytics Scripts */}
-      {/* <Script
+      <Script
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN`}
       />
@@ -168,15 +167,16 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-LT2WCF51SN', {
-          page_path: window.location.pathname,
-        });
-      `,
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-LT2WCF51SN', {
+        page_path: window.location.pathname,
+      });
+    `,
         }}
-      /> */}
+      />
+
       <I18nextProvider i18n={i18n}>
         <QueryProviders>
           <RainbowKitProvider theme={rainbowKitTheme}>
@@ -201,8 +201,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           </RainbowKitProvider>
         </QueryProviders>
       </I18nextProvider>
-    </>
-  )
+    </>)
 }
 
 export default MyApp
