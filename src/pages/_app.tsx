@@ -25,7 +25,6 @@ import '../styles.css'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import Script from 'next/script'
 
-
 const rainbowKitTheme: Theme = {
   ...lightTheme({
     accentColor: thorinLightTheme.colors.accent,

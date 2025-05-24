@@ -30,7 +30,7 @@ const config = createConfig({
     // For each of your required chains, add an entry to `transports` with
     // a key of the chain's `id` and a value of `http()`
   },
-});
+} as any);
 
 export function QueryProviders({ children }: Props) {
   return (
