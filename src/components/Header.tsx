@@ -278,7 +278,11 @@ export const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchWrapperRef.current])
   return (<>
-    {breakpoints.xs && !breakpoints.md ? <MobileHeaderWrapper onClick={() => router.push('/')}>
+    {breakpoints.xs && !breakpoints.md ? <MobileHeaderWrapper onClick={async () => {
+      await router.push('/')
+      setSearchQuery("")
+      setSearchResults([])
+    }}>
       <Image alt="V3K" width={70} height={70} src={v3kLogo} />
       <MobileLogoText>AGENT STORE</MobileLogoText>
     </MobileHeaderWrapper> : null}
@@ -288,7 +292,11 @@ export const Header = () => {
 
         <div
           style={{ fontSize: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex' }}
-          onClick={() => router.push('/')}
+          onClick={async () => {
+            await router.push('/')
+            setSearchQuery("")
+            setSearchResults([])
+          }}
         >
           <div style={{ maxHeight: "70px" }}>
             <Image alt="" width={70} height={70} src={v3kLogo} />
@@ -308,13 +316,18 @@ export const Header = () => {
               label="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery?.(e.target.value)}
-              onKeyDown={(e) => {
+              onKeyDown={async (e) => {
                 if (e.key === 'Enter') {
-                  router.push('/directory?search=' + searchQuery)
+                  await router.push('/directory?search=' + searchQuery)
+                  setSearchResults([])
                 }
               }}
               hideLabel
-              onClickAction={() => router.push('/directory?search=' + searchQuery)}
+              onClickAction={async () => {
+                await router.push('/directory?search=' + searchQuery)
+                setSearchResults([])
+
+              }}
               actionIcon={<MagnifyingGlassSimpleSVG />}
               placeholder={"search"}
             />

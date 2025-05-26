@@ -4,7 +4,8 @@ import MenuItem from '@mui/material/MenuItem';
 import { on } from 'events';
 
 type FormInputProps = {
-  type?: 'text' | 'select' | 'textarea'
+  type?: 'text' | 'select' | 'textarea',
+  error?: boolean,
   label: string
   value: string
   onChange: (value: string) => void
@@ -16,6 +17,7 @@ type FormInputProps = {
 
 export const FormInput = ({
   type = 'text',
+  error = false,
   label,
   value,
   onChange,
@@ -52,6 +54,7 @@ export const FormInput = ({
     return (
       <FormControl fullWidth>
         <TextField
+          error={error}
           required={required}
           label={label}
           variant="outlined"

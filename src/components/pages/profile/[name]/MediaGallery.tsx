@@ -119,6 +119,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
 
     if (!hasMedia && isOwner) {
         return (<MainMedia style={{ width: "250px", height: "250px", borderRadius: '16px' }}>
+            {imageUploaderHidden}
             <UploadBox style={{ width: '100%', }} onClick={() => {
                 onUploadClick()
                 setImageIndex(images.length)
