@@ -25,9 +25,10 @@ import contractAddresses from '../constants/contractAddresses.json'
 
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
-import { getContractInstance, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
+import { getContractInstance, getPrivyWalletClient, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
 import { CachedImage } from '@app/hooks/CachedImage'
 import { useWallets } from '@privy-io/react-auth'
+import Image from 'next/image'
 
 const ThumbnailWrapper = styled.div`
   position: relative;
@@ -93,13 +94,13 @@ const SectionTitle = styled(Typography)(
   `,
 )
 
-const Image = styled.img`
-  width: ${({ height }) => height}px;
-  height: ${({ height }) => height}px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 16px;
-`
+// const Image = styled.img`
+//   width: ${({ height }) => height}px;
+//   height: ${({ height }) => height}px;
+//   object-fit: cover;
+//   border-radius: 8px;
+//   margin-right: 16px;
+// `
 
 const NameRecord = styled(Typography)(
   ({ theme }) => css`
@@ -136,7 +137,7 @@ export const ProfileSnippet = ({
 }: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
   const avatarInputRef = useRef<HTMLInputElement>(null)
-
+  const [avatarSrc, setAvatarSrc] = useState(v3kLogo.src)
   const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
 
   const sendRating = async (stars: number) => {
@@ -165,9 +166,10 @@ export const ProfileSnippet = ({
       console.log(err)
     }
     try {
+      const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
       const recipientHash = "0x" + records.nodehash.slice(-40)
       const orimmoToken: any = getContractInstance(wallet, 'ORIMMO')
-      const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"])
+      const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"], { gas: 6000000n })
     } catch (err) {
       console.log(err)
     }
@@ -175,24 +177,6 @@ export const ProfileSnippet = ({
 
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
-
-  const [wallet, setWallet] = useState<any>(null)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum && !wallet) {
-      const newWallet = createWalletClient({
-        chain: sepolia,
-        transport: custom(window.ethereum, {
-          retryCount: 0,
-        }),
-        account: address,
-      })
-      setWallet(newWallet)
-    } else {
-      console.error('Ethereum object not found on window')
-    }
-  }, [address])
-
 
   let entityUnavailable = null
   if (records.length > 0) {
@@ -240,7 +224,7 @@ export const ProfileSnippet = ({
           <div style={{ display: 'flex' }}>
             <div style={{ padding: "8px" }}>
               <ThumbnailWrapper>
-                <Thumbnail src={records.avatar ? records.avatar : v3kLogo} />
+                <Image alt={domainName || "Agent"} onError={() => setAvatarSrc(v3kLogo.src)} onLoad={() => setAvatarSrc(records.avatar)} src={avatarSrc} width={88} height={88} style={{ opacity: v3kLogo.src === avatarSrc ? .5 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
                 {owner === address && (
                   <ThumbnailOverlay className="overlay">
                     <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {

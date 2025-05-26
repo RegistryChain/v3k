@@ -29,7 +29,6 @@ import ActionsTab from './tabs/ActionsTab/ActionsTab'
 import EntityViewTab from './tabs/EntityViewTab'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
-import { useEnsHistory } from '@app/hooks/useEnsHistory'
 import { HistoryBox } from '@app/components/HistoryBox'
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import l1abi from '../../../../constants/l1abi.json'
@@ -224,7 +223,6 @@ const ProfileContent = ({
   const [showDevelopersModal, setShowDevelopersModal] = useState(false)
   const EMAIL_SUBMITTED_KEY = 'v3k_user_email_submitted'
 
-  const { history, fetchEnsHistory } = useEnsHistory()
   const [verifications, setVerifications] = useState<string[]>([])
 
   const { getVerificationStatus } = useVerificationStatus()
@@ -254,26 +252,26 @@ const ProfileContent = ({
     setIsAgentModalOpen(true)
   }
 
-  const checkOwnerIsMultisig = async () => {
-    try {
-      // Check if the address is a contract (EOAs have code size 0)
-      const code = await publicClient.getBytecode({ address: onChainOwner });
-      if (!code || code === '0x') return false; // It's an EOA
+  // const checkOwnerIsMultisig = async () => {
+  //   try {
+  //     // Check if the address is a contract (EOAs have code size 0)
+  //     const code = await publicClient.getBytecode({ address: onChainOwner });
+  //     if (!code || code === '0x') return false; // It's an EOA
 
-      // Try calling `getOwners()`, which only exists on Safe contracts
-      const safeContract = getContract({
-        address: onChainOwner,
-        abi: l1abi,
-        client: publicClient,
-      });
+  //     // Try calling `getOwners()`, which only exists on Safe contracts
+  //     const safeContract = getContract({
+  //       address: onChainOwner,
+  //       abi: l1abi,
+  //       client: publicClient,
+  //     });
 
-      const owners: any = (await safeContract.read.getOwners()) || [];
-      setMultisigAddress(onChainOwner)
-      setMultisigOwners(owners)
-    } catch (err: any) {
-      console.log(err.message)
-    }
-  }
+  //     const owners: any = (await safeContract.read.getOwners()) || [];
+  //     setMultisigAddress(onChainOwner)
+  //     setMultisigOwners(owners)
+  //   } catch (err: any) {
+  //     console.log(err.message)
+  //   }
+  // }
 
   const getVerifications = async () => {
     const vers = await getVerificationStatus(owner)
@@ -301,14 +299,10 @@ const ProfileContent = ({
 
   useEffect(() => {
     if (onChainOwner) {
-      checkOwnerIsMultisig()
+      // checkOwnerIsMultisig()
     }
   }, [address, onChainOwner])
 
-
-  useEffect(() => {
-    fetchEnsHistory(namehash(domain))
-  }, [])
 
   useEffect(() => {
     if (isSelf && domain) {

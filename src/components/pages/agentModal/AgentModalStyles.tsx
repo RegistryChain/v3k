@@ -113,9 +113,6 @@ export const TextArea = styled.textarea`
   padding-left: 14px;
   color: #000000de;
 `
-export const Select = styled.select`
-  ${baseInputStyles}
-`
 
 export const AdvancedSection = styled.div`
   margin: 18px 0;

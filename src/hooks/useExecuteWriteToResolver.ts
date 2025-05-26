@@ -396,14 +396,14 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
       } catch (e) {}
     }
   }
-  useEffect(() => {
-    if (publicClient && entityid) {
-      getRes()
-    }
-  }, [publicClient, entityid])
+  // useEffect(() => {
+  //   if (publicClient && entityid) {
+  //     getRes()
+  //   }
+  // }, [publicClient, entityid])
 
   const fetchRecordData = useCallback(async () => {
-    if (!entityid || !resolverAddress) return
+    if (!entityid) return
 
     setLoading(true)
     setError(null)
@@ -438,8 +438,9 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
           const formatted = existingRecord?.data
           setData(formatted)
         } else if (!existingRecord?.data || JSON.stringify(existingRecord?.data) === '{}') {
-          const newRecord = await importEntity({ filingID: '', name, registrar })
-          setData(newRecord)
+          getRes()
+          // const newRecord = await importEntity({ filingID: '', name, registrar })
+          // setData(newRecord)
         } else {
           setData(null)
         }
@@ -453,15 +454,10 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
   }, [entityid, resolverAddress])
 
   useEffect(() => {
-    if (
-      entityid &&
-      (wallet || publicClient) &&
-      resolverAddress &&
-      resolverAddress !== zeroAddress
-    ) {
+    if (entityid && (wallet || publicClient)) {
       fetchRecordData()
     }
-  }, [entityid, wallet, publicClient, resolverAddress])
+  }, [entityid, wallet, publicClient])
 
   return { data, loading, error, refetch: fetchRecordData }
 }

@@ -30,8 +30,7 @@ export const FormInput = ({
     return (
       <FormControl fullWidth required={required}>
         <InputLabel id="select-label">{label}</InputLabel>
-        <Select labelId="select-label" value={value} onChange={(e) => onChange(e.target.value)}
-          label={label}>
+        <Select labelId="select-label" MenuProps={{ disableScrollLock: true }} value={value} onChange={(e) => onChange(e.target.value)} label={label}>
           <MenuItem value="" disabled>{placeholder}</MenuItem>
           {options?.map((opt) => (
             <MenuItem key={opt} value={opt}>

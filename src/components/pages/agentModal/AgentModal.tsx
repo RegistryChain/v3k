@@ -15,11 +15,9 @@ import {
   zeroHash,
 } from 'viem'
 import { normalize, packetToBytes } from 'viem/ens'
-import { useAccount } from 'wagmi'
 
 import { checkOwner } from '@app/hooks/useCheckOwner'
 import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
-import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import {
   getChangedRecords,
   getPrivyWalletClient,
@@ -418,17 +416,23 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       onClose()
     }
   }
+
   const createTextRecords = () => {
     const baseRecords = [
       { key: 'registrar', value: 'ai' },
     ]
     let stateCopy = { ...formState }
     delete stateCopy.imageFile
+    try {
+      if (formState.parentEntityId) {
+        const label = normalizeLabel(formState.parentEntityId.split('.')[0])
+        stateCopy.parentEntityId =
+          label + '.' + stateCopy.parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
+      }
 
-    if (formState.parentEntityId) {
-      const label = normalizeLabel(formState.parentEntityId.split('.')[0])
-      stateCopy.parentEntityId =
-        label + '.' + stateCopy.parentEntityId.split('.').slice(1).join('.')?.toLowerCase()
+    } catch (err: any) {
+      console.log('ERR in createTextRecords', err.message)
+      return []
     }
 
     return [
@@ -446,7 +450,9 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
 
   const submitEntityData = async (entityDomain: string, currentEntityOwner: Address) => {
     const texts = createTextRecords()
-    console.log(texts)
+    if (texts.length === 0) {
+      throw Error("Issue generating registration data for Agent")
+    }
     if (
       !isAddressEqual(currentEntityOwner, address as Address) &&
       !isAddressEqual(currentEntityOwner, contractAddresses[`ai.${tld}`]) &&
@@ -456,9 +462,14 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     }
 
     const formationPrep = await createFormationPrep(texts)
-    // Pass in amendment formationPrep as multicall(setText())
 
-    const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
+    if (Object.keys(formationPrep)?.length === 0) throw Error('Registration calldata could not be formed')
+    // Pass in amendment formationPrep as multicall(setText())
+    let wallet = null
+    if (wallets?.length > 0) {
+      wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
+    }
+    if (!wallet) throw Error('Could not access wallet.')
 
     if (isAddressEqual(formationPrep.address, contractAddressesObj["DatabaseResolver"] as Address)) {
       await executeWriteToResolver(wallet, formationPrep, null)
@@ -554,21 +565,23 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
   }
 
   const createFormationPrep = async (texts: any[]) => {
-    if (agentModalPrepopulate) {
-      if (Object.keys(agentModalPrepopulate)?.length > 0) {
+    if (agentModalPrepopulate && Object.keys(agentModalPrepopulate)?.length > 0) {
+      let multicalls: string[] = []
+      try {
         const nodehash = namehash(agentModalPrepopulate.entityid)
-        const changedRecords = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord)
-        const resolverAddress = await getResolverAddress(publicClient, agentModalPrepopulate.entityid)
-        const multicalls: string[] = []
-        changedRecords.forEach((x: any) => {
-          multicalls.push(
-            encodeFunctionData({
-              abi: l1abi,
-              functionName: 'setText',
-              args: [nodehash, x.key, x.value],
-            }),
-          )
+        multicalls = getChangedRecords(agentModalPrepopulate, formState, mapKeyToRecord).map((x: any) => {
+          return encodeFunctionData({
+            abi: l1abi,
+            functionName: 'setText',
+            args: [nodehash, x.key, x.value],
+          })
         })
+      } catch (err: any) {
+        console.log('ERR generating multicalls')
+        return {}
+      }
+      try {
+        const resolverAddress = await getResolverAddress(publicClient, agentModalPrepopulate.entityid)
         // Use Resolver multicall(setText[])
         const formationPrep: any = {
           functionName: 'multicall',
@@ -577,26 +590,35 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
           address: resolverAddress,
         }
         return formationPrep
+      } catch (err: any) {
+        console.log('ERR caught in createFormationPrep', err.message)
       }
     }
-    return {
-      functionName: 'register',
-      args: [
-        toHex(packetToBytes(formState.name)),
-        address,
-        0,
-        zeroHash,
-        zeroAddress,
-        texts.map((x) =>
-          encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
-        ),
-        false,
-        0,
-        zeroHash,
-      ],
-      abi: l1abi,
-      address: contractAddresses['DatabaseResolver'],
+
+    let formationData = {}
+    try {
+      formationData = {
+        functionName: 'register',
+        args: [
+          toHex(packetToBytes(formState.name)),
+          address,
+          0,
+          zeroHash,
+          zeroAddress,
+          texts.map((x) =>
+            encodeAbiParameters([{ type: 'string' }, { type: 'string' }], [x.key, x.value]),
+          ),
+          false,
+          0,
+          zeroHash,
+        ],
+        abi: l1abi,
+        address: contractAddresses['DatabaseResolver'],
+      }
+    } catch (err: any) {
+      console.log('ERR in creating register function calldata', err.message)
     }
+    return formationData
   }
 
   // const createFormationCallback = () => ({

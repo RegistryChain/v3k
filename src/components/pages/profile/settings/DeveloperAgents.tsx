@@ -392,7 +392,7 @@ const DeveloperAgents = ({ address, record }: any) => {
                     as="form"
                     onSubmit={handleSubmit((data) => mutateName(data))}
                 >
-                    {!!namesData && (filteredNamesPages[0].length > 0 || offchainEntities?.length > 0) ? (
+                    {(filteredNamesPages[0].length > 0 || offchainEntities?.length > 0) ? (
                         <>
                             {filteredNamesPages?.map((page: Name[]) =>
                                 page.map((name: Name) => (

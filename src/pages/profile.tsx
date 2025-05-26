@@ -119,22 +119,6 @@ export default function Page() {
     }
   }, [fields])
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum && !wallet) {
-      const newWallet = createWalletClient({
-        chain: sepolia,
-        transport: custom(window.ethereum, {
-          retryCount: 0,
-        }),
-        account: address,
-      })
-      setWallet(newWallet)
-    } else {
-      console.error('Ethereum object not found on window')
-    }
-  }, [address])
-
-
   const isLoading = initial || !router.isReady
 
   return (

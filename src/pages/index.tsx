@@ -47,7 +47,7 @@ const Stack = styled.div(
 export default function Page() {
   const tld = '.entity.id'
 
-
+  const router = useRouterWithHistory()
   const [entityName, setEntityName] = useState<string>('')
   const [entityJurisdiction, setEntityJurisdiction] = useState<string>('')
   const [entityType, setEntityType] = useState<any>({})
@@ -116,6 +116,9 @@ export default function Page() {
         <Stack>
           <FeaturedAgents recipientAverages={recipientAverages} />
           <TrendingAgents recipientAverages={recipientAverages} />
+          <div style={{ width: "100%" }}>
+            <Button onClick={() => router.push("/directory")} style={{ width: "380px", justifySelf: "center" }}>Browse Agents</Button>
+          </div>
         </Stack>
       </Container>
     </>

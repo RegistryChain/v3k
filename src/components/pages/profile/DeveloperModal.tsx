@@ -20,8 +20,6 @@ import { normalizeLabel } from '@app/utils/utils'
 import { encodeFunctionData, labelhash, namehash, zeroAddress } from 'viem'
 import { normalize } from 'viem/ens'
 import l1abi from '../../../constants/l1abi.json'
-import contractAddresses from '../../../constants/contractAddresses.json'
-import { useAccount } from 'wagmi'
 
 interface DeveloperRegisterModalProps {
     isOpen: boolean
