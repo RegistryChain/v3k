@@ -6,6 +6,7 @@ import {
   encodeAbiParameters,
   encodeFunctionData,
   getContract,
+  isAddress,
   isAddressEqual,
   labelhash,
   namehash,
@@ -44,11 +45,11 @@ import {
 } from './AgentModalStyles'
 import { FormInput } from './FormInput'
 import { CustomizedSteppers } from './Stepper'
-import { Tooltip } from '@ensdomains/thorin'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { SearchableDropdown } from './SearchableDropdown'
 import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
+import { Tooltip } from '@ensdomains/thorin'
 
 type FormState = {
   name: string
@@ -169,6 +170,7 @@ const Step2 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       <Tooltip content={"Add the address of your agent's token. This could be an ownership token, a utility token, or whatever other token that is most relevant to your agent's identity"}>
         <div>
           <FormInput
+            error={!isAddress(formState.tokenAddress) && formState.tokenAddress?.length !== 0}
             label="Token Address"
             value={formState.tokenAddress}
             onChange={handleFieldChange('tokenAddress')}
@@ -191,6 +193,7 @@ const Step2 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       <Tooltip content={"Add the endpoint URI that is used to communicate or interact with your agent."}>
         <div>
           <FormInput
+            error={formState.endpoint?.length !== 0 && !(/^(https?|ftp|wss):\/\/[^\s/$.?#].[^\s]*$/i).test(formState.endpoint)}
             label="Chat Endpoint"
             value={formState.endpoint}
             onChange={handleFieldChange('endpoint')}
@@ -201,6 +204,7 @@ const Step2 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       <Tooltip content={"Add a link to the Github Repo that contains your agent source code."}>
         <div>
           <FormInput
+            error={formState.github?.length !== 0 && !(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i).test(formState.github)}
             label="Github Repo"
             value={formState.github}
             onChange={handleFieldChange('github')}
@@ -217,6 +221,7 @@ const Step3 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       <Tooltip content={"Add a your agent's website"}>
         <div>
           <FormInput
+            error={formState.website?.length !== 0 && !(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i).test(formState.website)}
             label="Website"
             value={formState.website}
             onChange={handleFieldChange('website')}
@@ -227,6 +232,7 @@ const Step3 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       <Tooltip content={"Add a link to a Youtube video for your agent."}>
         <div>
           <FormInput
+            error={formState.video?.length !== 0 && !(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i).test(formState.video)}
             label="Explainer Video"
             value={formState.video}
             onChange={handleFieldChange('video')}
