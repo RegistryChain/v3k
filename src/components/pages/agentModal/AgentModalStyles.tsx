@@ -106,6 +106,12 @@ export const Input = styled.input`
 `
 export const TextArea = styled.textarea`
   ${baseInputStyles} resize: vertical;
+  width: 100%;
+  height: 80px;
+  font-size: 16px;
+  font-weight: 500;
+  padding-left: 14px;
+  color: #000000de;
 `
 export const Select = styled.select`
   ${baseInputStyles}

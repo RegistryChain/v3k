@@ -124,6 +124,7 @@ const Step1 = ({ isVisible, formState, isAmendment, prepopulate, handleFieldChan
 
           <FormInput
             label="Description"
+            type="textarea"
             value={formState.description}
             onChange={handleFieldChange('description')}
             placeholder="Enter description"

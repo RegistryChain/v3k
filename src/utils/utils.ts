@@ -10,7 +10,9 @@ import {
   getContract,
   http,
   keccak256,
+  namehash,
   toBytes,
+  zeroAddress,
   type Address,
 } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -19,6 +21,7 @@ import { Eth2ldName } from '@ensdomains/ensjs/dist/types/types'
 import { GetPriceReturnType } from '@ensdomains/ensjs/public'
 import { DecodedFuses } from '@ensdomains/ensjs/utils'
 
+import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import { contracts as contractsBytecode } from '../constants/bytecode'
@@ -263,6 +266,61 @@ export const getPublicClient = () => {
     chain: sepolia,
     transport: http(infuraUrl('sepolia')),
   })
+}
+
+export const uploadIpfsImageSaveToResolver = async (
+  imageFile: any,
+  imageIndex: any,
+  wallets: any,
+  entityId: string,
+) => {
+  let url = ''
+  try {
+    if (imageFile) {
+      const { cid } = await pinata.upload.public.file(imageFile)
+      url = await pinata.gateways.public.convert(cid)
+    }
+  } catch (e) {
+    console.log('ERROR UPLOADING IMAGE', e)
+    if (!url) {
+    }
+    return false
+  }
+  let wallet = null
+  let resolverAddress = zeroAddress
+  let formationPrep = {}
+
+  try {
+    console.log(url, imageFile, imageIndex, wallets)
+    wallet = await getPrivyWalletClient(
+      wallets.find((w: any) => w.walletClientType === 'embedded') || wallets[0],
+    )
+    resolverAddress = await getResolverAddress(wallet, entityId)
+    let key = 'avatar'
+    if (typeof imageIndex === 'number') {
+      key = 'image__[' + imageIndex + ']'
+    } else if (!imageIndex) {
+      return false
+    }
+    // Use Resolver multicall(setText[])
+    formationPrep = {
+      functionName: 'setText',
+      args: [namehash(entityId), key, url],
+      abi: l1abi,
+      address: resolverAddress,
+    }
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+
+  try {
+    const returnVal = await executeWriteToResolver(wallet, formationPrep, null)
+    return returnVal
+  } catch (err: any) {
+    console.log(err)
+  }
+  return false
 }
 
 export async function getPrivyWalletClient(

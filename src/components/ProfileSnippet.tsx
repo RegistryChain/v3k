@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import {
@@ -14,6 +14,7 @@ import {
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
+import v3kLogo from '../assets/v3k_logo.png'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
@@ -22,11 +23,45 @@ import StarRating from './StarRating'
 import { useGetRating } from '@app/hooks/useGetRating'
 import contractAddresses from '../constants/contractAddresses.json'
 
-import { FaPencilAlt } from 'react-icons/fa'
+import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
-import { getContractInstance } from '@app/utils/utils'
+import { getContractInstance, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
 import { CachedImage } from '@app/hooks/CachedImage'
 import { useWallets } from '@privy-io/react-auth'
+
+const ThumbnailWrapper = styled.div`
+  position: relative;
+  flex: 1;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &:hover .overlay {
+    opacity: 1;
+  }
+`
+
+const Thumbnail = styled.img`
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  display: block;
+`
+
+const ThumbnailOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+`
+
 
 const Container = styled.div<{}>(
   ({ theme }) => css`
@@ -100,6 +135,7 @@ export const ProfileSnippet = ({
   makeAmendment
 }: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
 
@@ -203,7 +239,28 @@ export const ProfileSnippet = ({
         <>
           <div style={{ display: 'flex' }}>
             <div style={{ padding: "8px" }}>
-              <CachedImage src={records.avatar} alt="e" height={88} />
+              <ThumbnailWrapper>
+                <Thumbnail src={records.avatar ? records.avatar : v3kLogo} />
+                {owner === address && (
+                  <ThumbnailOverlay className="overlay">
+                    <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
+                      avatarInputRef.current?.click()
+                    }} >
+                      <FaPencilAlt style={{ color: "gold" }} />
+                    </div>
+                    <input
+                      type="file"
+                      ref={avatarInputRef}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={async (e) => {
+                        await uploadIpfsImageSaveToResolver(e.target.files?.[0] as any, "avatar", wallets, domainName as any)
+                        window.location.reload()
+                      }}
+                    />
+                  </ThumbnailOverlay>
+                )}
+              </ThumbnailWrapper>
             </div>
             <div>
               <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">

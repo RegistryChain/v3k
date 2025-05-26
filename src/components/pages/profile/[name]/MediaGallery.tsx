@@ -1,17 +1,8 @@
-import { executeWriteToResolver, getResolverAddress } from '@app/hooks/useExecuteWriteToResolver'
-import { getPrivyWalletClient, pinata } from '@app/utils/utils'
+import { uploadIpfsImageSaveToResolver } from '@app/utils/utils'
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { Address, namehash, zeroAddress } from 'viem'
-import l1abi from '../../../../constants/l1abi.json'
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { useWallets } from '@privy-io/react-auth'
-
-interface MediaGalleryProps {
-    images: string[]
-    video?: string
-    onUploadClick: () => void
-}
 
 const GalleryContainer = styled.div`
   display: flex;
@@ -109,52 +100,22 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
 
 
     const uploadFile = async (imageFile: any, imageIndex: number) => {
-        let url = ""
-        try {
-
-            if (imageFile) {
-                const { cid } = await pinata.upload.public.file(imageFile)
-                url = await pinata.gateways.public.convert(cid);
-            }
-
-        } catch (e) {
-            console.log('ERROR UPLOADING IMAGE', e);
-            if (!url) {
-                alert("Trouble uploading file");
-            }
-        }
-        let wallet = null
-        let resolverAddress = zeroAddress
-        let formationPrep = {}
-        try {
-            console.log(url, imageFile, imageIndex, wallets)
-            wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
-            resolverAddress = await getResolverAddress(wallet, entityId)
-
-            // Use Resolver multicall(setText[])
-            formationPrep = {
-                functionName: 'setText',
-                args: [namehash(entityId), 'image__[' + imageIndex + ']', url],
-                abi: l1abi,
-                address: resolverAddress,
-            }
-
-        } catch (err) {
-            console.log(err)
-            return
-        }
-
-        try {
-            const returnVal = await executeWriteToResolver(wallet, formationPrep, null)
-            if (returnVal) {
-                window.location.reload()
-            }
-        } catch (err: any) {
-            console.log(err)
-        }
+        await uploadIpfsImageSaveToResolver(imageFile, imageIndex, wallets, entityId)
+        window.location.reload()
     };
 
     if (!hasMedia && !isOwner) return null
+
+    let imageUploaderHidden = null
+    if (isOwner) {
+        imageUploaderHidden = <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] as any)}
+        />
+    }
 
     if (!hasMedia && isOwner) {
         return (<MainMedia style={{ width: "250px", height: "250px", borderRadius: '16px' }}>
@@ -165,13 +126,6 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
             }}>
                 + Image
             </UploadBox>
-            <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files?.[0] as any)}
-            />
         </MainMedia>)
     }
 
@@ -235,12 +189,13 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
         </SideColumn>
     )
     if (video) {
-        mainContent = (<MainMedia>
-            <Iframe
-                src={`https://www.youtube.com/embed/${video.split('?v=')[1]?.split('&')[0]}`}
-                allowFullScreen
-            />
-        </MainMedia>)
+        mainContent = (
+            <MainMedia>
+                <Iframe
+                    src={`https://www.youtube.com/embed/${video.split('?v=')[1]?.split('&')[0]}`}
+                    allowFullScreen
+                />
+            </MainMedia>)
     } else if (images.length > 0) {
         mainContent = (<MainMedia>
             <ThumbnailWrapper key={'mainimage'}>
@@ -256,6 +211,7 @@ const MediaGallery = ({ isOwner, address, entityId, images, video, onUploadClick
 
     return (
         <GalleryContainer>
+            {imageUploaderHidden}
             {mainContent}
             {sideContent}
         </GalleryContainer>
