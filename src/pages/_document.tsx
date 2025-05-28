@@ -77,13 +77,10 @@ export default class MyDocument extends Document {
           {process.env.NODE_ENV === 'production' && (
             <meta
               httpEquiv="Content-Security-Policy"
-              content="
-                  worker-src 'self';
-                  script-src 'self' 'sha256-UyYcl+sKCF/ROFZPHBlozJrndwfNiC5KT5ZZfup/pPc=' https://*.googletagmanager.com https://www.google-analytics.com plausible.io static.cloudflareinsights.com *.ens-app-v3.pages.dev 'wasm-unsafe-eval';
-                  connect-src 'self' https://www.google-analytics.com;
-                "
+              content="worker-src 'self'; script-src 'self' 'sha256-UyYcl+sKCF/ROFZPHBlozJrndwfNiC5KT5ZZfup/pPc=' https://*.googletagmanager.com plausible.io static.cloudflareinsights.com https://www.google-analytics.com *.ens-app-v3.pages.dev 'wasm-unsafe-eval';"
             />
           )}
+
           {/* eslint-disable-next-line react/no-danger */}
           <script dangerouslySetInnerHTML={{ __html: hiddenCheckScript }} />
           {process.env.NEXT_PUBLIC_IPFS && (
