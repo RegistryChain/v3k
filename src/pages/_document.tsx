@@ -77,7 +77,7 @@ export default class MyDocument extends Document {
           {process.env.NODE_ENV === 'production' && (
             <meta
               httpEquiv="Content-Security-Policy"
-              content="worker-src 'self'; script-src 'self' 'unsafe-inline' 'sha256-uwCiPEkehYujAO1MbY649sEvv2RH9EtWJFS3ovIdqYw=' https://*.googletagmanager.com plausible.io static.cloudflareinsights.com https://www.google-analytics.com *.ens-app-v3.pages.dev 'wasm-unsafe-eval';"
+              content="worker-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com plausible.io static.cloudflareinsights.com https://www.google-analytics.com *.ens-app-v3.pages.dev 'wasm-unsafe-eval';"
             />
           )}
 
