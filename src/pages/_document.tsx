@@ -1,5 +1,6 @@
 import { AppPropsType, AppType } from 'next/dist/shared/lib/utils'
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document'
+import Script from 'next/script'
 import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
 
 const ipfsPathScript = `
@@ -128,6 +129,24 @@ export default class MyDocument extends Document {
             src="https://plausible.io/js/script.outbound-links.js"
           />
         </Head>
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN`}
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-LT2WCF51SN', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
         <body>
           <Main />
           <NextScript />
