@@ -26,7 +26,6 @@ import { ModalContext } from '@app/layouts/Basic'
 import contractAddresses from '../../../../constants/contractAddresses.json'
 import registrarsObj from '../../../../constants/registrars.json'
 import ActionsTab from './tabs/ActionsTab/ActionsTab'
-import EntityViewTab from './tabs/EntityViewTab'
 import { truncateEthAddress } from '@app/utils/truncateAddress'
 import ReviewsPlaceholder from '@app/components/ReviewsPlaceholder'
 import { HistoryBox } from '@app/components/HistoryBox'
@@ -35,9 +34,10 @@ import l1abi from '../../../../constants/l1abi.json'
 import { useVerificationStatus } from '@app/hooks/useVerificationStatus'
 import Coinbase from '../../../../assets/Coinbase.svg'
 import EmailModal from '../EmailModal'
-import { handleEmail } from '@app/hooks/useExecuteWriteToResolver'
+import { handleEmail, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import DeveloperRegisterModal from '../DeveloperModal'
 import MediaGallery from './MediaGallery'
+import { ProfileSnippet } from '@app/components/ProfileSnippet'
 
 
 
@@ -56,63 +56,17 @@ const Iframe = styled.iframe`
   border: none;
 `;
 
-// If we want to use youtube API key, we need to increase the quotas for the project
+const DetailsWrapper = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: ${theme.space['2']};
+    flex-gap: ${theme.space['2']};
+    width: 100%;
+    `,
+)
 
-// AIzaSyCMBV3jBclsfPq7ZDHqOfg59fJFU0cLRd8
-// AIzaSyBbOljkviE9BZD9KNSyh4QD2EIvUNem3is
-
-
-const VideoEmbed = ({ videoId = "" }: {
-  videoId: string
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-  // const [videoId, setVideoId] = useState(null);
-  const API_KEY = "AIzaSyCMBV3jBclsfPq7ZDHqOfg59fJFU0cLRd8";
-
-  useEffect(() => {
-    const fetchVideo = async () => {
-      // setIsLoading(true);
-      // try {
-      //   const response = await axios.get(
-      //     `https://www.googleapis.com/youtube/v3/search`,
-      //     {
-      //       params: {
-      //         part: "snippet",
-      //         q: searchQuery,
-      //         maxResults: 1,
-      //         type: "video",
-      //         key: API_KEY,
-      //       },
-      //     }
-      //   );
-
-      //   if (response.data.items.length > 0) {
-      //     setVideoId(response.data.items[0].id.videoId);
-      //   }
-      // } catch (error) {
-      //   console.error("Error fetching video:", error);
-      // } finally {
-      //   setIsLoading(false);
-      // }
-    };
-
-    fetchVideo();
-  }, []);
-
-  if (isLoading) return <p>Loading video...</p>;
-  // if (!videoId) return null
-  if (!videoId?.split("?v=")?.[1]) {
-    return null
-  }
-  return (
-    <VideoContainer>
-      <Iframe
-        src={`https://www.youtube.com/embed/` + videoId.split("?v=")[1]?.split("&")[0]}
-        allowFullScreen
-      ></Iframe>
-    </VideoContainer>
-  );
-};
 
 // Styled components
 const Section = styled.div`
@@ -354,7 +308,13 @@ const ProfileContent = ({
         }
       }
     } catch (err) {
-      console.log('AXIOS CATCH ERROR', err)
+      logFrontendError({
+        error: err,
+        message: "2 - UseEffect in ProfileContent throw an error setting state from records",
+        functionName: 'useEffect',
+        address,
+        args: { owner: records?.owner },
+      });
     }
   }, [records, domain])
 
@@ -374,8 +334,15 @@ const ProfileContent = ({
         if (owner === zeroAddress || ownerAddress !== zeroAddress) {
           setOwner(ownerAddress)
         }
-      } catch (e) {
-        console.log(e)
+      } catch (err) {
+        console.log(err)
+        await logFrontendError({
+          error: err,
+          message: "1 - Failed to read the owner of domain from the registry contract",
+          functionName: 'getOwner',
+          address,
+          args: { address, ownerAddress, domain },
+        });
       }
     }
   }
@@ -391,9 +358,6 @@ const ProfileContent = ({
 
   const suffixIndex = domain?.split('.')?.length - 1
   const registrarKey = domain?.split('.')?.slice(1, suffixIndex)?.join('.')
-
-  const registrarType = registrars[registrarKey || '']?.type
-
 
   const demoMessage = (
     <MessageContainer>
@@ -581,14 +545,18 @@ const ProfileContent = ({
                   style={{
                     borderBottom: '1px solid #E5E5E5',
                   }} py={2}>
-                  <EntityViewTab
-                    domainName={domain}
-                    multisigAddress={multisigAddress}
-                    records={{ ...records, subgraph: subgraphResults }}
-                    status={status}
-                    owner={owner}
-                    makeAmendment={makeAmendment}
-                  />
+
+                  <DetailsWrapper>
+                    <ProfileSnippet
+                      name={records?.name}
+                      records={{ ...records, subgraph: subgraphResults }}
+                      multisigAddress={multisigAddress}
+                      status={status}
+                      domainName={domain}
+                      makeAmendment={makeAmendment}
+                      owner={owner}
+                    />
+                  </DetailsWrapper>
                 </Box>
                 <Box py={2}>
                   <dl>

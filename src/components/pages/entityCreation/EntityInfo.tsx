@@ -4,7 +4,6 @@ import styled, { css } from 'styled-components'
 
 import { Checkbox, Input, mq, Typography } from '@ensdomains/thorin'
 
-import contractAddressesObj from '../../../constants/contractAddresses.json'
 
 const InputWrapper = styled.div(
   ({ theme }) => css`

@@ -11,6 +11,25 @@
     "stateMutability": "nonpayable"
   },
   {
+    "inputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "name": "setName",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "name": "setNameForAddr",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "proveTextRecords",
     "outputs": [{ "internalType": "bytes", "name": "node", "type": "bytes" }],

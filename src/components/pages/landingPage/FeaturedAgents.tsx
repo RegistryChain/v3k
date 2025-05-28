@@ -5,7 +5,7 @@ import { mq, Spinner, Button } from '@ensdomains/thorin'
 
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
 import SubgraphResults from '@app/components/SubgraphQuery'
-import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { getEntitiesList, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import { getPublicClient } from '@app/utils/utils'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -60,7 +60,6 @@ const FeaturedAgents = ({ recipientAverages }: any) => {
   const publicClient = useMemo(() => getPublicClient(), [])
   const breakpoints = useBreakpoint()
 
-  // Data fetching
   const getAgents = async () => {
     setLoading(true)
     setErrorMessage(null)
@@ -83,6 +82,13 @@ const FeaturedAgents = ({ recipientAverages }: any) => {
         })),
       )
     } catch (error) {
+      logFrontendError({
+        error,
+        message: "1 - Failed to fetch featured agents in FeaturedAgents",
+        functionName: 'getAgents',
+        address,
+        args: {},
+      })
       console.error('Error fetching agents:', error)
       setErrorMessage('There was a problem loading the featured agents. Please try again.')
     } finally {
@@ -91,18 +97,29 @@ const FeaturedAgents = ({ recipientAverages }: any) => {
   }
 
   useEffect(() => {
-    if (
-      agents.find((x: any) => !x.rating && x.rating !== 0) &&
-      Object.keys(recipientAverages)?.length > 0
-    ) {
-      setAgents((a: any) =>
-        a.map((x: any) => ({
-          ...x,
-          rating: recipientAverages["0X" + x.nodehash?.toUpperCase()?.slice(-40)] || 0,
-        })),
-      )
+    try {
+      if (
+        agents.find((x: any) => !x.rating && x.rating !== 0) &&
+        Object.keys(recipientAverages)?.length > 0
+      ) {
+        setAgents((a: any) =>
+          a.map((x: any) => ({
+            ...x,
+            rating: recipientAverages["0X" + x.nodehash?.toUpperCase()?.slice(-40)] || 0,
+          })),
+        )
+      }
+    } catch (err) {
+      logFrontendError({
+        error: err,
+        message: "2 - Failed to map ratings in FeaturedAgents",
+        functionName: 'useEffect',
+        address,
+        args: { address, recipientAverages },
+      })
     }
   }, [agents, recipientAverages])
+
 
   useEffect(() => {
     getAgents()

@@ -121,7 +121,6 @@ export const SearchableDropdown = ({ data, label, onChange, value }: SearchDropd
 
     const handleSelectItem = (item: string) => {
         if (!value.includes(item)) {
-            console.log('tiem')
             onChange([...value, item])
         }
         setInput('')

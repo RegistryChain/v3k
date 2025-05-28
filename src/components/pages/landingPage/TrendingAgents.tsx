@@ -6,7 +6,7 @@ import { mq, Button, Spinner } from '@ensdomains/thorin'
 
 import { AgentGrid } from '@app/components/pages/landingPage/AgentGrid'
 import SubgraphResults from '@app/components/SubgraphQuery'
-import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { getEntitiesList, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import { getPublicClient } from '@app/utils/utils'
 import { ErrorModal } from '@app/components/ErrorModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
@@ -60,7 +60,6 @@ const TrendingAgents = ({ recipientAverages }: any) => {
   const breakpoints = useBreakpoint()
   const publicClient = useMemo(() => getPublicClient(), [])
 
-  // Data fetch
   const getAgents = async () => {
     setLoading(true)
     setErrorMessage(null)
@@ -82,7 +81,14 @@ const TrendingAgents = ({ recipientAverages }: any) => {
           description: x?.description?.slice(0, 50) || "" + (x.description?.length > 50 ? '...' : ''),
         })),
       )
-    } catch (error: any) {
+    } catch (error) {
+      logFrontendError({
+        error,
+        message: "1 - Failed to fetch trending agents in TrendingAgents",
+        functionName: 'getAgents',
+        address,
+        args: { address },
+      })
       console.error('Error fetching agents:', error)
       setErrorMessage('There was a problem loading the agent list. Please try again.')
     } finally {
@@ -91,16 +97,26 @@ const TrendingAgents = ({ recipientAverages }: any) => {
   }
 
   useEffect(() => {
-    if (
-      agents.find((x: any) => !x.rating && x.rating === 0) &&
-      Object.keys(recipientAverages)?.length > 0
-    ) {
-      setAgents((a: any) =>
-        a.map((x: any) => ({
-          ...x,
-          rating: recipientAverages['0X' + x.nodehash?.toUpperCase()?.slice(-40)] || 0,
-        })),
-      )
+    try {
+      if (
+        agents.find((x: any) => !x.rating && x.rating === 0) &&
+        Object.keys(recipientAverages)?.length > 0
+      ) {
+        setAgents((a: any) =>
+          a.map((x: any) => ({
+            ...x,
+            rating: recipientAverages['0X' + x.nodehash?.toUpperCase()?.slice(-40)] || 0,
+          })),
+        )
+      }
+    } catch (err) {
+      logFrontendError({
+        error: err,
+        message: "2 - Failed to update ratings in TrendingAgents",
+        functionName: 'useEffect',
+        address,
+        args: { address, recipientAverages },
+      })
     }
   }, [agents, recipientAverages])
 

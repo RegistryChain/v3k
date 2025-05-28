@@ -291,7 +291,6 @@ export const uploadIpfsImageSaveToResolver = async (
   let formationPrep = {}
 
   try {
-    console.log(url, imageFile, imageIndex, wallets)
     wallet = await getPrivyWalletClient(
       wallets.find((w: any) => w.walletClientType === 'embedded') || wallets[0],
     )

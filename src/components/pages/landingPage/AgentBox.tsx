@@ -34,21 +34,14 @@ export const AgentBox = ({
   moderateEntity
 }: any) => {
   const router = useRouterWithHistory()
-  const [imgSrcValid, setImgSrcValid] = useState(true)
   const agentContent = <Box onClick={() => router.push('/agent/' + agentDomain)} style={{ width: "100%", backgroundColor: hidden ? "#ff000047" : "" }} isPlaceholder={isPlaceholder} >
     {!isPlaceholder && (<>
       <div style={{ width: "100%" }}>
-        {imgSrcValid ? (
-          <CachedImage
-            src={imageUrl}
-            height={rowHeight - 32}
-            alt="Placeholder"
-          />
-        ) : (
-          <ImgContainer height={rowHeight - 32}>
-            <AppPlaceholderImage />
-          </ImgContainer>
-        )}
+        <CachedImage
+          src={imageUrl}
+          height={rowHeight - 32}
+          alt="Placeholder"
+        />
         <TextContainer>
           <Title>{agentName}</Title>
           <Category>{agentDesc}</Category>

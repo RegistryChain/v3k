@@ -13,7 +13,7 @@ import {
   SortDirection,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
-import { executeWriteToResolver, getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, getEntitiesList, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddresses from '../../../constants/contractAddresses.json'
@@ -71,19 +71,23 @@ export const SubnameListView = ({ address }: any) => {
       if (address && entityDomain) {
         const formationPrep = {
           functionName: 'moderateEntity',
-          args: [
-            namehash(entityDomain),
-            operation
-          ],
+          args: [namehash(entityDomain), operation],
           abi: l1abi,
           address: contractAddresses['DatabaseResolver'],
         }
         const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
-
         await executeWriteToResolver(wallet, formationPrep, null)
         getSubs(pageNumber)
       }
-    } catch (err) { }
+    } catch (err) {
+      logFrontendError({
+        error: err,
+        message: '1 - Failed to moderate entity in SubnameListView',
+        functionName: 'moderateEntity',
+        address,
+        args: { entityDomain, operation, resolver: contractAddresses['DatabaseResolver'] },
+      })
+    }
   }
 
   const getSubs = async (page: number = pageNumber, resetResults = false) => {
@@ -115,25 +119,40 @@ export const SubnameListView = ({ address }: any) => {
       setSubnameResults(results)
       setFinishedLoading(true)
     } catch (err) {
+      logFrontendError({
+        error: err,
+        message: '2 - Failed to fetch subnames in SubnameListView',
+        functionName: 'getSubs',
+        address,
+        args: { page, address, searchInput, connectedIsAdmin },
+      })
       console.log(err)
     } finally {
       setIsLoadingNextPage(false)
-
     }
   }
 
   const checkConnectedAddressAdmin = async () => {
-
-    const registrar: any = await getContract({
-      client: publicClient,
-      abi: [...parseAbi(['function REGISTRAR_ADMIN_ROLE() view returns (bytes32)', 'function hasRole(bytes32, address) view returns (bool)'])],
-      address: contractAddresses["ai.entity.id"] as Address,
-    })
     try {
-      let roleHash = await registrar.read.REGISTRAR_ADMIN_ROLE()
-      let isAdmin = await registrar.read.hasRole([roleHash, address])
+      const registrar: any = await getContract({
+        client: publicClient,
+        abi: parseAbi([
+          'function REGISTRAR_ADMIN_ROLE() view returns (bytes32)',
+          'function hasRole(bytes32, address) view returns (bool)',
+        ]),
+        address: contractAddresses["ai.entity.id"] as Address,
+      })
+      const roleHash = await registrar.read.REGISTRAR_ADMIN_ROLE()
+      const isAdmin = await registrar.read.hasRole([roleHash, address])
       setConnectedIsAdmin(isAdmin)
     } catch (err: any) {
+      logFrontendError({
+        error: err,
+        message: '3 - Failed to verify admin role in SubnameListView',
+        functionName: 'checkConnectedAddressAdmin',
+        address,
+        args: [],
+      })
       console.log('ERROR GETTING CONNECTED WALLET ADMIN LEVEL: ', err.message)
     }
   }
@@ -168,16 +187,28 @@ export const SubnameListView = ({ address }: any) => {
 
   const filteredSet = useMemo(
     () => {
-      return subnameResults.map((record) => {
-        const labelName = record.name.split(record.parentName).join('').split('.').join('.')
-        const domainId = labelName.split('-').pop().split('.').join('')
-        const commonName = labelName
-          .split('-')
-          .slice(0, labelName.split('-').length - 1)
-          .join(' ')
+      let resReturn = []
+      resReturn = subnameResults.map((record) => {
+        try {
+          const labelName = record.name.split(record.parentName).join('').split('.').join('.')
+          const domainId = labelName.split('-').pop().split('.').join('')
+          const commonName = labelName
+            .split('-')
+            .slice(0, labelName.split('-').length - 1)
+            .join(' ')
 
-        return { ...record, labelName, commonName, domainId, isPlaceHolder: false }
-      })
+          return { ...record, labelName, commonName, domainId, isPlaceHolder: false }
+        } catch (err) {
+          logFrontendError({
+            error: err,
+            message: '4 - Failed to build filtered set of agents',
+            functionName: 'filteredSet',
+            args: { address, filteredSetCount: subnameResults.length, name: record.name, parentName: record.parentName },
+          })
+          return null
+        }
+      }).filter(x => !!x)
+      return resReturn
     },
     [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
   )

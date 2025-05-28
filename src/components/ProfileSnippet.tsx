@@ -26,9 +26,9 @@ import contractAddresses from '../constants/contractAddresses.json'
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
 import { getContractInstance, getPrivyWalletClient, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
-import { CachedImage } from '@app/hooks/CachedImage'
 import { useWallets } from '@privy-io/react-auth'
 import Image from 'next/image'
+import { logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 
 const ThumbnailWrapper = styled.div`
   position: relative;
@@ -139,6 +139,8 @@ export const ProfileSnippet = ({
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [avatarSrc, setAvatarSrc] = useState(v3kLogo.src)
   const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
+  const { wallets } = useWallets();      // Privy hook
+  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
 
   const sendRating = async (stars: number) => {
     try {
@@ -164,6 +166,14 @@ export const ProfileSnippet = ({
 
     } catch (err) {
       console.log(err)
+      await logFrontendError({
+        error: err,
+        message: "1 - issue adding ORIMMO tokens to wallet",
+        functionName: 'addTokenToWallet',
+        address,
+        args: { address, orimmoContract: contractAddresses?.ORIMMO },
+      });
+
     }
     try {
       const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
@@ -172,11 +182,15 @@ export const ProfileSnippet = ({
       const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"], { gas: 6000000n })
     } catch (err) {
       console.log(err)
+      await logFrontendError({
+        error: err,
+        message: "2 - issue sending ORIMMO rating",
+        functionName: 'addTokenToWallet',
+        address,
+        args: { address, nodehash: records.nodeHash, orimmoContract: contractAddresses?.ORIMMO },
+      });
     }
   }
-
-  const { wallets } = useWallets();      // Privy hook
-  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
 
   let entityUnavailable = null
   if (records.length > 0) {
@@ -224,7 +238,14 @@ export const ProfileSnippet = ({
           <div style={{ display: 'flex' }}>
             <div style={{ padding: "8px" }}>
               <ThumbnailWrapper>
-                <Image alt={domainName || "Agent"} onError={() => setAvatarSrc(v3kLogo.src)} onLoad={() => setAvatarSrc(records.avatar)} src={avatarSrc} width={88} height={88} style={{ opacity: v3kLogo.src === avatarSrc ? .5 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
+                <Image
+                  alt={domainName || "Agent"}
+                  onError={() => setAvatarSrc(v3kLogo.src)}
+                  onLoad={() => setAvatarSrc(records.avatar)}
+                  src={avatarSrc}
+                  width={88}
+                  height={88}
+                  style={{ opacity: v3kLogo.src === avatarSrc ? .2 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
                 {owner === address && (
                   <ThumbnailOverlay className="overlay">
                     <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {

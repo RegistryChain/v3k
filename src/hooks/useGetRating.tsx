@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { decodeEventLog, parseAbiItem, zeroHash } from 'viem';
 import contractAddressesObj from '../constants/contractAddresses.json';
+import { logFrontendError } from './useExecuteWriteToResolver';
 
 const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
 const ETHERSCAN_BASE_URL = 'https://api-sepolia.etherscan.io/api';
@@ -70,12 +71,11 @@ export const useGetRating = (nodehash: `0x${string}`) => {
 
         setRatings(parsed);
 
-        // Aggregate averages by recipient
         const totals: Record<string, bigint> = {};
         const counts: Record<string, number> = {};
 
         for (const r of parsed) {
-          totals[r.recipient] = (totals[r.recipient] || 0n) + r.rating;
+          totals[r.recipient] = (totals[r.recipient] || 0n) + r?.rating || 0n;
           counts[r.recipient] = (counts[r.recipient] || 0) + 1;
         }
 
@@ -86,6 +86,12 @@ export const useGetRating = (nodehash: `0x${string}`) => {
 
         setRecipientAverages(avgMap);
       } catch (err) {
+        logFrontendError({
+          error: err,
+          message: '1 - Failed to fetch or parse rating logs in useGetRating',
+          functionName: 'fetchRatings',
+          args: { nodehash },
+        })
         console.error('Failed to fetch logs from Etherscan:', err);
         setRatings([]);
         setRecipientAverages({});

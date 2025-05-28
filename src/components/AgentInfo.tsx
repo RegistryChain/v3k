@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 import { CheckmarkSymbol } from './CheckmarkSymbol'
 import { ExclamationSymbol } from './ExclamationSymbol'
+import { logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 
 const CompanyContainer = styled.div`
   width: 100%;
@@ -49,51 +50,63 @@ const AgentInfo = ({ headerSection, filteredCompanyData, fields }: any) => {
     <CompanyContainer>
       <StyledTable>
         {filteredCompanyData?.map((field: string, idx: Key | null | undefined) => {
-          let label = field
-            .split('__')
-            .map((x) => x[0]?.toUpperCase() + x?.slice(1))
-            .join(' ')
-          if (field === 'entityid') {
-            label = 'Entity.ID'
-          }
-          let key = label || field
-          key = key.split('Entity ').join('Agent ')
+          try {
+            let label = field
+              .split('__')
+              .map((x) => x[0]?.toUpperCase() + x?.slice(1))
+              .join(' ')
+            if (field === 'entityid') {
+              label = 'Entity.ID'
+            }
+            let key = label || field
+            key = key.split('Entity ').join('Agent ')
 
-          const differenceCondition =
-            fields.jurisdictionalSource?.[field]?.toUpperCase() !== fields[field]?.toUpperCase() &&
-            fields.jurisdictionalSource?.[field]
+            const differenceCondition =
+              fields.jurisdictionalSource?.[field]?.toUpperCase() !== fields[field]?.toUpperCase() &&
+              fields.jurisdictionalSource?.[field]
 
-          const sameCondition =
-            fields.jurisdictionalSource?.[field]?.toUpperCase() === fields[field]?.toUpperCase()
-          return (
-            <Row key={idx}>
-              <Cell isHeader>
-                <div style={{ display: 'flex' }}>
-                  {key}
-                  {differenceCondition ? (
-                    <div style={{ marginLeft: '4px', alignItems: 'center' }}>
-                      <ExclamationSymbol
-                        tooltipText={label + ' is not matching on jurisdictional registrar source'}
-                      />
-                    </div>
+            const sameCondition =
+              fields.jurisdictionalSource?.[field]?.toUpperCase() === fields[field]?.toUpperCase()
+            return (
+              <Row key={idx}>
+                <Cell isHeader>
+                  <div style={{ display: 'flex' }}>
+                    {key}
+                    {differenceCondition ? (
+                      <div style={{ marginLeft: '4px', alignItems: 'center' }}>
+                        <ExclamationSymbol
+                          tooltipText={label + ' is not matching on jurisdictional registrar source'}
+                        />
+                      </div>
+                    ) : (
+                      ''
+                    )}
+                    {sameCondition ? (
+                      <CheckmarkSymbol tooltipText={label + ' is matches on  registrar source'} />
+                    ) : null}
+                  </div>
+                </Cell>
+                <Cell>
+                  {field === 'status' ? (
+                    <StatusIndicator>{fields[field]}</StatusIndicator>
                   ) : (
-                    ''
+                    fields[field]
                   )}
-                  {sameCondition ? (
-                    <CheckmarkSymbol tooltipText={label + ' is matches on  registrar source'} />
-                  ) : null}
-                </div>
-              </Cell>
-              <Cell>
-                {field === 'status' ? (
-                  <StatusIndicator>{fields[field]}</StatusIndicator>
-                ) : (
-                  fields[field]
-                )}
-              </Cell>
-            </Row>
-          )
-        })}
+                </Cell>
+              </Row>
+            )
+          } catch (err) {
+            logFrontendError({
+              error: err,
+              message: '1 - Failed to render field row in AgentInfo',
+              functionName: 'AgentInfoRenderMap',
+              args: { fields, field },
+            })
+            return null
+          }
+        }
+
+        )}
       </StyledTable>
     </CompanyContainer>
   )

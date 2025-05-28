@@ -109,24 +109,12 @@ export default function Page() {
         localStorage.setItem(EMAIL_SUBMITTED_KEY + '-' + address, email)
         // direct/handleEmail/email=michaeltest@gmail.com&address=0x456.json
         await handleEmail({ email, address })
-
     }
 
 
     return (
         <>
-            {/* <EmailModal
-                isOpen={showEmailModal && isAddress(address as any) && address !== zeroAddress}
-                onClose={() => setShowEmailModal(false)}
-                onSubmit={(email) => {
-                    localStorage.setItem(EMAIL_SUBMITTED_KEY, email)
-
-                    pushEmailToList(email)
-                    setShowEmailModal(false)
-                }}
-            /> */}
             <Content singleColumnContent title={t('title')}>
-
                 {{
                     trailing: (
                         <OtherWrapper>

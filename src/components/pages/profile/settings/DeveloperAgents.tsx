@@ -17,9 +17,10 @@ import {
     SortType,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { SpinnerRow } from '@app/components/@molecules/ScrollBoxWithSpinner'
+import l1abi from '@app/constants/l1abi.json'
+
 import { usePrimaryName } from '@app/hooks/ensjs/public/usePrimaryName'
 import { useNamesForAddress } from '@app/hooks/ensjs/subgraph/useNamesForAddress'
-import { useGetPrimaryNameTransactionFlowItem } from '@app/hooks/primary/useGetPrimaryNameTransactionFlowItem'
 import { useResolverStatus } from '@app/hooks/resolver/useResolverStatus'
 import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { useIsWrapped } from '@app/hooks/useIsWrapped'
@@ -230,23 +231,6 @@ const DeveloperAgents = ({ address, record }: any) => {
         name: 'name',
     })
 
-    const { data: isWrapped, isLoading: isWrappedLoading } = useIsWrapped({
-        name: selectedName?.name!,
-        enabled: !!selectedName?.name,
-    })
-    const { data: selectedNameProfile } = useProfile({
-        name: selectedName?.name!,
-        enabled: !!selectedName?.name,
-        subgraphEnabled: false,
-    })
-
-    const resolverStatus = useResolverStatus({
-        name: selectedName?.name!,
-        enabled: !!selectedName && !isWrappedLoading,
-        migratedRecordsMatch: { type: 'address', match: { id: 60, value: address } },
-    })
-
-
     const dispatchTransactions = async (name: string) => {
 
         const client = getPublicClient()
@@ -255,29 +239,7 @@ const DeveloperAgents = ({ address, record }: any) => {
 
         const revRes: any = getContract({
             address: "0xcf75b92126b02c9811d8c632144288a3eb84afc8",
-            abi: [
-                {
-                    inputs: [
-                        { internalType: 'string', name: '', type: 'string' },
-                    ],
-                    name: 'setName',
-                    outputs: [],
-                    stateMutability: 'nonpayable',
-                    type: 'function',
-                },
-                {
-                    inputs: [
-                        { internalType: "address", name: '', type: 'address' },
-                        { internalType: "address", name: '', type: 'address' },
-                        { internalType: "address", name: '', type: 'address' },
-                        { internalType: 'string', name: '', type: 'string' },
-                    ],
-                    name: 'setNameForAddr',
-                    outputs: [],
-                    stateMutability: 'nonpayable',
-                    type: 'function',
-                },
-            ],
+            abi: l1abi,
             client: wallet,
         })
 

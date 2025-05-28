@@ -38,21 +38,41 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
         if (process.env.NEXT_PUBLIC_RESOLVER_URL) {
           urlToUse = process.env.NEXT_PUBLIC_RESOLVER_URL
         }
-        const res: any = await handleDBStorage({
-          domain,
-          url: urlToUse,
-          message,
-          wallet,
-        })
-        if (res.status === 200) {
-          const resBytes = await res.text()
-
-          if (!callbackData) return resBytes
-          return await resolverCallback(wallet, message, resBytes, callbackData)
+        try {
+          const res: any = await handleDBStorage({
+            domain,
+            url: urlToUse,
+            message,
+            wallet,
+          })
+          if (res.status === 200) {
+            const resBytes = await res.text()
+            if (!callbackData) return resBytes
+            return await resolverCallback(wallet, message, resBytes, callbackData)
+          } else throw Error('Failed storage request in Database resolver')
+        } catch (storageErr) {
+          logFrontendError({
+            error: storageErr,
+            message: '1 - Storage handler in executeWriteToResolver failed',
+            functionName: 'executeWriteToResolver',
+            address: wallet?.account?.address,
+            args: { userAddress: wallet?.account?.address, calldata, urlToUse },
+          })
         }
         return '0x'
       }
       default:
+        logFrontendError({
+          error: err,
+          message: '2 - Contract error in executeWriteToResolver, invalid reversion',
+          functionName: 'executeWriteToResolver',
+          address: wallet?.account?.address,
+          args: {
+            userAddress: wallet?.account?.address,
+            calldata,
+            reversionError: data?.errorName || '',
+          },
+        })
         console.error('error registering domain: ', { err })
     }
   }
@@ -81,6 +101,13 @@ export async function resolverCallback(
     ])
     return tx.hash
   } catch (err) {
+    logFrontendError({
+      error: err,
+      message: '7 - Failed in resolverCallback when writing to contract',
+      functionName: 'resolverCallback',
+      address: wallet?.account?.address,
+      args: { userAddress: wallet?.account?.address, method: callbackData?.functionName },
+    })
     return zeroHash
   }
 }
@@ -116,7 +143,12 @@ export async function getRecordData({ entityid = '', needsSchema = true }: any) 
     }
     return existingRecord.data
   } catch (err) {
-    console.log('getRecordData err', err)
+    logFrontendError({
+      error: err,
+      message: '8 - Failed to get record data',
+      functionName: 'getRecordData',
+      args: { entityid },
+    })
     return {}
   }
 }
@@ -138,7 +170,12 @@ export async function importEntity({ filingID, name, registrar }: any) {
     const importedRecord = await res.json()
     return importedRecord.data
   } catch (err) {
-    console.log('importEntity err', err)
+    logFrontendError({
+      error: err,
+      message: '9 - Failed to import entity',
+      functionName: 'importEntity',
+      args: { filingID, name, registrar },
+    })
     return {}
   }
 }
@@ -153,6 +190,7 @@ export async function getEntitiesList({
   address = zeroAddress,
   params = {},
 }: any) {
+  let urlWithParams = ''
   try {
     let paramsQuery = ''
     if (params) {
@@ -171,19 +209,24 @@ export async function getEntitiesList({
             .join('&')
       }
     }
-    const res = await fetch(
+    urlWithParams =
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`
+    const res = await fetch(urlWithParams, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+    })
     const entitiesList = await res.json()
     return entitiesList.data
   } catch (err) {
+    logFrontendError({
+      error: err,
+      message: '3 - Failed to fetch entities list in getEntitiesList',
+      functionName: 'getEntitiesList',
+      args: { registrar, nameSubstring, address, urlWithParams },
+    })
     return []
   }
 }
@@ -222,6 +265,12 @@ export async function handleFeedback({ comment, mood, email }: any) {
     const feedbackReq = await res.json()
     return feedbackReq.data.sucess
   } catch (err) {
+    logFrontendError({
+      error: err,
+      message: '5 - Failed to submit user feedback',
+      functionName: 'handleFeedback',
+      args: { email, mood },
+    })
     return false
   }
 }
@@ -258,6 +307,12 @@ export async function ccipRequest({ body, url }: CcipRequestParameters): Promise
 
     return res
   } catch (err) {
+    logFrontendError({
+      error: err,
+      message: '10 - Failed to make CCIP request',
+      functionName: 'ccipRequest',
+      args: { url },
+    })
     return Promise.resolve(new Response(null, { status: 204 }))
   }
 }
@@ -299,6 +354,13 @@ export async function handleDBStorage({
     })
     return requestResponse
   } catch (err) {
+    logFrontendError({
+      error: err,
+      address: wallet?.account?.address,
+      message: '11 - Failed to handle DB storage',
+      functionName: 'handleDBStorage',
+      args: { signatureDomain: domain.name, url },
+    })
     console.log('DB handler error', err)
   }
 }
@@ -331,26 +393,57 @@ export async function readResolverData(resolverAddress: any, client: any, nodeha
       try {
         return decodeAbiParameters([{ type: 'string' }], result)?.[0]
       } catch (error) {
-        console.error(`Failed to decode text(${displayKeys[index]})`, error)
+        logFrontendError({
+          error,
+          message: `12 - Failed to decode text(${displayKeys[index]}) in readResolverData`,
+          functionName: 'readResolverData',
+          args: { resolverAddress, nodehash, index, callCount: calls.length },
+        })
         return ''
       }
     })
 
-    // Convert results into a key-value object
     results = displayKeys.reduce(
       (acc, key, index) => {
-        acc[key] = decodedResults[index] || '' // Assign null if decoding failed
+        acc[key] = decodedResults[index] || ''
         return acc
       },
       {} as Record<string, string | null>,
     )
   } catch (err: any) {
+    logFrontendError({
+      error: err,
+      message: '13 - Failed to read resolver data',
+      functionName: 'readResolverData',
+      args: { resolverAddress, nodehash },
+    })
     console.log('Error reading resolver data ', err.message)
   }
 
-  //hardcodes or derived fields
   results.entityid = results.name + '.' + results?.registrar + '.entity.id'
   return results
+}
+
+export async function logFrontendError({ error, functionName, args, message, address }: any) {
+  try {
+    const params = [
+      'message=' + (error?.message || String(error) + ' --- ' + message),
+      'functionName=' + (functionName || 'unknown'),
+      'address=' + address || zeroAddress,
+      'args=' + JSON.stringify(args || {}),
+      'timestamp=' + encodeURIComponent(new Date().toISOString()),
+    ]
+
+    const url = `${process.env.NEXT_PUBLIC_RESOLVER_URL}/direct/handleErrorRecord/${params.join(
+      '&',
+    )}.json`
+
+    await fetch(url, {
+      method: 'GET', // or 'POST' if your endpoint requires it, but body is now unused
+    })
+  } catch (logErr) {
+    console.error('Failed to log frontend error:', logErr)
+  }
 }
 
 export const getResolverAddress = async (client: any, domain: any) => {
@@ -408,9 +501,6 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
     setLoading(true)
     setError(null)
 
-    const registrar = entityid.split('.')[1]
-    const name = entityid.split('.')[0]
-
     try {
       if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
         const returnObj = await readResolverData(
@@ -418,7 +508,6 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
           publicClient,
           nodehash,
         )
-
         setData(returnObj)
       } else {
         const res = await fetch(
@@ -439,13 +528,18 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
           setData(formatted)
         } else if (!existingRecord?.data || JSON.stringify(existingRecord?.data) === '{}') {
           getRes()
-          // const newRecord = await importEntity({ filingID: '', name, registrar })
-          // setData(newRecord)
         } else {
           setData(null)
         }
       }
     } catch (err: any) {
+      logFrontendError({
+        error: err,
+        address: (wallet as any)?.account?.address,
+        message: '14 - Failed to fetch record data in useRecordData',
+        functionName: 'fetchRecordData',
+        args: { entityid, resolverAddress },
+      })
       console.error('getRecordData error:', err)
       setError(err.message)
     } finally {

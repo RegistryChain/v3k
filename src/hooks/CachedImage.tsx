@@ -69,7 +69,6 @@ export function CachedImage({ src, alt, height }: CachedImageProps) {
     }
 
     if (error) {
-        console.log('error loading image', src, error)
         return <Image
             src={v3kLogo as any}
             height={height}
@@ -77,7 +76,6 @@ export function CachedImage({ src, alt, height }: CachedImageProps) {
             alt={alt}
             style={{ objectFit: 'cover', opacity: "0.2" }}
             onError={() => setError(true)}
-            onLoad={() => console.log("imgser", imgSrc)}
         />
     }
 
@@ -89,7 +87,6 @@ export function CachedImage({ src, alt, height }: CachedImageProps) {
             alt={alt}
             style={{ objectFit: 'cover' }}
             onError={() => setError(true)}
-            onLoad={() => console.log("imgser", imgSrc)}
         />
     )
 }
