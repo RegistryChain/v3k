@@ -130,7 +130,6 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
-setupAnalytics()
 
 
 const theme = {
@@ -160,17 +159,18 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     <>
       <Script
         strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN`}
+        src={`https://www.googletagmanager.com/gtag/js?id=G-3Y0HCJQYDM`}
       />
       <Script
         id="gtag-init"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
+          console.log('Executing google analytics...')
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-LT2WCF51SN', {
+      gtag('config', 'G-3Y0HCJQYDM', {
         page_path: window.location.pathname,
       });
     `,
