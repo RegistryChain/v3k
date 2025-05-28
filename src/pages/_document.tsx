@@ -1,6 +1,5 @@
 import { AppPropsType, AppType } from 'next/dist/shared/lib/utils'
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document'
-import Script from 'next/script'
 import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
 
 const ipfsPathScript = `
@@ -75,7 +74,6 @@ export default class MyDocument extends Document {
     return (
       <Html suppressHydrationWarning>
         <Head>
-
           {/* eslint-disable-next-line react/no-danger */}
           <script dangerouslySetInnerHTML={{ __html: hiddenCheckScript }} />
           {process.env.NEXT_PUBLIC_IPFS && (
@@ -123,20 +121,7 @@ export default class MyDocument extends Document {
             data-domain="entity.id"
             src="https://plausible.io/js/script.outbound-links.js"
           />
-          {/* <!-- Google tag (gtag.js) --> */}
         </Head>
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN" />
-        <Script
-          id="gtag-init"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-LT2WCF51SN');
-      `,
-          }}
-        />
         <body>
           <Main />
           <NextScript />
