@@ -75,10 +75,10 @@ export default class MyDocument extends Document {
       <Html suppressHydrationWarning>
         <Head>
           {process.env.NODE_ENV === 'production' && (
-            <meta
-              httpEquiv="Content-Security-Policy"
-              content="worker-src 'self'; script-src 'self' 'sha256-UyYcl+sKCF/ROFZPHBlozJrndwfNiC5KT5ZZfup/pPc=' https://*.googletagmanager.com plausible.io static.cloudflareinsights.com *.ens-app-v3.pages.dev 'wasm-unsafe-eval';"
-            />
+            <meta httpEquiv="Content-Security-Policy"
+              content="script-src 'self' 'sha256-...' https://www.googletagmanager.com plausible.io static.cloudflareinsights.com;
+                connect-src 'self' https://www.google-analytics.com;"/>
+
           )}
           {/* eslint-disable-next-line react/no-danger */}
           <script dangerouslySetInnerHTML={{ __html: hiddenCheckScript }} />
@@ -122,11 +122,6 @@ export default class MyDocument extends Document {
             rel="stylesheet"
           />
 
-          <script
-            defer
-            data-domain="entity.id"
-            src="https://plausible.io/js/script.outbound-links.js"
-          />
         </Head>
         <body>
           <Main />
