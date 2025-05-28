@@ -127,6 +127,7 @@ export default class MyDocument extends Document {
         </Head>
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-LT2WCF51SN" />
         <Script
+          id="gtag-init"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
