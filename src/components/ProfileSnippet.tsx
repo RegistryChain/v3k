@@ -144,25 +144,6 @@ export const ProfileSnippet = ({
 
   const sendRating = async (stars: number) => {
     try {
-      const LOCAL_STORAGE_KEY = 'orimmo_token_added-' + address;
-
-      if (localStorage.getItem(LOCAL_STORAGE_KEY) !== 'true') {
-        const wasAdded = await window.ethereum?.request({
-          method: 'wallet_watchAsset',
-          params: {
-            type: 'ERC20',
-            options: {
-              address: contractAddresses.ORIMMO,
-              symbol: 'OR',
-              decimals: 18,
-
-            },
-          },
-        });
-        if (wasAdded) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
-        }
-      }
 
     } catch (err) {
       console.log(err)

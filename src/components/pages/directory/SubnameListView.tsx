@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { Address, getContract, http, namehash, parseAbi } from 'viem'
+import { Address, getContract, http, isAddressEqual, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
 
 import { createEnsPublicClient } from '@ensdomains/ensjs'
@@ -134,17 +134,21 @@ export const SubnameListView = ({ address }: any) => {
 
   const checkConnectedAddressAdmin = async () => {
     try {
-      const registrar: any = await getContract({
-        client: publicClient,
-        abi: parseAbi([
-          'function REGISTRAR_ADMIN_ROLE() view returns (bytes32)',
-          'function hasRole(bytes32, address) view returns (bool)',
-        ]),
-        address: contractAddresses["ai.entity.id"] as Address,
-      })
-      const roleHash = await registrar.read.REGISTRAR_ADMIN_ROLE()
-      const isAdmin = await registrar.read.hasRole([roleHash, address])
-      setConnectedIsAdmin(isAdmin)
+      // const registrar: any = await getContract({
+      //   client: publicClient,
+      //   abi: parseAbi([
+      //     'function REGISTRAR_ADMIN_ROLE() view returns (bytes32)',
+      //     'function hasRole(bytes32, address) view returns (bool)',
+      //   ]),
+      //   address: contractAddresses["ai.entity.id"] as Address,
+      // })
+      // const roleHash = await registrar.read.REGISTRAR_ADMIN_ROLE()
+      // const isAdmin = await registrar.read.hasRole([roleHash, address])
+      if (address) {
+        const isAdmin = isAddressEqual(address, "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E") || isAddressEqual(address, "0xd873FaFd02351e6474906CD9233B454117b834DF") || isAddressEqual(address, "0x3Af9EB97d58212f0CF88B43Cf6f78434FEbbFCec") || isAddressEqual(address, "0xA72Ab9C4B2828aC2CB6c9C617D3e81BFEe23C0b6") || isAddressEqual(address, "0x761662d41f60A48Cf94af6f9e626D36963493767")
+
+        setConnectedIsAdmin(isAdmin)
+      }
     } catch (err: any) {
       logFrontendError({
         error: err,
@@ -183,7 +187,7 @@ export const SubnameListView = ({ address }: any) => {
     }, 600) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
-  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory])
+  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory, connectedIsAdmin])
 
   const filteredSet = useMemo(
     () => {

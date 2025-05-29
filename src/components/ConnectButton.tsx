@@ -1,9 +1,9 @@
-import { Key, ReactNode, useState } from 'react'
+import { Key, ReactNode, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
 import { useAccount, useDisconnect, useEnsAvatar } from 'wagmi'
-import { useConnectOrCreateWallet, useLoginWithEmail, usePrivy, useWallets } from '@privy-io/react-auth';
+import { useConnectOrCreateWallet, useDelegatedActions, useLoginWithEmail, usePrivy, useWallets } from '@privy-io/react-auth';
 
 import {
   Button,
@@ -111,8 +111,18 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { t } = useTranslation('common')
   const breakpoints = useBreakpoint()
   const { connectOrCreateWallet } = useConnectOrCreateWallet();
-  const { sendCode, loginWithCode } = useLoginWithEmail()
-  const { connectWallet, logout } = usePrivy()
+  const { delegateWallet } = useDelegatedActions();
+  const { wallets } = useWallets();      // Privy hook
+
+  const execDelegation = async () => {
+    const walletToUse = wallets[0]
+    if (walletToUse?.address && walletToUse?.walletClientType === "privy") {
+      await delegateWallet({ address: walletToUse.address, chainType: 'ethereum' })
+    }
+  }
+  useEffect(() => {
+    execDelegation()
+  }, [wallets])
 
   return (
     <StyledButtonWrapper $large={large} $isTabBar={isTabBar}>

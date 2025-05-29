@@ -16,6 +16,7 @@ import {
 } from './AgentGridStyles'
 import { CheckCircleSVG, DisabledSVG, Tooltip } from '@ensdomains/thorin'
 import { CachedImage } from '@app/hooks/CachedImage'
+import { ModPanel } from '@app/components/ModPanel'
 
 export const AgentBox = ({
   onRate,
@@ -63,19 +64,11 @@ export const AgentBox = ({
           </div>
         </TextContainer>
       </div>
-      {connectedIsAdmin ? (<div style={{ width: "25px", display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
-        <DisabledSVG style={{ color: "blue", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 1)} />
-        <CheckCircleSVG style={{ color: "lime", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 2)} />
-        <FaTrash style={{ color: "red", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 3)} />
-        <FaRegArrowAltCircleUp style={{ color: "black", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 4)} />
-        <FaRegThumbsUp style={{ color: "gold", margin: "10px 6px" }} onClick={() => moderateEntity(agentDomain, 5)} />
-      </div>) : null}
+      <ModPanel connectedIsAdmin={connectedIsAdmin} hidden={hidden} agentDomain={agentDomain} moderateEntity={moderateEntity} />
     </>
     )}
   </Box >
 
-  return hidden ? <Tooltip content={"This agent is currently hidden"}>
-    {agentContent}
-  </Tooltip> : agentContent
+  return agentContent
 
 }
