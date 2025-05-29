@@ -144,7 +144,7 @@ const SearchWrapper = styled.div`
 const AddAgentButton = styled.button(
   ({ theme }) => css`
     font-weight: 700;
-    min-width: 120px;
+    min-width: 100px;
     border: none;
     border-radius: ${theme.radii.full};
     font-size: ${theme.fontSizes.body};
@@ -200,7 +200,7 @@ export const Header = () => {
   const breakpoints = useBreakpoint()
   const transactions = useRecentTransactions()
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')
-  const { setIsAgentModalOpen, setAgentModalPrepopulate } = useContext<any>(ModalContext)
+  const { setIsAgentModalOpen, setAgentModalPrepopulate, isFeedbackModalOpen, setIsFeedbackModalOpen } = useContext<any>(ModalContext)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const searchWrapperRef = useRef<HTMLDivElement>(null)
@@ -359,6 +359,13 @@ export const Header = () => {
               }}
             >
               Add Agent
+            </AddAgentButton>
+            <AddAgentButton
+              onClick={() => {
+                setIsFeedbackModalOpen(true)
+              }}
+            >
+              Feedback
             </AddAgentButton>
           </RouteContainer>
         </RouteWrapper>

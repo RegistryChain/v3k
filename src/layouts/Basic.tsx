@@ -129,7 +129,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   return (
     // <LayoutContext.Provider value={{ testMode }}>
     <ModalContext.Provider
-      value={{ isModalOpen: isAgentModalOpen, setIsAgentModalOpen, agentModalPrepopulate, setAgentModalPrepopulate }}
+      value={{ isModalOpen: isAgentModalOpen, setIsAgentModalOpen, agentModalPrepopulate, setAgentModalPrepopulate, isFeedbackModalOpen, setIsFeedbackModalOpen }}
     >
       <Container style={containerStyle} className="min-safe">
         <Navigation />
@@ -153,7 +153,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
-        <FeedbackButton onClick={() => setIsFeedbackModalOpen(!isFeedbackModalOpen)} />
+        {/* <FeedbackButton onClick={() => setIsFeedbackModalOpen(!isFeedbackModalOpen)} /> */}
         <BottomPlaceholder>
           <div
             style={{
