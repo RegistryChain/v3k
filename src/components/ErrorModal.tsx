@@ -18,7 +18,7 @@ export const ErrorModal = ({ errorMessage, setErrorMessage, breakpoints }: any) 
             backgroundColor: 'rgb(239 169 169)',
             padding: '40px',
             width: '100%',
-            height: errorMessage.length > 300 ? '350px' : '240px',
+            height: errorMessage?.length > 300 ? '350px' : '240px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',

@@ -1,4 +1,4 @@
-import { Key, ReactNode, useEffect, useState } from 'react'
+import { Key, ReactNode, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
@@ -29,6 +29,7 @@ import { MoonIcon, SunIcon } from './@atoms/Icons'
 
 import BaseLink from './@atoms/BaseLink'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
+import { ModalContext } from '@app/layouts/Basic'
 
 const StyledButtonWrapper = styled.div<{ $isTabBar?: boolean; $large?: boolean }>(
   ({ theme, $isTabBar, $large }) => [
@@ -148,6 +149,7 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
 
   const { data: primary } = usePrimaryName({ address })
   const { data: avatar } = useEnsAvatar({ ...ensAvatarConfig, name: primary?.name })
+  const { setIsEmailModalOpen } = useContext<any>(ModalContext)
 
   const { disconnect } = useDisconnect({})
   const { copy, copied } = useCopied(300)
@@ -187,6 +189,14 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
             label: shortenAddress(address),
             color: 'text',
             onClick: () => copy(address),
+            icon: copied ? <CheckSVG /> : <CopySVG />,
+          },
+          <SectionDivider key="divider" />,
+
+          {
+            label: "Update Email",
+            color: 'text',
+            onClick: () => setIsEmailModalOpen(true),
             icon: copied ? <CheckSVG /> : <CopySVG />,
           },
           {

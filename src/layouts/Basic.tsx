@@ -16,6 +16,7 @@ import Link from 'next/link'
 import FeedbackModal from '@app/components/pages/feedbackModal/FeedbackModal'
 import FeedbackButton from '@app/components/FeedbackButton'
 import { handleFeedback } from '@app/hooks/useExecuteWriteToResolver'
+import EmailModal from '@app/components/pages/profile/EmailModal'
 
 const Container = styled.div(
   ({ theme }) => css`
@@ -116,6 +117,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   }, [isConnected, chainId, router])
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false)
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
 
   const [agentModalPrepopulate, setAgentModalPrepopulate] = useState({})
 
@@ -129,11 +131,16 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
   return (
     // <LayoutContext.Provider value={{ testMode }}>
     <ModalContext.Provider
-      value={{ isModalOpen: isAgentModalOpen, setIsAgentModalOpen, agentModalPrepopulate, setAgentModalPrepopulate, isFeedbackModalOpen, setIsFeedbackModalOpen }}
+      value={{ isModalOpen: isAgentModalOpen, setIsAgentModalOpen, agentModalPrepopulate, setAgentModalPrepopulate, isFeedbackModalOpen, setIsFeedbackModalOpen, isEmailModalOpen, setIsEmailModalOpen }}
     >
       <Container style={containerStyle} className="min-safe">
         <Navigation />
         <ContentWrapper>
+          {isEmailModalOpen && (
+            <EmailModal
+              isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)}
+            />
+          )}
           {isAgentModalOpen && (
             <AgentModal
               isOpen={isAgentModalOpen}

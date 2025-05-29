@@ -26,9 +26,12 @@ import contractAddresses from '../constants/contractAddresses.json'
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
 import { getContractInstance, getPrivyWalletClient, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
-import { useWallets } from '@privy-io/react-auth'
+import { useConnectOrCreateWallet, useLoginWithEmail, useWallets } from '@privy-io/react-auth'
 import Image from 'next/image'
 import { logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
+import { ErrorModal } from './ErrorModal'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { useEthBalance } from '@app/hooks/useEthBalance'
 
 const ThumbnailWrapper = styled.div`
   position: relative;
@@ -141,6 +144,11 @@ export const ProfileSnippet = ({
   const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
+  const [errorMessage, setErrorMessage] = useState<string | null>("")
+  const breakpoints = useBreakpoint()
+  const { connectOrCreateWallet } = useConnectOrCreateWallet()
+
+  const ethBalance = useEthBalance(address)
 
   const sendRating = async (stars: number) => {
     try {
@@ -157,12 +165,17 @@ export const ProfileSnippet = ({
 
     }
     try {
+      if (!wallets || wallets.length === 0) {
+        connectOrCreateWallet()
+        return
+      }
       const wallet = await getPrivyWalletClient(wallets.find(w => w.walletClientType === 'embedded') || wallets[0])
       const recipientHash = "0x" + records.nodehash.slice(-40)
+      if (!ethBalance.balance || ethBalance.balance === "0") throw Error("Rating requires Sepolia gas! (for now)")
       const orimmoToken: any = getContractInstance(wallet, 'ORIMMO')
       const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"], { gas: 6000000n })
-    } catch (err) {
-      console.log(err)
+    } catch (err: any) {
+      setErrorMessage(err.message)
       await logFrontendError({
         error: err,
         message: "2 - issue sending ORIMMO rating",
@@ -212,6 +225,11 @@ export const ProfileSnippet = ({
   }
   return (
     <Container>
+      <ErrorModal
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        breakpoints={breakpoints}
+      />
       {!multisigAddress && !name ? (
         entityUnavailable
       ) : (
