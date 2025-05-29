@@ -62,9 +62,7 @@ export function CachedImage({ src, alt, height }: CachedImageProps) {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', height }}>
-                <Spinner size="large" color="accent" />
-            </div>
+            null
         )
     }
 

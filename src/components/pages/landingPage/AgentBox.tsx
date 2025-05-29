@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { FaLevelUpAlt, FaRegArrowAltCircleUp, FaRegThumbsUp, FaStar, FaTrash } from 'react-icons/fa'
 
-import AppPlaceholderImage from '@app/assets/app-2.svg'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { normalizeLabel } from '@app/utils/utils'
 

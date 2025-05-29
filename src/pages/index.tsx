@@ -48,9 +48,9 @@ export default function Page() {
         <Stack>
           <FeaturedAgents recipientAverages={recipientAverages} />
           <TrendingAgents recipientAverages={recipientAverages} />
-          <div style={{ width: "100%" }}>
+          {/* <div style={{ width: "100%" }}>
             <Button onClick={() => router.push("/directory")} style={{ width: "380px", justifySelf: "center" }}>Browse Agents</Button>
-          </div>
+          </div> */}
         </Stack>
       </Container>
     </>
