@@ -1,95 +1,139 @@
+// pages/faq.tsx
+
 import Head from 'next/head'
 import styled from 'styled-components'
-import v3kHero from '../assets/v3k-hero.png'
-import Image from 'next/image'
+import V3KHero from '../assets/V3KHero.png'
 
 const PageWrapper = styled.div`
   background-color: black;
   color: white;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
 const Hero = styled.div`
-  max-width: 1024px;
-  margin: 0 auto 4rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 282px;
+  margin-top: -1.5rem;
+  background-size: cover;
+  background-image: 
+    linear-gradient(96.24deg, rgba(0, 0, 0, 0.7) 17.59%, rgba(0, 0, 0, 0) 47.72%),
+    image-set(url(${V3KHero.src}));
+`
+
+const HeroTitleWrapper = styled.div`
+  overflow: hidden;
+  height: 3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const HeroTitle = styled.h1`
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
   text-align: center;
+  line-height: 1.2;
+  transition: transform 0.9s ease, opacity 0.9s ease;
+  position: relative;
+  white-space: nowrap;
 `
 
-const HeroHeading = styled.h1`
+const Content = styled.div`
+  max-width: 950px;
+  line-height: 1.8;
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  padding: 4rem 0;
+`
+
+const Subheading = styled.h2`
   font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+  text-align: center;
+  color: #9f7aea;
+  margin-top: 2.5rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  width: 100%;
 `
 
-const HeroSub = styled.p`
-  font-size: 1.25rem;
-  color: #ccc;
+const FAQItem = styled.div`
+  margin-bottom: 2.5rem;
 `
 
-const Illustration = styled.div`
-  margin-top: 2rem;
-  img {
-    width: 100%;
-    padding: 0 25%;
-    max-width: 100%;
-    border-radius: 12px;
-  }
-`
-
-const Section = styled.div`
-  background: #121212;
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 2rem auto;
-  max-width: 1024px;
-`
-
-const Question = styled.h2`
-  color:rgb(61, 201, 117);
-  font-size: 1.25rem;
+const Question = styled.h3`
+  font-size: 1.5rem;
+  color: #9f7aea;
   margin-bottom: 0.5rem;
 `
 
 const Answer = styled.p`
-  font-size: 1.1rem;
-  color: #ccc;
+  font-size: 1.2rem;
   line-height: 1.6;
+  color: #e0e0e0;
+  margin: 0;
 `
 
-export default function InstructionsFAQPage() {
+export default function FAQPage() {
   return (
     <>
       <Head>
-        <title>V3K Instructions & FAQ</title>
+        <title>FAQ – V3K</title>
       </Head>
       <PageWrapper>
         <Hero>
-          <HeroHeading>Instructions & FAQ</HeroHeading>
-          <Illustration>
-            <Image src={v3kHero} alt="V3K illustration" width={600} height={300} />
-          </Illustration>
-          <HeroSub>
-            Learn how to get started with V3K and find answers to frequently asked questions.
-          </HeroSub>
+          <HeroTitleWrapper>
+            <HeroTitle
+              style={{
+                transform: 'translateY(-10px)',
+                opacity: 0,
+                animation: 'fadeUp 0.9s ease forwards'
+              }}
+              key={"faq-title"}
+            >
+              Frequently Asked Questions
+            </HeroTitle>
+          </HeroTitleWrapper>
         </Hero>
 
-        <Section>
-          <Question>What is V3K?</Question>
-          <Answer>V3K is a platform for registering, discovering, and showcasing AI agents. It turns autonomous agents into digital entities with unique IDs, profiles, and trackable metrics across ecosystems.</Answer>
+        <Content>
 
-          <Question>How do I register an AI agent?</Question>
-          <Answer>To register your agent, simply click the "Add Agent" button on the homepage. You’ll be prompted to input a name, jurisdiction, and select the agent type. Once submitted, V3K will generate a unique Entity ID for your agent.</Answer>
+          <FAQItem>
+            <Question>What is V3K?</Question>
+            <Answer>
+              V3K is a decentralized platform where users can discover, interact with, and trust autonomous AI agents. Think of it as the app store, but for verified, on-chain AI agents.
+            </Answer>
+          </FAQItem>
 
-          <Question>What is an Entity ID?</Question>
-          <Answer>An Entity ID is a globally recognized identifier for your AI agent. It enables your agent to be referenced consistently across decentralized and centralized platforms, much like a legal entity or domain name.</Answer>
+          <FAQItem>
+            <Question>What is an AI agent?</Question>
+            <Answer>
+              An AI agent is a software system that can make decisions, take actions, and complete tasks autonomously, often using large language models, APIs, and artificial reasoning capabilities.
+            </Answer>
+          </FAQItem>
 
-          <Question>Do I need a wallet to use V3K?</Question>
-          <Answer>Yes. V3K uses blockchain technology to anchor identities and registrations. You’ll need a compatible crypto wallet (e.g. MetaMask) to interact with the platform and register agents.</Answer>
+          <FAQItem>
+            <Question>How does V3K ensure trust?</Question>
+            <Answer>
+              Every agent listed on V3K must register a Entity.ID through the RegistryChain protocol. This allows us to track who created the agent, what it does, and how it performs—publicly and verifiably. Our KYA (Know Your Agent) framework enforces identity, transparency, and traceability.
+            </Answer>
+          </FAQItem>
 
-          <Question>Can I update my agent’s profile later?</Question>
-          <Answer>Yes, once registered, you can edit your agent’s metadata, upload updates, and view statistics from your dashboard.</Answer>
-        </Section>
+          <FAQItem>
+            <Question>What is Entity.ID?</Question>
+            <Answer>
+              Entity.ID is a globally unique, blockchain-based identifier that links each agent (and its developer) to a permanent, verifiable digital identity. It’s like DNS for agents—purpose-built for trust and interoperability.
+            </Answer>
+          </FAQItem>
+        </Content>
       </PageWrapper>
     </>
   )

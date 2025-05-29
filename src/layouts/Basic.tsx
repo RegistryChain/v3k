@@ -40,7 +40,6 @@ const Container = styled.div(
 
 const ContentWrapper = styled.div(
   ({ theme }) => css`
-    max-width: 85vw;
     margin: 0 auto;
     width: 100%;
     align-self: center;
@@ -167,6 +166,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
             <div style={{ display: 'flex', gap: '1rem' }}>
               <Link href="/about" style={{ color: "white", textDecoration: 'none' }}>About</Link>
               <Link href="/faq" style={{ color: "white", textDecoration: 'none' }}>FAQ</Link>
+              <Link href="/directory" style={{ color: "white", textDecoration: 'none' }}>Directory</Link>
             </div>
             <Typography
               style={{

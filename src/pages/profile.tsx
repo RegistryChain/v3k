@@ -19,9 +19,22 @@ import { infuraUrl } from '@app/utils/query/wagmi'
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
 import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
+import styled from 'styled-components'
+import { css } from 'styled-components'
 
 const contractAddressesObj: any = contractAddresses
 
+const Container = styled.div(
+  () => css`
+    display: flex;
+    align-items: center;
+
+    max-width: 85vw;
+    margin: 0 auto;
+    width: 100%;
+    align-self: center;
+  `,
+)
 export default function Page() {
   const router = useRouterWithHistory()
   const domain = router.query.name as string
@@ -122,7 +135,7 @@ export default function Page() {
   const isLoading = initial || !router.isReady
 
   return (
-    <>
+    <Container>
       <ErrorModal
         errorMessage={errorMessage}
         setErrorMessage={setErrorMessage}
@@ -147,6 +160,6 @@ export default function Page() {
           setWallet,
         }}
       />
-    </>
+    </Container>
   )
 }

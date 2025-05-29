@@ -509,19 +509,17 @@ const ProfileContent = ({
           setShowEmailModal(false)
         }}
       /> */}
-      <DeveloperRegisterModal
+      {/* <DeveloperRegisterModal
         isOpen={showDevelopersModal}
         onClose={() => setShowDevelopersModal(false)}
         wallet={wallet}
         domain={domain}
         partners={records.partners}
         setErrorMessage={setErrorMessage}
-      />
+      /> */}
 
       {loadingRecords ? (
-        <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} minHeight='50vh'>
-          <Spinner color="accent" size="medium" />
-        </Grid>
+        null
       ) : (
         match(records).with(undefined, () => (
           <MessageContainer>

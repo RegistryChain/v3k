@@ -6,12 +6,26 @@ import { useWallets } from '@privy-io/react-auth'
 import { useMemo } from 'react'
 import { Address } from 'viem'
 
+const Container = styled.div(
+  () => css`
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 85vw;
+    margin: 0 auto;
+    width: 100%;
+    align-self: center;
+  `,
+)
 export default function Page() {
   const { t } = useTranslation('names')
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
 
   return (
-    <SubnameListView address={address} />
+    <Container>
+      <SubnameListView address={address} />
+    </Container>
   )
 }
