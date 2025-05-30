@@ -10,7 +10,7 @@ export const Overlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000;
 `
 
 export const ModalContent = styled.div<{ isExpanded: boolean }>`
@@ -29,7 +29,6 @@ export const ModalContent = styled.div<{ isExpanded: boolean }>`
     max-height 0.3s ease;
 
   @media (max-width: 1024px) {
-    margin-top: 165px;
     width: 100%;
     height: 100%;
     border-radius: 0;
