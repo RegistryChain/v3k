@@ -5,6 +5,7 @@ import { SubnameListView } from '@app/components/pages/directory/SubnameListView
 import { useWallets } from '@privy-io/react-auth'
 import { useMemo } from 'react'
 import { Address } from 'viem'
+import Head from 'next/head'
 
 const Container = styled.div(
   () => css`
@@ -23,9 +24,13 @@ export default function Page() {
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
 
-  return (
+  return (<>
+    <Head>
+      <title>Agent Directory</title>
+    </Head>
     <Container>
       <SubnameListView address={address} />
     </Container>
+  </>
   )
 }

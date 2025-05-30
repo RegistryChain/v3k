@@ -28,7 +28,7 @@ import { roles } from '@app/constants/members'
 import { executeWriteToResolver, getResolverAddress, getTransactions } from '@app/hooks/useExecuteWriteToResolver'
 import useTokenBalances from '@app/hooks/useTokenBalances'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
-import { generateSafeAddress, generateSafeSalt, normalizeLabel } from '@app/utils/utils'
+import { generateSafeAddress, generateSafeSalt, getPublicClient, normalizeLabel } from '@app/utils/utils'
 
 import contractAddresses from '../../../../../../constants/contractAddresses.json'
 import l1abi from '../../../../../../constants/l1abi.json'
@@ -98,7 +98,13 @@ const ActionsTab = ({
 
   const migrateToOnchainRecords = async () => {
 
-    const resolverAddress = await getResolverAddress(wallet, name)
+    console.log("migrating...")
+
+    const publicClient = getPublicClient()
+
+
+
+    const resolverAddress = await getResolverAddress(publicClient, name)
     const calldataObject = {
       abi: l1abi,
       functionName: "proveTextRecords",
@@ -112,6 +118,8 @@ const ActionsTab = ({
       args: [contractAddressesObj["PublicResolver"]],
       address: contractAddressesObj["ai.entity.id"]
     }
+
+    console.log(contractAddressesObj["ai.entity.id"], resolverAddress, namehash(name), "BRINGING ON CHAIN")
 
     const res = await executeWriteToResolver(wallet, calldataObject, callback)
   }
@@ -272,21 +280,6 @@ const ActionsTab = ({
   }
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      const newWallet = createWalletClient({
-        chain: sepolia,
-        transport: custom(window.ethereum, {
-          retryCount: 0,
-        }),
-        account: address,
-      })
-      // setWallet(newWallet)
-    } else {
-      console.error('Ethereum object not found on window')
-    }
-  }, [address])
-
-  useEffect(() => {
     if (multisigAddress && txs.length === 0) {
       readTransactions()
     }
@@ -302,7 +295,7 @@ const ActionsTab = ({
   if (!hasOwnerOnchain && isOwnerOperatorOffchain) {
     claimOnChainElement = (
       <div style={{ width: '100%', margin: '16px 0' }}>
-        <Button variant="outlined"
+        <Button disabled={true} variant="outlined"
           style={{ width: "100%" }} onClick={() => claimEntity(namehash(name))}>Claim On-Chain</Button>
       </div>
     )
@@ -318,7 +311,7 @@ const ActionsTab = ({
             makeAmendment()
           }}
         >
-          Make Amendment
+          Update Agent
         </Button>
       </div>
     )
@@ -334,7 +327,7 @@ const ActionsTab = ({
       />
       {claimOnChainElement}
       <div style={{ width: '100%', margin: '16px 0' }}>
-        <Button style={{ width: "100%" }} variant="outlined" onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
+        <Button disabled={true} style={{ width: "100%" }} variant="outlined" onClick={() => claimPregeneratedSafe()}>Claim Safe</Button>
       </div>
       {balances.length > 0 ? (
         <div style={{ width: '50%', margin: '16px 0' }}>
@@ -354,7 +347,7 @@ const ActionsTab = ({
         </div>
       ) : null}
       < div style={{ width: '100%', margin: '16px 0' }}>
-        <Button style={{ width: "100%" }} variant="outlined" onClick={() => deploySafeMultisig()}>Deploy Safe CA</Button>
+        <Button disabled={true} style={{ width: "100%" }} variant="outlined" onClick={() => deploySafeMultisig()}>Deploy Safe CA</Button>
       </div>
       {amendmentElement}
       <div style={{ width: '100%', margin: '16px 0' }}>
@@ -362,11 +355,11 @@ const ActionsTab = ({
           await migrateToOnchainRecords()
           // refresh()
         }} style={{ width: "100%" }} variant="outlined">
-          Migrate Onchain
+          Bring Agent Onchain
         </Button>
       </div>
       <div style={{ width: '100%', margin: '16px 0' }}>
-        <Button style={{ width: "100%" }} variant="outlined">KYC verification</Button>
+        <Button disabled={true} style={{ width: "100%" }} variant="outlined">KYC verification</Button>
       </div>
     </div >
   )

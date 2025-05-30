@@ -21,6 +21,7 @@ import l1abi from '../constants/l1abi.json'
 import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
 import styled from 'styled-components'
 import { css } from 'styled-components'
+import Head from 'next/head'
 
 const contractAddressesObj: any = contractAddresses
 
@@ -134,7 +135,10 @@ export default function Page() {
 
   const isLoading = initial || !router.isReady
 
-  return (
+  return (<>
+    <Head>
+      <title>Profile – {domain}</title>
+    </Head>
     <Container>
       <ErrorModal
         errorMessage={errorMessage}
@@ -156,10 +160,11 @@ export default function Page() {
           setRecords,
           getRecords: refetch,
           setErrorMessage,
-          wallet,
+          wallet: wallets[0],
           setWallet,
         }}
       />
     </Container>
+  </>
   )
 }

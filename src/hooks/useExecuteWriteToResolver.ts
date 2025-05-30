@@ -31,6 +31,7 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
     await simulateContract(wallet, calldata)
   } catch (err) {
     const data = getRevertErrorData(err)
+    console.log(data?.errorName)
     switch (data?.errorName) {
       case 'StorageHandledByOffChainDatabase': {
         const [domain, url, message] = data.args as any[]
@@ -69,7 +70,6 @@ export const executeWriteToResolver = async (wallet: any, calldata: any, callbac
           address: wallet?.account?.address,
           args: {
             userAddress: wallet?.account?.address,
-            calldata,
             reversionError: data?.errorName || '',
           },
         })
@@ -84,6 +84,7 @@ export async function resolverCallback(
   resBytes: any,
   callbackData: any,
 ) {
+  console.log('resolverCallback should execute!')
   const req = encodeAbiParameters(
     [{ type: 'bytes' }, { type: 'address' }],
     [message.callData, wallet.account.address],
@@ -93,6 +94,7 @@ export async function resolverCallback(
     args: [...callbackData.args, resBytes, req],
     ...callbackData,
   })
+  console.log('Reached tx write')
   try {
     const tx = await callbackContract.write[callbackData.functionName]([
       ...callbackData.args,

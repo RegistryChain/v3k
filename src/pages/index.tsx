@@ -9,6 +9,7 @@ import TrendingAgents from '@app/components/pages/landingPage/TrendingAgents'
 import { useRouterWithHistory } from '@app/hooks/useRouterWithHistory'
 import { useGetRating } from '@app/hooks/useGetRating'
 import { useEffect, useState } from 'react'
+import { useBreakpoint } from '@app/utils/BreakpointProvider'
 
 
 
@@ -91,6 +92,8 @@ export default function Page() {
     return () => clearInterval(interval)
   }, [])
 
+  const breakpoints = useBreakpoint()
+
   const { recipientAverages } = useGetRating(zeroHash)
   return (
     <>
@@ -103,7 +106,8 @@ export default function Page() {
             style={{
               transform: 'translateY(-10px)',
               opacity: 0,
-              animation: 'fadeUp 0.9s ease forwards'
+              animation: 'fadeUp 0.9s ease forwards',
+              fontSize: breakpoints.xs && !breakpoints.sm ? "1.2rem" : "2.5rem"
             }}
             key={phrases[index]}
           >

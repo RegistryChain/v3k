@@ -526,7 +526,7 @@ const ProfileContent = ({
             Entity not found. Actions are available for entities with drafted or submitted data.
           </MessageContainer>
         )).otherwise(() => (
-          <Box>
+          <Box style={{ width: "85vw" }}>
             <Grid container spacing={8} maxWidth={"100%"} minHeight={'calc(100vh - 350px)'}>
               {/* Sidebar */}
               <Grid

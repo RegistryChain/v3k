@@ -30,6 +30,7 @@ import { MoonIcon, SunIcon } from './@atoms/Icons'
 import BaseLink from './@atoms/BaseLink'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 import { ModalContext } from '@app/layouts/Basic'
+import { getRevertErrorData, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 
 const StyledButtonWrapper = styled.div<{ $isTabBar?: boolean; $large?: boolean }>(
   ({ theme, $isTabBar, $large }) => [
@@ -114,6 +115,7 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { connectOrCreateWallet } = useConnectOrCreateWallet();
   const { delegateWallet } = useDelegatedActions();
   const { wallets } = useWallets();      // Privy hook
+  const { ready, authenticated, user, logout } = usePrivy();
 
   const execDelegation = async () => {
     const walletToUse = wallets[0]
@@ -129,9 +131,13 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
     <StyledButtonWrapper $large={large} $isTabBar={isTabBar}>
       <Button
         data-testid={calculateTestId(isTabBar, inHeader)}
-        onClick={() => {
-
-          connectOrCreateWallet()
+        onClick={async () => {
+          if (authenticated) await logout()
+          try {
+            connectOrCreateWallet()
+          } catch (error) {
+            logFrontendError({ error, functionName: "ConnectWallet", args: { authenticated, user }, message: "authentication issue connecting to privy wallet" })
+          }
         }}
         size={breakpoints.sm || large ? 'medium' : 'small'}
         width={inHeader ? '45' : undefined}
