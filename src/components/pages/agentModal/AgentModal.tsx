@@ -504,7 +504,7 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
       return
     }
 
-    if (!formState.imageFile && !formState.avatar) {
+    if (!formState.imageFile && !formState.avatar && !agentModalPrepopulate) {
       setErrorMessage("Agent needs an Avatar image to be registered")
       return
     }

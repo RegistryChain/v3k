@@ -1,12 +1,13 @@
 import { Button, Modal, Typography } from '@ensdomains/thorin'
 
 export const ErrorModal = ({ errorMessage, setErrorMessage, breakpoints }: any) => {
+  const otherStyles = breakpoints.xs && !breakpoints.sm
+    ? { width: '100%', top: 0 }
+    : { width: '36%', top: '300px' }
   return (
     <Modal
       style={
-        breakpoints.xs && !breakpoints.sm
-          ? { width: '100%', top: 0 }
-          : { width: '36%', top: '300px' }
+        { zIndex: 10001, ...otherStyles }
       }
       open={!!errorMessage}
     >

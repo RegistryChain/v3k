@@ -8,6 +8,7 @@ import {
   custom,
   getContract,
   http,
+  isAddressEqual,
   namehash,
   zeroAddress,
 } from 'viem'
@@ -148,6 +149,14 @@ export const ProfileSnippet = ({
   const breakpoints = useBreakpoint()
   const { connectOrCreateWallet } = useConnectOrCreateWallet()
 
+  const isAdmin = useMemo(() => {
+    if (address) {
+      return isAddressEqual(address || zeroAddress, "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E") || isAddressEqual(address, "0xd873FaFd02351e6474906CD9233B454117b834DF") || isAddressEqual(address, "0x3Af9EB97d58212f0CF88B43Cf6f78434FEbbFCec") || isAddressEqual(address, "0xA72Ab9C4B2828aC2CB6c9C617D3e81BFEe23C0b6") || isAddressEqual(address, "0x761662d41f60A48Cf94af6f9e626D36963493767")
+    }
+    return false
+  }, [address])
+
+
   const ethBalance = useEthBalance(address)
 
   const sendRating = async (stars: number) => {
@@ -270,7 +279,7 @@ export const ProfileSnippet = ({
               <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
                 <div style={{ display: "flex", gap: "5px" }}>
                   <span>{name}</span>
-                  {owner === address ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
+                  {owner === address || isAdmin ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
                 </div>
               </NameRecord>
               {domainName && (
