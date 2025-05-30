@@ -365,11 +365,9 @@ const InnerMenuButton = styled.button<InnerMenuButtonProps>(
     ${() => {
       if ($open)
         return css`
-          border-${$direction === 'down' ? 'top' : 'bottom'}-left-radius: ${
-            theme.radii.almostExtraLarge
+          border-${$direction === 'down' ? 'top' : 'bottom'}-left-radius: ${theme.radii.almostExtraLarge
           };
-          border-${$direction === 'down' ? 'top' : 'bottom'}-right-radius: ${
-            theme.radii.almostExtraLarge
+          border-${$direction === 'down' ? 'top' : 'bottom'}-right-radius: ${theme.radii.almostExtraLarge
           };
           border-${$direction === 'down' ? 'bottom' : 'top'}-left-radius: none;
           border-${$direction === 'down' ? 'bottom' : 'top'}-right-radius: none;

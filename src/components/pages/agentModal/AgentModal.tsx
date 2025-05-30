@@ -133,14 +133,16 @@ const Step1 = ({ isVisible, formState, isAmendment, prepopulate, handleFieldChan
       </Tooltip>
       <Tooltip content={"Select the category that your agent functionality is most related to"}>
         <div>
-          <FormInput
-            label="Category"
-            type="select"
-            value={formState.category}
-            onChange={handleFieldChange('category')}
-            options={['Social Media', 'Trading', 'Scraper', 'Assistant', 'Coding', 'Backend', 'Conversational', "Other"]}
-            placeholder="Select a category"
-            required
+
+          <SearchableDropdown
+            // style={{ border: "1px solid #c3c1c1", borderRadius: "4px",    }}
+            data={['Social Media', 'Trading', 'Scraper', 'Assistant', 'Coding', 'Backend', 'Conversational', "Other"]}
+            label={"Category"}
+            onChange={(x: any) => {
+              handleFieldChange('category')(x[x.length - 1])
+            }}
+            value={formState.category ? [formState.category] : []}
+
           />
         </div>
       </Tooltip>
@@ -460,7 +462,6 @@ const AgentModal = ({ isOpen, onClose, agentModalPrepopulate, setAgentModalPrepo
     ) {
       throw Error('Permission denied for domain registration')
     }
-
     const formationPrep = await createFormationPrep(texts)
 
     if (Object.keys(formationPrep)?.length === 0) throw Error('Registration calldata could not be formed')
