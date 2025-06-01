@@ -180,14 +180,17 @@ const Step2 = ({ isVisible, formState, isAmendment, handleFieldChange }: StepPro
       </Tooltip>
       <Tooltip content={"Select the framework or platform that your Agent was developed with"}>
         <div>
-          <FormInput
-            label="Agent Framework"
-            type="select"
-            value={formState.platform}
-            onChange={handleFieldChange('platform')}
-            options={['Eliza', 'GAME', 'Crew AI', 'Fine', 'LangGraph', "Other"]}
-            placeholder="Select an agent framework"
+          <SearchableDropdown
+            // style={{ border: "1px solid #c3c1c1", borderRadius: "4px",    }}
+            data={['Eliza', 'GAME', 'Crew AI', 'Fine', 'LangGraph', "Other"]}
+            label={"Agent Framework"}
+            onChange={(x: any) => {
+              handleFieldChange('platform')(x[x.length - 1])
+            }}
+            value={formState.platform ? [formState.platform] : []}
+
           />
+
         </div>
       </Tooltip>
       <Tooltip content={"Add the endpoint URI that is used to communicate or interact with your agent."}>
