@@ -34,7 +34,7 @@ export const AgentBox = ({
   moderateEntity
 }: any) => {
   const router = useRouterWithHistory()
-  const agentContent = <Box onClick={() => router.push('/agent/' + agentDomain)} style={{ width: "100%", backgroundColor: hidden ? "#ff000047" : "" }} isPlaceholder={isPlaceholder} >
+  const agentContent = <Box onClick={() => window.location.href = ('/agent/' + agentDomain)} style={{ width: "100%", backgroundColor: hidden ? "#ff000047" : "" }} isPlaceholder={isPlaceholder} >
     {!isPlaceholder && (<>
       <div style={{ width: "100%" }}>
         <CachedImage
