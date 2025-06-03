@@ -204,7 +204,7 @@ export const ProfileSnippet = ({
           // await fetchRatings()
           setRatingSuccess(true)
         }
-      } catch (err) {
+      } catch (err: any) {
         setErrorMessage("Failed to rate: " + err.message)
         console.log(err, 'Failure')
       }
