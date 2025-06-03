@@ -31,8 +31,10 @@ import { useConnectOrCreateWallet, useLoginWithEmail, useWallets } from '@privy-
 import Image from 'next/image'
 import { logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import { ErrorModal } from './ErrorModal'
+import { SuccessModal } from './SuccessModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { useEthBalance } from '@app/hooks/useEthBalance'
+import { infuraUrl } from '@app/utils/query/wagmi'
 
 const ThumbnailWrapper = styled.div`
   position: relative;
@@ -142,13 +144,23 @@ export const ProfileSnippet = ({
   const { t } = useTranslation('common')
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [avatarSrc, setAvatarSrc] = useState(v3kLogo.src)
-  const { ratings, recipientAverages, loading } = useGetRating(namehash(domainName as string))
+  const [ratingSuccess, setRatingSuccess] = useState(false)
+  const { ratings, recipientAverages, loading, fetchRatings } = useGetRating(namehash(domainName as string))
+  useEffect(() => console.log('DESTINO ra CHANGE', recipientAverages), [recipientAverages])
+
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
   const [errorMessage, setErrorMessage] = useState<string | null>("")
   const breakpoints = useBreakpoint()
   const { connectOrCreateWallet } = useConnectOrCreateWallet()
-
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({
+        chain: sepolia,
+        transport: http(infuraUrl('sepolia')),
+      }),
+    [],
+  )
   const isAdmin = useMemo(() => {
     if (address) {
       return isAddressEqual(address || zeroAddress, "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E") || isAddressEqual(address, "0xd873FaFd02351e6474906CD9233B454117b834DF") || isAddressEqual(address, "0x3Af9EB97d58212f0CF88B43Cf6f78434FEbbFCec") || isAddressEqual(address, "0xA72Ab9C4B2828aC2CB6c9C617D3e81BFEe23C0b6") || isAddressEqual(address, "0x761662d41f60A48Cf94af6f9e626D36963493767")
@@ -182,7 +194,21 @@ export const ProfileSnippet = ({
       const recipientHash = "0x" + records.nodehash.slice(-40)
       if (!ethBalance.balance || ethBalance.balance === "0") throw Error("Rating requires Sepolia gas! (for now)")
       const orimmoToken: any = getContractInstance(wallet, 'ORIMMO')
-      const txHash = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"], { gas: 6000000n })
+      try {
+        const tx = await orimmoToken.write.transfer([recipientHash, stars + "000000000000000000"], { gas: 6000000n })
+        const txRes = await publicClient?.waitForTransactionReceipt({
+          hash: tx,
+        })
+
+        if (txRes.status === 'success') {
+          // await fetchRatings()
+          setRatingSuccess(true)
+        }
+      } catch (err) {
+        setErrorMessage("Failed to rate: " + err.message)
+        console.log(err, 'Failure')
+      }
+
     } catch (err: any) {
       setErrorMessage(err.message)
       await logFrontendError({
@@ -233,76 +259,89 @@ export const ProfileSnippet = ({
     )
   }
   return (
-    <Container>
+    <>
       <ErrorModal
         errorMessage={errorMessage}
         setErrorMessage={setErrorMessage}
         breakpoints={breakpoints}
       />
-      {!multisigAddress && !name ? (
-        entityUnavailable
-      ) : (
-        <>
-          <div style={{ display: 'flex' }}>
-            <div style={{ padding: "8px" }}>
-              <ThumbnailWrapper>
-                <Image
-                  alt={domainName || "Agent"}
-                  onError={() => setAvatarSrc(v3kLogo.src)}
-                  onLoad={() => setAvatarSrc(records.avatar)}
-                  src={avatarSrc}
-                  width={88}
-                  height={88}
-                  style={{ opacity: v3kLogo.src === avatarSrc ? .2 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
-                {owner === address && (
-                  <ThumbnailOverlay className="overlay">
-                    <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
-                      avatarInputRef.current?.click()
-                    }} >
-                      <FaPencilAlt style={{ color: "gold" }} />
-                    </div>
-                    <input
-                      type="file"
-                      ref={avatarInputRef}
-                      style={{ display: 'none' }}
-                      accept="image/*"
-                      onChange={async (e) => {
-                        await uploadIpfsImageSaveToResolver(e.target.files?.[0] as any, "avatar", wallets, domainName as any)
-                        window.location.reload()
-                      }}
-                    />
-                  </ThumbnailOverlay>
+      <SuccessModal
+        open={ratingSuccess}
+        message={"Rating was successful"}
+        setMessage={async () => {
+          setRatingSuccess(false)
+
+          // wait 12 000 ms
+          await new Promise((resolve) => setTimeout(resolve, 12_000))
+          await fetchRatings()
+        }}
+        breakpoints={breakpoints}
+      />
+      <Container>
+        {!multisigAddress && !name ? (
+          entityUnavailable
+        ) : (
+          <>
+            <div style={{ display: 'flex' }}>
+              <div style={{ padding: "8px" }}>
+                <ThumbnailWrapper>
+                  <Image
+                    alt={domainName || "Agent"}
+                    onError={() => setAvatarSrc(v3kLogo.src)}
+                    onLoad={() => setAvatarSrc(records.avatar)}
+                    src={avatarSrc}
+                    width={88}
+                    height={88}
+                    style={{ opacity: v3kLogo.src === avatarSrc ? .2 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
+                  {owner === address && (
+                    <ThumbnailOverlay className="overlay">
+                      <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
+                        avatarInputRef.current?.click()
+                      }} >
+                        <FaPencilAlt style={{ color: "gold" }} />
+                      </div>
+                      <input
+                        type="file"
+                        ref={avatarInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/*"
+                        onChange={async (e) => {
+                          await uploadIpfsImageSaveToResolver(e.target.files?.[0] as any, "avatar", wallets, domainName as any)
+                          window.location.reload()
+                        }}
+                      />
+                    </ThumbnailOverlay>
+                  )}
+                </ThumbnailWrapper>
+              </div>
+              <div>
+                <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
+                  <div style={{ display: "flex", gap: "5px" }}>
+                    <span>{name}</span>
+                    {owner === address || isAdmin ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
+                  </div>
+                </NameRecord>
+                {domainName && (
+                  <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
+                    <Typography>
+                      <Link target="_blank" href={'https://app.ens.domains/' + domainName}>
+                        <i>{normalize(domainName)}</i>
+                      </Link>
+                    </Typography>
+                  </SectionTitle>
                 )}
-              </ThumbnailWrapper>
+
+                {/* {statusSection} */}
+
+                <StarRating
+                  rating={recipientAverages["0X" + namehash(domainName as string)?.toUpperCase()?.slice(-40)]}
+                  onRate={(val: any) => sendRating(val)}
+                />
+
+              </div>
             </div>
-            <div>
-              <NameRecord fontVariant="headingThree" data-testid="profile-snippet-nickname">
-                <div style={{ display: "flex", gap: "5px" }}>
-                  <span>{name}</span>
-                  {owner === address || isAdmin ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
-                </div>
-              </NameRecord>
-              {domainName && (
-                <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
-                  <Typography>
-                    <Link target="_blank" href={'https://app.ens.domains/' + domainName}>
-                      <i>{normalize(domainName)}</i>
-                    </Link>
-                  </Typography>
-                </SectionTitle>
-              )}
-
-              {/* {statusSection} */}
-
-              <StarRating
-                rating={recipientAverages["0X" + namehash(domainName as string)?.toUpperCase()?.slice(-40)]}
-                onRate={(val: any) => sendRating(val)}
-              />
-
-            </div>
-          </div>
-        </>
-      )}
-    </Container>
+          </>
+        )}
+      </Container></>
   )
 }

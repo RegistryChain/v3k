@@ -44,6 +44,7 @@
     "prefer-destructuring": "off",
     "no-empty": "off",
     "import/no-cycle": "off",
+    "no-promise-executor-return": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
     "react/self-closing-comp": "off",
