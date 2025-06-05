@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import styled from "styled-components"
+'use client';
+
 import { TabBar } from "@app/components/TabBar"
 import { Header } from "@app/components/Header"
 
