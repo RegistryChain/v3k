@@ -180,6 +180,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     },
   } as any);
 
+  console.log('Render from _app.tsx')
+
   return (
     <>
       <Script

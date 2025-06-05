@@ -71,6 +71,8 @@ export default class MyDocument extends Document {
   }
 
   render() {
+    console.log('Render from _document.tsx')
+
     return (
       <Html suppressHydrationWarning>
         <Head>

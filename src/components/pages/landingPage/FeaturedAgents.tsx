@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { useAccount } from 'wagmi'
@@ -50,6 +52,8 @@ const RetryButtonWrapper = styled.div`
 `
 
 const FeaturedAgents = ({ recipientAverages }: any) => {
+  console.log('Render from FeaturedAgents.tsx')
+
   const [agents, setAgents] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

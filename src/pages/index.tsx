@@ -95,6 +95,8 @@ export default function Page() {
   const breakpoints = useBreakpoint()
 
   const { recipientAverages } = useGetRating(zeroHash)
+  console.log('Render from index.tsx')
+
   return (
     <>
       <Head>
