@@ -146,7 +146,6 @@ export const ProfileSnippet = ({
   const [avatarSrc, setAvatarSrc] = useState(v3kLogo.src)
   const [ratingSuccess, setRatingSuccess] = useState(false)
   const { ratings, recipientAverages, loading, fetchRatings } = useGetRating(namehash(domainName as string))
-  useEffect(() => console.log('DESTINO ra CHANGE', recipientAverages), [recipientAverages])
 
   const { wallets } = useWallets();      // Privy hook
   const address = useMemo(() => wallets[0]?.address, [wallets]) as Address

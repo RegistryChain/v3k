@@ -176,8 +176,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     `,
         }}
       />
-      <I18nextProvider i18n={i18n}>
-        <QueryProviders>
+      <QueryProviders>
+        <I18nextProvider i18n={i18n}>
           <RainbowKitProvider theme={rainbowKitTheme}>
             <TransactionStoreProvider>
               <MuiThemeProvider theme={muiTheme}>
@@ -198,8 +198,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               </MuiThemeProvider>
             </TransactionStoreProvider>
           </RainbowKitProvider>
-        </QueryProviders>
-      </I18nextProvider>
+        </I18nextProvider>
+      </QueryProviders>
     </>)
 }
 
