@@ -21,7 +21,7 @@ export default function StarRating({ rating, onRate }: any) {
       style={{
         fontSize: '16px',
         margin: '3px 2px',
-        color: rating > 0 ? 'yellow' : "grey",
+        color: '#6a24d6',
         transition: 'color 0.2s ease, transform 0.2s ease',
       }}
     />
@@ -51,7 +51,7 @@ export default function StarRating({ rating, onRate }: any) {
               fontSize: '25px',
               margin: '0 2px',
               color:
-                index <= (hoverIndex !== null ? hoverIndex : selectedIndex) ? 'yellow' : 'gray',
+                index <= (hoverIndex !== null ? hoverIndex : selectedIndex) ? '#6a24d6' : 'gray',
               transition: 'color 0.2s ease, transform 0.2s ease',
             }}
             onMouseEnter={() => setHoverIndex(index)}
