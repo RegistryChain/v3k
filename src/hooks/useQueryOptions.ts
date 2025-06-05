@@ -1,5 +1,5 @@
 import type { Address } from 'viem'
-import { useAccount, useChainId, useConfig } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { SupportedChain } from '@app/constants/chains'
 import { ConfigWithEns, CreateQueryKey, QueryDependencyType } from '@app/types'
