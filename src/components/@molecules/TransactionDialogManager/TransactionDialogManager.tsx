@@ -12,13 +12,9 @@ import { queryClientWithRefetch } from '@app/utils/query/reactQuery'
 import { DataInputComponents } from '../../../transaction-flow/input'
 import { InternalTransactionFlow, TransactionFlowAction } from '../../../transaction-flow/types'
 import { IntroStageModal } from './stage/Intro'
-import { TransactionStageModal } from './stage/TransactionStageModal'
-import { useWallets } from '@privy-io/react-auth'
-import { Address } from 'viem'
 
 export const useResetSelectedKey = (dispatch: any) => {
-  const { wallets } = useWallets();      // Privy hook
-  const address = useMemo(() => wallets[0]?.address, [wallets]) as Address
+  const { address } = useAccount()
   const chainId = useChainId()
 
   const prevAddress = usePrevious(address)
