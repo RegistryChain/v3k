@@ -1,7 +1,4 @@
-import { useBlock, useChainId, useConfig } from 'wagmi'
-import { getBlockQueryOptions } from 'wagmi/query'
-
-import { usePrefetchQuery } from '../usePrefetchQuery'
+import { useBlock } from 'wagmi'
 
 type UseBlockTimestampParameters = {
   enabled?: boolean
@@ -18,10 +15,4 @@ export const useBlockTimestamp = ({ enabled = true }: UseBlockTimestampParameter
       select: (b) => b.timestamp * 1000n,
     },
   })
-}
-
-export const usePrefetchBlockTimestamp = () => {
-  const config: any = useConfig()
-  const chainId: any = useChainId()
-  return usePrefetchQuery(getBlockQueryOptions(config, { chainId, blockTag: 'latest' }))
 }

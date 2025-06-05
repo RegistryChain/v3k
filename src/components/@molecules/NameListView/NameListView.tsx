@@ -17,7 +17,6 @@ import {
   SortType,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
-import { usePrefetchBlockTimestamp } from '@app/hooks/chain/useBlockTimestamp'
 import { useNamesForAddress } from '@app/hooks/ensjs/subgraph/useNamesForAddress'
 import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { useQueryParameterState } from '@app/hooks/useQueryParameterState'
@@ -115,7 +114,6 @@ export const NameListView = ({ address, selfAddress, setError, setLoading }: Nam
   // <TaggedNameItem />
   // => <NameDetailItem />
   //   => <ShortExpiry />
-  usePrefetchBlockTimestamp()
 
   useEffect(() => {
     setError?.(isError)

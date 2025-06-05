@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useAccount, useChainId, useConfig } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ConfigWithEns } from '@app/types'
 
 import { createTransactionStore, TransactionStore } from './transactionStore'
+import { wagmiConfig } from '@app/utils/query/wagmi'
 
 // Only allow a single instance of the store to exist at once
 // so that multiple RainbowKitProvider instances can share the same store.
@@ -14,13 +15,12 @@ let storeSingleton: ReturnType<typeof createTransactionStore> | undefined
 const TransactionStoreContext = createContext<TransactionStore | null>(null)
 
 export function TransactionStoreProvider({ children }: { children: React.ReactNode }) {
-  const config: any = useConfig<ConfigWithEns>()
   const { address } = useAccount()
   const chainId: any = useChainId()
 
   // Use existing store if it exists, or lazily create one
   const [store] = useState(
-    () => storeSingleton ?? (storeSingleton = createTransactionStore(config)),
+    () => storeSingleton ?? (storeSingleton = createTransactionStore(wagmiConfig)),
   )
 
   // Wait for pending transactions whenever address or chainId changes
@@ -30,9 +30,6 @@ export function TransactionStoreProvider({ children }: { children: React.ReactNo
     }
   }, [store, address, chainId])
 
-  useEffect(() => {
-    store.setConfig(config)
-  }, [store, config])
 
   return (
     <TransactionStoreContext.Provider value={store}>{children}</TransactionStoreContext.Provider>

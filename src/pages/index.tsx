@@ -73,10 +73,10 @@ const HeroTitle = styled.h1`
   white-space: nowrap;
 `
 export default function Page() {
-  const tld = '.entity.id'
+  console.log('Render from index.tsx')
+
 
   const [index, setIndex] = useState(0)
-  const router = useRouterWithHistory()
 
   const phrases = [
     'Boost your productivity with AI Agents',
@@ -95,7 +95,6 @@ export default function Page() {
   const breakpoints = useBreakpoint()
 
   const { recipientAverages } = useGetRating(zeroHash)
-  console.log('Render from index.tsx')
 
   return (
     <>

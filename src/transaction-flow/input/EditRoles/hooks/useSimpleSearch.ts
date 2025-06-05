@@ -1,13 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Address, isAddress } from 'viem'
-import { useChainId, useConfig } from 'wagmi'
+import { useChainId } from 'wagmi'
 
 import { getAddressRecord, getName } from '@ensdomains/ensjs/public'
 import { normalise } from '@ensdomains/ensjs/utils'
 
 import useDebouncedCallback from '@app/hooks/useDebouncedCallback'
 import { ClientWithEns } from '@app/types'
+import { wagmiConfig } from '@app/utils/query/wagmi'
 
 type Result = { name?: string; address: Address }
 type Options = { cache?: boolean }
@@ -60,7 +61,6 @@ export const useSimpleSearch = (options: Options = {}) => {
   const queryClient = useQueryClient()
   const chainId = useChainId()
   const createQueryKey = createQueryKeyWithChain(chainId)
-  const config = useConfig()
 
   useEffect(() => {
     return () => {
@@ -76,7 +76,7 @@ export const useSimpleSearch = (options: Options = {}) => {
         const cachedData = queryClient.getQueryData<Result[]>(createQueryKey(query))
         if (cachedData) return cachedData
       }
-      const client = config.getClient({ chainId })
+      const client = wagmiConfig.getClient({ chainId: 11155111 })
       const results = await Promise.allSettled([
         queryByName(client, { name: query }),
         ...(isAddress(query) ? [queryByAddress(client, { address: query })] : []),
