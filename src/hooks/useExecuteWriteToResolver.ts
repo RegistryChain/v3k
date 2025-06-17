@@ -183,15 +183,15 @@ export async function importEntity({ filingID, name, registrar }: any) {
 }
 
 export async function getEntitiesList({
-                                        registrar = 'ai',
-                                        nameSubstring = '',
-                                        sortType = '',
-                                        sortDirection = '',
-                                        page = 0,
-                                        limit = 25,
-                                        address = zeroAddress,
-                                        params = {},
-                                      }: any) {
+  registrar = 'ai',
+  nameSubstring = '',
+  sortType = '',
+  sortDirection = '',
+  page = 0,
+  limit = 24,
+  address = zeroAddress,
+  params = {},
+}: any) {
   try {
     // Create a cache key based on the function parameters
     const cacheKey = `entities_${JSON.stringify({
@@ -202,67 +202,67 @@ export async function getEntitiesList({
       page,
       limit,
       address,
-      params
-    })}`;
+      params,
+    })}`
 
-    const ttlKey = 'TTL';
+    const ttlKey = cacheKey + 'TTL'
 
     // Check if TTL exists and hasn't expired
-    const ttl = localStorage.getItem(ttlKey);
-    const currentTimestamp = Math.floor(Date.now() / 1000); // Current time in seconds
+    const ttl = localStorage.getItem(ttlKey)
+    const currentTimestamp = Math.floor(Date.now() / 1000) // Current time in seconds
 
     if (ttl && parseInt(ttl) > currentTimestamp) {
       // TTL is valid, try to get cached data
-      const cachedEntities = localStorage.getItem('entities');
+      const cachedEntities = localStorage.getItem(cacheKey)
       if (cachedEntities) {
         try {
-          return JSON.parse(cachedEntities);
+          return JSON.parse(cachedEntities)
         } catch (parseError) {
-          console.warn('Failed to parse cached entities, fetching from server');
+          console.warn('Failed to parse cached entities, fetching from server')
         }
       }
     }
 
     // TTL expired or no cached data, fetch from server
-    let paramsQuery = '';
+    let paramsQuery = ''
     if (params) {
       if (Object.keys(params)?.length > 0) {
-        const fields = Object.keys(params);
+        const fields = Object.keys(params)
         paramsQuery =
           '&' +
           fields
             .map((x) => {
               if (typeof params[x] === 'object') {
-                return x + '=' + JSON.stringify(params[x]);
+                return x + '=' + JSON.stringify(params[x])
               }
-              return x + '=' + params[x];
+              return x + '=' + params[x]
             })
-            .join('&');
+            .join('&')
       }
     }
 
     const res = await fetch(
       process.env.NEXT_PUBLIC_RESOLVER_URL +
-      `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
+        `/direct/getEntitiesList/registrar=${registrar}&page=${page}&nameSubstring=${nameSubstring}&address=${address}&sortField=${sortType}&sortDir=${sortDirection}&limit=${limit}${paramsQuery}.json`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       },
-    );
+    )
 
-    const entitiesList = await res.json();
-    const data = entitiesList.data;
+    const entitiesList = await res.json()
+    const data = entitiesList.data
 
     // Cache the data and set new TTL in seconds
-    const newTtl = currentTimestamp + (3600);
-    localStorage.setItem('entities', JSON.stringify(data));
-    localStorage.setItem(ttlKey, newTtl.toString());
+    const newTtl = currentTimestamp + 3600
+    localStorage.setItem(cacheKey, JSON.stringify(data))
+    localStorage.setItem(ttlKey, newTtl.toString())
 
-    return data;
+    return data
   } catch (err) {
-    return [];
+    return []
   }
 }
 

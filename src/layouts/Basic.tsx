@@ -138,7 +138,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       <Container style={containerStyle} className="min-safe">
         <Navigation />
         <ContentWrapper>
-          {/* {isEmailModalOpen && (
+          {isEmailModalOpen && (
             <EmailModal
               isOpen={isEmailModalOpen} onClose={() => setIsEmailModalOpen(false)}
             />
@@ -158,7 +158,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
               await handleFeedback(x)
               setIsFeedbackModalOpen(false)
             }}
-          /> */}
+          />
 
           {error ? <ErrorScreen errorType="application-error" /> : children}
         </ContentWrapper>
