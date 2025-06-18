@@ -73,8 +73,6 @@ const HeroTitle = styled.h1`
   white-space: nowrap;
 `
 export default function Page() {
-  console.log('Render from index.tsx')
-
 
   const [index, setIndex] = useState(0)
 

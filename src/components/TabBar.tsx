@@ -212,7 +212,7 @@ const TabBarProfile = ({
       }}>
 
       </PlusCircleSVG>
-      <CogSVG height={"24px"} width={"24px"} onClick={() => router.push("/developer/" + address)} />
+      <CogSVG height={"24px"} width={"24px"} onClick={() => window.location.href = ("/developer/" + address)} />
       <DisconnectButton />
     </ExtraNavWrapper>
   )

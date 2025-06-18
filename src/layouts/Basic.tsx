@@ -114,7 +114,7 @@ export const Basic = withErrorBoundary(({ children }: { children: React.ReactNod
       !getSupportedChainById(chainId) &&
       router.pathname !== '/unsupportedNetwork'
     ) {
-      router.push('/unsupportedNetwork')
+      switchChain({ chainId: 11155111 })
     }
   }, [isConnected, chainId, router])
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false)

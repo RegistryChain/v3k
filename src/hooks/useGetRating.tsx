@@ -22,7 +22,7 @@ export const useGetRating = (nodehash: `0x${string}`) => {
   const [loading, setLoading] = useState(true);
 
 
-  const recipientTopic = `0x${nodehash.slice(-40).padStart(64, '0')}`;
+  const recipientTopic = nodehash ? `0x${nodehash.slice(-40).padStart(64, '0')}` : zeroHash
 
   const fetchRatings = async () => {
     setLoading(true);

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import type { Address } from 'viem'
 import { useAccount, useDisconnect, useEnsAvatar } from 'wagmi'
-import { useConnectOrCreateWallet, useDelegatedActions, useLoginWithEmail, usePrivy, useWallets } from '@privy-io/react-auth';
+import { useConnectOrCreateWallet, useDelegatedActions, usePrivy, useWallets } from '@privy-io/react-auth';
 
 import {
   Button,
@@ -31,6 +31,7 @@ import BaseLink from './@atoms/BaseLink'
 import { useTransactionFlow } from '@app/transaction-flow/TransactionFlowProvider'
 import { ModalContext } from '@app/layouts/Basic'
 import { getRevertErrorData, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
+import { useSetActiveWallet } from '@privy-io/wagmi'
 
 const StyledButtonWrapper = styled.div<{ $isTabBar?: boolean; $large?: boolean }>(
   ({ theme, $isTabBar, $large }) => [
@@ -116,7 +117,7 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   const { delegateWallet } = useDelegatedActions();
   const { wallets } = useWallets();      // Privy hook
   const { ready, authenticated, user, logout } = usePrivy();
-
+  const { setActiveWallet } = useSetActiveWallet()
   const execDelegation = async () => {
     const walletToUse = wallets[0]
     if (walletToUse?.address && walletToUse?.walletClientType === "privy") {
@@ -125,6 +126,10 @@ export const ConnectButton = ({ isTabBar, large, inHeader }: Props) => {
   }
   useEffect(() => {
     execDelegation()
+    const mm = wallets.find(x => x?.walletClientType === "metamask")
+    if (mm && wallets?.[0] !== mm) {
+      setActiveWallet(mm)
+    }
   }, [wallets])
 
   return (
@@ -178,7 +183,7 @@ const HeaderProfile = ({ address, showSelectPrimaryNameInput }: { showSelectPrim
                 </BaseLink>
               )
             },
-            icon: copied ? <CogSVG /> : <CogSVG />,
+            icon: <CogSVG />,
           },
           // TODO: Add back when dark mode is implemented
           // {
