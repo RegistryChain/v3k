@@ -191,6 +191,7 @@ export const NameTableHeader = ({
   const breakpoints = useBreakpoint()
 
   const inSelectMode = selectable && mode === 'select'
+  const filterDirection = !onAgentSourceChange && breakpoints.xs && !breakpoints.sm ? 'column' : 'row'
 
   let statusOptions: any[] = [
     { label: "all", value: "all" },
@@ -216,7 +217,7 @@ export const NameTableHeader = ({
         <div
           style={{
             display: 'flex',
-            flexDirection: breakpoints.xs && !breakpoints.sm ? 'column' : 'row',
+            flexDirection: filterDirection,
             gap: '1rem',
             flexWrap: 'wrap',
             width: onAgentSourceChange ? '100%' : undefined,
