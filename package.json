@@ -1,6 +1,9 @@
 {
   "name": "registrychain-demo-ui",
   "version": "0.1.1",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "NODE_NO_WARNINGS=1 next dev",
     "dev:https": "next-dev-https --https --qr --port 3000",
