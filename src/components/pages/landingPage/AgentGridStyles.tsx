@@ -25,6 +25,7 @@ export const Row = styled.div`
 
 export const Box = styled.div<any>`
   flex: 1 1 calc(33.333% - 16px);
+  min-width: 0;
   display: flex;
   cursor: pointer;
   align-items: center;
@@ -75,6 +76,7 @@ export const Title = styled.div`
   font-weight: bold;
   color: #333;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
 `
 
 export const Category = styled.div`

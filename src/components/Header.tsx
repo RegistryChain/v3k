@@ -219,7 +219,6 @@ export const Header = () => {
   const getAgents = async () => {
     try {
       const results = await getDirectoryEntities({
-        registrar: 'ai',
         nameSubstring: searchQuery,
         limit: 5
       })

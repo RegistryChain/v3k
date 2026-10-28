@@ -68,7 +68,6 @@ const TrendingAgents = ({ recipientAverages }: any) => {
     setErrorMessage(null)
     try {
       const entities = await getEntitiesList({
-        registrar: 'ai',
         nameSubstring: '',
         page: 0,
         sortDirection: 'desc',

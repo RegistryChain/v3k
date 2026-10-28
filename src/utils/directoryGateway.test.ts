@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DIRECTORY_GATEWAY_URL, getDirectoryEntities, getDirectoryRecord } from './directoryGateway'
+import { getAgentImageUrl } from './agentImage'
+
+const queryFrom = (url: string) => new URLSearchParams(new URL(url).pathname.split('/getEntitiesList/')[1].slice(0, -5))
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -13,9 +16,47 @@ describe('public directory gateway', () => {
     const request = vi.fn().mockResolvedValue(Response.json({ success: true, data: agents }))
     vi.stubGlobal('fetch', request)
 
-    await expect(getDirectoryEntities({ page: 1, nameSubstring: 'Luna AI', params: { avatar: 'https' } })).resolves.toEqual(agents)
+    await expect(getDirectoryEntities({ page: 416, nameSubstring: 'Luna AI' })).resolves.toEqual(agents)
     const url = request.mock.calls[0][0]
-    expect(url).toBe(`${DIRECTORY_GATEWAY_URL}/direct/getEntitiesList/registrar=ai&page=1&nameSubstring=Luna%20AI&address=0x0000000000000000000000000000000000000000&sortField=birthdate&sortDir=desc&limit=24&avatar=https.json`)
+    expect(url.startsWith(DIRECTORY_GATEWAY_URL)).toBe(true)
+    const query = queryFrom(url)
+    expect([...query.keys()].slice(0, 7)).toEqual(['registrar', 'page', 'nameSubstring', 'address', 'sortField', 'sortDir', 'limit'])
+    expect(query.get('page')).toBe('416')
+    expect(query.get('nameSubstring')).toBe('Luna AI')
+    expect(query.get('sortField')).toBe('_id')
+    expect(query.get('limit')).toBe('24')
+  })
+
+  it('includes uppercase AI imports without requiring an avatar or an explicit visibility flag', async () => {
+    const agents = [{ name: 'ERC-8004 Agent 55455', registrar: 'AI', source: 'erc8004', entityid: 'agent-55455.ai.entity.id' }]
+    const request = vi.fn().mockResolvedValue(Response.json({ success: true, data: agents }))
+    vi.stubGlobal('fetch', request)
+    await expect(getDirectoryEntities()).resolves.toEqual(agents)
+    const query = queryFrom(request.mock.calls[0][0])
+    expect(query.get('registrar')).toBe('any')
+    expect(query.has('avatar')).toBe(false)
+    expect(query.has('v3k__hidden')).toBe(false)
+    expect(JSON.parse(query.get('$and')!)).toEqual([
+      { registrar: { $in: ['ai', 'AI'] } },
+      { v3k__hidden: { $ne: true } },
+    ])
+  })
+
+  it.each([
+    ['erc8004', { source: 'erc8004' }],
+    ['other', { source: { $ne: 'erc8004' } }],
+  ] as const)('filters the %s source without changing the shared catalog', async (source, expected) => {
+    const request = vi.fn().mockResolvedValue(Response.json({ success: true, data: [] }))
+    vi.stubGlobal('fetch', request)
+    await getDirectoryEntities({ source })
+    expect(JSON.parse(queryFrom(request.mock.calls[0][0]).get('$and')!)).toContainEqual(expected)
+  })
+
+  it('makes image filtering optional and includes IPFS images', async () => {
+    const request = vi.fn().mockResolvedValue(Response.json({ success: true, data: [] }))
+    vi.stubGlobal('fetch', request)
+    await getDirectoryEntities({ withImagesOnly: true })
+    expect(JSON.parse(queryFrom(request.mock.calls[0][0]).get('$and')!)).toContainEqual({ avatar: { $type: 'string', $ne: '' } })
   })
 
   it('rejects HTTP errors instead of returning undefined to the agent grid', async () => {
@@ -27,7 +68,7 @@ describe('public directory gateway', () => {
     const request = vi.fn().mockResolvedValue(Response.json({ success: true, data: [] }))
     vi.stubGlobal('fetch', request)
     await getDirectoryEntities({ params: { category: 'Coding' } })
-    expect(decodeURIComponent(request.mock.calls[0][0])).toContain('category={"$eq":"Coding"}.json')
+    expect(JSON.parse(queryFrom(request.mock.calls[0][0]).get('category')!)).toEqual({ $eq: 'Coding' })
   })
 
   it.each([
@@ -75,5 +116,19 @@ describe('public directory gateway', () => {
     vi.stubGlobal('fetch', request)
     await expect(getDirectoryRecord('0x123')).rejects.toThrow('could not be found')
     expect(request).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('agent images', () => {
+  it.each([
+    [undefined, ''],
+    ['', ''],
+    ['javascript:alert(1)', ''],
+    ['https://example.com/agent.png', 'https://example.com/agent.png'],
+    ['ipfs://bafyexample/image.png', 'https://ipfs.io/ipfs/bafyexample/image.png'],
+    ['ipfs://ipfs/bafyexample/image.png', 'https://ipfs.io/ipfs/bafyexample/image.png'],
+    ['ar://example', 'https://arweave.net/example'],
+  ])('handles image URI %s', (input, expected) => {
+    expect(getAgentImageUrl(input)).toBe(expected)
   })
 })

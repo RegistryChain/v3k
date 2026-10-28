@@ -5,6 +5,7 @@ export const DIRECTORY_GATEWAY_URL = (
 ).replace(/\/$/, '')
 
 export const DIRECTORY_PAGE_SIZE = 24
+export type DirectorySource = 'all' | 'erc8004' | 'other'
 const REQUEST_TIMEOUT_MS = 15000
 
 export async function fetchDirectoryData(url: string): Promise<unknown> {
@@ -32,16 +33,18 @@ export async function getDirectoryRecord(nodehash: string, gatewayUrl = DIRECTOR
 }
 
 export async function getDirectoryEntities({
-  registrar = 'ai',
+  source = 'all',
+  withImagesOnly = false,
   nameSubstring = '',
-  sortType = 'birthdate',
+  sortType = '_id',
   sortDirection = 'desc',
   page = 0,
   limit = DIRECTORY_PAGE_SIZE,
   address = '0x0000000000000000000000000000000000000000',
   params = {},
 }: {
-  registrar?: string
+  source?: DirectorySource
+  withImagesOnly?: boolean
   nameSubstring?: string
   sortType?: string
   sortDirection?: string
@@ -50,16 +53,33 @@ export async function getDirectoryEntities({
   address?: string
   params?: Record<string, unknown>
 } = {}): Promise<any[]> {
+  const { v3k__hidden: hidden, ...filters } = params
+  let visibility = hidden
+  if (hidden === 'true') visibility = true
+  if (hidden === 'false') visibility = false
+  // Imported ERC-8004 agents use uppercase AI and may omit v3k's moderation
+  // fields. Keep explicitly hidden agents out, while including unflagged imports.
+  // Nest visibility in $and: a top-level v3k__hidden parameter makes the gateway
+  // override sorting, and registrar=ai adds its own restrictive visibility filter.
+  const agentFilters: Record<string, unknown>[] = [
+    { registrar: { $in: ['ai', 'AI'] } },
+    { v3k__hidden: visibility ?? { $ne: true } },
+  ]
+  if (source === 'erc8004') agentFilters.push({ source: 'erc8004' })
+  if (source === 'other') agentFilters.push({ source: { $ne: 'erc8004' } })
+  if (withImagesOnly) agentFilters.push({ avatar: { $type: 'string', $ne: '' } })
+
   // The gateway expects these seven fields before any additional filters.
   const fields = {
-    registrar,
+    registrar: 'any',
     page,
     nameSubstring,
     address,
     sortField: sortType,
     sortDir: sortDirection,
     limit,
-    ...params,
+    ...filters,
+    $and: agentFilters,
     // Plain category strings are reserved for corporate/civil grouping by the
     // gateway. Use an exact filter for v3k's agent-category selector.
     ...(typeof params.category === 'string' && params.category

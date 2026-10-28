@@ -159,6 +159,16 @@ read from `https://gateway.registrychain.com`. To use a different public gateway
 set `NEXT_PUBLIC_DIRECTORY_GATEWAY_URL` before building. Public browsing requires
 no database credentials and does not import or register records.
 
+The directory includes both `ai` and `AI` registrar records by default, including
+ERC-8004 imports without avatars or legacy visibility flags. Explicitly hidden
+records stay excluded. The Source filter selects all AI entities, ERC-8004 agents,
+or other AI entities; `/directory?source=erc8004` opens the ERC-8004 view directly.
+Image filtering is optional. Results use 24-item pages ordered by MongoDB `_id`
+descending, so imports without a birthdate have stable pagination.
+
+These filters use the gateway's existing read API; no changes to the gateway,
+RegistryChain's database, or app.entity.id are required.
+
 `NEXT_PUBLIC_RESOLVER_URL` remains the separate endpoint for the existing Sepolia
 wallet and registration flows. Changing the directory endpoint does not migrate
 those flows or repair the legacy Privy/WalletConnect configuration.
