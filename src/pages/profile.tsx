@@ -22,6 +22,8 @@ import { useConnectOrCreateWallet, useWallets } from '@privy-io/react-auth'
 import styled from 'styled-components'
 import { css } from 'styled-components'
 import Head from 'next/head'
+import { DIRECTORY_GATEWAY_URL } from '@app/utils/directoryGateway'
+import { Button } from '@ensdomains/thorin'
 
 const contractAddressesObj: any = contractAddresses
 
@@ -62,7 +64,12 @@ export default function Page() {
     [],
   )
 
-  const { data: fields, loading, error, refetch } = useRecordData({ entityid: domain, wallet, publicClient })
+  const { data: fields, loading, error, refetch } = useRecordData({
+    entityid: domain,
+    wallet,
+    publicClient,
+    directoryGatewayUrl: isSelf ? '' : DIRECTORY_GATEWAY_URL,
+  })
 
   const claimEntity = async (newOwner: any = address) => {
     await openConnect()
@@ -145,7 +152,12 @@ export default function Page() {
         setErrorMessage={setErrorMessage}
         breakpoints={breakpoints}
       />
-      <ProfileContent
+      {error ? (
+        <div role="alert" style={{ padding: '24px' }}>
+          <p>We couldn’t load this agent. Please try again.</p>
+          <Button onClick={refetch}>Try again</Button>
+        </div>
+      ) : <ProfileContent
         {...{
           isSelf,
           isLoading,
@@ -163,7 +175,7 @@ export default function Page() {
           wallet: wallets[0],
           setWallet,
         }}
-      />
+      />}
     </Container>
   </>
   )

@@ -25,6 +25,7 @@ import { normalise } from '@ensdomains/ensjs/utils'
 
 import contractAddresses from '../constants/contractAddresses.json'
 import l1abi from '../constants/l1abi.json'
+import { getDirectoryRecord } from '../utils/directoryGateway'
 
 export const executeWriteToResolver = async (wallet: any, calldata: any, callbackData: any) => {
   try {
@@ -506,7 +507,7 @@ export const getResolverAddress = async (client: any, domain: any) => {
   return resolverAddr
 }
 
-export function useRecordData({ entityid = '', wallet = null, publicClient = null }) {
+export function useRecordData({ entityid = '', wallet = null, publicClient = null, directoryGatewayUrl = '' }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -537,7 +538,10 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
     setError(null)
 
     try {
-      if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
+      if (directoryGatewayUrl) {
+        const record = await getDirectoryRecord(nodehash, directoryGatewayUrl)
+        setData(record as any)
+      } else if (resolverAddress?.toUpperCase() === contractAddresses.PublicResolver?.toUpperCase()) {
         const returnObj = await readResolverData(
           resolverAddress || zeroAddress,
           publicClient,
@@ -568,7 +572,7 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
         }
       }
     } catch (err: any) {
-      logFrontendError({
+      if (!directoryGatewayUrl) logFrontendError({
         error: err,
         address: (wallet as any)?.account?.address,
         message: '14 - Failed to fetch record data in useRecordData',
@@ -577,10 +581,11 @@ export function useRecordData({ entityid = '', wallet = null, publicClient = nul
       })
       console.error('getRecordData error:', err)
       setError(err.message)
+      setData(null)
     } finally {
       setLoading(false)
     }
-  }, [entityid, resolverAddress])
+  }, [entityid, resolverAddress, directoryGatewayUrl])
 
   useEffect(() => {
     if (entityid && (wallet || publicClient)) {

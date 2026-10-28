@@ -151,3 +151,18 @@ This hook manages interactions between the front end, backend, and blockchain.
 - In the Actions tab, you can manage the entity’s operations by initiating proposals, confirming actions, and executing them.
 - For example, to approve the constitution, all founding members must sign a declaration in the Actions tab, which triggers the approval process.
 - Any changes to the entity's structure or rules (e.g., adding new members or modifying roles) can also be proposed and managed here.
+
+## Public directory gateway
+
+The directory, homepage agent lists, search suggestions, and public agent profiles
+read from `https://gateway.registrychain.com`. To use a different public gateway,
+set `NEXT_PUBLIC_DIRECTORY_GATEWAY_URL` before building. Public browsing requires
+no database credentials and does not import or register records.
+
+`NEXT_PUBLIC_RESOLVER_URL` remains the separate endpoint for the existing Sepolia
+wallet and registration flows. Changing the directory endpoint does not migrate
+those flows or repair the legacy Privy/WalletConnect configuration.
+
+Run `pnpm test:directory` for the public API regression tests and `pnpm build` for
+the application build. The build uses `tsconfig.build.json` to type-check
+application sources separately from the older test suite.

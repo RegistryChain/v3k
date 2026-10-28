@@ -16,7 +16,7 @@ import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import v3kLogo from '../assets/v3k_logo.png'
 import { RouteItem } from './@atoms/RouteItem/RouteItem'
 import { HeaderConnect } from './ConnectButton'
-import { getEntitiesList } from '@app/hooks/useExecuteWriteToResolver'
+import { getDirectoryEntities } from '@app/utils/directoryGateway'
 
 
 // 👇 Result dropdown styles
@@ -202,7 +202,7 @@ export const Header = () => {
   const pendingTransactions = transactions.filter((x) => x.status === 'pending')
   const { setIsAgentModalOpen, setAgentModalPrepopulate, isFeedbackModalOpen, setIsFeedbackModalOpen } = useContext<any>(ModalContext)
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<any[]>([])
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const routeContainerRef = useRef<HTMLDivElement>(null)
 
@@ -217,12 +217,16 @@ export const Header = () => {
   })
 
   const getAgents = async () => {
-    const results = await getEntitiesList({
-      registrar: 'ai',
-      nameSubstring: searchQuery,
-      limit: 5
-    })
-    setSearchResults(results)
+    try {
+      const results = await getDirectoryEntities({
+        registrar: 'ai',
+        nameSubstring: searchQuery,
+        limit: 5
+      })
+      setSearchResults(results)
+    } catch {
+      setSearchResults([])
+    }
   }
 
   useEffect(() => {
