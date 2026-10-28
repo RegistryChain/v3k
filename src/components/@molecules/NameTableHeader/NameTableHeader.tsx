@@ -5,6 +5,7 @@ import styled, { css } from 'styled-components'
 import { GetNamesForAddressParameters } from '@ensdomains/ensjs/subgraph'
 import { Input, MagnifyingGlassSimpleSVG, mq, Select } from '@ensdomains/thorin'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
+import { DirectorySource } from '@app/utils/directoryGateway'
 
 const SearchInput = styled(Input)`
   min-width: 200px;
@@ -153,6 +154,10 @@ type Props = {
   selectedStatus?: string
   setSelectedStatus?: (type: string) => void
   connectedIsAdmin?: boolean
+  agentSource?: DirectorySource
+  onAgentSourceChange?: (source: DirectorySource) => void
+  withImagesOnly?: boolean
+  onImagesFilterChange?: (withImagesOnly: boolean) => void
 }
 
 export const NameTableHeader = ({
@@ -176,7 +181,11 @@ export const NameTableHeader = ({
   setSelectedCategory,
   selectedStatus = "",
   setSelectedStatus,
-  connectedIsAdmin = false
+  connectedIsAdmin = false,
+  agentSource = 'all',
+  onAgentSourceChange,
+  withImagesOnly = false,
+  onImagesFilterChange,
 }: PropsWithChildren<Props>) => {
   const { t } = useTranslation('common')
   const breakpoints = useBreakpoint()
@@ -191,7 +200,7 @@ export const NameTableHeader = ({
 
   return (
     <TableHeader $desktopGap={selectable ? 'small' : 'medium'}>
-      <TableHeaderLeading>
+      {!onAgentSourceChange && <TableHeaderLeading>
         <TableHeaderLeadingLeft $isFullWidth={!selectable}>
           {inSelectMode ? (
             <div>{t('unit.selected', { count: selectedCount })}</div>
@@ -202,28 +211,55 @@ export const NameTableHeader = ({
           )}
         </TableHeaderLeadingLeft>
         <TableHeaderLeadingRight>{children}</TableHeaderLeadingRight>
-      </TableHeaderLeading>
-      <TableHeaderTrailing style={{ justifyContent: "left" }} $isDesktopFlexibleWidth={!selectable}>
+      </TableHeaderLeading>}
+      <TableHeaderTrailing style={{ justifyContent: "left", flex: onAgentSourceChange ? '1 1 auto' : undefined }} $isDesktopFlexibleWidth={!selectable}>
         <div
           style={{
             display: 'flex',
             flexDirection: breakpoints.xs && !breakpoints.sm ? 'column' : 'row',
             gap: '1rem',
+            flexWrap: 'wrap',
+            width: onAgentSourceChange ? '100%' : undefined,
+            alignItems: 'flex-end',
           }}
         >
-          <><Label style={{ alignContent: 'center' }}>Category</Label>
+          {onAgentSourceChange && <div style={{ flex: '1 1 220px' }}><Select
+            value={agentSource}
+            size="small"
+            label="Source"
+            onChange={(e) => onAgentSourceChange(e.target.value as DirectorySource)}
+            options={[
+              { label: 'All AI entities', value: 'all' },
+              { label: 'ERC-8004 agents', value: 'erc8004' },
+              { label: 'Other AI entities', value: 'other' },
+            ]}
+            id="agent-source"
+          /></div>}
+          {onImagesFilterChange && <div style={{ flex: '1 1 220px' }}><Select
+            value={withImagesOnly ? 'with-images' : 'all'}
+            size="small"
+            label="Images"
+            onChange={(e) => onImagesFilterChange(e.target.value === 'with-images')}
+            options={[
+              { label: 'With or without images', value: 'all' },
+              { label: 'With images', value: 'with-images' },
+            ]}
+            id="agent-images"
+          /></div>}
+          <div style={{ flex: onAgentSourceChange ? '1 1 180px' : undefined, display: 'flex', gap: '1rem' }}>
+            {!onAgentSourceChange && <Label style={{ alignContent: 'center' }}>Category</Label>}
             <Select
               value={selectedCategory}
               size="small"
               label="Category"
-              hideLabel
+              hideLabel={!onAgentSourceChange}
               placeholder={"category"}
               onChange={(e) => {
                 setSelectedCategory?.(e.target.value as any)
               }}
               options={[{ label: 'All', value: '' }, { label: 'Social Media', value: 'Social Media' }, { label: 'Trading', value: 'Trading' }, { label: 'Scraper', value: 'Scraper' }, { label: 'Assistant', value: 'Assistant' }, { label: 'Coding', value: 'Coding' }, { label: 'Backend', value: 'Backend' }, { label: 'Conversational', value: 'Conversational' }]}
               id="sort-by"
-            /></>
+            /></div>
           {connectedIsAdmin ? (
             <><Label style={{ alignContent: 'center' }}>Entity Status</Label>
               <Select

@@ -15,7 +15,6 @@ import {
 import { sepolia } from 'viem/chains'
 import { normalize } from 'viem/ens'
 import { useAccount } from 'wagmi'
-import v3kLogo from '../assets/v3k_logo.png'
 
 import { Button, mq, NametagSVG, Tag, Typography } from '@ensdomains/thorin'
 
@@ -28,13 +27,13 @@ import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { Link } from '@mui/material'
 import { getContractInstance, getPrivyWalletClient, uploadIpfsImageSaveToResolver } from '@app/utils/utils'
 import { useConnectOrCreateWallet, useLoginWithEmail, useWallets } from '@privy-io/react-auth'
-import Image from 'next/image'
 import { logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
 import { ErrorModal } from './ErrorModal'
 import { SuccessModal } from './SuccessModal'
 import { useBreakpoint } from '@app/utils/BreakpointProvider'
 import { useEthBalance } from '@app/hooks/useEthBalance'
 import { infuraUrl } from '@app/utils/query/wagmi'
+import { CachedImage } from '@app/hooks/CachedImage'
 
 const ThumbnailWrapper = styled.div`
   position: relative;
@@ -143,7 +142,6 @@ export const ProfileSnippet = ({
 }: ProfileSnippetProps) => {
   const { t } = useTranslation('common')
   const avatarInputRef = useRef<HTMLInputElement>(null)
-  const [avatarSrc, setAvatarSrc] = useState(v3kLogo.src)
   const [ratingSuccess, setRatingSuccess] = useState(false)
   const { ratings, recipientAverages, loading, fetchRatings } = useGetRating(namehash(domainName as string))
 
@@ -284,14 +282,11 @@ export const ProfileSnippet = ({
             <div style={{ display: 'flex' }}>
               <div style={{ padding: "8px" }}>
                 <ThumbnailWrapper>
-                  <Image
+                  <CachedImage
                     alt={domainName || "Agent"}
-                    onError={() => setAvatarSrc(v3kLogo.src)}
-                    onLoad={() => setAvatarSrc(records.avatar)}
-                    src={avatarSrc}
-                    width={88}
+                    src={records.avatar}
                     height={88}
-                    style={{ opacity: v3kLogo.src === avatarSrc ? .2 : 1, ...{ width: "100%", objectFit: "cover", display: "block" } }} />
+                  />
                   {owner === address && (
                     <ThumbnailOverlay className="overlay">
                       <div style={{ cursor: "pointer", padding: "15px" }} onClick={() => {
@@ -320,6 +315,7 @@ export const ProfileSnippet = ({
                     {owner === address || isAdmin ? <FaPencilAlt style={{ fontSize: "20px", cursor: "pointer" }} onClick={makeAmendment} /> : null}
                   </div>
                 </NameRecord>
+                {records.source === 'erc8004' && <span style={{ color: '#6a24d6', fontSize: '13px', fontWeight: 600 }}>ERC-8004{records.erc8004__agentId != null ? ` · #${records.erc8004__agentId}` : ''}</span>}
                 {domainName && (
                   <SectionTitle data-testid="text-heading" fontVariant="bodyBold">
                     <Typography>

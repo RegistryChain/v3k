@@ -14,7 +14,7 @@ import {
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
 import { executeWriteToResolver, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
-import { getDirectoryEntities } from '@app/utils/directoryGateway'
+import { DirectorySource, getDirectoryEntities } from '@app/utils/directoryGateway'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddresses from '../../../constants/contractAddresses.json'
@@ -39,9 +39,10 @@ const TabWrapperWithButtons = styled(TabWrapper)(
 export const SubnameListView = ({ address }: any) => {
   const [selectedNames, setSelectedNames] = useState<Name[]>([])
 
-  const [sortType, setSortType] = useState<any>('birthdate')
+  const [sortType, setSortType] = useState<any>('_id')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [registrar, setRegistrarSelected] = useState<string>('ai')
+  const [source, setSource] = useState<DirectorySource>('all')
+  const [withImagesOnly, setWithImagesOnly] = useState(false)
 
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [searchInput, setSearchInput] = useState("")
@@ -57,8 +58,6 @@ export const SubnameListView = ({ address }: any) => {
   const requestId = useRef(0)
 
   const { wallets } = useWallets();      // Privy hook
-
-  const jurisList = ['ai']
 
   const publicClient: any = useMemo(
     () =>
@@ -110,15 +109,15 @@ export const SubnameListView = ({ address }: any) => {
       category = { category: selectedCategory }
     }
     try {
-      let searchBase = searchInput ? {} : { avatar: 'https' }
       const results = await getDirectoryEntities({
-        registrar,
+        source,
+        withImagesOnly,
         nameSubstring: searchInput,
         page,
         sortDirection,
         sortType,
         address,
-        params: { ...searchBase, ...status, ...category },
+        params: { ...status, ...category },
       })
 
       if (currentRequest === requestId.current) {
@@ -172,11 +171,32 @@ export const SubnameListView = ({ address }: any) => {
   }, [router.query.search])
 
   useEffect(() => {
+    const nextSource = router.query.source
+    setSource(nextSource === 'erc8004' || nextSource === 'other' ? nextSource : 'all')
+  }, [router.query.source])
+
+  useEffect(() => {
+    setWithImagesOnly(router.query.images === 'with')
+  }, [router.query.images])
+
+  const changeSource = (nextSource: DirectorySource) => {
+    setSource(nextSource)
+    router.replace({ pathname: router.pathname, query: { ...router.query, source: nextSource } }, undefined, { shallow: true })
+  }
+
+  const changeImagesFilter = (withImages: boolean) => {
+    setWithImagesOnly(withImages)
+    router.replace({ pathname: router.pathname, query: { ...router.query, images: withImages ? 'with' : 'all' } }, undefined, { shallow: true })
+  }
+
+  useEffect(() => {
     checkConnectedAddressAdmin()
   }, [address])
 
   // Debounce effect: Wait 1 second after typing stops before calling API
   useEffect(() => {
+    ++requestId.current
+    setIsLoadingNextPage(true)
     const delayDebounceFn = setTimeout(() => {
       setFinishedLoading(false)
       setPageNumber(0)
@@ -184,52 +204,30 @@ export const SubnameListView = ({ address }: any) => {
     }, 600) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
-  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory, connectedIsAdmin, address])
+  }, [searchInput, source, withImagesOnly, sortType, sortDirection, selectedStatus, selectedCategory, connectedIsAdmin, address])
 
-  const filteredSet = useMemo(
-    () => {
-      let resReturn = []
-      resReturn = subnameResults.map((record) => {
-        try {
-          const labelName = record.name.split(record.parentName).join('').split('.').join('.')
-          const domainId = labelName.split('-').pop().split('.').join('')
-          const commonName = labelName
-            .split('-')
-            .slice(0, labelName.split('-').length - 1)
-            .join(' ')
-
-          return { ...record, labelName, commonName, domainId, isPlaceHolder: false }
-        } catch (err) {
-          logFrontendError({
-            error: err,
-            message: '4 - Failed to build filtered set of agents',
-            functionName: 'filteredSet',
-            args: { address, filteredSetCount: subnameResults.length, name: record.name, parentName: record.parentName },
-          })
-          return null
-        }
-      }).filter(x => !!x)
-      return resReturn
-    },
-    [subnameResults, pageNumber, searchInput, sortType, sortDirection, registrar],
-  )
 
   return (
     <TabWrapperWithButtons>
+      <div style={{ padding: '16px 18px 0' }}>
+        <h1 style={{ margin: '0 0 8px', fontSize: '28px', fontWeight: 700, lineHeight: 1.2 }}>AI agent directory</h1>
+        <p style={{ margin: '0 0 12px', color: '#666' }}>Browse AI entities indexed by Entity.ID, including ERC-8004 agents. Newest additions appear first.</p>
+      </div>
       <NameTableHeader
         displaySearch={false}
         mode={'view'}
         sortType={sortType}
         sortTypeOptionValues={['birthdate', 'name']}
         sortDirection={sortDirection}
-        registrar={registrar}
-        registrarOptionValues={jurisList}
+        agentSource={source}
+        onAgentSourceChange={changeSource}
+        withImagesOnly={withImagesOnly}
+        onImagesFilterChange={changeImagesFilter}
         searchQuery={searchInput}
         selectedCount={selectedNames.length}
         onModeChange={(m) => {
           setSelectedNames([])
         }}
-        onRegistrarChange={setRegistrarSelected}
         onSortDirectionChange={setSortDirection}
         onSortTypeChange={setSortType}
         onSearchChange={(s) => {
@@ -254,7 +252,7 @@ export const SubnameListView = ({ address }: any) => {
         <DirectoryTable
           sortDirection={sortDirection}
           onSortDirectionChange={setSortDirection}
-          data={filteredSet}
+          data={subnameResults}
           isLoadingNextPage={isLoadingNextPage}
           finishedLoading={finishedLoading}
           fetchData={getSubs}

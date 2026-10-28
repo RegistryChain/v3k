@@ -23,10 +23,12 @@ export const AgentGrid = ({ rowHeight = 120, connectedIsAdmin = false, moderateE
               index={rowIndex * 3 + boxIndex + 1}
               rowHeight={rowHeight}
               imageUrl={box.avatar}
-              agentName={box.name}
+              agentName={box.name || box.entityid || 'AI agent'}
               agentDomain={box.entityid}
+              source={box.source}
+              erc8004AgentId={box.erc8004__agentId}
               agentDesc={
-                box.description ? (box.description?.slice(0, 50) + (box.description?.length > 50 ? '...' : '')) : ""
+                typeof box.description === 'string' ? (box.description.slice(0, 100) + (box.description.length > 100 ? '...' : '')) : ""
               }
               location={box?.location || ""}
               rating={box.rating || 0}
