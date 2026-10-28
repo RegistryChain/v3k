@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { Address, getContract, http, isAddressEqual, namehash, parseAbi } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -13,7 +13,8 @@ import {
   SortDirection,
 } from '@app/components/@molecules/NameTableHeader/NameTableHeader'
 import { TabWrapper } from '@app/components/pages/profile/TabWrapper'
-import { executeWriteToResolver, getEntitiesList, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
+import { executeWriteToResolver, logFrontendError } from '@app/hooks/useExecuteWriteToResolver'
+import { getDirectoryEntities } from '@app/utils/directoryGateway'
 import { infuraUrl } from '@app/utils/query/wagmi'
 
 import contractAddresses from '../../../constants/contractAddresses.json'
@@ -52,6 +53,8 @@ export const SubnameListView = ({ address }: any) => {
   const [selectedCategory, setSelectedCategory] = useState("")
 
   const [subnameResults, setSubnameResults] = useState<any[]>([])
+  const [loadError, setLoadError] = useState('')
+  const requestId = useRef(0)
 
   const { wallets } = useWallets();      // Privy hook
 
@@ -91,7 +94,9 @@ export const SubnameListView = ({ address }: any) => {
   }
 
   const getSubs = async (page: number = pageNumber, resetResults = false) => {
+    const currentRequest = ++requestId.current
     setIsLoadingNextPage(true)
+    setLoadError('')
     let status = {}
     let category = {}
     if (connectedIsAdmin) {
@@ -106,7 +111,7 @@ export const SubnameListView = ({ address }: any) => {
     }
     try {
       let searchBase = searchInput ? {} : { avatar: 'https' }
-      const results = await getEntitiesList({
+      const results = await getDirectoryEntities({
         registrar,
         nameSubstring: searchInput,
         page,
@@ -116,19 +121,18 @@ export const SubnameListView = ({ address }: any) => {
         params: { ...searchBase, ...status, ...category },
       })
 
-      setSubnameResults(results)
-      setFinishedLoading(true)
+      if (currentRequest === requestId.current) {
+        setSubnameResults(results)
+        setFinishedLoading(true)
+      }
     } catch (err) {
-      logFrontendError({
-        error: err,
-        message: '2 - Failed to fetch subnames in SubnameListView',
-        functionName: 'getSubs',
-        address,
-        args: { page, address, searchInput, connectedIsAdmin },
-      })
-      console.log(err)
+      if (currentRequest === requestId.current) {
+        setLoadError('We couldn’t load the agents. Please try again.')
+        setSubnameResults([])
+        setFinishedLoading(true)
+      }
     } finally {
-      setIsLoadingNextPage(false)
+      if (currentRequest === requestId.current) setIsLoadingNextPage(false)
     }
   }
 
@@ -171,13 +175,6 @@ export const SubnameListView = ({ address }: any) => {
     checkConnectedAddressAdmin()
   }, [address])
 
-  useEffect(() => {
-    if (pageNumber !== 0) {
-      setFinishedLoading(false)
-      getSubs(pageNumber)
-    }
-  }, [pageNumber])
-
   // Debounce effect: Wait 1 second after typing stops before calling API
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -187,7 +184,7 @@ export const SubnameListView = ({ address }: any) => {
     }, 600) // 1000ms = 1 second
 
     return () => clearTimeout(delayDebounceFn) // Cleanup previous timeout
-  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory, connectedIsAdmin])
+  }, [searchInput, registrar, sortType, sortDirection, selectedStatus, selectedCategory, connectedIsAdmin, address])
 
   const filteredSet = useMemo(
     () => {
@@ -244,9 +241,16 @@ export const SubnameListView = ({ address }: any) => {
         setSelectedStatus={setSelectedStatus}
         connectedIsAdmin={connectedIsAdmin}
       />
-      {isLoadingNextPage ? <div style={{ display: 'flex', justifyContent: 'center', marginTop: "18px" }}>
+      {isLoadingNextPage && <div style={{ display: 'flex', justifyContent: 'center', marginTop: "18px" }}>
         <Spinner color="accent" size="large" />
-      </div> :
+      </div>}
+      {!isLoadingNextPage && loadError && (
+        <div role="alert" style={{ padding: '24px', textAlign: 'center' }}>
+          <p>{loadError}</p>
+          <Button onClick={() => getSubs(pageNumber)}>Try again</Button>
+        </div>
+      )}
+      {!isLoadingNextPage && !loadError &&
         <DirectoryTable
           sortDirection={sortDirection}
           onSortDirectionChange={setSortDirection}

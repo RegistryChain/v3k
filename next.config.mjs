@@ -23,6 +23,10 @@ const babelIncludeRegexes = [
  * */
 const nextConfig = {
   reactStrictMode: true,
+  typescript: {
+    // Check application sources during builds; tests have their own runner.
+    tsconfigPath: 'tsconfig.build.json',
+  },
   compiler: {
     styledComponents: true,
   },

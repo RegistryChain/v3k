@@ -26,6 +26,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo
 tsconfig.vitest-temp.json
 
 # local env files
@@ -79,3 +80,4 @@ tsconfig.vitest-temp.json
 .dev.vars
 
 *yalc*
+.env*.local

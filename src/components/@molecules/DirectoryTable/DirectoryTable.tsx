@@ -11,6 +11,7 @@ import { Entity, Partner } from '@app/types/directory'
 import * as Styles from './DirectoryTable.styles'
 import { Button } from '@mui/material'
 import { Typography } from '@ensdomains/thorin'
+import { DIRECTORY_PAGE_SIZE } from '@app/utils/directoryGateway'
 
 const { ButtonContainer } = Styles
 
@@ -66,11 +67,11 @@ export const DirectoryTable = ({
       {data?.length > 0 || !finishedLoading ? <AgentGrid connectedIsAdmin={connectedIsAdmin} moderateEntity={moderateEntity} boxes={data} onRate={() => null} /> : <Typography fontVariant="headingTwo">No agents found!</Typography>}
 
       <ButtonContainer>
-        <Button disabled={page === 0} onClick={handlePrevPage}>
+        <Button disabled={page === 0 || isLoadingNextPage} onClick={handlePrevPage}>
           Previous
         </Button>
         <span>Page {page + 1}</span>
-        <Button disabled={isLoadingNextPage} onClick={handleNextPage}>
+        <Button disabled={isLoadingNextPage || data.length < DIRECTORY_PAGE_SIZE} onClick={handleNextPage}>
           Next
         </Button>
       </ButtonContainer>
